@@ -38,3 +38,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.idea/**
+
+.idea/misc.xml
+
+.idea/workspace.xml

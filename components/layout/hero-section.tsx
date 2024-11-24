@@ -27,7 +27,7 @@ export default function HeroSection() {
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-3xl transform rotate-3 scale-105 opacity-20 blur-2xl"></div>
             <Image
-              src="/api/placeholder/600/600"
+              src="/images/hero.png"
               alt="Dashboard FonoSaaS"
               width={600}
               height={600}

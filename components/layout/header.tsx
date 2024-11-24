@@ -4,48 +4,97 @@ import { Button } from "@/components/ui/button"
 import { Menu } from 'lucide-react'
 import { navigationItems } from "@/lib/constants/content"
 import { useState } from "react"
+import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
 
   return (
-    <header className="px-4 lg:px-6 h-20 flex items-center fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-indigo-100">
-      <nav className="flex items-center justify-between w-full max-w-7xl mx-auto">
-        <a className="flex items-center gap-2 text-2xl font-bold text-indigo-600" href="#">
-          <div className="size-10 bg-indigo-600 text-white flex items-center justify-center rounded-lg rotate-3 hover:rotate-6 transition-transform">
-            <span className="font-black">FS</span>
-          </div>
-          <span className="hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+      <header className="px-4 lg:px-6 h-20 flex items-center fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-indigo-100">
+        <nav className="flex items-center justify-between w-full max-w-7xl mx-auto">
+          <a className="flex items-center gap-2 text-2xl font-bold text-indigo-600" href="#">
+            <div className="size-10 bg-indigo-600 text-white flex items-center justify-center rounded-lg rotate-3 hover:rotate-6 transition-transform">
+              <span className="font-black">FS</span>
+            </div>
+            <span className="hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
             FonoSaaS
           </span>
-        </a>
+          </a>
 
-        <div className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex absolute md:relative top-20 md:top-0 left-0 right-0 bg-white md:bg-transparent flex-col md:flex-row gap-6 p-6 md:p-0 border-b md:border-0`}>
-          {navigationItems.map((item) => (
-            <a
-              key={item}
-              className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
-              href={`#${item.toLowerCase()}`}
+          <div className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex absolute md:relative top-20 md:top-0 left-0 right-0 bg-white md:bg-transparent flex-col md:flex-row gap-6 p-6 md:p-0 border-b md:border-0`}>
+            {navigationItems.map((item) => (
+                <a
+                    key={item}
+                    className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                    href={`#${item.toLowerCase()}`}
+                >
+                  {item}
+                </a>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <SignedOut>
+              <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+                <Button className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 transition-all duration-300">
+                  Get Started
+                </Button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: "size-10 rounded-full hover:ring-2 hover:ring-indigo-600 transition-all"
+                        }
+                      }}
+                      signInUrl="/sign-in"
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem className="cursor-pointer">
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer text-red-600">
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SignedIn>
+
+            <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {item}
-            </a>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Button className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 transition-all duration-300">
-            Comece Agora
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <Menu className="size-5" />
-          </Button>
-        </div>
-      </nav>
-    </header>
+              <Menu className="size-5" />
+            </Button>
+          </div>
+        </nav>
+      </header>
   )
 }
