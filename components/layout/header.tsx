@@ -1,10 +1,10 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Menu } from 'lucide-react'
-import { navigationItems } from "@/lib/constants/content"
-import { useState } from "react"
-import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs"
+import {Button} from "@/components/ui/button"
+import {Menu} from 'lucide-react'
+import {navigationItems} from "@/lib/constants/content"
+import {useState} from "react"
+import {SignedIn, SignedOut, SignInButton, UserButton} from "@clerk/nextjs"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,18 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [authModalOpen, setAuthModalOpen] = useState(false)
 
   return (
       <header className="px-4 lg:px-6 h-20 flex items-center fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-indigo-100">

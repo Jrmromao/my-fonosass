@@ -1,18 +1,10 @@
 'use client'
-import { useState, useEffect } from "react"
+import {useEffect, useState} from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-    Home,
-    FileText,
-    ScrollText,
-    ListTodo,
-    Settings,
-    Menu,
-    X
-} from "lucide-react"
+import {usePathname} from "next/navigation"
+import {cn} from "@/lib/utils"
+import {Button} from "@/components/ui/button"
+import {Home, ListTodo, Menu, Settings, X} from "lucide-react"
 
 const sidebarItems = [
     {
