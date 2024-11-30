@@ -4,7 +4,7 @@ import Link from "next/link"
 import {usePathname} from "next/navigation"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/button"
-import {Home, ListTodo, Menu, Settings, X} from "lucide-react"
+import {Home, ListTodo, Menu, Settings, X, Users} from "lucide-react"
 
 const sidebarItems = [
     {
@@ -21,6 +21,11 @@ const sidebarItems = [
         title: "Configurações",
         icon: Settings,
         href: "/dashboard/settings",
+    },
+    {
+        title: "Pacientes",
+        icon: Users,
+        href: "/dashboard/patient",
     },
 ]
 
