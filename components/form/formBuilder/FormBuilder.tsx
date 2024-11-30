@@ -5,10 +5,10 @@ import {PlusCircle} from 'lucide-react'
 
 
 import {FormField} from "@/types/types";
-import {FormDetails} from "@/components/form/FormDetails";
-import {FieldList} from "@/components/form/FieldList";
-import {AddFieldDialog} from "@/components/form/AddFieldDialog";
-import {FormPreview} from "@/components/form/FormPreview";
+import {FormDetails} from "@/components/form/draft/FormDetails";
+import {FieldList} from "@/components/form/draft/FieldList";
+import {AddFieldDialog} from "@/components/form/draft/AddFieldDialog";
+import {FormPreview} from "@/components/form/draft/FormPreview";
 
 interface FormBuilderProps {
     onSubmit: (data: {

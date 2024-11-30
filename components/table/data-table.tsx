@@ -42,7 +42,7 @@ import {
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 
 import {ChevronDownIcon} from "lucide-react";
-import {AddItemForm} from "@/components/form/add-item-form";
+import {AddItemForm} from "@/components/form/draft/add-item-form";
 
 export type Item = {
     id: string
