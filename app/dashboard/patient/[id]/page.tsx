@@ -1,11 +1,14 @@
 "use client"
 
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Activity, Calendar, ChevronLeft, Clock, FileText, MessageSquare, Phone, User2} from 'lucide-react'
 import {useRouter} from "next/navigation";
+import {useParams} from "next/navigation"
+import {getPatientById} from "@/lib/actions/patient.action";
+import {PatientResponse} from "@/types/types";
 
 // const sampleHistoryEvents = [
 //     {
@@ -45,9 +48,91 @@ import {useRouter} from "next/navigation";
 //     },
 // ]
 
+
+interface PatientDetails {
+    id: string
+    firstName: string
+    lastName: string
+    fullName: string
+    dateOfBirth: string // Changed from Date to string
+    gender: string | null
+    contactPhone: string | null
+    contactEmail: string | null
+    address: string | null
+    medicalHistory: string | null
+    status: "ACTIVE" | "INACTIVE"
+    primaryTherapist: {
+        id: string
+        fullName: string
+        email: string
+    }
+    progressNotes: Array<{
+        id: string
+        content: string
+        createdAt: string // Changed from Date to string
+    }>
+    activities: Array<{
+        id: string
+        activity: {
+            name: string
+            type: string
+        }
+        status: string
+    }>
+}
+
+
 export default function PatientDetailsPage() {
     const [activeTab, setActiveTab] = useState("overview")
     const router = useRouter()
+    const params = useParams()
+    const [patient, setPatient] = useState<PatientDetails | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        async function loadPatient() {
+            try {
+                if (!params.id) return
+
+                const response = await getPatientById(params.id as string)
+
+                if (response.success) {
+                    console.log(response)
+                    setPatient({
+                        activities: [],
+                        progressNotes: [],
+                        primaryTherapist: {
+                            email: response?.data?.primaryTherapist.email!,
+                            fullName: response?.data?.primaryTherapist.fullName!,
+                            id: response?.data?.primaryTherapist.id!
+                        },
+                        status: response?.data?.status!,
+                        medicalHistory: response.data?.medicalHistory!,
+                        address: response.data?.address!,
+                        contactEmail: response.data?.contactEmail!,
+                        contactPhone: response.data?.contactPhone!,
+                        dateOfBirth: response.data?.dateOfBirth!,
+                        firstName: response.data?.firstName!,
+                        gender: response.data?.gender!,
+                        id: response.data?.id!,
+                        lastName: response.data?.lastName!,
+                        fullName: response.data?.fullName!
+                    })
+                } else {
+
+                }
+            } catch (err) {
+                setError('Failed to load patient data')
+                console.error(err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        loadPatient()
+    }, [params.id])
+
     return (
         <div className="h-full p-8 bg-white">
             <Button variant="ghost" className="mb-6" onClick={() => router.back()}>
@@ -63,9 +148,9 @@ export default function PatientDetailsPage() {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-                                Maria Silva
+                                {patient?.fullName}
                             </h1>
-                            <div className="text-muted-foreground mt-1">ID: #1234</div>
+                            <div className="text-muted-foreground mt-1">ID: #{patient?.id}</div>
                             <div className="flex gap-4 mt-4">
                                 <Button variant="outline" size="sm">
                                     <Phone className="w-4 h-4 mr-2"/>
@@ -167,19 +252,19 @@ export default function PatientDetailsPage() {
                         <div className="space-y-4">
                             <div>
                                 <div className="text-sm font-medium text-muted-foreground">Email</div>
-                                <div>maria.silva@email.com</div>
+                                <div>{patient?.contactEmail}</div>
                             </div>
                             <div>
                                 <div className="text-sm font-medium text-muted-foreground">Telefone</div>
-                                <div>(11) 98765-4321</div>
+                                <div>{patient?.contactPhone}</div>
                             </div>
                             <div>
                                 <div className="text-sm font-medium text-muted-foreground">Data de Nascimento</div>
-                                <div>15/05/1990</div>
+                                <div>{patient?.dateOfBirth}</div>
                             </div>
                             <div>
                                 <div className="text-sm font-medium text-muted-foreground">Endereço</div>
-                                <div>Rua das Flores, 123</div>
+                                <div>{patient?.address}</div>
                                 <div>São Paulo - SP</div>
                             </div>
                             <div>

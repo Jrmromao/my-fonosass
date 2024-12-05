@@ -143,3 +143,33 @@ export interface PhonemeCardProps {
     phoneme: Phoneme;
     onClose: () => void;
 }
+
+
+
+// Type for the API response
+export type PatientResponse = {
+    id: string
+    firstName: string
+    lastName: string
+    fullName: string
+    dateOfBirth: Date
+    gender?: string
+    contactPhone?: string
+    contactEmail?: string
+    address?: string
+    medicalHistory?: string | null
+    status: "ACTIVE" | "INACTIVE"
+    primaryTherapistId: string
+    practiceId?: string
+    createdAt: Date
+    updatedAt: Date
+}
+
+// Type for table display
+export type PatientListItem = {
+    id: string
+    firstName: string
+    lastName: string
+    fullName: string
+    status: "ACTIVE" | "INACTIVE"
+}
