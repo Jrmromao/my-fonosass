@@ -1,7 +1,7 @@
 // components/PatientTableWrapper.tsx (Server Component)
-import { getPatients } from "@/lib/actions/activity.action"
 import { PatientTableClient } from "./PatientTableClient"
 import { Suspense } from "react"
+import {getPatients} from "@/lib/actions/patient.action";
 
 export async function PatientTableWrapper() {
     const response = await getPatients()

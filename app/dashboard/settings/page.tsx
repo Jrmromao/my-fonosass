@@ -5,6 +5,11 @@ import React from 'react'
 // import {FormField} from "@/types/types";
 // import RemoteControl from "@/components/RemoteControl";
 import PhonemeTree from "@/components/tree/PhonemeTree";
+import EnhancedAppleTree from "@/components/tree/PhonemeTree";
+import SpiralAppleTree from "@/components/tree/PhonemeTree";
+import NaturalAppleTree from "@/components/tree/PhonemeTree";
+import OutlinedTree from "@/components/tree/PhonemeTree";
+import SVGRender from "@/components/SVGRender";
 
 // const handleSubmit = async (formData: {
 //     title: string
@@ -32,11 +37,30 @@ import PhonemeTree from "@/components/tree/PhonemeTree";
 // }
 
 
+
+
+
 const Page = () => {
+
+    const messages = [
+        "Welcome to our family tree!",
+        "Click the apples to learn more",
+        // ... more messages
+    ];
+
+    const handleAppleClick = (apple: any) => {
+        console.log(`Clicked apple: ${apple.id}`);
+    };
+
     return (
         <div className="p-6">
             {/*<RemoteControl/>*/}
-            <PhonemeTree />
+
+
+<SVGRender />
+
+
+
         </div>
     )
 }

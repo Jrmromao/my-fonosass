@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
     try {
-        const { tier } = await req.json()
+        // const { tier } = await req.json()
 
         // Initialize PagSeguro checkout session
         // const checkout = await createPagSeguroCheckout({

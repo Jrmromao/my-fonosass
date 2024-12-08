@@ -1,8 +1,8 @@
 "use server"
 
-import { prisma } from "@/db"
-import { revalidatePath } from "next/cache"
-import { ActivityType, ActivityDifficulty, AgeRange, Prisma } from "@prisma/client"
+import {prisma} from "@/db"
+import {revalidatePath} from "next/cache"
+import {ActivityDifficulty, ActivityType, AgeRange, Prisma} from "@prisma/client"
 import {currentUser} from "@clerk/nextjs/server";
 
 interface CreateActivityParams {

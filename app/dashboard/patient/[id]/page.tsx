@@ -8,7 +8,6 @@ import {Activity, Calendar, ChevronLeft, Clock, FileText, MessageSquare, Phone, 
 import {useRouter} from "next/navigation";
 import {useParams} from "next/navigation"
 import {getPatientById} from "@/lib/actions/patient.action";
-import {PatientResponse} from "@/types/types";
 
 // const sampleHistoryEvents = [
 //     {
@@ -48,41 +47,41 @@ import {PatientResponse} from "@/types/types";
 //     },
 // ]
 
+export default function Page() {
 
-interface PatientDetails {
-    id: string
-    firstName: string
-    lastName: string
-    fullName: string
-    dateOfBirth: string // Changed from Date to string
-    gender: string | null
-    contactPhone: string | null
-    contactEmail: string | null
-    address: string | null
-    medicalHistory: string | null
-    status: "ACTIVE" | "INACTIVE"
-    primaryTherapist: {
+    interface PatientDetails {
         id: string
+        firstName: string
+        lastName: string
         fullName: string
-        email: string
-    }
-    progressNotes: Array<{
-        id: string
-        content: string
-        createdAt: string // Changed from Date to string
-    }>
-    activities: Array<{
-        id: string
-        activity: {
-            name: string
-            type: string
+        dateOfBirth: string // Changed from Date to string
+        gender: string | null
+        contactPhone: string | null
+        contactEmail: string | null
+        address: string | null
+        medicalHistory: string | null
+        status: "ACTIVE" | "INACTIVE"
+        primaryTherapist: {
+            id: string
+            fullName: string
+            email: string
         }
-        status: string
-    }>
-}
+        progressNotes: Array<{
+            id: string
+            content: string
+            createdAt: string // Changed from Date to string
+        }>
+        activities: Array<{
+            id: string
+            activity: {
+                name: string
+                type: string
+            }
+            status: string
+        }>
+    }
 
 
-export default function PatientDetailsPage() {
     const [activeTab, setActiveTab] = useState("overview")
     const router = useRouter()
     const params = useParams()

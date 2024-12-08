@@ -1,13 +1,12 @@
 "use server"
 
-import { prisma } from "@/db"
-import { currentUser } from "@clerk/nextjs/server"
-import { revalidatePath } from "next/cache"
-import { z } from "zod"
+import {prisma} from "@/db"
+import {currentUser} from "@clerk/nextjs/server"
+import {revalidatePath} from "next/cache"
+import {z} from "zod"
 import {patientSchema} from "@/lib/schema";
 import {PatientListItem} from "@/types/types";
 import {Prisma} from "@prisma/client";
-
 
 
 type GetPatientsResponse = {
@@ -151,7 +150,6 @@ export async function getPatientById(patientId: string) {
         }
 
         // Transform dates to strings for serialization
-        // @ts-ignore
         const transformedPatient = {
             ...patient,
             dateOfBirth: patient.dateOfBirth.toISOString(),

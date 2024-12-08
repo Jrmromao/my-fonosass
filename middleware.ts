@@ -80,6 +80,7 @@ import { prisma } from "@/db"
 const isPublicRoute = createRouteMatcher([
     '/sign-in(.*)',
     '/sign-up(.*)',
+    '/',
     '/api/subscription/callback',
     '/api/webhooks/(.*)'
 ])
