@@ -2,15 +2,16 @@
 
 import {prisma} from "@/db"
 import {revalidatePath} from "next/cache"
-import {ActivityDifficulty, ActivityType, AgeRange, Prisma} from "@prisma/client"
+// import {ActivityDifficulty, ActivityType, AgeRange, Prisma} from "@prisma/client"
 import {currentUser} from "@clerk/nextjs/server";
+import {Prisma} from "@prisma/client";
 
 interface CreateActivityParams {
     name: string
     description: string
-    type: ActivityType
-    difficulty: ActivityDifficulty
-    ageRange: AgeRange
+    // type: ActivityType
+    // difficulty: ActivityDifficulty
+    // ageRange: AgeRange
     files?: File[]
     isPublic?: boolean
 }
@@ -26,9 +27,9 @@ export async function createActivity(params: CreateActivityParams) {
         const {
             name,
             description,
-            type,
-            difficulty,
-            ageRange,
+            // type,
+            // difficulty,
+            // ageRange,
             files = [],
             isPublic = false
         } = params
@@ -38,19 +39,19 @@ export async function createActivity(params: CreateActivityParams) {
         // create s3 bucket with the practice id as the name
 
 
-        const activity = await prisma.activity.create({
-            data: {
-                name: name,
-                description: description,
-                type: type,
-                difficulty: difficulty,
-                ageRange: ageRange,
-                isPublic: isPublic,
-                createdById: user?.id!,
-                practiceId: 'e7e86a2c-f382-4bcf-adb1-6279f737044d',
-
-            }
-        })
+        // const activity = await prisma.activity.create({
+        //     data: {
+        //         name: name,
+        //         description: description,
+        //         // type: type,
+        //         // difficulty: difficulty,
+        //         // ageRange: ageRange,
+        //         isPublic: isPublic,
+        //         createdById: user?.id!,
+        //         practiceId: 'e7e86a2c-f382-4bcf-adb1-6279f737044d',
+        //
+        //     }
+        // })
 
         if (files.length > 0) {
             // File upload logic here
@@ -60,7 +61,7 @@ export async function createActivity(params: CreateActivityParams) {
 
         return {
             success: true,
-            data: activity
+            data: {}
         }
 
     } catch (error) {
@@ -74,9 +75,9 @@ export async function createActivity(params: CreateActivityParams) {
 
 interface GetActivitiesParams {
     search?: string
-    type?: ActivityType
-    difficulty?: ActivityDifficulty
-    ageRange?: AgeRange
+    // type?: ActivityType
+    // difficulty?: ActivityDifficulty
+    // ageRange?: AgeRange
     createdById?: string
 }
 
@@ -84,9 +85,9 @@ export async function getActivities(params: GetActivitiesParams = {}) {
     try {
         const {
             search = "",
-            type,
-            difficulty,
-            ageRange,
+            // type,
+            // difficulty,
+            // ageRange,
             createdById
         } = params
 
@@ -97,9 +98,9 @@ export async function getActivities(params: GetActivitiesParams = {}) {
                     { description: { contains: search, mode: 'insensitive' } }
                 ]
             } : {}),
-            ...(type && { type }),
-            ...(difficulty && { difficulty }),
-            ...(ageRange && { ageRange }),
+            // ...(type && { type }),
+            // ...(difficulty && { difficulty }),
+            // ...(ageRange && { ageRange }),
             ...(createdById && { createdById })
         }
 

@@ -165,17 +165,17 @@ const PricingSignup = () => {
 
             <div className="container mx-auto px-4">
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">
-                    {trustBadges.map((badge, index) => (
-                        <div key={index} className="flex flex-col items-center text-center p-4">
-                            <div className="rounded-full bg-indigo-50 p-2 mb-3">
-                                <badge.icon className="size-5 text-indigo-600"/>
-                            </div>
-                            <span className="text-sm font-medium text-gray-800">{badge.text}</span>
-                            <span className="text-sm text-gray-500 mt-1">test</span>
-                        </div>
-                    ))}
-                </div>
+                {/*<div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-16">*/}
+                {/*    {trustBadges.map((badge, index) => (*/}
+                {/*        <div key={index} className="flex flex-col items-center text-center p-4">*/}
+                {/*            <div className="rounded-full bg-indigo-50 p-2 mb-3">*/}
+                {/*                <badge.icon className="size-5 text-indigo-600"/>*/}
+                {/*            </div>*/}
+                {/*            <span className="text-sm font-medium text-gray-800">{badge.text}</span>*/}
+                {/*            <span className="text-sm text-gray-500 mt-1">test</span>*/}
+                {/*        </div>*/}
+                {/*    ))}*/}
+                {/*</div>*/}
 
             </div>
             {/* Billing Toggle */}
