@@ -98,26 +98,26 @@ export default function Page() {
 
                 if (response.success) {
                     console.log(response)
-                    setPatient({
-                        activities: [],
-                        progressNotes: [],
-                        primaryTherapist: {
-                            email: response?.data?.primaryTherapist.email!,
-                            fullName: response?.data?.primaryTherapist.fullName!,
-                            id: response?.data?.primaryTherapist.id!
-                        },
-                        status: response?.data?.status!,
-                        medicalHistory: response.data?.medicalHistory!,
-                        address: response.data?.address!,
-                        contactEmail: response.data?.contactEmail!,
-                        contactPhone: response.data?.contactPhone!,
-                        dateOfBirth: response.data?.dateOfBirth!,
-                        firstName: response.data?.firstName!,
-                        gender: response.data?.gender!,
-                        id: response.data?.id!,
-                        lastName: response.data?.lastName!,
-                        fullName: response.data?.fullName!
-                    })
+                    // setPatient({
+                    //     activities: [],
+                    //     progressNotes: [],
+                    //     primaryTherapist: {
+                    //         email: response?.data?.primaryTherapist.email!,
+                    //         fullName: response?.data?.primaryTherapist.fullName!,
+                    //         id: response?.data?.primaryTherapist.id!
+                    //     },
+                    //     status: response?.data?.status!,
+                    //     medicalHistory: response.data?.medicalHistory!,
+                    //     address: response.data?.address!,
+                    //     contactEmail: response.data?.contactEmail!,
+                    //     contactPhone: response.data?.contactPhone!,
+                    //     dateOfBirth: response.data?.dateOfBirth!,
+                    //     firstName: response.data?.firstName!,
+                    //     gender: response.data?.gender!,
+                    //     id: response.data?.id!,
+                    //     lastName: response.data?.lastName!,
+                    //     fullName: response.data?.fullName!
+                    // })
                 } else {
 
                 }

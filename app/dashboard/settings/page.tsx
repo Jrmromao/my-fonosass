@@ -10,6 +10,7 @@ import SpiralAppleTree from "@/components/tree/PhonemeTree";
 import NaturalAppleTree from "@/components/tree/PhonemeTree";
 import OutlinedTree from "@/components/tree/PhonemeTree";
 import SVGRender from "@/components/SVGRender";
+import dynamic from "next/dynamic";
 
 // const handleSubmit = async (formData: {
 //     title: string
@@ -37,6 +38,14 @@ import SVGRender from "@/components/SVGRender";
 // }
 
 
+// Load SVG only on client side
+// const DynamicSVG = dynamic(
+//     () => import('@/components/SVGRender'),
+//     {
+//         ssr: false,
+//         loading: () => <div>Loading...</div>
+//     }
+// )
 
 
 
@@ -57,7 +66,7 @@ const Page = () => {
             {/*<RemoteControl/>*/}
 
 
-<SVGRender />
+{/*<SVGRender />*/}
 
 
 

@@ -84,9 +84,9 @@ export function NewActivityDialog() {
             await createActivity({
                 name: values.name,
                 description: values.description,
-                type: values.type,
-                difficulty: values.difficulty,
-                ageRange: values.ageRange,
+                // type: values.type,
+                // difficulty: values.difficulty,
+                // ageRange: values.ageRange,
                 files: values.files,
                 isPublic: false
             }).then(_ => {

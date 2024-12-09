@@ -6,11 +6,11 @@ import {getPatients} from "@/lib/actions/patient.action";
 
 export default async function PatientsPage() {
     // Add console.log to see what's happening
-    const response = await getPatients()
-    console.log("Server Response:", response) // Add this
-
-    const patients = response.success ? response.data : []
-    console.log("Patients Data:", patients) // Add this
+    // const response = await getPatients()
+    // console.log("Server Response:", response) // Add this
+    //
+    // const patients = response.success ? response.data : []
+    // console.log("Patients Data:", patients) // Add this
 
     return (
         <div className="h-full p-8 bg-white">
@@ -27,11 +27,11 @@ export default async function PatientsPage() {
             </div>
 
             {/* Remove Suspense temporarily for debugging */}
-            <PatientsTable initialData={patients} />
+            {/*<PatientsTable initialData={patients} />*/}
 
             {/* Add this to see if data is available */}
             <div className="hidden">
-                {JSON.stringify(patients)}
+                {/*{JSON.stringify(patients)}*/}
             </div>
         </div>
     )

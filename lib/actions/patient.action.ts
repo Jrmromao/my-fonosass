@@ -55,15 +55,15 @@ export async function getPatients(): Promise<GetPatientsResponse> {
         })
 
         // Transform to match PatientListItem type
-        const transformedPatients = patients.map(patient => ({
-            id: patient.id,
-            firstName: patient.firstName,
-            lastName: patient.lastName,
-            fullName: `${patient.firstName} ${patient.lastName}`,
-            status: patient.status
-        }))
+        // const transformedPatients = patients.map(patient => ({
+        //     id: patient.id,
+        //     firstName: patient.firstName,
+        //     lastName: patient.lastName,
+        //     fullName: `${patient.firstName} ${patient.lastName}`,
+        //     status: patient.status
+        // }))
 
-        return { success: true, data: transformedPatients }
+        return { success: true, data: [] }
     } catch (error: any) {
         console.error('Error fetching patients:', error)
         return { success: false, error: error.message }
@@ -150,19 +150,19 @@ export async function getPatientById(patientId: string) {
         }
 
         // Transform dates to strings for serialization
-        const transformedPatient = {
-            ...patient,
-            dateOfBirth: patient.dateOfBirth.toISOString(),
-            fullName: `${patient.firstName} ${patient.lastName}`,
-            progressNotes: patient.progressNotes.map(note => ({
-                ...note,
-                createdAt: note.createdAt.toISOString()
-            }))
-        }
+        // const transformedPatient = {
+        //     ...patient,
+        //     dateOfBirth: patient.dateOfBirth.toISOString(),
+        //     fullName: `${patient.firstName} ${patient.lastName}`,
+        //     progressNotes: patient.progressNotes.map(note => ({
+        //         ...note,
+        //         createdAt: note.createdAt.toISOString()
+        //     }))
+        // }
 
         return {
             success: true,
-            data: transformedPatient
+            data: []
         }
 
     } catch (error: any) {
@@ -298,101 +298,101 @@ export async function getPracticePatients({
             }
         }
 
-        const whereCondition: Prisma.PatientWhereInput = {
-            practiceId: practiceMember.practiceId,
-            status,
-            ...(searchQuery && {
-                OR: [
-                    {
-                        firstName: {
-                            contains: searchQuery,
-                            mode: 'insensitive'
-                        } as Prisma.StringFilter<"Patient">
-                    },
-                    {
-                        lastName: {
-                            contains: searchQuery,
-                            mode: 'insensitive'
-                        } as Prisma.StringFilter<"Patient">
-                    },
-                    {
-                        contactEmail: {
-                            contains: searchQuery,
-                            mode: 'insensitive'
-                        } as Prisma.StringFilter<"Patient">
-                    },
-                    {
-                        contactPhone: {
-                            contains: searchQuery,
-                            mode: 'insensitive'
-                        } as Prisma.StringFilter<"Patient">
-                    }
-                ]
-            })
-        }
+        // const whereCondition: Prisma.PatientWhereInput = {
+        //     practiceId: practiceMember.practiceId,
+        //     status,
+        //     ...(searchQuery && {
+        //         OR: [
+        //             {
+        //                 firstName: {
+        //                     contains: searchQuery,
+        //                     mode: 'insensitive'
+        //                 } as Prisma.StringFilter<"Patient">
+        //             },
+        //             {
+        //                 lastName: {
+        //                     contains: searchQuery,
+        //                     mode: 'insensitive'
+        //                 } as Prisma.StringFilter<"Patient">
+        //             },
+        //             {
+        //                 contactEmail: {
+        //                     contains: searchQuery,
+        //                     mode: 'insensitive'
+        //                 } as Prisma.StringFilter<"Patient">
+        //             },
+        //             {
+        //                 contactPhone: {
+        //                     contains: searchQuery,
+        //                     mode: 'insensitive'
+        //                 } as Prisma.StringFilter<"Patient">
+        //             }
+        //         ]
+        //     })
+        // }
 
-        const [patients, total] = await Promise.all([
-            prisma.patient.findMany({
-                where: whereCondition,
-                select: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    dateOfBirth: true,
-                    contactPhone: true,
-                    contactEmail: true,
-                    status: true,
-                    primaryTherapist: {
-                        select: {
-                            fullName: true,
-                            email: true
-                        }
-                    },
-                    activities: {
-                        where: { status: 'ACTIVE' },
-                        select: {
-                            id: true,
-                            status: true,
-                            activity: {
-                                select: {
-                                    name: true,
-                                    type: true
-                                }
-                            }
-                        }
-                    },
-                    _count: {
-                        select: {
-                            progressNotes: true,
-                            documents: true
-                        }
-                    }
-                },
-                orderBy: [
-                    { lastName: 'asc' },
-                    { firstName: 'asc' }
-                ],
-                skip: (page - 1) * limit,
-                take: limit
-            }),
-            prisma.patient.count({ where: whereCondition })
-        ])
-
-        const totalPages = Math.ceil(total / limit)
-        const hasMore = page < totalPages
-        const hasPrev = page > 1
+        // const [patients, total] = await Promise.all([
+        //     prisma.patient.findMany({
+        //         // where: whereCondition,
+        //         select: {
+        //             id: true,
+        //             firstName: true,
+        //             lastName: true,
+        //             dateOfBirth: true,
+        //             contactPhone: true,
+        //             contactEmail: true,
+        //             status: true,
+        //             primaryTherapist: {
+        //                 select: {
+        //                     fullName: true,
+        //                     email: true
+        //                 }
+        //             },
+        //             activities: {
+        //                 where: { status: 'ACTIVE' },
+        //                 select: {
+        //                     id: true,
+        //                     status: true,
+        //                     activity: {
+        //                         select: {
+        //                             name: true,
+        //                             type: true
+        //                         }
+        //                     }
+        //                 }
+        //             },
+        //             _count: {
+        //                 select: {
+        //                     progressNotes: true,
+        //                     documents: true
+        //                 }
+        //             }
+        //         },
+        //         orderBy: [
+        //             { lastName: 'asc' },
+        //             { firstName: 'asc' }
+        //         ],
+        //         skip: (page - 1) * limit,
+        //         take: limit
+        //     }),
+        //     // prisma.patient.count({ where: whereCondition })
+        // ])
+        //
+        // const totalPages = Math.ceil(total / limit)
+        // const hasMore = page < totalPages
+        // const hasPrev = page > 1
 
         return {
-            success: true,
-            data: patients,
-            pagination: {
-                total,
-                currentPage: page,
-                totalPages,
-                hasMore,
-                hasPrev,
-                limit
-            }
+            // success: true,
+            // data: patients,
+            // pagination: {
+            //     total,
+            //     currentPage: page,
+            //     totalPages,
+            //     hasMore,
+            //     hasPrev,
+            //     limit
+            // }
         }
 
     } catch (error: any) {

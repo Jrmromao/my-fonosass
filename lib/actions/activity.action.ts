@@ -91,21 +91,21 @@ export async function getActivities(params: GetActivitiesParams = {}) {
             createdById
         } = params
 
-        const where: Prisma.ActivityWhereInput = {
-            ...(search ? {
-                OR: [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { description: { contains: search, mode: 'insensitive' } }
-                ]
-            } : {}),
-            // ...(type && { type }),
-            // ...(difficulty && { difficulty }),
-            // ...(ageRange && { ageRange }),
-            ...(createdById && { createdById })
-        }
+        // const where: Prisma.ActivityWhereInput = {
+        //     ...(search ? {
+        //         OR: [
+        //             { name: { contains: search, mode: 'insensitive' } },
+        //             { description: { contains: search, mode: 'insensitive' } }
+        //         ]
+        //     } : {}),
+        //     // ...(type && { type }),
+        //     // ...(difficulty && { difficulty }),
+        //     // ...(ageRange && { ageRange }),
+        //     ...(createdById && { createdById })
+        // }
 
         const activities = await prisma.activity.findMany({
-            where,
+            // where,
             include: {
                 createdBy: {
                     select: {
