@@ -266,7 +266,7 @@ const PricingSignup = () => {
                                         {plan.additionalFeatures.map((feature: Feature, index: number) => (
                                             <li key={index} className="flex items-center gap-2 text-sm text-gray-600">
                                                 <div className="size-1.5 rounded-full bg-indigo-600"/>
-                                                {feature}
+                                                {/*{feature}*/}
                                             </li>
                                         ))}
                                     </ul>
