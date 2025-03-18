@@ -66,7 +66,7 @@ const Page = () => {
             {/*<RemoteControl/>*/}
 
 
-{/*<SVGRender />*/}
+<SVGRender />
 
 
 

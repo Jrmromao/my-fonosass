@@ -6,10 +6,14 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Award, Check, Clock, Info, Shield, Star, Lock} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
+import PlanSelectionButton from "@/components/PlanSelectionButton";
+import {SignUpDialog} from "@/components/dialogs/sign-up-dialog";
+import {Feature} from "@/types/types";
 
 
-const plans = [
+const plans: Plan[] = [
     {
+        id: "basic",
         name: "Básico",
         description: "Ideal para profissionais autônomos iniciando na área",
         price: "R$ 97",
@@ -41,7 +45,7 @@ const plans = [
         cta: "Começar Gratuitamente",
         trial: "14 dias grátis"
     },
-    {
+    {  id: "professional",
         name: "Profissional",
         description: "Perfeito para clínicas em crescimento",
         price: "R$ 197",
@@ -75,10 +79,11 @@ const plans = [
             "Múltiplos usuários",
             "Faturamento TISS"
         ],
-        cta: "Assinar Agora",
+        cta: "Assinar Agora - joao@me.com.br",
         trial: "30 dias grátis"
     },
     {
+        id: "enterprise",
         name: "Clínica",
         description: "Solução completa para clínicas estabelecidas",
         price: "R$ 497",
@@ -147,6 +152,10 @@ const plans = [
             // : "/api/placeholder/48/48"
         }
     ]
+
+function handlePlanSelect(planId: String) {
+    console.log(planId)
+}
 
 const PricingSignup = () => {
     const [billingPeriod, setBillingPeriod] = useState('monthly')
@@ -231,7 +240,7 @@ const PricingSignup = () => {
                             </CardHeader>
                             <CardContent>
                                 <ul className="space-y-3 mb-6">
-                                    {plan.features.map((feature, fIndex) => (
+                                    {plan.features.map((feature: Feature, fIndex: number) => (
                                         <li key={fIndex} className="flex items-start gap-3">
                                             <Check className="size-5 text-indigo-600 mt-0.5 flex-shrink-0"/>
                                             <div className="flex items-center gap-1.5">
@@ -254,7 +263,7 @@ const PricingSignup = () => {
                                         Também inclui:
                                     </p>
                                     <ul className="space-y-2">
-                                        {plan.additionalFeatures.map((feature, index) => (
+                                        {plan.additionalFeatures.map((feature: Feature, index: number) => (
                                             <li key={index} className="flex items-center gap-2 text-sm text-gray-600">
                                                 <div className="size-1.5 rounded-full bg-indigo-600"/>
                                                 {feature}
@@ -264,15 +273,21 @@ const PricingSignup = () => {
                                 </div>
 
                                 <div className="pt-6">
-                                    <Button
-                                        className={`w-full ${
-                                            plan.highlight
-                                                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                                : 'bg-white text-indigo-600 border-2 border-indigo-600 hover:bg-indigo-50'
-                                        } transition-all duration-300 text-sm font-medium`}
-                                    >
-                                        {plan.cta}
-                                    </Button>
+                                    {/*<Button*/}
+                                    {/*    onClick={() => handlePlanSelect(plan.id)}*/}
+                                    {/*    className={`w-full ${*/}
+                                    {/*        plan.highlight*/}
+                                    {/*            ? 'bg-indigo-600 text-white hover:bg-indigo-700'*/}
+                                    {/*            : 'bg-white text-indigo-600 border-2 border-indigo-600 hover:bg-indigo-50'*/}
+                                    {/*    } transition-all duration-300 text-sm font-medium`}*/}
+                                    {/*>*/}
+                                    {/*    {plan.cta}*/}
+                                    {/*</Button>*/}
+
+                                    {/*<PlanSelectionButton plan={plan} handlePlanSelect={async () => {handlePlanSelect(plan.id)}} />*/}
+
+                                    <SignUpDialog plan={plan} />
+
                                     <p className="text-xs text-center text-gray-500 mt-3">
                                         {plan.trial}
                                     </p>

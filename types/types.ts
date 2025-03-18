@@ -173,3 +173,22 @@ export type PatientListItem = {
     fullName: string
     status: "ACTIVE" | "INACTIVE"
 }
+
+
+export interface Feature {
+    text: string
+    tooltip: string
+}
+
+export type Plan = {
+    id: string
+    name: string
+    description: string
+    price: string
+    period: string
+    highlight: boolean
+    features: Feature[]
+    additionalFeatures: string[]
+    cta: string
+    trial: string
+}
