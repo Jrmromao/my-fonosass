@@ -7,233 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model User {
-//   id            String         @id @default(cuid())
-//   email         String         @unique
-//   password      String
-//   firstName     String
-//   lastName      String
-//   role          Role           @relation(fields: [roleId], references: [id])
-//   roleId        String
-//   practice      Practice?      @relation(fields: [practiceId], references: [id])
-//   practiceId    String?
-//   patients      Patient[]
-//   assessments   Assessment[]
-//   createdForms  Form[]         @relation("FormCreator")
-//   formResponses FormResponse[]
-//   createdAt     DateTime       @default(now())
-//   updatedAt     DateTime       @updatedAt
-//
-//   @@index([email])
-//   @@index([practiceId])
-// }
-//
-// model Role {
-//   id        String   @id @default(cuid())
-//   name      String   @unique
-//   users     User[]
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//
-//   @@index([name])
-// }
-//
-// model Practice {
-//   id         String     @id @default(cuid())
-//   name       String     @unique
-//   plan       Plan       @relation(fields: [planId], references: [id])
-//   planId     String
-//   users      User[]
-//   patients   Patient[]
-//   activities Activity[]
-//   forms      Form[] // Practice-specific forms
-//   createdAt  DateTime   @default(now())
-//   updatedAt  DateTime   @updatedAt
-//
-//   @@index([planId])
-// }
-//
-// model Plan {
-//   id        String     @id @default(cuid())
-//   name      String     @unique
-//   price     Float
-//   features  String[]
-//   practices Practice[]
-//   createdAt DateTime   @default(now())
-//   updatedAt DateTime   @updatedAt
-// }
-//
-// model Patient {
-//   id            String         @id @default(cuid())
-//   firstName     String
-//   lastName      String
-//   dateOfBirth   DateTime
-//   practice      Practice       @relation(fields: [practiceId], references: [id])
-//   practiceId    String
-//   doctor        User           @relation(fields: [doctorId], references: [id])
-//   doctorId      String
-//   tutorEmail    String?
-//   activities    Activity[]
-//   assessments   Assessment[]
-//   medicalNotes  String?        @db.Text
-//   formResponses FormResponse[] // Patient's form responses
-//   createdAt     DateTime       @default(now())
-//   updatedAt     DateTime       @updatedAt
-//
-//   @@index([practiceId])
-//   @@index([doctorId])
-// }
-//
-// model Activity {
-//   id          String       @id @default(cuid())
-//   name        String
-//   description String       @db.Text
-//   maxScore    Int
-//   practice    Practice     @relation(fields: [practiceId], references: [id])
-//   practiceId  String
-//   patients    Patient[]
-//   assessments Assessment[]
-//   createdAt   DateTime     @default(now())
-//   updatedAt   DateTime     @updatedAt
-//
-//   @@index([practiceId])
-// }
-//
-// model Assessment {
-//   id         String   @id @default(cuid())
-//   patient    Patient  @relation(fields: [patientId], references: [id])
-//   patientId  String
-//   activity   Activity @relation(fields: [activityId], references: [id])
-//   activityId String
-//   assessedBy User     @relation(fields: [userId], references: [id])
-//   userId     String
-//   score      Int
-//   notes      String?  @db.Text
-//   date       DateTime @default(now())
-//   createdAt  DateTime @default(now())
-//   updatedAt  DateTime @updatedAt
-//
-//   @@index([patientId])
-//   @@index([activityId])
-//   @@index([userId])
-// }
-//
-// // Form-related models
-// model Form {
-//   id          String         @id @default(cuid())
-//   title       String
-//   description String?
-//   practice    Practice       @relation(fields: [practiceId], references: [id])
-//   practiceId  String
-//   createdBy   User           @relation("FormCreator", fields: [createdById], references: [id])
-//   createdById String
-//   fields      FormField[]
-//   responses   FormResponse[]
-//   isTemplate  Boolean        @default(false)
-//   createdAt   DateTime       @default(now())
-//   updatedAt   DateTime       @updatedAt
-//
-//   @@index([practiceId])
-//   @@index([createdById])
-// }
-//
-// model FormField {
-//   id          String              @id @default(cuid())
-//   formId      String
-//   name        String
-//   label       String
-//   type        String // text, number, email, textarea, select, checkbox
-//   required    Boolean             @default(false)
-//   placeholder String?
-//   description String?
-//   options     Json? // For select fields: [{ label: string, value: string }]
-//   validation  Json? // { min, max, minLength, maxLength, pattern, customError }
-//   order       Int
-//   form        Form                @relation(fields: [formId], references: [id], onDelete: Cascade)
-//   responses   FormFieldResponse[]
-//
-//   @@unique([formId, name])
-//   @@index([formId])
-// }
-//
-// model FormResponse {
-//   id        String              @id @default(cuid())
-//   formId    String
-//   form      Form                @relation(fields: [formId], references: [id], onDelete: Cascade)
-//   patientId String
-//   patient   Patient             @relation(fields: [patientId], references: [id])
-//   userId    String
-//   user      User                @relation(fields: [userId], references: [id])
-//   fields    FormFieldResponse[]
-//   createdAt DateTime            @default(now())
-//
-//   @@index([formId])
-//   @@index([patientId])
-//   @@index([userId])
-// }
-//
-// model FormFieldResponse {
-//   id         String       @id @default(cuid())
-//   responseId String
-//   fieldId    String
-//   value      String
-//   response   FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
-//   field      FormField    @relation(fields: [fieldId], references: [id], onDelete: Cascade)
-//
-//   @@index([responseId])
-//   @@index([fieldId])
-// }
-// This is your Prisma schema file
-
-// User / Therapist model
 model User {
-  id          String   @id @default(cuid())
-  clerkUserId String   @unique
-  email       String   @unique
-  fullName    String
-  phone       String?
-  role        UserRole @default(THERAPIST)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  practices          PracticeMember[]
-  patients           Patient[]
-  progressNotes      ProgressNote[]
+  id                 String                    @id @default(cuid())
+  clerkUserId        String                    @unique
+  email              String                    @unique
+  fullName           String
+  phone              String?
+  role               UserRole                  @default(THERAPIST)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  createdActivities  Activity[]
+  activityFiles      ActivityFile[]
   documents          Document[]                @relation("UploadedDocuments")
-  permissions        DocumentPermission[]
-  sharedLinks        DocumentSharedLink[]
   accessLogs         DocumentAccessLog[]
   modificationLogs   DocumentModificationLog[]
   grantedPermissions DocumentPermission[]      @relation("PermissionGranter")
-  createdActivities  Activity[]
-  activityFiles      ActivityFile[]
+  permissions        DocumentPermission[]
+  sharedLinks        DocumentSharedLink[]
+  patients           Patient[]
   assignedActivities PatientActivity[]
+  practices          PracticeMember[]
+  progressNotes      ProgressNote[]
 }
 
-enum UserRole {
-  OWNER
-  THERAPIST
-}
-
-// Practice model
 model Practice {
-  id        String   @id @default(cuid())
-  name      String
-  address   String?
-  phone     String?
-  email     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  members    PracticeMember[]
-  patients   Patient[]
-  documents  Document[]
+  id         String           @id @default(cuid())
+  name       String
+  address    String?
+  phone      String?
+  email      String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
   activities Activity[]
+  documents  Document[]
+  patients   Patient[]
+  members    PracticeMember[]
 }
 
-// Practice membership model
 model PracticeMember {
   id         String       @id @default(cuid())
   practiceId String
@@ -241,12 +51,268 @@ model PracticeMember {
   joinedAt   DateTime     @default(now())
   role       PracticeRole @default(MEMBER)
   status     MemberStatus @default(ACTIVE)
-
-  // Relations
-  practice Practice @relation(fields: [practiceId], references: [id])
-  user     User     @relation(fields: [userId], references: [id])
+  practice   Practice     @relation(fields: [practiceId], references: [id])
+  user       User         @relation(fields: [userId], references: [id])
 
   @@unique([practiceId, userId])
+}
+
+model Patient {
+  id                 String             @id @default(cuid())
+  firstName          String
+  lastName           String
+  dateOfBirth        DateTime
+  gender             String?
+  contactPhone       String?
+  contactEmail       String?
+  address            String?
+  medicalHistory     String?
+  status             PatientStatus      @default(ACTIVE)
+  primaryTherapistId String
+  practiceId         String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  activityProgress   ActivityProgress[]
+  documents          Document[]
+  practice           Practice?          @relation(fields: [practiceId], references: [id])
+  primaryTherapist   User               @relation(fields: [primaryTherapistId], references: [id])
+  activities         PatientActivity[]
+  progressNotes      ProgressNote[]
+}
+
+model ProgressNote {
+  id              String   @id @default(cuid())
+  patientId       String
+  therapistId     String
+  sessionDate     DateTime
+  sessionDuration Int
+  treatmentGoals  String
+  observations    String
+  progressMade    String
+  nextSteps       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  therapist       User     @relation(fields: [therapistId], references: [id])
+}
+
+model Document {
+  id               String                       @id @default(cuid())
+  name             String
+  s3Key            String
+  s3Url            String
+  fileType         DocumentType
+  sizeInBytes      Int
+  mimeType         String
+  visibility       DocumentVisibility           @default(PRIVATE)
+  patientId        String?
+  practiceId       String?
+  uploadedById     String
+  createdAt        DateTime                     @default(now())
+  updatedAt        DateTime                     @updatedAt
+  patient          Patient?                     @relation(fields: [patientId], references: [id])
+  practice         Practice?                    @relation(fields: [practiceId], references: [id])
+  uploadedBy       User                         @relation("UploadedDocuments", fields: [uploadedById], references: [id])
+  accessLogs       DocumentAccessLog[]
+  categories       DocumentCategoryAssignment[]
+  modificationLogs DocumentModificationLog[]
+  permissions      DocumentPermission[]
+  sharedLinks      DocumentSharedLink[]
+  tags             DocumentTagAssignment[]
+}
+
+model DocumentCategory {
+  id          String                       @id @default(cuid())
+  name        String                       @unique
+  description String?
+  createdAt   DateTime                     @default(now())
+  updatedAt   DateTime                     @updatedAt
+  documents   DocumentCategoryAssignment[]
+}
+
+model DocumentTag {
+  id        String                  @id @default(cuid())
+  name      String                  @unique
+  createdBy String
+  createdAt DateTime                @default(now())
+  documents DocumentTagAssignment[]
+}
+
+model DocumentCategoryAssignment {
+  documentId String
+  categoryId String
+  assignedAt DateTime         @default(now())
+  category   DocumentCategory @relation(fields: [categoryId], references: [id])
+  document   Document         @relation(fields: [documentId], references: [id])
+
+  @@id([documentId, categoryId])
+}
+
+model DocumentTagAssignment {
+  documentId String
+  tagId      String
+  assignedAt DateTime    @default(now())
+  document   Document    @relation(fields: [documentId], references: [id])
+  tag        DocumentTag @relation(fields: [tagId], references: [id])
+
+  @@id([documentId, tagId])
+}
+
+model DocumentPermission {
+  id             String         @id @default(cuid())
+  documentId     String
+  userId         String
+  permissionType PermissionType
+  grantedById    String
+  validFrom      DateTime       @default(now())
+  validUntil     DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  document       Document       @relation(fields: [documentId], references: [id])
+  grantedBy      User           @relation("PermissionGranter", fields: [grantedById], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+}
+
+model DocumentSharedLink {
+  id                 String              @id @default(cuid())
+  documentId         String
+  sharedById         String
+  accessToken        String              @unique
+  passwordHash       String?
+  expiresAt          DateTime?
+  maxAccessCount     Int?
+  currentAccessCount Int                 @default(0)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  accessLogs         DocumentAccessLog[]
+  document           Document            @relation(fields: [documentId], references: [id])
+  sharedBy           User                @relation(fields: [sharedById], references: [id])
+}
+
+model DocumentAccessLog {
+  id            String              @id @default(cuid())
+  documentId    String
+  userId        String?
+  accessType    AccessType
+  accessMethod  AccessMethod
+  sharedLinkId  String?
+  ipAddress     String
+  userAgent     String
+  success       Boolean
+  failureReason String?
+  accessedAt    DateTime            @default(now())
+  document      Document            @relation(fields: [documentId], references: [id])
+  sharedLink    DocumentSharedLink? @relation(fields: [sharedLinkId], references: [id])
+  user          User?               @relation(fields: [userId], references: [id])
+}
+
+model DocumentModificationLog {
+  id                String             @id @default(cuid())
+  documentId        String
+  userId            String
+  action            ModificationAction
+  previousVersionId String?
+  changesSummary    Json
+  modifiedAt        DateTime           @default(now())
+  document          Document           @relation(fields: [documentId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
+}
+
+model Activity {
+  id          String             @id @default(cuid())
+  name        String
+  description String
+  type        ActivityType
+  difficulty  ActivityDifficulty
+  ageRange    AgeRange
+  isPublic    Boolean            @default(false)
+  createdById String
+  practiceId  String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  createdBy   User               @relation(fields: [createdById], references: [id])
+  practice    Practice?          @relation(fields: [practiceId], references: [id])
+  files       ActivityFile[]
+  progress    ActivityProgress[]
+  assignments PatientActivity[]
+  categories  ActivityCategory[] @relation("ActivityToActivityCategory")
+}
+
+model ActivityFile {
+  id           String   @id @default(cuid())
+  activityId   String
+  name         String
+  s3Key        String
+  s3Url        String
+  fileType     String
+  sizeInBytes  Int
+  isPublic     Boolean  @default(false)
+  uploadedById String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  activity     Activity @relation(fields: [activityId], references: [id])
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+}
+
+model ActivityCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  activities  Activity[] @relation("ActivityToActivityCategory")
+}
+
+model PatientActivity {
+  id           String             @id @default(cuid())
+  patientId    String
+  activityId   String
+  assignedById String
+  startDate    DateTime           @default(now())
+  endDate      DateTime?
+  status       AssignmentStatus   @default(ACTIVE)
+  notes        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  progress     ActivityProgress[]
+  activity     Activity           @relation(fields: [activityId], references: [id])
+  assignedBy   User               @relation(fields: [assignedById], references: [id])
+  patient      Patient            @relation(fields: [patientId], references: [id])
+}
+
+model ActivityProgress {
+  id                String             @id @default(cuid())
+  patientActivityId String
+  patientId         String
+  activityId        String
+  date              DateTime           @default(now())
+  duration          Int
+  completionRate    Float
+  score             Int?
+  difficulty        ActivityDifficulty
+  notes             String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  activity          Activity           @relation(fields: [activityId], references: [id])
+  patientActivity   PatientActivity    @relation(fields: [patientActivityId], references: [id])
+  patient           Patient            @relation(fields: [patientId], references: [id])
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  tier               TierType  @default(FREE)
+  status             SubStatus @default(INACTIVE)
+  pagSeguroOrderId   String?
+  currentPeriodStart DateTime  @default(now())
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+enum UserRole {
+  OWNER
+  THERAPIST
 }
 
 enum PracticeRole {
@@ -259,82 +325,9 @@ enum MemberStatus {
   INACTIVE
 }
 
-// Patient model
-model Patient {
-  id                 String        @id @default(cuid())
-  firstName          String
-  lastName           String
-  dateOfBirth        DateTime
-  gender             String?
-  contactPhone       String?
-  contactEmail       String?
-  address            String?
-  medicalHistory     String?       @db.Text
-  status             PatientStatus @default(ACTIVE)
-  primaryTherapistId String
-  practiceId         String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-
-  // Relations
-  primaryTherapist User               @relation(fields: [primaryTherapistId], references: [id])
-  practice         Practice?          @relation(fields: [practiceId], references: [id])
-  progressNotes    ProgressNote[]
-  documents        Document[]
-  activities       PatientActivity[]
-  activityProgress ActivityProgress[]
-}
-
 enum PatientStatus {
   ACTIVE
   INACTIVE
-}
-
-// Progress Notes model
-model ProgressNote {
-  id              String   @id @default(cuid())
-  patientId       String
-  therapistId     String
-  sessionDate     DateTime
-  sessionDuration Int // in minutes
-  treatmentGoals  String   @db.Text
-  observations    String   @db.Text
-  progressMade    String   @db.Text
-  nextSteps       String   @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  // Relations
-  patient   Patient @relation(fields: [patientId], references: [id])
-  therapist User    @relation(fields: [therapistId], references: [id])
-}
-
-// Document management models
-model Document {
-  id           String             @id @default(cuid())
-  name         String
-  s3Key        String // S3 file key
-  s3Url        String // S3 public URL
-  fileType     DocumentType
-  sizeInBytes  Int
-  mimeType     String
-  visibility   DocumentVisibility @default(PRIVATE)
-  patientId    String?
-  practiceId   String?
-  uploadedById String
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-
-  // Relations
-  patient          Patient?                     @relation(fields: [patientId], references: [id])
-  practice         Practice?                    @relation(fields: [practiceId], references: [id])
-  uploadedBy       User                         @relation("UploadedDocuments", fields: [uploadedById], references: [id])
-  categories       DocumentCategoryAssignment[]
-  tags             DocumentTagAssignment[]
-  permissions      DocumentPermission[]
-  sharedLinks      DocumentSharedLink[]
-  accessLogs       DocumentAccessLog[]
-  modificationLogs DocumentModificationLog[]
 }
 
 enum DocumentType {
@@ -351,112 +344,11 @@ enum DocumentVisibility {
   PATIENT_VISIBLE
 }
 
-model DocumentCategory {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  documents DocumentCategoryAssignment[]
-}
-
-model DocumentTag {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdBy String
-  createdAt DateTime @default(now())
-
-  // Relations
-  documents DocumentTagAssignment[]
-}
-
-model DocumentCategoryAssignment {
-  documentId String
-  categoryId String
-  assignedAt DateTime @default(now())
-
-  // Relations
-  document Document         @relation(fields: [documentId], references: [id])
-  category DocumentCategory @relation(fields: [categoryId], references: [id])
-
-  @@id([documentId, categoryId])
-}
-
-model DocumentTagAssignment {
-  documentId String
-  tagId      String
-  assignedAt DateTime @default(now())
-
-  // Relations
-  document Document    @relation(fields: [documentId], references: [id])
-  tag      DocumentTag @relation(fields: [tagId], references: [id])
-
-  @@id([documentId, tagId])
-}
-
-// Document permissions and sharing
-model DocumentPermission {
-  id             String         @id @default(cuid())
-  documentId     String
-  userId         String
-  permissionType PermissionType
-  grantedById    String
-  validFrom      DateTime       @default(now())
-  validUntil     DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  // Relations
-  document  Document @relation(fields: [documentId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-  grantedBy User     @relation("PermissionGranter", fields: [grantedById], references: [id])
-}
-
 enum PermissionType {
   VIEW
   EDIT
   DELETE
   SHARE
-}
-
-model DocumentSharedLink {
-  id                 String    @id @default(cuid())
-  documentId         String
-  sharedById         String
-  accessToken        String    @unique
-  passwordHash       String?
-  expiresAt          DateTime?
-  maxAccessCount     Int?
-  currentAccessCount Int       @default(0)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  // Relations
-  document   Document            @relation(fields: [documentId], references: [id])
-  sharedBy   User                @relation(fields: [sharedById], references: [id])
-  accessLogs DocumentAccessLog[]
-}
-
-// Audit logging
-model DocumentAccessLog {
-  id            String       @id @default(cuid())
-  documentId    String
-  userId        String?
-  accessType    AccessType
-  accessMethod  AccessMethod
-  sharedLinkId  String?
-  ipAddress     String
-  userAgent     String
-  success       Boolean
-  failureReason String?
-  accessedAt    DateTime     @default(now())
-
-  // Relations
-  document   Document            @relation(fields: [documentId], references: [id])
-  user       User?               @relation(fields: [userId], references: [id])
-  sharedLink DocumentSharedLink? @relation(fields: [sharedLinkId], references: [id])
 }
 
 enum AccessType {
@@ -472,48 +364,11 @@ enum AccessMethod {
   SHARED_LINK
 }
 
-model DocumentModificationLog {
-  id                String             @id @default(cuid())
-  documentId        String
-  userId            String
-  action            ModificationAction
-  previousVersionId String?
-  changesSummary    Json
-  modifiedAt        DateTime           @default(now())
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id])
-  user     User     @relation(fields: [userId], references: [id])
-}
-
 enum ModificationAction {
   CREATE
   UPDATE
   DELETE
   RESTORE
-}
-
-// Activity models
-model Activity {
-  id          String             @id @default(cuid())
-  name        String
-  description String             @db.Text
-  type        ActivityType
-  difficulty  ActivityDifficulty
-  ageRange    AgeRange
-  isPublic    Boolean            @default(false)
-  createdById String
-  practiceId  String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  // Relations
-  createdBy   User               @relation(fields: [createdById], references: [id])
-  practice    Practice?          @relation(fields: [practiceId], references: [id])
-  files       ActivityFile[]
-  assignments PatientActivity[]
-  categories  ActivityCategory[]
-  progress    ActivityProgress[]
 }
 
 enum ActivityType {
@@ -533,59 +388,11 @@ enum ActivityDifficulty {
 }
 
 enum AgeRange {
-  TODDLER // 1-3
-  PRESCHOOL // 3-5
-  CHILD // 5-12
-  TEENAGER // 12-18
-  ADULT // 18+
-}
-
-model ActivityFile {
-  id           String   @id @default(cuid())
-  activityId   String
-  name         String
-  s3Key        String // S3 file key
-  s3Url        String // S3 public URL
-  fileType     String // MIME type
-  sizeInBytes  Int
-  isPublic     Boolean  @default(false)
-  uploadedById String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  activity   Activity @relation(fields: [activityId], references: [id])
-  uploadedBy User     @relation(fields: [uploadedById], references: [id])
-}
-
-model ActivityCategory {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  activities Activity[]
-}
-
-model PatientActivity {
-  id           String           @id @default(cuid())
-  patientId    String
-  activityId   String
-  assignedById String
-  startDate    DateTime         @default(now())
-  endDate      DateTime?
-  status       AssignmentStatus @default(ACTIVE)
-  notes        String?          @db.Text
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-
-  // Relations
-  patient    Patient            @relation(fields: [patientId], references: [id])
-  activity   Activity           @relation(fields: [activityId], references: [id])
-  assignedBy User               @relation(fields: [assignedById], references: [id])
-  progress   ActivityProgress[]
+  TODDLER
+  PRESCHOOL
+  CHILD
+  TEENAGER
+  ADULT
 }
 
 enum AssignmentStatus {
@@ -593,39 +400,6 @@ enum AssignmentStatus {
   COMPLETED
   PAUSED
   CANCELLED
-}
-
-model ActivityProgress {
-  id                String             @id @default(cuid())
-  patientActivityId String
-  patientId         String
-  activityId        String
-  date              DateTime           @default(now())
-  duration          Int // in minutes
-  completionRate    Float // percentage
-  score             Int? // optional score if activity has scoring
-  difficulty        ActivityDifficulty
-  notes             String?            @db.Text
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  // Relations
-  patientActivity PatientActivity @relation(fields: [patientActivityId], references: [id])
-  patient         Patient         @relation(fields: [patientId], references: [id])
-  activity        Activity        @relation(fields: [activityId], references: [id])
-}
-
-// prisma/schema.prisma
-model Subscription {
-  id                 String    @id @default(cuid())
-  userId             String    @unique
-  tier               TierType  @default(FREE)
-  status             SubStatus @default(INACTIVE)
-  pagSeguroOrderId   String?
-  currentPeriodStart DateTime  @default(now())
-  currentPeriodEnd   DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
 }
 
 enum TierType {

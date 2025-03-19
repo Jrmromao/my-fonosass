@@ -192,3 +192,5 @@ export type Plan = {
     cta: string
     trial: string
 }
+
+export type AppleType =  {id: string, x: number, y: number, rotate?: number, scale?: number, phoneme: string, size: number}

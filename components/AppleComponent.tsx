@@ -21,7 +21,7 @@ const AppleComponent: React.FC<AppleComponentProps> = ({
     return (
         <g
             transform={`translate(${x}, ${y})`}
-            className="transition-transform duration-200 hover:animate-[tremble_0.2s_ease-in-out_infinite]"
+            className="transition-transform duration-200 hover:animate-[tremble_0.2s_ease-in-out_infinite] cursor-pointer data-h"
             onClick={handleAppleClick}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
