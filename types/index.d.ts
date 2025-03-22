@@ -2,6 +2,15 @@
 import { Prisma } from '@prisma/client'
 
 declare global {
+
+    type ActionResponse<T> = {
+        data?: T;
+        error?: string;
+        message?: string;
+        success?: boolean;
+        redirectUrl?: string;
+    };
+
     type User = Prisma.UserGetPayload<{
         include: { role: true; practice: true; patients: true; assessments: true }
     }>

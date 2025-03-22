@@ -9,6 +9,34 @@ export const registerSchema = z.object({
     roleId: z.string()
 })
 
+
+ const createUserSchema = z.object({
+    email: z.string().email("Invalid email address"),
+    fullName: z.string().min(3, "Full name must be at least 3 characters"),
+    phone: z.string().optional(),
+    role: z.enum(["ADMIN", "THERAPIST", "STAFF"]).default("THERAPIST"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    practiceId: z.string().uuid("Invalid practice ID")
+});
+
+
+export const practiceSchema = z.object({
+    name: z.string().min(3, "Practice name must be at least 3 characters"),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
+    phone: z.string().optional(),
+    email: z.string().email("Invalid email address").optional(),
+    website: z.string().url().optional().nullable(),
+    logo: z.string().optional().nullable(),
+    primaryColor: z.string().optional().nullable(),
+    secondaryColor: z.string().optional().nullable(),
+    description: z.string().optional().nullable(),
+    active: z.boolean().default(true)
+});
+
+
 // export const patientSchema = z.object({
 //     name: z.string().min(2, {
 //         message: "Nome deve ter pelo menos 2 caracteres.",
@@ -111,10 +139,10 @@ export const assessmentSchema = z.object({
     date: z.date().default(() => new Date())
 })
 
-export const practiceSchema = z.object({
-    name: z.string().min(2),
-    planId: z.string()
-})
+// export const practiceSchema = z.object({
+//     name: z.string().min(2),
+//     planId: z.string()
+// })
 
 
 
@@ -124,3 +152,4 @@ export type PatientInput = z.infer<typeof patientSchema>
 export type ActivityInput = z.infer<typeof activitySchema>
 export type AssessmentInput = z.infer<typeof assessmentSchema>
 export type PracticeInput = z.infer<typeof practiceSchema>
+export type UserInput = z.infer<typeof createUserSchema>

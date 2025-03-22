@@ -313,6 +313,7 @@ model Subscription {
 enum UserRole {
   OWNER
   THERAPIST
+  ADMIN
 }
 
 enum PracticeRole {
