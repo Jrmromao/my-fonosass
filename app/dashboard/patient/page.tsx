@@ -1,4 +1,5 @@
 import {NewPatientDialog} from "@/components/dialogs/new-patient-dialog"
+import React from "react";
 
 export default async function PatientsPage() {
     // Add console.log to see what's happening
@@ -23,7 +24,6 @@ export default async function PatientsPage() {
             </div>
 
             {/* Remove Suspense temporarily for debugging */}
-            {/*<PatientsTable initialData={patients} />*/}
 
             {/* Add this to see if data is available */}
             <div className="hidden">

@@ -22,17 +22,24 @@ import { CustomInput } from "@/components/form/CustomInput"
 import { CustomTextarea } from "@/components/form/CustomTextarea"
 import { Dropzone } from "@/components/Dropzone"
 import { createActivity } from "@/lib/actions/activity.action"
+import { CustomSelect } from "@/components/form/CustomSelect"
+import phonemes from "@/utils/phonemeList"
 
 // Form schema (client-side only)
 const activitySchema = z.object({
     name: z.string().min(2, "Nome é obrigatório"),
-    description: z.string().min(10, "Descrição é obrigatória"),
+    description: z.string().optional(),
+    phoneme: z.string().min(1, "Phoneme é obrigatório"),
     files: z.array(z.instanceof(File)).optional()
 })
 
 type FormValues = z.infer<typeof activitySchema>
 
-export function NewActivityDialog() {
+interface NewActivityDialogProps {
+    onSuccess?: () => void;
+}
+
+export function NewActivityDialog({ onSuccess }: NewActivityDialogProps) {
     const [open, setOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -41,6 +48,7 @@ export function NewActivityDialog() {
         defaultValues: {
             name: "",
             description: "",
+            phoneme: "",
             files: []
         }
     })
@@ -56,7 +64,8 @@ export function NewActivityDialog() {
             // Create a FormData object for safer file handling
             const formData = new FormData();
             formData.append("name", values.name.trim());
-            formData.append("description", values.description.trim());
+            formData.append("description", values?.description?.trim() || "");
+            formData.append("phoneme", values.phoneme.trim());
             formData.append("type", "OTHER");
             formData.append("difficulty", "BEGINNER");
             formData.append("ageRange", "TODDLER");
@@ -69,9 +78,6 @@ export function NewActivityDialog() {
                 });
             }
 
-            // Log the keys being sent in FormData
-            console.log("Submitting form data with keys:", Array.from(formData.keys()));
-
             const result = await createActivity(formData);
 
             if (result.success) {
@@ -79,6 +85,12 @@ export function NewActivityDialog() {
                     title: "Atividade criada com sucesso!",
                     description: "A nova atividade foi salva.",
                 });
+
+                // Call onSuccess callback if provided
+                if (onSuccess) {
+                    onSuccess();
+                }
+
                 form.reset();
                 setOpen(false);
             } else {
@@ -126,6 +138,8 @@ export function NewActivityDialog() {
                             placeholder="Nome da atividade"
                             required
                         />
+
+                        <CustomSelect control={form.control} name={"phoneme"} label={"Fonema"} options={phonemes} required/>
 
                         <CustomTextarea
                             control={form.control}

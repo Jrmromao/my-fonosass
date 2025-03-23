@@ -15,7 +15,6 @@ import {Button} from "@/components/ui/button";
 import {Calendar, Clock, Filter, Search, User2} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-// ... your other imports ...
 
 interface PatientTableClientProps {
     initialData: PatientListItem[]

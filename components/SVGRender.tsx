@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useTransition } from 'react';
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -6,25 +6,52 @@ import {
     AlertDialogDescription,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FileDown, Volume2, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 import SvgImage from "@/components/SVGImage";
 import AppleComponent from "@/components/AppleComponent";
 import { AppleType } from "@/types/types";
+import { Activity, ActivityType, ActivityDifficulty, AgeRange } from "@prisma/client";
+import { getActivitiesByPhoneme } from "@/lib/actions/activity.action";
+import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
+import { cn } from "@/lib/utils";
 
-// Make sure AppleComponent expects handleAppleClick as a prop
-// If you're seeing a type error, you may need to update your AppleType interface or component props:
+// Define an extended Activity type that includes files
+interface ActivityWithFiles extends Activity {
+    files?: Array<{
+        id: string;
+        name: string;
+        activityId: string;
+        s3Key: string;
+        s3Url: string;
+        fileType: string;
+        sizeInBytes: number;
+        uploadedById: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+}
 
 const SVGRender = () => {
     const [selectedApple, setSelectedApple] = useState<AppleType | null>(null);
-
-    // Memoize the event handler to prevent unnecessary re-creation
-    const handleAppleClick = useCallback((apple: AppleType) => {
-        setSelectedApple(apple);
-    }, []);
+    const [activities, setActivities] = useState<ActivityWithFiles[]>([]);
+    const [isPending, startTransition] = useTransition();
+    const [isLoading, setIsLoading] = useState(false);
+    const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+    const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
 
     // Memoize the close function
     const closeModal = useCallback(() => {
         setSelectedApple(null);
+        setActivities([]);
+        setDownloadingFileId(null);
+        setDownloadSuccess(null);
+        setDownloadError(null);
     }, []);
 
     // Memoize the random number generator to ensure stable reference
@@ -72,6 +99,89 @@ const SVGRender = () => {
         return messages[phoneme] || `An apple representing the "${phoneme}" sound.`;
     }, []);
 
+    // Function to download a file
+    const handleFileDownload = async (fileId: string, fileName: string) => {
+        try {
+            setDownloadingFileId(fileId);
+            setDownloadError(null);
+
+            const result = await getFileDownloadUrl({ fileId });
+
+            if (result.success) {
+                // Create a temporary link element
+                const link = document.createElement('a');
+                //@ts-ignore
+                link.href = result.url;
+                const safeFileName = fileName || `activity-${fileId}.pdf`;
+                link.setAttribute('download', safeFileName);
+
+                // Required for Firefox
+                document.body.appendChild(link);
+
+                // Trigger download
+                link.click();
+
+                // Cleanup
+                document.body.removeChild(link);
+
+                // Show success state briefly
+                setDownloadSuccess(fileId);
+                setTimeout(() => {
+                    setDownloadSuccess(null);
+                }, 2000);
+            } else {
+                setDownloadError(fileId);
+                setTimeout(() => {
+                    setDownloadError(null);
+                }, 3000);
+            }
+        } catch (error) {
+            console.error("Download failed:", error);
+            setDownloadError(fileId);
+            setTimeout(() => {
+                setDownloadError(null);
+            }, 3000);
+        } finally {
+            setDownloadingFileId(null);
+        }
+    };
+
+    // Helper function to get badge variants based on difficulty
+    const getDifficultyVariant = (difficulty: ActivityDifficulty) => {
+        switch (difficulty) {
+            case "BEGINNER":
+                return "success";
+            case "INTERMEDIATE":
+                return "warning";
+            case "ADVANCED":
+                return "destructive";
+            default:
+                return "secondary";
+        }
+    };
+
+    // Helper function to get badge variants based on type
+    const getTypeVariant = (type: ActivityType) => {
+        switch (type) {
+            default:
+                return "secondary";
+        }
+    };
+
+    // Helper function to get badge variants based on age range
+    const getAgeRangeVariant = (ageRange: AgeRange) => {
+        switch (ageRange) {
+            case "TODDLER":
+                return "success";
+            case "PRESCHOOL":
+                return "warning";
+            case "ADULT":
+                return "default";
+            default:
+                return "secondary";
+        }
+    };
+
     // Memoize the groundApples array - only created once
     const groundApples = useMemo(() => [
         {id: "ground-1", x: 350, y: 680, rotate: 15, scale: 1.1, phoneme: "Be", size: getRandomNumber(17, 30)},
@@ -108,13 +218,28 @@ const SVGRender = () => {
         {id: "tree-23", x: 600, y: 390, size: getRandomNumber(17, 30), phoneme: "N"}
     ], [getRandomNumber]); // Depends only on the getRandomNumber function
 
-    // There are two ways to fix the type error with handleAppleClick:
-
-    // Option 1: Use the original approach from your code
-    // This will work if your AppleComponent is already set up to accept this prop
+    // Handle apple click with server action call
     const handleAppleClickForApple = useCallback((apple: AppleType) => {
         return () => {
+            setIsLoading(true);
             setSelectedApple(apple);
+
+            startTransition(async () => {
+                try {
+                    // Call the server action to get activities for this phoneme
+                    const result = await getActivitiesByPhoneme({
+                        phoneme: apple.phoneme,
+                        includePrivate: false,
+                        limit: 5 // Limit to 5 activities for now
+                    });
+
+                    setActivities(result.items as unknown as ActivityWithFiles[]);
+                } catch (error) {
+                    console.error("Error fetching activities:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            });
         };
     }, []);
 
@@ -150,18 +275,129 @@ const SVGRender = () => {
                 </svg>
             </div>
 
-            {/* Modal dialog with improved rendering control */}
+            {/* Modal dialog with activities */}
             <AlertDialog open={selectedApple !== null} onOpenChange={closeModal}>
-                <AlertDialogContent>
+                <AlertDialogContent className="max-w-md max-h-[80vh] overflow-auto">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {selectedApple ? `Phoneme #${selectedApple.phoneme}` : 'Apple'}
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <div className="bg-purple-100 text-purple-600 p-1 rounded-full">
+                                <Volume2 className="h-4 w-4" />
+                            </div>
+                            {selectedApple ? `Phoneme "${selectedApple.phoneme}"` : 'Apple'}
                         </AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogDescription className="text-slate-600">
                             {selectedApple && getAppleMessage(selectedApple.phoneme)}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogCancel>Close</AlertDialogCancel>
+
+                    <div className="py-2">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-medium text-slate-800">Activities</h3>
+                            {activities.length > 0 && (
+                                <Badge variant="outline" className="bg-primary/5">
+                                    {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+                                </Badge>
+                            )}
+                        </div>
+
+                        {isPending || isLoading ? (
+                            <div className="flex justify-center py-8">
+                                <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
+                            </div>
+                        ) : activities.length > 0 ? (
+                            <ul className="space-y-3">
+                                {activities.map((activity) => (
+                                    <li key={activity.id} className="bg-slate-50 p-4 rounded-lg border border-slate-100 transition-all hover:shadow-sm">
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="font-semibold text-slate-800">{activity.name}</h4>
+
+                                            {/* Files download button - only shown if activity has files */}
+                                            {activity.files && activity.files.length > 0 && activity.files[0] && (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className={cn(
+                                                                    "ml-2 h-8 px-2 flex items-center gap-1",
+                                                                    downloadSuccess === activity.files[0].id && "bg-green-50 text-green-600 border-green-200",
+                                                                    downloadError === activity.files[0].id && "bg-red-50 text-red-600 border-red-200"
+                                                                )}
+                                                                onClick={() => {
+                                                                    const file = activity.files?.[0];
+                                                                    if (file?.id && file?.name) {
+                                                                        handleFileDownload(file.id, file.name);
+                                                                    }
+                                                                }}
+
+                                                                disabled={downloadingFileId === activity.files[0].id}
+                                                            >
+                                                                {downloadingFileId === activity.files[0].id ? (
+                                                                    <>
+                                                                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                                                        <span className="text-xs">Downloading...</span>
+                                                                    </>
+                                                                ) : downloadSuccess === activity.files[0].id ? (
+                                                                    <>
+                                                                        <CheckCircle2 className="h-3 w-3" />
+                                                                        <span className="text-xs">Downloaded</span>
+                                                                    </>
+                                                                ) : downloadError === activity.files[0].id ? (
+                                                                    <>
+                                                                        <XCircle className="h-3 w-3" />
+                                                                        <span className="text-xs">Failed</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <FileDown className="h-3 w-3" />
+                                                                        <span className="text-xs">PDF</span>
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Download activity PDF</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+                                        </div>
+
+                                        <p className="text-sm text-slate-600 mt-1 line-clamp-2">{activity.description}</p>
+
+                                        <div className="flex gap-2 mt-3">
+                                            <Badge variant={getTypeVariant(activity.type) as any} className="text-xs font-normal">
+                                                {activity.type}
+                                            </Badge>
+                                            <Badge variant={getDifficultyVariant(activity.difficulty) as any} className="text-xs font-normal">
+                                                {activity.difficulty}
+                                            </Badge>
+                                            <Badge variant={getAgeRangeVariant(activity.ageRange) as any} className="text-xs font-normal">
+                                                {activity.ageRange}
+                                            </Badge>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div className="text-center py-8 px-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                                <XCircle className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+                                <p className="text-slate-500 mb-1">No activities found</p>
+                                <p className="text-sm text-slate-400">There are no activities for this phoneme yet.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <AlertDialogFooter className="pt-2 gap-2">
+                        <AlertDialogCancel className="mt-0">Close</AlertDialogCancel>
+                        {activities.length > 0 && (
+                            <Button variant="default" className="gap-1">
+                                <ExternalLink className="h-4 w-4" />
+                                View All Activities
+                            </Button>
+                        )}
+                    </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         </div>

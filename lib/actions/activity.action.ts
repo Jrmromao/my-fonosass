@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+import {$Enums, ActivityDifficulty, AgeRange, PrismaClient} from "@prisma/client";
 import S3Service from "@/services/S3Service";
 import {auth} from "@clerk/nextjs/server";
+import ActivityType = $Enums.ActivityType;
 
 
 const prisma = new PrismaClient();
@@ -52,17 +53,18 @@ export async function createActivity(formData: FormData) {
         const difficulty = (formData.get("difficulty") as string) || "BEGINNER";
         const ageRange = (formData.get("ageRange") as string) || "ADULT";
         const isPublic = formData.get("isPublic") === "true";
-
+        const phoneme = formData.get("phoneme") as string;
         // Create activity in database
         const activity = await prisma.activity.create({
             data: {
                 name,
                 description,
+                phoneme,
                 type: type as "SPEECH" | "LANGUAGE" | "COGNITIVE" | "MOTOR" | "SOCIAL" | "OTHER",
                 difficulty: difficulty as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT",
                 ageRange: ageRange as "TODDLER" | "PRESCHOOL" | "CHILD" | "TEENAGER" | "ADULT",
                 isPublic,
-                createdBy: { connect: { clerkUserId: userId} } // Replace with actual user
+                createdBy: { connect: { clerkUserId: userId} }
             },
         });
 
@@ -86,7 +88,7 @@ export async function createActivity(formData: FormData) {
                     try {
                         const buffer = Buffer.from(await file.arrayBuffer());
                         const s3Result = await s3Service.uploadFile(
-                            "activities_2",
+                            userId,
                             `${activity.id}/${file.name}`,
                             buffer,
                             file.type
@@ -96,7 +98,7 @@ export async function createActivity(formData: FormData) {
                             data: {
                                 activityId: activity.id,
                                 name: file.name,
-                                s3Key: `activities_2/${activity.id}/${file.name}`,
+                                s3Key: `${userId}/${activity.id}/${file.name}`,
                                 s3Url: s3Result.Location || "",
                                 fileType: file.type,
                                 sizeInBytes: buffer.length,
@@ -110,7 +112,7 @@ export async function createActivity(formData: FormData) {
             }
         }
 
-        const bucketObjects = await s3Service.listFiles("activities_2");
+        const bucketObjects = await s3Service.listFiles(userId);
 
         console.log(bucketObjects)
 
@@ -220,6 +222,8 @@ export async function getActivities({
             orderBy: { createdAt: 'desc' },
         });
 
+
+        console.log(activities[0].files[0].s3Url)
         return {
             success: true,
             activities,
@@ -427,6 +431,114 @@ export async function deleteActivityFile(activityId: string, fileId: string) {
     }
 }
 
+
+
+export interface GetActivitiesByPhonemeParams {
+    phoneme: string
+    includePrivate?: boolean
+    limit?: number
+    cursor?: string
+    categoryIds?: string[]
+    types?: ActivityType[]
+    difficulties?: ActivityDifficulty[]
+    ageRanges?: AgeRange[]
+}
+
+export async function getActivitiesByPhoneme({
+                                                 phoneme,
+                                                 includePrivate = false,
+                                                 limit = 10,
+                                                 cursor,
+                                                 categoryIds = [],
+                                                 types = [],
+                                                 difficulties = [],
+                                                 ageRanges = [],
+                                             }: GetActivitiesByPhonemeParams) {
+    try {
+        const { userId } = await auth()
+
+        if (!phoneme) {
+            return {
+                items: [],
+                nextCursor: null,
+            }
+        }
+
+        // Build where conditions
+        const where: any = {
+            phoneme,
+            // If includePrivate is true and user is authenticated, include their private activities
+            // Otherwise only include public activities
+            OR: [
+                { isPublic: true },
+                ...(includePrivate && userId ? [{ createdById: userId, isPublic: false }] : []),
+            ],
+        }
+
+        // Add optional filters
+        if (categoryIds.length > 0) {
+            where.categories = {
+                some: {
+                    categoryId: {
+                        in: categoryIds,
+                    },
+                },
+            }
+        }
+
+        if (types.length > 0) {
+            where.type = {
+                in: types,
+            }
+        }
+
+        if (difficulties.length > 0) {
+            where.difficulty = {
+                in: difficulties,
+            }
+        }
+
+        if (ageRanges.length > 0) {
+            where.ageRange = {
+                in: ageRanges,
+            }
+        }
+
+        // If cursor is provided, fetch items after that cursor
+        if (cursor) {
+            where.id = {
+                gt: cursor,
+            }
+        }
+
+        // Query activities
+        const items = await prisma.activity.findMany({
+            where,
+            take: limit + 1, // Fetch one more to determine if there are more items
+            orderBy: {
+                createdAt: 'desc',
+            },
+            include: {
+                files: true,
+            },
+        })
+
+        // Check if there are more items
+        let nextCursor: string | null = null
+        if (items.length > limit) {
+            const nextItem = items.pop()
+            nextCursor = nextItem?.id ?? null
+        }
+
+        return {
+            items,
+            nextCursor,
+        }
+    } catch (error) {
+        console.error("Failed to fetch activities by phoneme:", error)
+        throw new Error("Failed to fetch activities by phoneme")
+    }
+}
 /**
  * Get activity categories
  */
