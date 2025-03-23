@@ -1,378 +1,447 @@
-"use server"
+"use server";
 
-import { prisma } from "@/db"
-import { revalidatePath } from "next/cache"
-import { Prisma } from "@prisma/client"
-import {validateAuthentication} from "@/lib/actions/authValidation.action";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
+import S3Service from "@/services/S3Service";
+import {auth} from "@clerk/nextjs/server";
 
-interface CreateActivityParams {
-    name: string
-    description: string
-    // type: ActivityType
-    // difficulty: ActivityDifficulty
-    // ageRange: AgeRange
-    files?: File[]
-    isPublic?: boolean
-}
+
+const prisma = new PrismaClient();
+const s3Service = S3Service.getInstance();
+
+// Validation schemas
+const activitySchema = z.object({
+    name: z.string().min(2, "Name is required"),
+    description: z.string().min(10, "Description is required"),
+    type: z.enum(["SPEECH", "LANGUAGE", "COGNITIVE", "MOTOR", "SOCIAL", "OTHER"]),
+    difficulty: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]),
+    ageRange: z.enum(["TODDLER", "PRESCHOOL", "CHILD", "TEENAGER", "ADULT"]),
+    isPublic: z.boolean().default(true),
+    files: z.array(z.instanceof(File)).optional(),
+    categoryIds: z.array(z.string()).optional(),
+});
+
+type ActivityFormData = z.infer<typeof activitySchema>;
+
+type ActivityInput = {
+    name: string;
+    description: string;
+    type: "SPEECH" | "LANGUAGE" | "COGNITIVE" | "MOTOR" | "SOCIAL" | "OTHER";
+    difficulty: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
+    ageRange: "TODDLER" | "PRESCHOOL" | "CHILD" | "TEENAGER" | "ADULT";
+    isPublic: boolean;
+    files: File[];
+};
 
 /**
  * Create a new activity
  */
-export async function createActivity(params: CreateActivityParams): Promise<ActionResponse<any>> {
-    const auth = await validateAuthentication()
-
-    if (!auth.success) {
-        return {
-            success: false,
-            error: auth.error || "Authentication failed"
-        }
-    }
-
+export async function createActivity(formData: FormData) {
     try {
-        console.log(params)
-        const {
-            name,
-            description,
-            // type,
-            // difficulty,
-            // ageRange,
-            files = [],
-            isPublic = false
-        } = params
-
-        // save files in S3
-        // create s3 bucket with the practice id as the name
-
-        // const activity = await prisma.activity.create({
-        //     data: {
-        //         name: name,
-        //         description: description,
-        //         // type: type,
-        //         // difficulty: difficulty,
-        //         // ageRange: ageRange,
-        //         isPublic: isPublic,
-        //         createdById: auth.user.id,
-        //         practiceId: auth.practice.practiceId,
-        //     }
-        // })
-
-        if (files.length > 0) {
-            // File upload logic here
+        // Get user authentication
+        const { userId } = await  auth();
+        if (!userId) {
+            return { success: false, error: "Unauthorized" };
         }
 
-        revalidatePath('/dashboard/activities')
+        // Extract data from FormData
+        const name = formData.get("name") as string;
+        const description = formData.get("description") as string;
+        const type = (formData.get("type") as string) || "OTHER";
+        const difficulty = (formData.get("difficulty") as string) || "BEGINNER";
+        const ageRange = (formData.get("ageRange") as string) || "ADULT";
+        const isPublic = formData.get("isPublic") === "true";
 
-        return {
-            success: true,
-            data: {},
-            message: "Activity created successfully",
-            redirectUrl: `/dashboard/activities/`
-        }
-
-    } catch (error: any) {
-        console.error("Error creating activity:", error)
-        return {
-            success: false,
-            error: error.message || "Failed to create activity"
-        }
-    }
-}
-
-interface GetActivitiesParams {
-    search?: string
-    // type?: ActivityType
-    // difficulty?: ActivityDifficulty
-    // ageRange?: AgeRange
-    createdById?: string
-    page?: number
-    limit?: number
-}
-
-/**
- * Get activities with optional filtering
- */
-export async function getActivities(params: GetActivitiesParams = {}): Promise<ActionResponse<any[]>> {
-    const auth = await validateAuthentication()
-
-    if (!auth.success) {
-        return {
-            success: false,
-            error: auth.error || "Authentication failed"
-        }
-    }
-
-    try {
-        const {
-            search = "",
-            // type,
-            // difficulty,
-            // ageRange,
-            createdById,
-            page = 1,
-            limit = 20
-        } = params
-
-        const where: Prisma.ActivityWhereInput = {
-            practiceId: auth.practice.practiceId,
-            ...(search ? {
-                OR: [
-                    { name: { contains: search, mode: 'insensitive' } as Prisma.StringFilter<"Activity"> },
-                    { description: { contains: search, mode: 'insensitive' } as Prisma.StringFilter<"Activity"> }
-                ]
-            } : {}),
-            // ...(type && { type }),
-            // ...(difficulty && { difficulty }),
-            // ...(ageRange && { ageRange }),
-            ...(createdById && { createdById })
-        }
-
-        const [activities, total] = await Promise.all([
-            prisma.activity.findMany({
-                where,
-                include: {
-                    createdBy: {
-                        select: {
-                            id: true,
-                            // name: true,
-                            // image: true
-                        }
-                    },
-                    files: true,
-                    categories: {
-                        include: {
-                            // category: true
-                        }
-                    },
-                    _count: {
-                        select: {
-                            assignments: true,
-                            progress: true
-                        }
-                    }
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                },
-                skip: (page - 1) * limit,
-                take: limit
-            }),
-            prisma.activity.count({ where })
-        ])
-
-        const totalPages = Math.ceil(total / limit)
-        const hasMore = page < totalPages
-        const hasPrev = page > 1
-
-        return {
-            success: true,
-            data: activities,
-            // pagination: {
-            //     total,
-            //     currentPage: page,
-            //     totalPages,
-            //     hasMore,
-            //     hasPrev,
-            //     limit
-            // }
-        }
-
-    } catch (error: any) {
-        console.error("Error fetching activities:", error)
-        return {
-            success: false,
-            error: error.message || "Failed to fetch activities"
-        }
-    }
-}
-
-/**
- * Get activity by ID
- */
-export async function getActivityById(activityId: string): Promise<ActionResponse<any>> {
-    const auth = await validateAuthentication()
-
-    if (!auth.success) {
-        return {
-            success: false,
-            error: auth.error || "Authentication failed"
-        }
-    }
-
-    try {
-        const activity = await prisma.activity.findUnique({
-            where: {
-                id: activityId,
-                practiceId: auth.practice.practiceId
+        // Create activity in database
+        const activity = await prisma.activity.create({
+            data: {
+                name,
+                description,
+                type: type as "SPEECH" | "LANGUAGE" | "COGNITIVE" | "MOTOR" | "SOCIAL" | "OTHER",
+                difficulty: difficulty as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT",
+                ageRange: ageRange as "TODDLER" | "PRESCHOOL" | "CHILD" | "TEENAGER" | "ADULT",
+                isPublic,
+                createdBy: { connect: { clerkUserId: userId} } // Replace with actual user
             },
-            include: {
-                createdBy: {
-                    select: {
-                        id: true,
-                        // name: true,
-                        // image: true
-                    }
-                },
-                files: true,
-                categories: {
-                    include: {
-                        // category: true
-                    }
-                },
-                _count: {
-                    select: {
-                        assignments: true,
-                        progress: true
+        });
+
+
+        // Extract files from FormData
+        const fileEntries = Array.from(formData.entries())
+            .filter(([key]) => key.startsWith("file-"))
+            .map(([_, file]) => file);
+
+        // Process files
+        if (fileEntries.length > 0) {
+            const user = await prisma.user.findUnique({
+                where: { clerkUserId: userId},
+                select: { id: true }
+            });
+
+            if (user) {
+                for (const file of fileEntries) {
+                    if (!(file instanceof File)) continue;
+
+                    try {
+                        const buffer = Buffer.from(await file.arrayBuffer());
+                        const s3Result = await s3Service.uploadFile(
+                            "activities_2",
+                            `${activity.id}/${file.name}`,
+                            buffer,
+                            file.type
+                        );
+
+                        await prisma.activityFile.create({
+                            data: {
+                                activityId: activity.id,
+                                name: file.name,
+                                s3Key: `activities_2/${activity.id}/${file.name}`,
+                                s3Url: s3Result.Location || "",
+                                fileType: file.type,
+                                sizeInBytes: buffer.length,
+                                uploadedById: user.id,
+                            },
+                        });
+                    } catch (fileError) {
+                        console.error("Error processing file:", fileError);
                     }
                 }
             }
-        })
-
-        if (!activity) {
-            return {
-                success: false,
-                error: "Activity not found"
-            }
         }
+
+        const bucketObjects = await s3Service.listFiles("activities_2");
+
+        console.log(bucketObjects)
+
+        revalidatePath("/activities");
+        revalidatePath("/dashboard/games");
+
+        return { success: true, activity };
+    } catch (error) {
+        console.error("Error creating activity:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to create activity"
+        };
+    }
+}
+// Separate function for file uploads to avoid serialization issues
+async function uploadActivityFiles(activityId: string, files: File[], userId: string) {
+    if (!files || !Array.isArray(files) || files.length === 0) return;
+
+    try {
+        await Promise.all(
+            files.map(async (file) => {
+                const buffer = Buffer.from(await file.arrayBuffer());
+                const s3Result = await s3Service.uploadFile(
+                    "activities",
+                    `${activityId}/${file.name}`,
+                    buffer,
+                    file.type
+                );
+
+                const user = await prisma.user.findUnique({
+                    where: { clerkUserId: userId },
+                });
+
+                if (!user) throw new Error("User not found");
+
+                await prisma.activityFile.create({
+                    data: {
+                        activityId: activityId,
+                        name: file.name,
+                        s3Key: `activities/${activityId}/${file.name}`,
+                        s3Url: s3Result.Location || "",
+                        fileType: file.type,
+                        sizeInBytes: buffer.length,
+                        uploadedById: user.id,
+                    },
+                });
+            })
+        );
+    } catch (error) {
+        console.error("Error uploading files:", error);
+        throw error;
+    }
+}
+
+
+/**
+ * Get activities with filtering and pagination
+ */
+export async function getActivities({
+                                        page = 1,
+                                        limit = 10,
+                                        type,
+                                        difficulty,
+                                        ageRange,
+                                        categoryId,
+                                        searchTerm,
+                                    }: {
+    page?: number;
+    limit?: number;
+    type?: string;
+    difficulty?: string;
+    ageRange?: string;
+    categoryId?: string;
+    searchTerm?: string;
+}) {
+    try {
+        // Build filter conditions
+        const where: any = { isPublic: true };
+
+        if (type) where.type = type;
+        if (difficulty) where.difficulty = difficulty;
+        if (ageRange) where.ageRange = ageRange;
+        if (searchTerm) {
+            where.OR = [
+                { name: { contains: searchTerm, mode: 'insensitive' } },
+                { description: { contains: searchTerm, mode: 'insensitive' } },
+            ];
+        }
+        if (categoryId) {
+            where.categories = { some: { id: categoryId } };
+        }
+
+        // Count total for pagination
+        const total = await prisma.activity.count({ where });
+
+        // Fetch activities with pagination
+        const activities = await prisma.activity.findMany({
+            where,
+            include: {
+                files: { take: 1 }, // Just get first file for thumbnail
+                categories: true,
+                createdBy: { select: { fullName: true } },
+            },
+            take: limit,
+            skip: (page - 1) * limit,
+            orderBy: { createdAt: 'desc' },
+        });
 
         return {
             success: true,
-            data: activity
-        }
-
-    } catch (error: any) {
-        console.error("Error fetching activity:", error)
+            activities,
+            pagination: {
+                total,
+                pages: Math.ceil(total / limit),
+                page,
+                limit
+            }
+        };
+    } catch (error) {
+        console.error("Error fetching activities:", error);
         return {
             success: false,
-            error: error.message || "Failed to fetch activity"
-        }
+            error: error instanceof Error ? error.message : "Failed to fetch activities"
+        };
     }
 }
 
 /**
  * Update an existing activity
  */
-export async function updateActivity(
-    activityId: string,
-    params: Partial<CreateActivityParams>
-): Promise<ActionResponse<any>> {
-    const auth = await validateAuthentication()
-
-    if (!auth.success) {
-        return {
-            success: false,
-            error: auth.error || "Authentication failed"
-        }
-    }
-
+export async function updateActivity(id: string, formData: ActivityFormData) {
     try {
-        // First check if activity exists and belongs to this practice
-        const existingActivity = await prisma.activity.findUnique({
-            where: {
-                id: activityId,
-                practiceId: auth.practice.practiceId
-            }
-        })
-
-        if (!existingActivity) {
-            return {
-                success: false,
-                error: "Activity not found or you don't have permission to edit it"
-            }
+        // Validate user authentication
+        const { userId } = await auth();
+        if (!userId) {
+            throw new Error("Unauthorized");
         }
 
-        const {
-            name,
-            description,
-            // type,
-            // difficulty,
-            // ageRange,
-            files = [],
-            isPublic
-        } = params
+        // Check if activity exists and user has permission
+        const activity = await prisma.activity.findUnique({
+            where: { id },
+            include: { createdBy: true },
+        });
 
-        const activity = await prisma.activity.update({
-            where: {
-                id: activityId
-            },
+        if (!activity) {
+            throw new Error("Activity not found");
+        }
+
+        if (activity.createdBy.clerkUserId !== userId) {
+            throw new Error("You don't have permission to update this activity");
+        }
+
+        // Validate form data
+        const validatedData = activitySchema.parse(formData);
+
+        // Update activity
+        const updatedActivity = await prisma.activity.update({
+            where: { id },
             data: {
-                ...(name && { name }),
-                ...(description && { description }),
-                // ...(type && { type }),
-                // ...(difficulty && { difficulty }),
-                // ...(ageRange && { ageRange }),
-                ...(isPublic !== undefined && { isPublic })
-            }
-        })
+                name: validatedData.name,
+                description: validatedData.description,
+                // type: validatedData.type,
+                // difficulty: validatedData.difficulty,
+                // ageRange: validatedData.ageRange,
+                isPublic: validatedData.isPublic,
+                categories: validatedData.categoryIds
+                    ? {
+                        set: [], // Clear existing categories
+                        connect: validatedData.categoryIds.map((id) => ({ id })),
+                    }
+                    : undefined,
+            },
+        });
 
-        if (files.length > 0) {
-            // File upload logic here
+        // Upload new files if any
+        if (validatedData.files && validatedData.files.length > 0) {
+            await Promise.all(
+                validatedData.files.map(async (file) => {
+                    const buffer = Buffer.from(await file.arrayBuffer());
+                    const s3Result = await s3Service.uploadFile(
+                        "activities",
+                        `${activity.id}/${file.name}`,
+                        buffer,
+                        file.type
+                    );
+
+                    // Create file record in database
+                    await prisma.activityFile.create({
+                        data: {
+                            activityId: activity.id,
+                            name: file.name,
+                            s3Key: `activities/${activity.id}/${file.name}`,
+                            s3Url: s3Result.Location || "",
+                            fileType: file.type,
+                            sizeInBytes: buffer.length,
+                            uploadedById: (
+                                await prisma.user.findUnique({
+                                    where: { clerkUserId: userId },
+                                })
+                            )?.id as string,
+                        },
+                    });
+                })
+            );
         }
 
-        revalidatePath(`/dashboard/activities/${activityId}`)
-        revalidatePath('/dashboard/activities')
+        revalidatePath(`/activities/${id}`);
+        revalidatePath("/activities");
 
-        return {
-            success: true,
-            data: activity,
-            message: "Activity updated successfully"
-        }
-
-    } catch (error: any) {
-        console.error("Error updating activity:", error)
+        return { success: true, activity: updatedActivity };
+    } catch (error) {
+        console.error("Error updating activity:", error);
         return {
             success: false,
-            error: error.message || "Failed to update activity"
-        }
+            error: error instanceof Error ? error.message : "Failed to update activity"
+        };
     }
 }
 
 /**
  * Delete an activity
  */
-export async function deleteActivity(activityId: string): Promise<ActionResponse<void>> {
-    const auth = await validateAuthentication()
-
-    if (!auth.success) {
-        return {
-            success: false,
-            error: auth.error || "Authentication failed"
-        }
-    }
-
+export async function deleteActivity(id: string) {
     try {
-        // First check if activity exists and belongs to this practice
-        const existingActivity = await prisma.activity.findUnique({
-            where: {
-                id: activityId,
-                practiceId: auth.practice.practiceId
-            }
-        })
-
-        if (!existingActivity) {
-            return {
-                success: false,
-                error: "Activity not found or you don't have permission to delete it"
-            }
+        // Validate user authentication
+        const { userId } = await auth();
+        if (!userId) {
+            throw new Error("Unauthorized");
         }
 
+        // Check if activity exists and user has permission
+        const activity = await prisma.activity.findUnique({
+            where: { id },
+            include: { createdBy: true, files: true },
+        });
+
+        if (!activity) {
+            throw new Error("Activity not found");
+        }
+
+        if (activity.createdBy.clerkUserId !== userId) {
+            throw new Error("You don't have permission to delete this activity");
+        }
+
+        // Delete associated files from S3
+        if (activity.files.length > 0) {
+            await Promise.all(
+                activity.files.map(async (file) => {
+                    // Extract the file key from the S3Url or use the s3Key directly
+                    await s3Service.deleteFile("activities", `${activity.id}/${file.name}`);
+                })
+            );
+        }
+
+        // Delete the activity and its associated files from the database
+        // Prisma will automatically delete associated files due to the relation
         await prisma.activity.delete({
-            where: {
-                id: activityId
-            }
-        })
+            where: { id },
+        });
 
-        revalidatePath('/dashboard/activities')
-
-        return {
-            success: true,
-            message: "Activity deleted successfully",
-            redirectUrl: "/dashboard/activities"
-        }
-    } catch (error: any) {
-        console.error("Error deleting activity:", error)
+        revalidatePath("/activities");
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting activity:", error);
         return {
             success: false,
-            error: error.message || "Failed to delete activity"
+            error: error instanceof Error ? error.message : "Failed to delete activity"
+        };
+    }
+}
+
+/**
+ * Delete an activity file
+ */
+export async function deleteActivityFile(activityId: string, fileId: string) {
+    try {
+        // Validate user authentication
+        const { userId } = await auth();
+        if (!userId) {
+            throw new Error("Unauthorized");
         }
+
+        // Check if activity and file exist
+        const file = await prisma.activityFile.findUnique({
+            where: { id: fileId },
+            include: { activity: { include: { createdBy: true } } },
+        });
+
+        if (!file || file.activityId !== activityId) {
+            throw new Error("File not found");
+        }
+
+        if (file.activity.createdBy.clerkUserId !== userId) {
+            throw new Error("You don't have permission to delete this file");
+        }
+
+        // Delete file from S3
+        await s3Service.deleteFile("activities", `${activityId}/${file.name}`);
+
+        // Delete file record from database
+        await prisma.activityFile.delete({
+            where: { id: fileId },
+        });
+
+        revalidatePath(`/activities/${activityId}`);
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting activity file:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to delete file"
+        };
+    }
+}
+
+/**
+ * Get activity categories
+ */
+export async function getActivityCategories() {
+    try {
+        const categories = await prisma.activityCategory.findMany({
+            orderBy: { name: 'asc' },
+        });
+
+        return { success: true, categories };
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to fetch categories"
+        };
     }
 }

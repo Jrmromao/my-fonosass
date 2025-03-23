@@ -30,38 +30,38 @@ export async function validateAuthentication(): Promise<AuthResult> {
         }
 
         // Get user's practice information
-        const userPractice = await prisma.practiceMember.findFirst({
-            where: {
-                userId: user.id,
-                status: 'ACTIVE'
-            },
-            select: {
-                id: true,
-                practiceId: true,
-                role: true,
-                practice: {
-                    select: {
-                        id: true,
-                        name: true
-                    }
-                }
-            }
-        })
-
-        if (!userPractice) {
-            return {
-                success: false,
-                error: "No active practice found for user",
-                user,
-                practice: null
-            }
-        }
+        // const userPractice = await prisma.practiceMember.findFirst({
+        //     where: {
+        //         userId: user.id,
+        //         status: 'ACTIVE'
+        //     },
+        //     select: {
+        //         id: true,
+        //         practiceId: true,
+        //         role: true,
+        //         practice: {
+        //             select: {
+        //                 id: true,
+        //                 name: true
+        //             }
+        //         }
+        //     }
+        // })
+        //
+        // if (!userPractice) {
+        //     return {
+        //         success: false,
+        //         error: "No active practice found for user",
+        //         user,
+        //         practice: null
+        //     }
+        // }
 
         // Return success with user and practice data
         return {
             success: true,
             user,
-            practice: userPractice,
+            practice: {},
             error: null
         }
     } catch (error: any) {

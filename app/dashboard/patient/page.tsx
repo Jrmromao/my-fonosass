@@ -1,8 +1,4 @@
-// app/dashboard/patients/page.tsx
-import { Suspense } from 'react'
-import { PatientsTable } from "@/components/PatientsTable"
-import { NewPatientDialog } from "@/components/dialogs/new-patient-dialog"
-import {getPatients} from "@/lib/actions/patient.action";
+import {NewPatientDialog} from "@/components/dialogs/new-patient-dialog"
 
 export default async function PatientsPage() {
     // Add console.log to see what's happening
