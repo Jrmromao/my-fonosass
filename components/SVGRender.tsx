@@ -293,7 +293,7 @@ const SVGRender = () => {
                     className="w-full h-full"
                     style={{ touchAction: 'none' }}
                 >
-                    <SvgImage />
+                    {/*<SvgImage />*/}
 
                     {/* Render tree apples */}
                     {treeApples.map((apple) => (
