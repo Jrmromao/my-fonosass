@@ -17,16 +17,11 @@ const sidebarItems = [
         icon: ListTodo,
         href: "/dashboard/games",
     },
-    {
-        title: "Configurações",
-        icon: Settings,
-        href: "/dashboard/settings",
-    },
-    {
-        title: "Pacientes",
-        icon: Users,
-        href: "/dashboard/patient",
-    },
+    // {
+    //     title: "Configurações",
+    //     icon: Settings,
+    //     href: "/dashboard/settings",
+    // },
 ]
 
 interface SidebarProps {

@@ -7,7 +7,6 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Activity, Calendar, ChevronLeft, Clock, FileText, MessageSquare, Phone, User2} from 'lucide-react'
 import {useRouter} from "next/navigation";
 import {useParams} from "next/navigation"
-import {getPatientById} from "@/lib/actions/patient.action";
 
 // const sampleHistoryEvents = [
 //     {
@@ -94,33 +93,8 @@ export default function Page() {
             try {
                 if (!params.id) return
 
-                const response = await getPatientById(params.id as string)
 
-                if (response.success) {
-                    console.log(response)
-                    // setPatient({
-                    //     activities: [],
-                    //     progressNotes: [],
-                    //     primaryTherapist: {
-                    //         email: response?.data?.primaryTherapist.email!,
-                    //         fullName: response?.data?.primaryTherapist.fullName!,
-                    //         id: response?.data?.primaryTherapist.id!
-                    //     },
-                    //     status: response?.data?.status!,
-                    //     medicalHistory: response.data?.medicalHistory!,
-                    //     address: response.data?.address!,
-                    //     contactEmail: response.data?.contactEmail!,
-                    //     contactPhone: response.data?.contactPhone!,
-                    //     dateOfBirth: response.data?.dateOfBirth!,
-                    //     firstName: response.data?.firstName!,
-                    //     gender: response.data?.gender!,
-                    //     id: response.data?.id!,
-                    //     lastName: response.data?.lastName!,
-                    //     fullName: response.data?.fullName!
-                    // })
-                } else {
 
-                }
             } catch (err) {
                 setError('Failed to load patient data')
                 console.error(err)

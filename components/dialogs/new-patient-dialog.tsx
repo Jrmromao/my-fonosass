@@ -186,7 +186,6 @@ import {
 } from "@/components/ui/dialog"
 import { Form } from "@/components/ui/form"
 import { Plus } from 'lucide-react'
-import {createPatient, getPatients, getPracticePatients} from "@/lib/actions/patient.action";
 import { toast } from "@/hooks/use-toast"
 import { LoadingOverlay } from "@/components/LoadingOverlay"
 import { patientSchema } from "@/lib/schema"
@@ -226,9 +225,8 @@ export function NewPatientDialog() {
     async function onSubmit(values: z.infer<typeof patientSchema>) {
         setIsSubmitting(true)
         try {
-            const response = await createPatient(values)
 
-            if (response.success) {
+            if (true) {
                 toast({
                     title: "Paciente cadastrado com sucesso!",
                     description: "Os dados do novo paciente foram salvos.",

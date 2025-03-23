@@ -1,32 +1,55 @@
-// app/dashboard/activities/page.tsx
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import { Activity, FileText, Filter, Plus, Search } from 'lucide-react'
+import { Filter, Search } from 'lucide-react'
 import { NewActivityDialog } from "@/components/dialogs/new-activity-dialog"
+import { DataTable } from "@/components/table/data-table"
+import { activitiesColumns } from "@/components/table/columns/activities"
+import { useDebounce } from "@/hooks/use-debounce"
+import { getActivities } from "@/lib/actions/activity.action"
+import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ActivityWithFiles } from "@/types/activity" // Import from shared types
 
-interface ActivityItem {
-    id: string
-    name: string
-    type: string
-    difficulty: string
-    ageRange: string
-    files: number
-    status: "ACTIVE" | "INACTIVE"
+// Create a client
+const queryClient = new QueryClient()
+
+// Wrap your component with QueryClientProvider
+export default function ActivitiesPage() {
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ActivitiesContent />
+        </QueryClientProvider>
+    )
 }
 
-export default function Page() {
-    const [activities, setActivities] = useState<ActivityItem[]>([])
+function ActivitiesContent() {
+    const [searchTerm, setSearchTerm] = useState("")
+    const debouncedSearch = useDebounce(searchTerm, 500)
+
+    // Use React Query to fetch and cache activities
+    const { data, isLoading } = useQuery({
+        queryKey: ['activities', debouncedSearch],
+        queryFn: async () => {
+            const result = await getActivities({
+                searchTerm: debouncedSearch,
+                limit: 50
+            })
+
+            if (result.success && result.activities) {
+                return result.activities as unknown as ActivityWithFiles[]
+            }
+            return [] as ActivityWithFiles[]
+        }
+    })
+
+    const activities = data || []
+
+    const columns = useMemo(
+        () => activitiesColumns({}),
+        []
+    )
 
     return (
         <div className="h-full p-8 bg-white">
@@ -39,7 +62,10 @@ export default function Page() {
                         Gerencie todas as suas atividades terapêuticas
                     </p>
                 </div>
-                <NewActivityDialog />
+                <NewActivityDialog onSuccess={() => {
+                    // Invalidate and refetch activities
+                    queryClient.invalidateQueries({ queryKey: ['activities'] })
+                }} />
             </div>
 
             <div className="flex gap-4 mb-6">
@@ -48,6 +74,8 @@ export default function Page() {
                     <Input
                         placeholder="Buscar atividades..."
                         className="pl-10"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <Button variant="outline">
@@ -57,67 +85,11 @@ export default function Page() {
             </div>
 
             <div className="border rounded-lg">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Atividade</TableHead>
-                            <TableHead>Tipo</TableHead>
-                            <TableHead>Dificuldade</TableHead>
-                            <TableHead>Faixa Etária</TableHead>
-                            <TableHead>Arquivos</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {activities.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                    Nenhuma atividade encontrada
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            activities.map((activity) => (
-                                <TableRow key={activity.id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                                                <Activity className="w-5 h-5 text-purple-600" />
-                                            </div>
-                                            <div>
-                                                <div className="font-medium">{activity.name}</div>
-                                                <div className="text-sm text-muted-foreground">ID: #{activity.id}</div>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>{activity.type}</TableCell>
-                                    <TableCell>{activity.difficulty}</TableCell>
-                                    <TableCell>{activity.ageRange}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                            <FileText className="w-4 h-4 text-muted-foreground" />
-                                            {activity.files}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                            activity.status === "ACTIVE"
-                                                ? "bg-green-100 text-green-800"
-                                                : "bg-red-100 text-red-800"
-                                        }`}>
-                                            {activity.status === "ACTIVE" ? "Ativo" : "Inativo"}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button variant="ghost" size="sm">
-                                            Ver detalhes
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                <DataTable
+                    columns={columns}
+                    data={activities}
+                    isLoading={isLoading}
+                />
             </div>
         </div>
     )

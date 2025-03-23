@@ -26,7 +26,7 @@ class S3Service {
 
     private constructor() {
         this.env = process.env.NODE_ENV || "development";
-        this.mainBucketName = `${this.env}-ecokeepr`;
+        this.mainBucketName = `${this.env}-fono-storage`;
 
         const clientConfig: S3ClientConfig = {
             credentials: {
@@ -53,6 +53,7 @@ class S3Service {
         }
         return S3Service.instance;
     }
+
 
     private async ensureMainBucketExists(): Promise<void> {
         console.log(`Checking if bucket exists: ${this.mainBucketName}`);
@@ -234,6 +235,7 @@ class S3Service {
             const companyPrefix = this.getCompanyPrefix(companyId);
             const fullPrefix = prefix ? `${companyPrefix}${prefix}` : companyPrefix;
 
+            console.log(fullPrefix)
             const response = await this.s3Client.send(
                 new ListObjectsV2Command({
                     Bucket: this.mainBucketName,
