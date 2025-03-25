@@ -338,9 +338,9 @@ const SVGRender = () => {
             </div>
         );
     }
-
+    // w-full aspect-[10/7] relative
     return (
-        <div className="w-full aspect-[10/7] relative">
+        <div className="relative">
             <div className="absolute inset-0">
                 <svg
                     viewBox="0 0 1100 900"
@@ -427,16 +427,3 @@ const SVGRender = () => {
 // Export a dynamic component with SSR disabled
 export default dynamic(() => Promise.resolve(SVGRender), { ssr: false });
 
-// For the page component that uses SVGRender:
-// Add a placeholder while loading
-export function DashboardPage() {
-    return (
-        <div>
-            <h1>Dashboard</h1>
-            <div className="w-full aspect-[10/7] bg-slate-50">
-                <SVGRender />
-            </div>
-            {/* Other dashboard content */}
-        </div>
-    );
-}
