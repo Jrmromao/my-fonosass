@@ -412,9 +412,9 @@ const SVGRender = () => {
                     </div>
 
                     <AlertDialogFooter className="pt-2 gap-2">
-                        <AlertDialogCancel className="mt-0">Close</AlertDialogCancel>
+                        <AlertDialogCancel className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-all flex items-center w-full sm:w-auto justify-center gap-1 mt-0">Close</AlertDialogCancel>
                         {activities.length > 0 && (
-                            <Button variant="default" className="gap-1" onClick={() => router.push(`/dashboard/games`)}>
+                            <Button variant="default" className="px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/20 transition-all flex items-center w-full sm:w-auto justify-center gap-1" onClick={() => router.push(`/dashboard/games`)}>
                                 <ExternalLink className="h-4 w-4" />
                                 View All Activities
                             </Button>
