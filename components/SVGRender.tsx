@@ -340,7 +340,7 @@ const SVGRender = () => {
     }
     // w-full aspect-[10/7] relative
     return (
-        <div className="relative">
+        <div className="w-full aspect-[10/7] relative">
             <div className="absolute inset-0">
                 <svg
                     viewBox="0 0 1100 900"
@@ -360,6 +360,7 @@ const SVGRender = () => {
                         />
                     ))}
 
+
                     {/* Render ground apples */}
                     {groundApples.map((apple) => (
                         <AppleComponent
@@ -370,6 +371,7 @@ const SVGRender = () => {
                     ))}
                 </svg>
             </div>
+
 
             {/* Modal dialog with activities */}
             <AlertDialog open={selectedApple !== null} onOpenChange={closeModal}>
