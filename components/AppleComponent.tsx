@@ -13,7 +13,7 @@ const AppleComponent: React.FC<AppleComponentProps> = ({
                                                            x,
                                                            y,
                                                            phoneme,
-                                                           size = 25,
+                                                           size = 23,
                                                            handleAppleClick = () => {}
                                                        }) => {
     const [isHovered, setIsHovered] = useState(false);

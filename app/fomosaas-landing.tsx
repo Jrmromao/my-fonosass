@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, CheckCircle, ChevronDown, Menu, Mic, Music, Play, Star, Volume2, X } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import SVGRender from "@/components/SVGRender";
+import Ballon from "@/components/Ballon";
 
 export default function FomosaasLanding() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -191,9 +192,10 @@ export default function FomosaasLanding() {
                     <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
                         <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10"></div>
 
-                        <SVGRender />
-
+                        {/*<SVGRender />*/}
+                        <Ballon />
                     </div>
+
 
                     {/* Decorative elements */}
                     <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-to-br from-pink-500/30 to-yellow-400/30 rounded-full blur-3xl"></div>
@@ -239,47 +241,48 @@ export default function FomosaasLanding() {
                 </motion.div>
             </section>
 
-            {/* Features Section */}
-            <section id="recursos" className="py-20 bg-white dark:bg-indigo-900">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-              Recursos
-            </span>
-                        <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
-                            Ferramentas divertidas para o desenvolvimento da fala
-                        </h2>
-                        <p className="text-lg text-blue-700 dark:text-blue-300">
-                            Fomosaas oferece uma variedade de exercícios interativos e jogos para ajudar no desenvolvimento da fala
-                            das crianças.
-                        </p>
-                    </div>
+            {/*/!* Features Section *!/*/}
+            {/*<section id="recursos" className="py-20 bg-white dark:bg-indigo-900">*/}
+            {/*    <div className="container mx-auto px-4 sm:px-6 lg:px-8">*/}
+            {/*        <div className="max-w-3xl mx-auto text-center mb-16">*/}
+            {/*<span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">*/}
+            {/*  Recursos*/}
+            {/*</span>*/}
+            {/*            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">*/}
+            {/*                Ferramentas divertidas para o desenvolvimento da fala*/}
+            {/*            </h2>*/}
+            {/*            <p className="text-lg text-blue-700 dark:text-blue-300">*/}
+            {/*                Fomosaas oferece uma variedade de exercícios interativos e jogos para ajudar no desenvolvimento da fala*/}
+            {/*                das crianças.*/}
+            {/*            </p>*/}
+            {/*        </div>*/}
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {features.map((feature, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="relative p-6 rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
-                            >
-                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center mb-4 text-white group-hover:scale-110 transition-transform">
-                                    {feature.icon}
-                                </div>
-                                <h3 className="text-xl font-semibold mb-3 text-indigo-900 dark:text-white">{feature.title}</h3>
-                                <p className="text-indigo-700 dark:text-indigo-200">{feature.description}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            {/*        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">*/}
+            {/*            {features.map((feature, index) => (*/}
+            {/*                <motion.div*/}
+            {/*                    key={index}*/}
+            {/*                    initial={{ opacity: 0, y: 20 }}*/}
+            {/*                    whileInView={{ opacity: 1, y: 0 }}*/}
+            {/*                    transition={{ duration: 0.5, delay: index * 0.1 }}*/}
+            {/*                    viewport={{ once: true }}*/}
+            {/*                    className="relative p-6 rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-indigo-800 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"*/}
+            {/*                >*/}
+            {/*                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center mb-4 text-white group-hover:scale-110 transition-transform">*/}
+            {/*                        {feature.icon}*/}
+            {/*                    </div>*/}
+            {/*                    <h3 className="text-xl font-semibold mb-3 text-indigo-900 dark:text-white">{feature.title}</h3>*/}
+            {/*                    <p className="text-indigo-700 dark:text-indigo-200">{feature.description}</p>*/}
+            {/*                </motion.div>*/}
+            {/*            ))}*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</section>*/}
 
             {/* How It Works */}
             <section
                 id="como-funciona"
-                className="py-20 bg-gradient-to-br from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900"
+                className="py-20 bg-white dark:bg-indigo-900"
+                // className="py-20 bg-gradient-to-br from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900"
             >
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center mb-16">
@@ -329,7 +332,8 @@ export default function FomosaasLanding() {
             </section>
 
             {/* Exercise Examples */}
-            <section className="py-20 bg-white dark:bg-blue-950">
+            {/*<section className="py-20 bg-white dark:bg-blue-950">*/}
+            <section className="py-20 bg-gradient-to-br from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center mb-16">
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
