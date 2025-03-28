@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+    <!-- Transport Icon (Car/Bus) -->
+    <symbol id="icon-transport" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="#E3F2FD"/>
+        <path d="M20,60 L20,40 C20,30 25,30 30,30 L70,30 C75,30 80,30 80,40 L80,60" fill="none" stroke="currentColor"
+              stroke-width="4" stroke-linecap="round"/>
+        <path d="M15,60 L85,60" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M25,40 L75,40" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <rect x="20" y="45" width="60" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="4"/>
+        <circle cx="30" cy="70" r="8" fill="none" stroke="currentColor" stroke-width="3"/>
+        <circle cx="70" cy="70" r="8" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path d="M35,50 L45,50 M55,50 L65,50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+</svg>

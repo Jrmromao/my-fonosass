@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+
+    <!-- Language Icon -->
+    <symbol id="icon-language" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="#E8EAF6"/>
+        <path d="M25,35 L75,35 L65,65 L50,70 L35,65 L25,35 Z" fill="none" stroke="currentColor" stroke-width="4"
+              stroke-linejoin="round"/>
+        <path d="M35,50 L65,50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M40,35 L40,50 M60,35 L60,50" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M42,57 C47,62 53,62 58,57" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+</svg>

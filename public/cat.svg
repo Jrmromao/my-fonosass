@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+    <!-- Animal Icon (Cat) -->
+    <symbol id="icon-animal" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="#FFF0F5" />
+        <path d="M38,30 C36,18 25,20 20,28 C18,35 20,40 25,44" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M62,30 C64,18 75,20 80,28 C82,35 80,40 75,44" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="38" cy="48" r="3" fill="currentColor"/>
+        <circle cx="62" cy="48" r="3" fill="currentColor"/>
+        <path d="M50,55 C45,60 55,60 50,55 Z" fill="currentColor"/>
+        <path d="M40,65 C50,75 60,65 60,65" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M30,45 L33,55 M70,45 L67,55" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M42,75 L50,70 L58,75" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+</svg>

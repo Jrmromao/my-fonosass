@@ -7,6 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import SVGRender from "@/components/SVGRender";
 import Ballon from "@/components/Ballon";
+import EducationalToolbar from "@/components/Toolbar/EducationalToolbar";
 
 export default function FomosaasLanding() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -185,21 +186,27 @@ export default function FomosaasLanding() {
                 {/* Hero Image */}
                 <motion.div
                     className="mt-16 relative max-w-5xl mx-auto px-4"
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
+                    initial={{opacity: 0, y: 40}}
+                    animate={{opacity: 1, y: 0}}
+                    transition={{duration: 0.7, delay: 0.2}}
                 >
-                    <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10"></div>
-
-                        {/*<SVGRender />*/}
-                        <Ballon />
+                    <div
+                        className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
+                        <Ballon/>
                     </div>
 
 
+                    <div
+                        className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10"></div>
+                        <EducationalToolbar />
+
+                    </div>
                     {/* Decorative elements */}
-                    <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-to-br from-pink-500/30 to-yellow-400/30 rounded-full blur-3xl"></div>
-                    <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-to-br from-cyan-500/30 to-indigo-500/30 rounded-full blur-3xl"></div>
+                    <div
+                        className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-to-br from-pink-500/30 to-yellow-400/30 rounded-full blur-3xl"></div>
+                    <div
+                        className="absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-to-br from-cyan-500/30 to-indigo-500/30 rounded-full blur-3xl"></div>
 
                     {/* Floating elements */}
                     <motion.div
@@ -227,7 +234,7 @@ export default function FomosaasLanding() {
                         }}
                     />
                     <motion.div
-                        className="absolute bottom-10 right-10 w-14 h-14 bg-pink-400 rounded-lg rotate-45"
+                        className="absolute  right-10 w-14 h-14 bg-pink-400 rounded-lg rotate-45"
                         animate={{
                             y: [0, -15, 0],
                             rotate: [45, 30, 45],
