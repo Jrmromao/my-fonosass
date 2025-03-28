@@ -2,9 +2,13 @@
 
 
 import React from "react";
-import FomosaasLanding from "@/app/fomosaas-landing";
 import Ballon from "@/components/Ballon";
+import dynamic from "next/dynamic";
 
+
+const FomosaasLanding = dynamic(() => import("@/app/fomosaas-landing"), {
+    ssr: false,
+});
 export default function SyntheticV0PageForDeployment() {
     return <FomosaasLanding />
 }
