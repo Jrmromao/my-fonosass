@@ -6,9 +6,13 @@ export default function SignUpPage() {
             <div className="w-full max-w-md px-6 py-8">
                 {/* Logo */}
                 <div className="flex items-center justify-center mb-8">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
-                        <span className="text-white font-bold text-xl">F</span>
-                    </div>
+                    <a href="/" className="cursor-pointer transition-transform hover:scale-105">
+                        <div
+                            className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
+                            <span className="text-white font-bold text-xl">F</span>
+                        </div>
+                    </a>
+
                 </div>
 
                 <div className="mb-8 text-center">
@@ -16,7 +20,7 @@ export default function SignUpPage() {
                         Crie sua conta
                     </h1>
                     <p className="text-indigo-600 dark:text-blue-300">
-                        Cadastre-se e comece a sua jornada com exercícios de fonoaudiologia
+                    Cadastre-se e comece a sua jornada com exercícios de fonoaudiologia
                     </p>
                 </div>
 
