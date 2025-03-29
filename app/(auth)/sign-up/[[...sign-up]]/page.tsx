@@ -7,12 +7,10 @@ export default function SignUpPage() {
                 {/* Logo */}
                 <div className="flex items-center justify-center mb-8">
                     <a href="/" className="cursor-pointer transition-transform hover:scale-105">
-                        <div
-                            className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
                             <span className="text-white font-bold text-xl">F</span>
                         </div>
                     </a>
-
                 </div>
 
                 <div className="mb-8 text-center">
@@ -20,7 +18,7 @@ export default function SignUpPage() {
                         Crie sua conta
                     </h1>
                     <p className="text-indigo-600 dark:text-blue-300">
-                    Cadastre-se e comece a sua jornada com exercícios de fonoaudiologia
+                        Cadastre-se e comece a sua jornada com exercícios de fonoaudiologia
                     </p>
                 </div>
 
@@ -30,10 +28,11 @@ export default function SignUpPage() {
                             formButtonPrimary:
                                 "bg-gradient-to-r from-pink-500 to-yellow-400 hover:shadow-lg hover:shadow-pink-500/20 transition-all",
                             card: "bg-white dark:bg-indigo-800 shadow-xl shadow-indigo-500/10 rounded-2xl border-0",
-                            headerTitle: "text-indigo-600 dark:text-blue-300",
-                            headerSubtitle: "text-indigo-600/80 dark:text-blue-300/80",
+                            headerTitle: "hidden",
+                            headerSubtitle: "hidden",
+                            header: "hidden",
                             formFieldLabel: "text-indigo-600 dark:text-blue-300",
-                            formFieldInput: "border-indigo-200 dark:border-indigo-700 bg-white dark:bg-indigo-800/50 text-indigo-600 dark:text-blue-300 focus:border-pink-400 dark:focus:border-pink-500 focus:ring-pink-400/20 dark:focus:ring-pink-500/20",
+                            formFieldInput: "border-indigo-200 dark:border-xindigo-700 bg-white dark:bg-indigo-800/50 text-indigo-600 dark:text-blue-300 focus:border-pink-400 dark:focus:border-pink-500 focus:ring-pink-400/20 dark:focus:ring-pink-500/20",
                             footerActionLink: "text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300",
                             identityPreview: "bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-700",
                             identityPreviewText: "text-indigo-600 dark:text-blue-300",
@@ -41,7 +40,7 @@ export default function SignUpPage() {
                             formFieldAction: "text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300",
                             formFieldErrorText: "text-red-500 dark:text-red-400",
                             formFieldSuccessText: "text-green-500 dark:text-green-400",
-                            footer: "text-indigo-600/80 dark:text-blue-300/80",
+                            footer: "hidden",
                             alertText: "text-indigo-600/80 dark:text-blue-300/80",
                             socialButtonsBlockButton: "border-indigo-200 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50",
                             socialButtonsBlockButtonText: "text-indigo-600 dark:text-blue-300",

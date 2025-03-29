@@ -1,6 +1,7 @@
 import {Inter} from "next/font/google"
 import "./globals.css"
 import {ClerkProvider} from "@clerk/nextjs";
+import { ptBR } from '@clerk/localizations'
 
 const inter = Inter({subsets: ["latin"]})
 
@@ -15,7 +16,7 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <ClerkProvider>
+        <ClerkProvider localization={ptBR}>
             <html lang="pt-BR">
             <body
                 className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}>
