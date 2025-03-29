@@ -1,0 +1,47 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### FonoSaaS User Rules (With Clean Code & Testable Code Principles)
+
+#### 1. Responsible AI & Code Usage  
+- Use AI assistance for code suggestions, but always review and validate changes.  
+- Prioritize security and performance when implementing AI-generated solutions.  
+
+#### 2. Clean Code Principles  
+- **Meaningful Names:** Use clear, descriptive names for variables, functions, and components. Avoid abbreviations.  
+- **Small, Reusable Components:** Keep React components short, reusable, and focused on a single task.  
+- **Single Responsibility Principle (SRP):** Each function or component should have only one responsibility.  
+- **Avoid Magic Numbers & Strings:** Use constants or enums instead of hardcoded values.  
+- **Consistent Formatting:** Follow ESLint and Prettier rules for indentation, spacing, and naming conventions.  
+- **Write Self-Documenting Code:** Prioritize clarity over excessive comments.  
+
+#### 3. Testable Code Principles  
+- **Pure Functions:** Use pure functions where possible to ensure testability.  
+- **Dependency Injection:** Pass dependencies as props or arguments instead of hardcoding them.  
+- **Mockable Code:** Ensure external APIs, databases, or third-party services can be mocked in tests.  
+- **Minimal Side Effects:** Keep side effects contained in hooks (`useEffect`) or dedicated services.  
+- **Unit & Integration Tests:** Use Jest and React Testing Library for testing components and business logic.  
+
+#### 4. Code Organization & Next.js Best Practices  
+- Use a modular folder structure (`components/`, `pages/`, `hooks/`, `services/`, `utils/`).  
+- Keep API routes (`/api`) separate from frontend logic.  
+- Use environment variables (`.env.local`) for sensitive data.  
+- Optimize images with Next.js Image component (`next/image`).  
+- Use server-side functions (SSG, ISR, SSR) appropriately to optimize performance.  
+
+#### 5. Collaboration & Version Control  
+- Follow Git flow with feature branches and clear commit messages.  
+- Align coding conventions with the team before applying AI-generated suggestions.  
+
+#### 6. Security & Data Handling  
+- Never expose sensitive data (API keys, database credentials) in the frontend.  
+- Sanitize and validate all user inputs to prevent XSS/SQL injection attacks.  
+- Use HTTPS for all API calls and secure authentication methods.  
+
+#### 7. Continuous Improvement  
+- Regularly refactor code to improve readability and maintainability.  
+- Stay updated with Next.js, Prisma, and ShadCN UI best practices to optimize performance.  
+- Monitor and improve Lighthouse scores for better SEO and accessibility.
+

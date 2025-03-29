@@ -69,13 +69,13 @@ export default function FomosaasLanding() {
                                 Depoimentos
                             </Link>
                             <Link
-                                href="/entrar"
+                                href="/sign-in"
                                 className="px-4 py-2 rounded-full bg-white dark:bg-indigo-800 text-indigo-600 dark:text-white border border-indigo-200 dark:border-indigo-700 hover:border-pink-400 dark:hover:border-pink-500 transition-all shadow-sm hover:shadow font-medium"
                             >
                                 Entrar
                             </Link>
                             <Link
-                                href="/cadastro"
+                                href="/sign-up"
                                 className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white hover:shadow-lg hover:shadow-pink-500/20 transition-all font-medium"
                             >
                                 Experimente Grátis
@@ -131,14 +131,14 @@ export default function FomosaasLanding() {
                             </Link>
                             <div className="pt-4 space-y-3">
                                 <Link
-                                    href="/entrar"
+                                    href="/sign-in"
                                     className="block w-full px-4 py-2 text-center rounded-full bg-white dark:bg-blue-800 text-blue-700 dark:text-white border border-blue-200 dark:border-blue-700 font-medium"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Entrar
                                 </Link>
                                 <Link
-                                    href="/cadastro"
+                                    href="/sign-up"
                                     className="block w-full px-4 py-2 text-center rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
