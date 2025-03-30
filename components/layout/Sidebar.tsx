@@ -4,20 +4,36 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Home, ListTodo, LogOut, Menu, X } from "lucide-react"
-import {useClerk, UserButton, useUser} from "@clerk/nextjs"
+import { Home, ListTodo, LogOut, Menu, Plane, Map, Calendar, Settings, X } from "lucide-react"
+import { useClerk, UserButton, useUser } from "@clerk/nextjs"
 
+// Updated sidebar items for TripPlan AI
 const sidebarItems = [
     {
-        title: "Home",
+        title: "Dashboard",
         icon: Home,
         href: "/dashboard",
     },
     {
-        title: "Jogos",
-        icon: ListTodo,
-        href: "/dashboard/games",
+        title: "My Trips",
+        icon: Plane,
+        href: "/dashboard/trips",
     },
+    {
+        title: "Explore",
+        icon: Map,
+        href: "/dashboard/explore",
+    },
+    {
+        title: "Itineraries",
+        icon: Calendar,
+        href: "/dashboard/itineraries",
+    },
+    {
+        title: "Settings",
+        icon: Settings,
+        href: "/dashboard/settings",
+    }
 ]
 
 interface SidebarProps {
@@ -36,11 +52,14 @@ export function Sidebar({ className }: SidebarProps) {
         signOut(() => router.push('/'))
     }
 
+    // Handle resize and set initial collapsed state
     useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth
-            if (width < 640) { // sm breakpoint
+            if (width < 768) { // md breakpoint instead of sm for better tablet experience
                 setIsCollapsed(true)
+            } else {
+                setIsCollapsed(false)
             }
         }
 
@@ -54,18 +73,18 @@ export function Sidebar({ className }: SidebarProps) {
         setIsMobileMenuOpen(false)
     }, [pathname])
 
-    // Mobile menu button
+    // Mobile menu button with improved positioning
     const MobileMenuButton = () => (
         <Button
             variant="ghost"
             size="icon"
-            className="sm:hidden fixed top-4 right-4 z-40 hover:bg-indigo-50"
+            className="sm:hidden fixed top-4 left-4 z-50 rounded-full bg-white shadow-sm hover:bg-blue-50"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
             {isMobileMenuOpen ? (
-                <X className="h-5 w-5 text-gray-600" />
+                <X className="h-5 w-5 text-blue-600" />
             ) : (
-                <Menu className="h-5 w-5 text-gray-600" />
+                <Menu className="h-5 w-5 text-blue-600" />
             )}
         </Button>
     )
@@ -74,30 +93,30 @@ export function Sidebar({ className }: SidebarProps) {
         <>
             <MobileMenuButton />
 
-            {/* Mobile overlay */}
+            {/* Mobile overlay with improved transition */}
             {isMobileMenuOpen && (
                 <div
-                    className="sm:hidden fixed inset-0 bg-black/20 z-30"
+                    className="sm:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar with improved transitions */}
             <aside className={cn(
-                "h-screen sticky top-0 left-0 z-30 flex flex-col bg-white border-r border-gray-200 transition-all duration-300",
+                "h-screen fixed top-0 left-0 z-40 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
                 isCollapsed ? "w-20" : "w-64",
-                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0",
+                isMobileMenuOpen ? "translate-x-0 shadow-xl" : "-translate-x-full sm:translate-x-0",
                 className
             )}>
                 {/* Logo */}
                 <div className="h-16 flex items-center px-4 border-b border-gray-100">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#6a45ec]">
-                        <span className="text-xs font-black text-white">FS</span>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                        <span className="text-xs font-black text-white">TP</span>
                     </div>
                     {!isCollapsed && (
-                        <span className="ml-3 text-lg font-semibold text-[#6a45ec]">
-              FonoSaaS
-            </span>
+                        <span className="ml-3 text-lg font-semibold text-blue-600">
+                            TripPlan AI
+                        </span>
                     )}
 
                     {/* Collapse toggle on desktop */}
@@ -119,86 +138,81 @@ export function Sidebar({ className }: SidebarProps) {
                     </Button>
                 </div>
 
-                {/* Nav items */}
-                <nav className="flex-1 px-2 py-4 overflow-y-auto">
+                {/* Nav items with improved active state and spacing */}
+                <nav className="flex-1 px-2 py-6 overflow-y-auto">
                     {sidebarItems.map((item) => {
-                        const isActive = pathname.startsWith(item.href)
+                        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "flex items-center rounded-lg transition-colors mb-1",
-                                    isCollapsed ? "justify-center p-3" : "px-3 py-2.5 gap-3",
+                                    "flex items-center rounded-lg transition-all duration-200 mb-2",
+                                    isCollapsed ? "justify-center p-3" : "px-3 py-3 gap-3",
                                     isActive
-                                        ? "bg-[#EAE8FD] text-[#6a45ec]"
+                                        ? "bg-blue-50 text-blue-600 font-medium"
                                         : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                                 )}
                             >
                                 <item.icon className={cn(
                                     "flex-shrink-0",
-                                    isActive ? "text-[#6a45ec]" : "text-gray-500",
+                                    isActive ? "text-blue-600" : "text-gray-500",
                                     isCollapsed ? "h-6 w-6" : "h-5 w-5"
                                 )} />
 
                                 {!isCollapsed && (
-                                    <span className="text-sm font-medium">
-                    {item.title}
-                  </span>
+                                    <span className="text-sm">
+                                        {item.title}
+                                    </span>
                                 )}
                             </Link>
                         )
                     })}
                 </nav>
 
-                {/* User profile */}
+                {/* User profile with improved mobile layout */}
                 {user && (
                     <div className="mt-auto border-t border-gray-200 p-3">
                         <div className={cn(
                             "flex items-center",
                             !isCollapsed && "justify-between",
-                            isCollapsed && "flex-col items-center"
+                            isCollapsed && "flex-col gap-3 items-center"
                         )}>
                             <div className={cn(
                                 "flex items-center",
-                                isCollapsed && "flex-col"
+                                isCollapsed && "flex-col gap-2"
                             )}>
-                  {/*              <div className="w-7 h-7 rounded-full bg-[#EAE8FD] flex items-center justify-center">*/}
-                  {/*<span className="text-xs font-medium text-[#6a45ec]">*/}
-                  {/*  {user.firstName?.[0] || "J"}*/}
-                  {/*</span>*/}
-                  {/*              </div>*/}
                                 <UserButton />
                                 {!isCollapsed && (
-                                    <div className="ml-3">
-                                        <p className="text-sm font-medium">
-                                            {user.firstName || "João Filipe"}
+                                    <div className="ml-3 overflow-hidden">
+                                        <p className="text-sm font-medium truncate">
+                                            {user.firstName || "User"}
                                         </p>
-                                        <p className="text-xs text-gray-500">
-                                            {user.primaryEmailAddress?.emailAddress || "jrnromao@gmail.com"}
+                                        <p className="text-xs text-gray-500 truncate">
+                                            {user.primaryEmailAddress?.emailAddress || "user@example.com"}
                                         </p>
-
                                     </div>
                                 )}
                             </div>
 
-                            {/*{!isCollapsed ? (*/}
-                            {/*    <button*/}
-                            {/*        onClick={handleSignOut}*/}
-                            {/*        aria-label="Sign out"*/}
-                            {/*        className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"*/}
-                            {/*    >*/}
-                            {/*        <LogOut className="h-4 w-4" />*/}
-                            {/*    </button>*/}
-                            {/*) : (*/}
-                            {/*    <button*/}
-                            {/*        onClick={handleSignOut}*/}
-                            {/*        aria-label="Sign out"*/}
-                            {/*        className="p-1.5 mt-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md"*/}
-                            {/*    >*/}
-                            {/*        <LogOut className="h-4 w-4" />*/}
-                            {/*    </button>*/}
-                            {/*)}*/}
+                            {/* Re-enabled sign out button with improved styling */}
+                            {!isCollapsed ? (
+                                <button
+                                    onClick={handleSignOut}
+                                    aria-label="Sign out"
+                                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleSignOut}
+                                    aria-label="Sign out"
+                                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
