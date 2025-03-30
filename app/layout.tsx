@@ -3,6 +3,7 @@ import "./globals.css"
 import {ClerkProvider} from "@clerk/nextjs";
 import { ptBR } from '@clerk/localizations'
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import {Providers} from "@/components/Providers";
 
 const inter = Inter({subsets: ["latin"]})
 
@@ -21,12 +22,12 @@ export default function RootLayout({
             <html lang="pt-BR">
             <body
                 className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}>
-            {children}
+            <Providers>
+                {children}
+            </Providers>
             <SpeedInsights />
-
             </body>
             </html>
         </ClerkProvider>
     )
 }
-

@@ -1,13 +1,14 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { ArrowRight, CheckCircle, ChevronDown, Menu, Mic, Music, Play, Star, Volume2, X } from "lucide-react"
+import React, {useState, useEffect} from "react"
+import {motion} from "framer-motion"
+import {ArrowRight, CheckCircle, ChevronDown, Menu, Mic, Music, Play, Star, Volume2, X} from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import SVGRender from "@/components/SVGRender";
 import Ballon from "@/components/Ballon";
 import EducationalToolbar from "@/components/Toolbar/EducationalToolbar";
+import {SubscriptionPlans} from "@/components/SubscriptionPlans";
 
 export default function FomosaasLanding() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -22,7 +23,8 @@ export default function FomosaasLanding() {
     }, [])
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900 overflow-hidden">
+        <div
+            className="min-h-screen bg-gradient-to-b from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900 overflow-hidden">
             {/* Navbar */}
             <header
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -33,10 +35,12 @@ export default function FomosaasLanding() {
                     <div className="flex items-center justify-between h-16 md:h-20">
                         <div className="flex items-center">
                             <Link href="/" className="flex items-center space-x-2">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
+                                <div
+                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
                                     <span className="text-white font-bold text-lg">F</span>
                                 </div>
-                                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
+                                <span
+                                    className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
                   App do Bete
                 </span>
                             </Link>
@@ -57,10 +61,10 @@ export default function FomosaasLanding() {
                                 Como Funciona
                             </Link>
                             <Link
-                                href="#planos"
+                                href="#assinatura"
                                 className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
                             >
-                                Planos
+                                Assinatura
                             </Link>
                             <Link
                                 href="#depoimentos"
@@ -87,7 +91,7 @@ export default function FomosaasLanding() {
                             className="md:hidden p-2 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-500 dark:text-blue-400"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                         >
-                            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                            {isMenuOpen ? <X size={20}/> : <Menu size={20}/>}
                         </button>
                     </div>
                 </div>
@@ -95,9 +99,9 @@ export default function FomosaasLanding() {
                 {/* Mobile Navigation */}
                 {isMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
+                        initial={{opacity: 0, y: -20}}
+                        animate={{opacity: 1, y: 0}}
+                        exit={{opacity: 0, y: -20}}
                         className="md:hidden bg-white dark:bg-blue-900 shadow-lg"
                     >
                         <div className="px-4 py-5 space-y-4">
@@ -154,15 +158,18 @@ export default function FomosaasLanding() {
             <section className="pt-32 pb-20 md:pt-40 md:pb-32">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-4xl mx-auto text-center">
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
+                        <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}}
+                                    transition={{duration: 0.5}}>
+              <span
+                  className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
                 Fonoaudiologia Divertida
               </span>
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-pink-500 to-yellow-400">
                                 Exercícios de fala divertidos para crianças
                             </h1>
                             <p className="text-lg md:text-xl text-blue-700 dark:text-blue-300 mb-8 max-w-2xl mx-auto">
-                                Ajudamos crianças a superar desafios de fala com exercícios interativos, jogos divertidos e
+                                Ajudamos crianças a superar desafios de fala com exercícios interativos, jogos
+                                divertidos e
                                 acompanhamento profissional.
                             </p>
                             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -170,7 +177,7 @@ export default function FomosaasLanding() {
                                     href="/cadastro"
                                     className="px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
                                 >
-                                    Comece Agora <ArrowRight size={16} />
+                                    Comece Agora <ArrowRight size={16}/>
                                 </Link>
                                 <Link
                                     href="/como-funciona"
@@ -198,8 +205,9 @@ export default function FomosaasLanding() {
 
                     <div
                         className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
-                        <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10"></div>
-                        <EducationalToolbar />
+                        <div
+                            className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10"></div>
+                        <EducationalToolbar/>
 
                     </div>
                     {/* Decorative elements */}
@@ -293,7 +301,8 @@ export default function FomosaasLanding() {
             >
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+            <span
+                className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
               Como Funciona
             </span>
                         <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
@@ -308,14 +317,16 @@ export default function FomosaasLanding() {
                         {steps.map((step, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.2 }}
-                                viewport={{ once: true }}
+                                initial={{opacity: 0, y: 20}}
+                                whileInView={{opacity: 1, y: 0}}
+                                transition={{duration: 0.5, delay: index * 0.2}}
+                                viewport={{once: true}}
                                 className="relative"
                             >
-                                <div className="bg-white dark:bg-blue-900 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm relative z-10">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4 text-white font-bold text-xl">
+                                <div
+                                    className="bg-white dark:bg-blue-900 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm relative z-10">
+                                    <div
+                                        className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-4 text-white font-bold text-xl">
                                         {index + 1}
                                     </div>
                                     <h3 className="text-xl font-semibold mb-3 text-blue-900 dark:text-white">{step.title}</h3>
@@ -323,8 +334,10 @@ export default function FomosaasLanding() {
                                 </div>
 
                                 {index < steps.length - 1 && (
-                                    <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-0">
-                                        <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <div
+                                        className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-0">
+                                        <svg width="40" height="24" viewBox="0 0 40 24" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
                                             <path
                                                 d="M39.0607 13.0607C39.6464 12.4749 39.6464 11.5251 39.0607 10.9393L29.5147 1.3934C28.9289 0.807611 27.9792 0.807611 27.3934 1.3934C26.8076 1.97919 26.8076 2.92893 27.3934 3.51472L35.8787 12L27.3934 20.4853C26.8076 21.0711 26.8076 22.0208 27.3934 22.6066C27.9792 23.1924 28.9289 23.1924 29.5147 22.6066L39.0607 13.0607ZM0 13.5H38V10.5H0V13.5Z"
                                                 fill="#93C5FD"
@@ -340,10 +353,12 @@ export default function FomosaasLanding() {
 
             {/* Exercise Examples */}
             {/*<section className="py-20 bg-white dark:bg-blue-950">*/}
-            <section className="py-20 bg-gradient-to-br from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900">
+            <section
+                className="py-20 bg-gradient-to-br from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+            <span
+                className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
               Exercícios
             </span>
                         <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
@@ -358,13 +373,14 @@ export default function FomosaasLanding() {
                         {exercises.map((exercise, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                viewport={{ once: true }}
+                                initial={{opacity: 0, y: 20}}
+                                whileInView={{opacity: 1, y: 0}}
+                                transition={{duration: 0.5, delay: index * 0.1}}
+                                viewport={{once: true}}
                                 className="bg-gradient-to-br from-cyan-50 to-fuchsia-50 dark:from-indigo-800/50 dark:to-fuchsia-800/50 rounded-2xl overflow-hidden border border-indigo-200 dark:border-indigo-700 shadow-sm hover:shadow-md hover:shadow-indigo-500/10 transition-all"
                             >
-                                <div className="h-48 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 relative">
+                                <div
+                                    className="h-48 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 relative">
                                     <Image
                                         src={exercise.image || "/placeholder.svg?height=200&width=400"}
                                         alt={exercise.title}
@@ -373,14 +389,16 @@ export default function FomosaasLanding() {
                                         className="w-full h-full object-cover"
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-14 h-14 rounded-full bg-white/80 dark:bg-blue-900/80 flex items-center justify-center text-blue-600 dark:text-blue-400 cursor-pointer hover:scale-110 transition-transform">
-                                            <Play size={24} />
+                                        <div
+                                            className="w-14 h-14 rounded-full bg-white/80 dark:bg-blue-900/80 flex items-center justify-center text-blue-600 dark:text-blue-400 cursor-pointer hover:scale-110 transition-transform">
+                                            <Play size={24}/>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="p-6">
                                     <div className="flex items-center mb-3">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white mr-3">
+                                        <div
+                                            className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white mr-3">
                                             {exercise.icon}
                                         </div>
                                         <h3 className="text-lg font-semibold text-blue-900 dark:text-white">{exercise.title}</h3>
@@ -388,7 +406,7 @@ export default function FomosaasLanding() {
                                     <p className="text-blue-700 dark:text-blue-300 mb-4">{exercise.description}</p>
                                     <div className="flex items-center text-sm text-blue-600 dark:text-blue-400">
                     <span className="flex items-center">
-                      <Star size={16} className="mr-1 fill-yellow-400 text-yellow-400" />
+                      <Star size={16} className="mr-1 fill-yellow-400 text-yellow-400"/>
                       Idade: {exercise.age}
                     </span>
                                         <span className="mx-2">•</span>
@@ -404,7 +422,7 @@ export default function FomosaasLanding() {
                             href="/exercicios"
                             className="inline-flex items-center px-6 py-3 rounded-full bg-white dark:bg-blue-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:border-purple-400 dark:hover:border-purple-500 transition-all shadow-sm hover:shadow font-medium"
                         >
-                            Ver todos os exercícios <ArrowRight size={16} className="ml-2" />
+                            Ver todos os exercícios <ArrowRight size={16} className="ml-2"/>
                         </Link>
                     </div>
                 </div>
@@ -417,7 +435,8 @@ export default function FomosaasLanding() {
             >
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
+            <span
+                className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
               Depoimentos
             </span>
                         <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
@@ -432,10 +451,10 @@ export default function FomosaasLanding() {
                         {testimonials.map((testimonial, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                viewport={{ once: true }}
+                                initial={{opacity: 0, y: 20}}
+                                whileInView={{opacity: 1, y: 0}}
+                                transition={{duration: 0.5, delay: index * 0.1}}
+                                viewport={{once: true}}
                                 className="p-6 rounded-2xl bg-white dark:bg-blue-900 border border-blue-200 dark:border-blue-800 shadow-sm"
                             >
                                 <div className="flex items-center mb-4">
@@ -456,7 +475,7 @@ export default function FomosaasLanding() {
                                 <p className="text-blue-700 dark:text-blue-300 italic mb-4">"{testimonial.quote}"</p>
                                 <div className="flex text-yellow-400">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={16} className="fill-yellow-400" />
+                                        <Star key={i} size={16} className="fill-yellow-400"/>
                                     ))}
                                 </div>
                             </motion.div>
@@ -466,66 +485,67 @@ export default function FomosaasLanding() {
             </section>
 
             {/* Pricing */}
-            <section id="planos" className="py-20 bg-white dark:bg-blue-950">
+            <section id="assinatura" className="py-20 bg-white dark:bg-blue-950">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-              Planos
-            </span>
+    <span
+        className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+        Assinatura
+    </span>
                         <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
-                            Planos acessíveis para todas as famílias
+                            Acesso completo para fonoaudiólogos
                         </h2>
                         <p className="text-lg text-blue-700 dark:text-blue-300">
-                            Escolha o plano ideal para as necessidades do seu filho.
+                            Todas as ferramentas necessárias para sua prática profissional.
                         </p>
                     </div>
-
-                    <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {pricingPlans.map((plan, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className={`rounded-2xl p-8 ${
-                                    plan.featured
-                                        ? "bg-gradient-to-b from-cyan-50 to-white dark:from-indigo-800/20 dark:to-indigo-900 border-cyan-200 dark:border-indigo-700/30 relative shadow-xl shadow-indigo-500/10"
-                                        : "bg-white dark:bg-indigo-800 border-indigo-200 dark:border-indigo-700"
-                                } border`}
-                            >
-                                {plan.featured && (
-                                    <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-pink-500 to-yellow-400 text-white text-xs font-medium px-3 py-1 rounded-full">
-                    Mais Popular
-                  </span>
-                                )}
-                                <h3 className="text-xl font-semibold mb-2 text-blue-900 dark:text-white">{plan.name}</h3>
-                                <p className="text-blue-700 dark:text-blue-300 mb-6">{plan.description}</p>
-                                <div className="mb-6">
-                                    <span className="text-4xl font-bold text-blue-900 dark:text-white">R${plan.price}</span>
-                                    {plan.period && <span className="text-blue-600 dark:text-blue-400">/{plan.period}</span>}
-                                </div>
-                                <ul className="mb-8 space-y-3">
-                                    {plan.features.map((feature, i) => (
-                                        <li key={i} className="flex items-center text-blue-700 dark:text-blue-300">
-                                            <CheckCircle size={18} className="mr-2 text-green-500" />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <Link
-                                    href={plan.ctaLink}
-                                    className={`block w-full py-3 px-4 rounded-full text-center font-medium ${
-                                        plan.featured
-                                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/20"
-                                            : "bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-white hover:bg-blue-200 dark:hover:bg-blue-700"
-                                    } transition-all`}
-                                >
-                                    {plan.ctaText}
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
+                    <SubscriptionPlans/>
+                    {/*  <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">*/}
+                    {/*      {pricingPlans.map((plan, index) => (*/}
+                    {/*          <motion.div*/}
+                    {/*              key={index}*/}
+                    {/*              initial={{ opacity: 0, y: 20 }}*/}
+                    {/*              whileInView={{ opacity: 1, y: 0 }}*/}
+                    {/*              transition={{ duration: 0.5, delay: index * 0.1 }}*/}
+                    {/*              viewport={{ once: true }}*/}
+                    {/*              className={`rounded-2xl p-8 ${*/}
+                    {/*                  plan.featured*/}
+                    {/*                      ? "bg-gradient-to-b from-cyan-50 to-white dark:from-indigo-800/20 dark:to-indigo-900 border-cyan-200 dark:border-indigo-700/30 relative shadow-xl shadow-indigo-500/10"*/}
+                    {/*                      : "bg-white dark:bg-indigo-800 border-indigo-200 dark:border-indigo-700"*/}
+                    {/*              } border`}*/}
+                    {/*          >*/}
+                    {/*              {plan.featured && (*/}
+                    {/*                  <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-pink-500 to-yellow-400 text-white text-xs font-medium px-3 py-1 rounded-full">*/}
+                    {/*  Mais Popular*/}
+                    {/*</span>*/}
+                    {/*              )}*/}
+                    {/*              <h3 className="text-xl font-semibold mb-2 text-blue-900 dark:text-white">{plan.name}</h3>*/}
+                    {/*              <p className="text-blue-700 dark:text-blue-300 mb-6">{plan.description}</p>*/}
+                    {/*              <div className="mb-6">*/}
+                    {/*                  <span className="text-4xl font-bold text-blue-900 dark:text-white">R${plan.price}</span>*/}
+                    {/*                  {plan.period && <span className="text-blue-600 dark:text-blue-400">/{plan.period}</span>}*/}
+                    {/*              </div>*/}
+                    {/*              <ul className="mb-8 space-y-3">*/}
+                    {/*                  {plan.features.map((feature, i) => (*/}
+                    {/*                      <li key={i} className="flex items-center text-blue-700 dark:text-blue-300">*/}
+                    {/*                          <CheckCircle size={18} className="mr-2 text-green-500" />*/}
+                    {/*                          {feature}*/}
+                    {/*                      </li>*/}
+                    {/*                  ))}*/}
+                    {/*              </ul>*/}
+                    {/*              <Link*/}
+                    {/*                  href={plan.ctaLink}*/}
+                    {/*                  className={`block w-full py-3 px-4 rounded-full text-center font-medium ${*/}
+                    {/*                      plan.featured*/}
+                    {/*                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/20"*/}
+                    {/*                          : "bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-white hover:bg-blue-200 dark:hover:bg-blue-700"*/}
+                    {/*                  } transition-all`}*/}
+                    {/*              >*/}
+                    {/*                  {plan.ctaText}*/}
+                    {/*              </Link>*/}
+                    {/*          </motion.div>*/}
+                    {/*      ))}*/}
+                    {/*  </div>*/}
                 </div>
             </section>
 
@@ -536,10 +556,12 @@ export default function FomosaasLanding() {
             >
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-3xl mx-auto text-center mb-16">
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+            <span
+                className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
               Perguntas Frequentes
             </span>
-                        <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">Dúvidas comuns</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">Dúvidas
+                            comuns</h2>
                         <p className="text-lg text-blue-700 dark:text-blue-300">
                             Encontre respostas para as perguntas mais frequentes sobre o Fomosaas.
                         </p>
@@ -547,7 +569,7 @@ export default function FomosaasLanding() {
 
                     <div className="max-w-3xl mx-auto">
                         {faqs.map((faq, index) => (
-                            <FaqItem key={index} question={faq.question} answer={faq.answer} />
+                            <FaqItem key={index} question={faq.question} answer={faq.answer}/>
                         ))}
                     </div>
                 </div>
@@ -558,25 +580,29 @@ export default function FomosaasLanding() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="max-w-4xl mx-auto text-center">
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                            viewport={{ once: true }}
+                            initial={{opacity: 0, y: 20}}
+                            whileInView={{opacity: 1, y: 0}}
+                            transition={{duration: 0.5}}
+                            viewport={{once: true}}
                             className="relative p-8 md:p-12 rounded-3xl overflow-hidden"
                         >
                             {/* Background gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/50 dark:to-purple-900/50"></div>
+                            <div
+                                className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/50 dark:to-purple-900/50"></div>
 
                             {/* Decorative elements */}
-                            <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-full blur-3xl"></div>
-                            <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
+                            <div
+                                className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-full blur-3xl"></div>
+                            <div
+                                className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
 
                             <div className="relative">
                                 <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
                                     Pronto para começar a jornada de fala do seu filho?
                                 </h2>
                                 <p className="text-lg text-blue-700 dark:text-blue-300 mb-8 max-w-2xl mx-auto">
-                                    Junte-se a milhares de famílias brasileiras que já estão transformando o desenvolvimento da fala de
+                                    Junte-se a milhares de famílias brasileiras que já estão transformando o
+                                    desenvolvimento da fala de
                                     seus filhos com o Fomosaas.
                                 </p>
                                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -584,7 +610,7 @@ export default function FomosaasLanding() {
                                         href="/cadastro"
                                         className="px-6 py-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium hover:shadow-lg hover:shadow-blue-500/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
                                     >
-                                        Experimente Grátis <ArrowRight size={16} />
+                                        Experimente Grátis <ArrowRight size={16}/>
                                     </Link>
                                     <Link
                                         href="/contato"
@@ -605,10 +631,12 @@ export default function FomosaasLanding() {
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <div>
                             <Link href="/" className="flex items-center space-x-2 mb-6">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                                <div
+                                    className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
                                     <span className="text-white font-bold text-lg">F</span>
                                 </div>
-                                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+                                <span
+                                    className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
                   Fomosaas
                 </span>
                             </Link>
@@ -633,7 +661,8 @@ export default function FomosaasLanding() {
                                     className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
                                 >
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                                        <path
+                                            d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/>
                                     </svg>
                                 </Link>
                                 <Link
@@ -792,7 +821,7 @@ export default function FomosaasLanding() {
 }
 
 // FAQ Item Component
-function FaqItem({ question, answer }: { question: string; answer: string }) {
+function FaqItem({question, answer}: { question: string; answer: string }) {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
@@ -802,14 +831,15 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
                 className="flex justify-between items-center w-full text-left focus:outline-none"
             >
                 <h3 className="text-lg font-medium text-blue-900 dark:text-white">{question}</h3>
-                <ChevronDown className={`w-5 h-5 text-blue-500 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
+                <ChevronDown
+                    className={`w-5 h-5 text-blue-500 transition-transform ${isOpen ? "transform rotate-180" : ""}`}/>
             </button>
             {isOpen && (
                 <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{opacity: 0, height: 0}}
+                    animate={{opacity: 1, height: "auto"}}
+                    exit={{opacity: 0, height: 0}}
+                    transition={{duration: 0.3}}
                     className="mt-2 text-blue-700 dark:text-blue-300"
                 >
                     <p>{answer}</p>
@@ -824,12 +854,12 @@ const features = [
     {
         title: "Exercícios Interativos",
         description: "Mais de 100 exercícios divertidos e interativos para desenvolver diferentes aspectos da fala.",
-        icon: <Mic size={24} />,
+        icon: <Mic size={24}/>,
     },
     {
         title: "Jogos Educativos",
         description: "Jogos coloridos e envolventes que tornam o aprendizado divertido e eficaz para crianças.",
-        icon: <Play size={24} />,
+        icon: <Play size={24}/>,
     },
     {
         title: "Acompanhamento Profissional",
@@ -868,7 +898,8 @@ const features = [
                 strokeLinecap="round"
                 strokeLinejoin="round"
             >
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                <path
+                    d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
             </svg>
         ),
@@ -876,12 +907,12 @@ const features = [
     {
         title: "Biblioteca de Sons",
         description: "Ampla biblioteca de sons e pronúncias para praticar diferentes fonemas e palavras.",
-        icon: <Volume2 size={24} />,
+        icon: <Volume2 size={24}/>,
     },
     {
         title: "Músicas e Rimas",
         description: "Músicas infantis e rimas divertidas que ajudam no desenvolvimento da linguagem.",
-        icon: <Music size={24} />,
+        icon: <Music size={24}/>,
     },
 ]
 
@@ -906,7 +937,7 @@ const exercises = [
         description: "Ajuda crianças a identificar e reproduzir diferentes sons e fonemas.",
         age: "3-6 anos",
         difficulty: "Iniciante",
-        icon: <Volume2 size={16} />,
+        icon: <Volume2 size={16}/>,
         image: "/placeholder.svg?height=200&width=400",
     },
     {
@@ -914,7 +945,7 @@ const exercises = [
         description: "Exercícios com rimas para desenvolver consciência fonológica.",
         age: "4-7 anos",
         difficulty: "Intermediário",
-        icon: <Music size={16} />,
+        icon: <Music size={16}/>,
         image: "/placeholder.svg?height=200&width=400",
     },
     {
