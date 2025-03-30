@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Home, ListTodo, LogOut, Menu, Plane, Map, Calendar, Settings, X } from "lucide-react"
+import { Home, LogOut, Menu, Plane, Map, Calendar, Settings, X } from "lucide-react"
 import { useClerk, UserButton, useUser } from "@clerk/nextjs"
 
 // Updated sidebar items for TripPlan AI
@@ -56,7 +56,7 @@ export function Sidebar({ className }: SidebarProps) {
     useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth
-            if (width < 768) { // md breakpoint instead of sm for better tablet experience
+            if (width < 768) { // md breakpoint for better tablet experience
                 setIsCollapsed(true)
             } else {
                 setIsCollapsed(false)
@@ -78,7 +78,7 @@ export function Sidebar({ className }: SidebarProps) {
         <Button
             variant="ghost"
             size="icon"
-            className="sm:hidden fixed top-4 left-4 z-50 rounded-full bg-white shadow-sm hover:bg-blue-50"
+            className="md:hidden fixed top-4 left-4 z-50 rounded-full bg-white shadow-sm hover:bg-blue-50"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
             {isMobileMenuOpen ? (
@@ -96,22 +96,22 @@ export function Sidebar({ className }: SidebarProps) {
             {/* Mobile overlay with improved transition */}
             {isMobileMenuOpen && (
                 <div
-                    className="sm:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300"
+                    className="md:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
 
-            {/* Sidebar with improved transitions */}
+            {/* Sidebar with improved layout */}
             <aside className={cn(
-                "h-screen fixed top-0 left-0 z-40 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
+                "fixed top-0 left-0 z-40 h-screen flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
                 isCollapsed ? "w-20" : "w-64",
-                isMobileMenuOpen ? "translate-x-0 shadow-xl" : "-translate-x-full sm:translate-x-0",
+                isMobileMenuOpen ? "translate-x-0 shadow-xl" : "-translate-x-full md:translate-x-0",
                 className
             )}>
                 {/* Logo */}
                 <div className="h-16 flex items-center px-4 border-b border-gray-100">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                        <span className="text-xs font-black text-white">TP</span>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
+                        <span className="text-sm font-black text-white">TP</span>
                     </div>
                     {!isCollapsed && (
                         <span className="ml-3 text-lg font-semibold text-blue-600">
@@ -123,7 +123,7 @@ export function Sidebar({ className }: SidebarProps) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="ml-auto hidden sm:flex"
+                        className="ml-auto hidden md:flex"
                         onClick={() => setIsCollapsed(!isCollapsed)}
                     >
                         {isCollapsed ? (
@@ -139,40 +139,43 @@ export function Sidebar({ className }: SidebarProps) {
                 </div>
 
                 {/* Nav items with improved active state and spacing */}
-                <nav className="flex-1 px-2 py-6 overflow-y-auto">
-                    {sidebarItems.map((item) => {
-                        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={cn(
-                                    "flex items-center rounded-lg transition-all duration-200 mb-2",
-                                    isCollapsed ? "justify-center p-3" : "px-3 py-3 gap-3",
-                                    isActive
-                                        ? "bg-blue-50 text-blue-600 font-medium"
-                                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                )}
-                            >
-                                <item.icon className={cn(
-                                    "flex-shrink-0",
-                                    isActive ? "text-blue-600" : "text-gray-500",
-                                    isCollapsed ? "h-6 w-6" : "h-5 w-5"
-                                )} />
+                <nav className="flex-1 px-3 py-6 overflow-y-auto">
+                    <ul className="space-y-2">
+                        {sidebarItems.map((item) => {
+                            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                            return (
+                                <li key={item.href}>
+                                    <Link
+                                        href={item.href}
+                                        className={cn(
+                                            "flex items-center rounded-lg transition-all duration-200",
+                                            isCollapsed ? "justify-center p-3" : "px-4 py-3",
+                                            isActive
+                                                ? "bg-blue-50 text-blue-600 font-medium"
+                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                                        )}
+                                    >
+                                        <item.icon className={cn(
+                                            "flex-shrink-0",
+                                            isActive ? "text-blue-600" : "text-gray-500",
+                                            isCollapsed ? "h-6 w-6" : "h-5 w-5"
+                                        )} />
 
-                                {!isCollapsed && (
-                                    <span className="text-sm">
-                                        {item.title}
-                                    </span>
-                                )}
-                            </Link>
-                        )
-                    })}
+                                        {!isCollapsed && (
+                                            <span className="ml-3 text-sm">
+                                                {item.title}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </li>
+                            )
+                        })}
+                    </ul>
                 </nav>
 
-                {/* User profile with improved mobile layout */}
+                {/* User profile with improved layout */}
                 {user && (
-                    <div className="mt-auto border-t border-gray-200 p-3">
+                    <div className="mt-auto border-t border-gray-200 p-4">
                         <div className={cn(
                             "flex items-center",
                             !isCollapsed && "justify-between",
@@ -195,28 +198,36 @@ export function Sidebar({ className }: SidebarProps) {
                                 )}
                             </div>
 
-                            {/* Re-enabled sign out button with improved styling */}
-                            {!isCollapsed ? (
-                                <button
-                                    onClick={handleSignOut}
-                                    aria-label="Sign out"
-                                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                                >
-                                    <LogOut className="h-4 w-4" />
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleSignOut}
-                                    aria-label="Sign out"
-                                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                                >
-                                    <LogOut className="h-4 w-4" />
-                                </button>
-                            )}
+                            {/* Sign out button with improved styling */}
+                            {/*{!isCollapsed ? (*/}
+                            {/*    <button*/}
+                            {/*        onClick={handleSignOut}*/}
+                            {/*        aria-label="Sign out"*/}
+                            {/*        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"*/}
+                            {/*    >*/}
+                            {/*        <LogOut className="h-4 w-4" />*/}
+                            {/*    </button>*/}
+                            {/*) : (*/}
+                            {/*    <button*/}
+                            {/*        onClick={handleSignOut}*/}
+                            {/*        aria-label="Sign out"*/}
+                            {/*        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"*/}
+                            {/*    >*/}
+                            {/*        <LogOut className="h-4 w-4" />*/}
+                            {/*    </button>*/}
+                            {/*)}*/}
                         </div>
                     </div>
                 )}
             </aside>
+
+            {/* Content wrapper to ensure proper layout with fixed sidebar */}
+            <div className={cn(
+                "min-h-screen transition-all duration-300",
+                isCollapsed ? "md:ml-20" : "md:ml-64"
+            )}>
+                {/* Your page content will go here */}
+            </div>
         </>
     )
 }
