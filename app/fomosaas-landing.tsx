@@ -37,7 +37,7 @@ export default function FomosaasLanding() {
                                     <span className="text-white font-bold text-lg">F</span>
                                 </div>
                                 <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
-                  App do Joao
+                  App do Bete
                 </span>
                             </Link>
                         </div>
