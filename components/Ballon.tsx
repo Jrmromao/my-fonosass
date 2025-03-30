@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // TypeScript interfaces
@@ -50,6 +50,7 @@ interface BalloonFieldProps {
     description?: string;
     onBalloonPopped?: (phoneme: string, color: string) => void;
 }
+
 
 const BalloonField: React.FC<BalloonFieldProps> = ({
                                                        balloonCount = 23, // Fixed at 23 balloons
@@ -113,46 +114,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         "#33cccc"  // Teal
     ];
 
-
-    // const balloonColors: string[] = [
-    //     "#FF69B4", // Hot Pink
-    //     "#FFB6C1", // Light Pink
-    //     "#FFC0CB", // Pink
-    //     "#FF82AB", // Pale Violet Red
-    //     "#FF5C8D", // Raspberry Pink
-    //     "#FF1493", // Deep Pink
-    //     "#DB7093", // Pale Violet Red
-    //     "#FF007F", // Rose
-    //     "#FF85A2", // Flamingo Pink
-    //     "#FF66B2", // Pastel Pink
-    //     "#FFD1DC", // Baby Pink
-    //     "#FF91A4", // Salmon Pink
-    //     "#FFACC7", // Amaranth Pink
-    //     "#FFA6C9", // Carnation Pink
-    //     "#FF9EBB", // Charm Pink
-    //     "#FAA0BD", // Baker-Miller Pink
-    //     "#EB9DAF", // Mauvelous
-    //     "#E68FAC", // Charm Pink
-    //     "#DE6FA1", // Thulian Pink
-    //     "#D65282", // Raspberry Rose
-    //     "#FC89AC", // Tickle Me Pink
-    //     "#F4B4C4", // Classic Rose
-    //     "#FF8DA1"  // Flamingo
-    // ];
-    // const balloonColors: string[] = [
-    //     "#FFB6C1", // Light Pink
-    //     "#FFDAB9", // Peach
-    //     "#E6E6FA", // Lavender
-    //     "#B0E0E6", // Powder Blue
-    //     "#98FB98", // Pale Green
-    //     "#F0E68C", // Khaki
-    //     "#DDA0DD", // Plum
-    //     "#ADD8E6", // Light Blue
-    //     "#F5DEB3", // Wheat
-    //     "#E0FFFF", // Light Cyan
-    //     "#FFFACD"  // Lemon Chiffon
-    // ];
-    // Color names mapping
     const colorNames: ColorMapping = {
         "#ff3333": "Red",
         "#ff9933": "Orange",
@@ -229,6 +190,17 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         };
     }, [balloonCount]);
 
+
+    useEffect(() => {
+        const cleanupInterval = setInterval(() => {
+            if (fragmentsRef.current.length > 100) {
+                fragmentsRef.current = fragmentsRef.current.filter(f => f.opacity > 0.05);
+            }
+        }, 1000);
+
+        return () => clearInterval(cleanupInterval);
+    }, []);
+
     // Save stats to localStorage when they change
     useEffect(() => {
         localStorage.setItem('balloonStats', JSON.stringify(stats));
@@ -275,23 +247,187 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     };
 
     // Find a valid position for a balloon
+    // const findValidPosition = (
+    //     balloons: Balloon[],
+    //     widthRange: [number, number],
+    //     heightRange: [number, number]
+    // ): { x: number, y: number } => {
+    //     let x: number, y: number;
+    //     let isValid = false;
+    //     let attempts = 0;
+    //
+    //     while (!isValid && attempts < 50) {
+    //         // Random position within the range
+    //         x = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
+    //         y = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
+    //
+    //         // Check against existing balloons
+    //         isValid = true;
+    //         for (const balloon of balloons) {
+    //             // Create a temporary balloon to check overlap
+    //             const tempBalloon: Balloon = {
+    //                 id: -1,
+    //                 x,
+    //                 y,
+    //                 color: "",
+    //                 size: 0.7 + Math.random() * 0.5,
+    //                 popped: false,
+    //                 floatPhase: 0,
+    //                 floatSpeed: 0,
+    //                 floatAmount: 0,
+    //                 rotation: 0,
+    //                 stringLength: 0,
+    //                 hovering: false,
+    //                 pressing: false,
+    //                 anchorGroup: 'left', // Default, not used for overlap check
+    //                 phoneme: '',
+    //                 zIndex: 0,
+    //                 isDragging: false
+    //             };
+    //
+    //             if (checkOverlap(tempBalloon, balloon)) {
+    //                 isValid = false;
+    //                 break;
+    //             }
+    //         }
+    //
+    //         attempts++;
+    //
+    //         // If valid position found, return it
+    //         if (isValid) {
+    //             return { x, y };
+    //         }
+    //     }
+    //
+    //     // If we couldn't find a valid position after many attempts,
+    //     // just return a random position and let them overlap
+    //     return {
+    //         x: widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]),
+    //         y: heightRange[0] + Math.random() * (heightRange[1] - heightRange[0])
+    //     };
+    // };
+
+    // Initialize balloons with better positioning
+
+    const initializeBalloons = (): void => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+
+        // Precompute shared values
+        const leftAnchorX = width * 0.25;
+        const rightAnchorX = width * 0.75;
+        const anchorY = height;
+        const virtualHeight = height * 0.8;
+        const leftBalloonCount = 10;
+        const rightBalloonCount = 10;
+        const totalBalloons = leftBalloonCount + rightBalloonCount;
+
+        // Use fewer phonemes if we have more than available
+        const safePhonemes = phonemes.length >= totalBalloons
+            ? phonemes
+            : [...phonemes, ...phonemes].slice(0, totalBalloons);
+
+        const balloons: Balloon[] = [];
+
+        // Create balloons in a single function to avoid code duplication
+        const createBalloonGroup = (
+            count: number,
+            startId: number,
+            anchorX: number,
+            isLeft: boolean
+        ) => {
+            const widthRange: [number, number] = isLeft
+                ? [anchorX - width * 0.2, anchorX + width * 0.15]
+                : [anchorX - width * 0.15, anchorX + width * 0.2];
+
+            // Create all balloons at once but with different heights
+            const heightSections = 4;
+            const sectionHeight = virtualHeight / heightSections;
+
+            for (let i = 0; i < count; i++) {
+                const id = startId + i;
+                const colorIndex = id % balloonColors.length;
+
+                // Distribute balloons evenly in height sections
+                const sectionIndex = Math.floor((i / count) * heightSections);
+                const heightRange: [number, number] = [
+                    30 + sectionIndex * sectionHeight,
+                    Math.min(height * 0.7, 30 + (sectionIndex + 1) * sectionHeight - 50)
+                ];
+
+                // Use memoized random values for better performance
+                const size = 0.8 + Math.random() * 0.4;
+                const phoneme = safePhonemes[id % safePhonemes.length];
+
+                // Find a valid position with fewer attempts for better performance
+                const position = findValidPosition(balloons, widthRange, heightRange, 30); // Limit to 30 attempts
+
+                // Create the balloon with optimized parameters
+                balloons.push({
+                    id,
+                    x: position.x,
+                    y: position.y,
+                    color: balloonColors[colorIndex],
+                    size,
+                    popped: false,
+                    floatPhase: Math.random() * Math.PI * 2,
+                    floatSpeed: 0.3 + Math.random() * 0.3, // Slightly reduced for performance
+                    floatAmount: 2 + Math.random() * 3,    // Slightly reduced for performance
+                    rotation: (Math.random() - 0.5) * 0.2,
+                    stringLength: Math.sqrt(
+                        Math.pow(position.x - anchorX, 2) +
+                        Math.pow(position.y - anchorY, 2)
+                    ),
+                    hovering: false,
+                    pressing: false,
+                    anchorGroup: isLeft ? 'left' : 'right',
+                    phoneme,
+                    zIndex: 0,
+                    isDragging: false
+                });
+            }
+        };
+
+        // Create both balloon groups
+        createBalloonGroup(leftBalloonCount, 0, leftAnchorX, true);
+        createBalloonGroup(rightBalloonCount, leftBalloonCount, rightAnchorX, false);
+
+        balloonsRef.current = balloons;
+    };
+
     const findValidPosition = (
         balloons: Balloon[],
         widthRange: [number, number],
-        heightRange: [number, number]
+        heightRange: [number, number],
+        maxAttempts: number = 50
     ): { x: number, y: number } => {
-        let x: number, y: number;
+        // Initialize with default values - this ensures they're always defined
+        let x: number = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
+        let y: number = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
         let isValid = false;
         let attempts = 0;
 
-        while (!isValid && attempts < 50) {
-            // Random position within the range
+        // Try to find a non-overlapping position
+        while (!isValid && attempts < maxAttempts) {
+            // Generate new random position
             x = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
             y = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
 
             // Check against existing balloons
             isValid = true;
+
+            // Only check against balloons that could potentially overlap
             for (const balloon of balloons) {
+                const dx = balloon.x - x;
+                const dy = balloon.y - y;
+
+                // Skip balloons that are far away
+                if (dx * dx + dy * dy > 10000) continue;
+
                 // Create a temporary balloon to check overlap
                 const tempBalloon: Balloon = {
                     id: -1,
@@ -307,7 +443,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                     stringLength: 0,
                     hovering: false,
                     pressing: false,
-                    anchorGroup: 'left', // Default, not used for overlap check
+                    anchorGroup: 'left',
                     phoneme: '',
                     zIndex: 0,
                     isDragging: false
@@ -320,140 +456,36 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
             }
 
             attempts++;
-
-            // If valid position found, return it
-            if (isValid) {
-                return { x, y };
-            }
         }
 
-        // If we couldn't find a valid position after many attempts,
-        // just return a random position and let them overlap
-        return {
-            x: widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]),
-            y: heightRange[0] + Math.random() * (heightRange[1] - heightRange[0])
-        };
+        // If we couldn't find a valid position after attempts,
+        // just use the last position we tried
+        return { x, y };
     };
 
-    // Initialize balloons with better positioning
-    const initializeBalloons = (): void => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
 
-        const rect = canvas.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-
-        const balloons: Balloon[] = [];
-        const leftAnchorX = width * 0.25;
-        const rightAnchorX = width * 0.75;
-        const anchorY = height;
-        const virtualHeight = height * 0.8;
-        const leftBalloonCount = 11;
-        const rightBalloonCount = 12;
-
-        // Create left balloons
-        for (let i = 0; i < leftBalloonCount; i++) {
-            const colorIndex = i % balloonColors.length;
-            const widthRange: [number, number] = [leftAnchorX - width * 0.2, leftAnchorX + width * 0.15];
-            const heightSections = 4;
-            const sectionHeight = virtualHeight / heightSections;
-            const sectionIndex = Math.floor((i / leftBalloonCount) * heightSections);
-            const heightRange: [number, number] = [
-                30 + sectionIndex * sectionHeight,
-                Math.min(height * 0.7, 30 + (sectionIndex + 1) * sectionHeight - 50)
-            ];
-
-            // Slightly larger size range for more variation
-            const size = 0.8 + Math.random() * 0.4;
-            const phoneme = phonemes[i % phonemes.length];
-            const position = findValidPosition(balloons, widthRange, heightRange);
-            const dx = position.x - leftAnchorX;
-            const dy = position.y - anchorY;
-            const stringLength = Math.sqrt(dx * dx + dy * dy);
-            const floatPhase = Math.random() * Math.PI * 2;
-            const floatSpeed = 0.4 + Math.random() * 0.4; // Slower float for gentler motion
-            const floatAmount = 3 + Math.random() * 4;
-            const rotation = (Math.random() - 0.5) * 0.2; // Reduced rotation for subtler effect
-
-            balloons.push({
-                id: i,
-                x: position.x,
-                y: position.y,
-                color: balloonColors[colorIndex],
-                size,
-                popped: false,
-                floatPhase,
-                floatSpeed,
-                floatAmount,
-                rotation,
-                stringLength,
-                hovering: false,
-                pressing: false,
-                anchorGroup: 'left',
-                phoneme,
-                zIndex: 0,
-                isDragging: false
-            });
-        }
-
-        // Create right balloons
-        for (let i = 0; i < rightBalloonCount; i++) {
-            const colorIndex = (i + leftBalloonCount) % balloonColors.length;
-            const widthRange: [number, number] = [rightAnchorX - width * 0.15, rightAnchorX + width * 0.2];
-            const heightSections = 4;
-            const sectionHeight = virtualHeight / heightSections;
-            const sectionIndex = Math.floor((i / rightBalloonCount) * heightSections);
-            const heightRange: [number, number] = [
-                30 + sectionIndex * sectionHeight,
-                Math.min(height * 0.7, 30 + (sectionIndex + 1) * sectionHeight - 50)
-            ];
-
-            const size = 0.8 + Math.random() * 0.4;
-            const phoneme = phonemes[(i + leftBalloonCount) % phonemes.length];
-            const position = findValidPosition(balloons, widthRange, heightRange);
-            const dx = position.x - rightAnchorX;
-            const dy = position.y - anchorY;
-            const stringLength = Math.sqrt(dx * dx + dy * dy);
-            const floatPhase = Math.random() * Math.PI * 2;
-            const floatSpeed = 0.4 + Math.random() * 0.4;
-            const floatAmount = 3 + Math.random() * 4;
-            const rotation = (Math.random() - 0.5) * 0.2;
-
-            balloons.push({
-                id: i + leftBalloonCount,
-                x: position.x,
-                y: position.y,
-                color: balloonColors[colorIndex],
-                size,
-                popped: false,
-                floatPhase,
-                floatSpeed,
-                floatAmount,
-                rotation,
-                stringLength,
-                hovering: false,
-                pressing: false,
-                anchorGroup: 'right',
-                phoneme,
-                zIndex: 0,
-                isDragging: false
-            });
-        }
-
-        balloonsRef.current = balloons;
-    };
-    // Animation loop
     const startAnimation = (): void => {
         let lastTime = 0;
+        if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+        }
+
+
+
         const animate = (timestamp: number): void => {
             const delta = lastTime ? (timestamp - lastTime) / 16.66 : 12; // normalize to ~60fps
             lastTime = timestamp;
 
+            // Skip frames when browser tab is inactive or frame rate is very low
+            if (delta > 100) {
+                animationRef.current = requestAnimationFrame(animate);
+                return;
+            }
+
             const canvas = canvasRef.current;
             if (!canvas) return;
 
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { alpha: false });
             if (!ctx) return;
 
             const rect = canvas.getBoundingClientRect();
@@ -463,32 +495,58 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
             // Clear canvas
             ctx.clearRect(0, 0, width, height);
 
-            // Define anchor points
+            // Cache anchor points to avoid recalculation
             const leftAnchorX = width * 0.25;
             const rightAnchorX = width * 0.75;
             const anchorY = height;
 
-            // Sort balloons by zIndex for proper rendering order (highest zIndex on top)
-            const sortedBalloons = [...balloonsRef.current].sort((a, b) => a.zIndex - b.zIndex);
+            // Check if we have active fragments or dragging balloons
+            const hasActiveFragments = fragmentsRef.current.length > 0;
+            const hasDraggingBalloons = draggingBalloonId !== null;
 
-            // Update balloons
-            sortedBalloons.forEach(balloon => {
-                if (!balloon.popped) {
-                    // Update float animation
+            // Only sort balloons if necessary (when dragging or hovering)
+            const sortedBalloons = hasDraggingBalloons ?
+                [...balloonsRef.current].sort((a, b) => a.zIndex - b.zIndex) :
+                balloonsRef.current;
+
+            // Limit how many balloons update their float animation each frame
+            // This staggers the animation calculations to improve performance
+            const updateCount = Math.min(sortedBalloons.length, 8); // Only update 8 balloons per frame
+            const updateOffset = Math.floor(timestamp / 100) % sortedBalloons.length; // Cycle through all balloons
+
+            // Update and draw visible balloons
+            sortedBalloons.forEach((balloon, index) => {
+                if (balloon.popped) return;
+
+                // Only update float animation for some balloons each frame
+                // Always update the dragging balloon
+                if (balloon.id === draggingBalloonId || (index + updateOffset) % sortedBalloons.length < updateCount) {
                     balloon.floatPhase += 0.02 * balloon.floatSpeed * delta;
-                    const floatY = Math.sin(balloon.floatPhase) * balloon.floatAmount;
-
-                    // Get appropriate anchor based on balloon's group
-                    const anchorX = balloon.anchorGroup === 'left' ? leftAnchorX : rightAnchorX;
-
-                    // Draw balloon
-                    drawBalloon(ctx, balloon, floatY, anchorX, anchorY);
                 }
+
+                const floatY = Math.sin(balloon.floatPhase) * balloon.floatAmount;
+
+                // Skip drawing balloons that are far off-screen
+                if (balloon.x < -100 || balloon.x > width + 100 ||
+                    balloon.y + floatY < -150 || balloon.y + floatY > height + 50) {
+                    return;
+                }
+
+                // Get appropriate anchor based on balloon's group
+                const anchorX = balloon.anchorGroup === 'left' ? leftAnchorX : rightAnchorX;
+
+                // Draw balloon
+                drawBalloon(ctx, balloon, floatY, anchorX, anchorY);
             });
 
-// Update fragments
+            // Process fragments in batches for better performance
+            const maxFragmentsPerFrame = 150; // Process at most 150 fragments per frame
+            let processedFragments = 0;
             let anyActiveFragments = false;
-            fragmentsRef.current.forEach(fragment => {
+
+            for (let i = 0; i < fragmentsRef.current.length && processedFragments < maxFragmentsPerFrame; i++) {
+                const fragment = fragmentsRef.current[i];
+
                 // Update physics
                 fragment.velocity.x *= 0.98; // air resistance
                 fragment.velocity.y *= 0.98;
@@ -498,48 +556,55 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                 fragment.y += fragment.velocity.y * delta;
                 fragment.rotation += fragment.rotationSpeed * delta;
 
-                // Only consider visible fragments
-                if (fragment.y < height + 50 && fragment.opacity > 0.01) {
-                    anyActiveFragments = true;
+                // Skip fragments that are off-screen or nearly transparent
+                if (fragment.y > height + 50 || fragment.opacity <= 0.01) {
+                    continue;
+                }
 
-                    // Decrease opacity over time
-                    fragment.opacity = Math.max(0, fragment.opacity - 0.005 * delta);
+                anyActiveFragments = true;
+                processedFragments++;
 
-                    // Draw fragment
-                    ctx.save();
-                    ctx.translate(fragment.originX + fragment.x, fragment.originY + fragment.y);
-                    ctx.rotate(fragment.rotation);
-                    ctx.globalAlpha = fragment.opacity;
+                // Decrease opacity over time
+                fragment.opacity = Math.max(0, fragment.opacity - 0.005 * delta);
 
-                    if (fragment.type === 'rubber') {
-                        // Draw rubber piece
-                        ctx.beginPath();
-                        ctx.moveTo(-fragment.size/2, -fragment.size/4);
-                        ctx.quadraticCurveTo(0, -fragment.size/2, fragment.size/2, -fragment.size/4);
-                        ctx.quadraticCurveTo(fragment.size/3, fragment.size/4, 0, fragment.size/2);
-                        ctx.quadraticCurveTo(-fragment.size/3, fragment.size/4, -fragment.size/2, -fragment.size/4);
+                // Draw fragment
+                ctx.save();
+                ctx.translate(fragment.originX + fragment.x, fragment.originY + fragment.y);
+                ctx.rotate(fragment.rotation);
+                ctx.globalAlpha = fragment.opacity;
+
+                if (fragment.type === 'rubber') {
+                    // Draw rubber piece - simplified path for performance
+                    ctx.beginPath();
+                    ctx.moveTo(-fragment.size/2, -fragment.size/4);
+                    ctx.quadraticCurveTo(0, -fragment.size/2, fragment.size/2, -fragment.size/4);
+                    ctx.quadraticCurveTo(fragment.size/3, fragment.size/4, 0, fragment.size/2);
+                    ctx.quadraticCurveTo(-fragment.size/3, fragment.size/4, -fragment.size/2, -fragment.size/4);
+                    ctx.fillStyle = fragment.color;
+                    ctx.fill();
+                } else {
+                    // Draw dust particle - use rectangle for very small particles for performance
+                    if (fragment.size < 3) {
                         ctx.fillStyle = fragment.color;
-                        ctx.fill();
+                        ctx.fillRect(-fragment.size/2, -fragment.size/2, fragment.size, fragment.size);
                     } else {
-                        // Draw dust particle
                         ctx.beginPath();
                         ctx.arc(0, 0, fragment.size / 2, 0, Math.PI * 2);
                         ctx.fillStyle = fragment.color;
                         ctx.fill();
                     }
-
-                    ctx.restore();
                 }
-            });
 
-            // Clean up old fragments
-            if (fragmentsRef.current.length > 1000) {
-                fragmentsRef.current = fragmentsRef.current.filter(f => f.opacity > 0.01);
+                ctx.restore();
+            }
+
+            // Clean up old fragments periodically, not every frame
+            if (timestamp % 60 < 16.66 && fragmentsRef.current.length > 500) {
+                fragmentsRef.current = fragmentsRef.current.filter(f => f.opacity > 0.02);
             }
 
             animationRef.current = requestAnimationFrame(animate);
         };
-
         animationRef.current = requestAnimationFrame(animate);
     };
 
@@ -746,7 +811,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         let scaleX = 1;
         let scaleY = 1;
-
+        if (balloon.x < -100 || balloon.x > ctx.canvas.width + 100 ||
+            balloon.y < -100 || balloon.y > ctx.canvas.height + 100) {
+            return;
+        }
         if (hovering) {
             scaleX = 1.08;
             scaleY = 1.08;
@@ -866,6 +934,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     // Generate fragments for a popped balloon
     const popBalloon = (balloonId: number): void => {
         const balloon = balloonsRef.current.find(b => b.id === balloonId);
+        const fragmentCount = window.navigator.hardwareConcurrency > 4 ? 20 : 10;
+
         if (!balloon || balloon.popped) return;
 
         // Mark as popped
@@ -903,8 +973,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         const { x, y, color, size } = balloon;
 
         // Large rubber pieces
-        // Large rubber pieces
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < Math.min(6, fragmentCount/4); i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 3 + Math.random() * 8;
             fragments.push({
@@ -927,7 +996,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
 
         // Medium rubber pieces
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < Math.min(8, fragmentCount/3); i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 4 + Math.random() * 10;
             fragments.push({
@@ -949,7 +1018,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         }
 
         // Small dust particles
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < Math.min(15, fragmentCount/2); i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 5 + Math.random() * 12;
             fragments.push({
@@ -1254,49 +1323,52 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         }
     };
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+    const throttledMouseMove = useCallback(
+        (e: React.MouseEvent<HTMLCanvasElement>): void => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
 
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
 
-        if (draggingBalloonId !== null) {
-            balloonsRef.current = balloonsRef.current.map(balloon => {
-                if (balloon.id === draggingBalloonId && !balloon.popped) {
+            if (draggingBalloonId !== null) {
+                balloonsRef.current = balloonsRef.current.map(balloon => {
+                    if (balloon.id === draggingBalloonId && !balloon.popped) {
+                        return {
+                            ...balloon,
+                            x: mouseX,
+                            y: mouseY,
+                            zIndex: 1000 // Ensure dragged balloon stays on top
+                        };
+                    }
+                    return balloon;
+                });
+            } else {
+                const hoveringBalloonIds = new Set<number>();
+                balloonsRef.current.forEach(balloon => {
+                    if (balloon.popped) return;
+                    const dx = balloon.x - mouseX;
+                    const dy = (balloon.y + Math.sin(balloon.floatPhase) * balloon.floatAmount) - mouseY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const hitRadius = 50 * balloon.size;
+                    if (distance < hitRadius) {
+                        hoveringBalloonIds.add(balloon.id);
+                    }
+                });
+
+                balloonsRef.current = balloonsRef.current.map(balloon => {
+                    const isHovering = hoveringBalloonIds.has(balloon.id);
                     return {
                         ...balloon,
-                        x: mouseX,
-                        y: mouseY,
-                        zIndex: 1000 // Ensure dragged balloon stays on top
+                        hovering: isHovering,
+                        zIndex: isHovering && balloon.id !== draggingBalloonId ? 100 : balloon.zIndex
                     };
-                }
-                return balloon;
-            });
-        } else {
-            const hoveringBalloonIds = new Set<number>();
-            balloonsRef.current.forEach(balloon => {
-                if (balloon.popped) return;
-                const dx = balloon.x - mouseX;
-                const dy = (balloon.y + Math.sin(balloon.floatPhase) * balloon.floatAmount) - mouseY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const hitRadius = 50 * balloon.size;
-                if (distance < hitRadius) {
-                    hoveringBalloonIds.add(balloon.id);
-                }
-            });
+                });
+            }        },
+        [draggingBalloonId]
+    );
 
-            balloonsRef.current = balloonsRef.current.map(balloon => {
-                const isHovering = hoveringBalloonIds.has(balloon.id);
-                return {
-                    ...balloon,
-                    hovering: isHovering,
-                    zIndex: isHovering && balloon.id !== draggingBalloonId ? 100 : balloon.zIndex
-                };
-            });
-        }
-    };
 
     const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>): void => {
         balloonsRef.current = balloonsRef.current.map(balloon => ({
@@ -1328,7 +1400,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                     ref={canvasRef}
                     className="w-full h-full cursor-pointer"
                     // onClick={handleCanvasClick}
-                    onMouseMove={handleMouseMove}
+                    onMouseMove={throttledMouseMove}
                     onMouseDown={handleMouseDown}
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
