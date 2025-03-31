@@ -8,10 +8,7 @@ export async function POST(req: Request) {
     try {
 
 
-        // Get price ID from environment variables
-        const priceId = process.env.STRIPE_MONTHLY_PRICE_ID;
-
-        if (!priceId) {
+        if (!process.env.STRIPE_MONTHLY_PRICE_ID) {
             console.error('Missing STRIPE_MONTHLY_PRICE_ID environment variable');
             return NextResponse.json(
                 { error: 'Server configuration error' },
@@ -39,7 +36,7 @@ export async function POST(req: Request) {
         const session = await stripe.checkout.sessions.create({
             line_items: [
                 {
-                    price: priceId,
+                    price: process.env.STRIPE_MONTHLY_PRICE_ID,
                     quantity: 1,
                 },
             ],

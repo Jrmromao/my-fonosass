@@ -69,7 +69,7 @@ import { prisma } from '@/app/db';
 export async function POST(req: Request) {
     try {
 
-
+        console.log("IN POST CREATE CHECKOUT")
         // Get price ID from environment variables
         const priceId = process.env.STRIPE_MONTHLY_PRICE_ID;
 
@@ -80,11 +80,9 @@ export async function POST(req: Request) {
                 { status: 500 }
             );
         }
-
         // Get authenticated user from Clerk
+
         const { userId } = await auth();
-
-
 
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -95,16 +93,9 @@ export async function POST(req: Request) {
             where: { clerkUserId: userId },
         });
 
-        console.log(user)
-
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
-
-        console.log("\n\n\n\n\n\n")
-        console.log(user)
-        console.log(userId)
-        console.log("\n\n\n\n\n\n")
 
         // Create the checkout session
         const session = await stripe.checkout.sessions.create({
@@ -115,20 +106,14 @@ export async function POST(req: Request) {
                 },
             ],
             mode: 'subscription',
-            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true`,
+            success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
             cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=true`,
-            metadata: { assetQuota: 100 }, // Keep metadata consistent
-
-            // metadata: {
-            //     cms_id: '6573',
-            //     // clerkUserId: userId,       // Clerk user ID
-            //     // userId: user.id,           // Your database user ID
-            // },
+            metadata: {
+                clerkUserId: userId,       // Clerk user ID
+                userId: user.id,           // Your database user ID
+            },
             customer_email: user.email,  // Pre-fill customer email
         });
-
-
-
 
         // Return the URL for the client to redirect to
         return NextResponse.json({ url: session.url });

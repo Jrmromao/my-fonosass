@@ -518,4 +518,9 @@ enum SubStatus {
   ACTIVE
   INACTIVE
   PAST_DUE
+  // CANCELLED
+  // UNPAID
+  // IMCOMPLETE
+  // PAUSED
+  // TRIALING
 }

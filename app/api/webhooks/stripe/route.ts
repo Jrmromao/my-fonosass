@@ -1,475 +1,333 @@
-// // import { NextResponse } from 'next/server';
-// // import { stripe } from '@/lib/stripe';
-// // import { prisma } from '@/app/db';
-// // import { createClerkClient } from '@clerk/clerk-sdk-node';
-// // import type { Stripe } from 'stripe';
-// //
-// // export async function POST(req: Request) {
-// //     const body = await req.text();
-// //     const sig = req.headers.get('stripe-signature') as string;
-// //     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-// //
-// //     if (!webhookSecret) {
-// //         return NextResponse.json(
-// //             { error: 'Webhook secret not configured' },
-// //             { status: 500 }
-// //         );
-// //     }
-// //
-// //     let event: Stripe.Event;
-// //
-// //     try {
-// //         event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-// //     } catch (error) {
-// //         console.error('Webhook signature verification failed:', error);
-// //         return NextResponse.json(
-// //             { error: 'Webhook signature verification failed' },
-// //             { status: 400 }
-// //         );
-// //     }
-// //
-// //     // Handle specific Stripe events
-// //     switch (event.type) {
-// //         case 'checkout.session.completed': {
-// //             const session = event.data.object as Stripe.Checkout.Session;
-// //
-// //             // Access metadata safely with optional chaining
-// //             const clerkUserId = session?.metadata?.clerkUserId;
-// //             const prismaUserId = session?.metadata?.userId;
-// //
-// //             if (!clerkUserId || !prismaUserId) {
-// //                 console.error('Missing user IDs in metadata', session.metadata);
-// //                 return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
-// //             }
-// //
-// //             try {
-// //                 // Update Clerk metadata
-// //                 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-// //                 await clerk.users.updateUser(clerkUserId, {
-// //                     privateMetadata: {
-// //                         subscription: { status: 'active' },
-// //                     },
-// //                 });
-// //
-// //                 // Update Prisma subscription record
-// //                 await prisma.subscription.upsert({
-// //                     where: { userId: prismaUserId },
-// //                     update: {
-// //                         tier: 'PRO', // Match your TierType enum
-// //                         status: 'ACTIVE', // Match your SubStatus enum
-// //                         paymentId: session.subscription?.toString() || session.id,
-// //                         currentPeriodStart: new Date(),
-// //                         currentPeriodEnd: session.expires_at ? new Date(session.expires_at * 1000) : undefined
-// //                     },
-// //                     create: {
-// //                         userId: prismaUserId,
-// //                         tier: 'PRO', // Match your TierType enum
-// //                         status: 'ACTIVE', // Match your SubStatus enum
-// //                         paymentId: session.subscription?.toString() || session.id,
-// //                         currentPeriodStart: new Date(),
-// //                         currentPeriodEnd: session.expires_at ? new Date(session.expires_at * 1000) : undefined
-// //                     },
-// //                 });
-// //             } catch (error) {
-// //                 console.error('Error updating user subscription status:', error);
-// //                 return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
-// //             }
-// //
-// //             break;
-// //         }
-// //
-// //         case 'customer.subscription.deleted': {
-// //             const subscription = event.data.object as Stripe.Subscription;
-// //
-// //             // Access metadata safely with optional chaining
-// //             const clerkUserId = subscription?.metadata?.clerkUserId;
-// //             const prismaUserId = subscription?.metadata?.userId;
-// //
-// //             if (!clerkUserId || !prismaUserId) {
-// //                 console.error('Missing user IDs in metadata', subscription.metadata);
-// //                 return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
-// //             }
-// //
-// //             try {
-// //                 // Update Clerk metadata
-// //                 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-// //                 await clerk.users.updateUser(clerkUserId, {
-// //                     privateMetadata: {
-// //                         subscription: { status: 'inactive' },
-// //                     },
-// //                 });
-// //
-// //                 // Update Prisma subscription record
-// //                 await prisma.subscription.update({
-// //                     where: { userId: prismaUserId },
-// //                     data: {
-// //                         tier: 'FREE', // Match your TierType enum
-// //                         status: 'INACTIVE', // Match your SubStatus enum
-// //                         currentPeriodEnd: new Date(), // End the subscription now
-// //                     },
-// //                 });
-// //             } catch (error) {
-// //                 console.error('Error updating user subscription status:', error);
-// //                 return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
-// //             }
-// //
-// //             break;
-// //         }
-// //
-// //         default:
-// //             console.log(`Unhandled event type: ${event.type}`);
-// //     }
-// //
-// //     return NextResponse.json({ received: true });
-// // }
-//
-//
-// import { NextResponse } from 'next/server';
-// import { stripe } from '@/lib/stripe';
-// import { prisma } from '@/app/db';
-// import { createClerkClient } from '@clerk/clerk-sdk-node';
-// import type { Stripe } from 'stripe';
-//
-// export async function POST(req: Request) {
-//     const body = await req.text();
-//     const sig = req.headers.get('stripe-signature') as string;
-//     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-//
-//     if (!webhookSecret) {
-//         return NextResponse.json(
-//             { error: 'Webhook secret not configured' },
-//             { status: 500 }
-//         );
-//     }
-//
-//     let event: Stripe.Event;
-//
-//     try {
-//         event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-//     } catch (error) {
-//         console.error('Webhook signature verification failed:', error);
-//         return NextResponse.json(
-//             { error: 'Webhook signature verification failed' },
-//             { status: 400 }
-//         );
-//     }
-//
-//     // Handle specific Stripe events
-//     switch (event.type) {
-//         case 'checkout.session.completed': {
-//             const session = event.data.object as Stripe.Checkout.Session;
-//
-//             // Access metadata safely with optional chaining
-//             const clerkUserId = session?.metadata?.clerkUserId;
-//             const prismaUserId = session?.metadata?.userId;
-//
-//             if (!clerkUserId || !prismaUserId) {
-//                 console.error('Missing user IDs in metadata', session.metadata);
-//                 return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
-//             }
-//
-//             try {
-//                 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-//
-//                 // Update Clerk user privateMetadata
-//                 await clerk.users.updateUser(clerkUserId, {
-//                     privateMetadata: {
-//                         subscription: { status: 'active' },
-//                     },
-//                 });
-//
-//                 // Update all active sessions for this user
-//                 const sessions = await clerk.sessions.getSessionList({
-//                     userId: clerkUserId,
-//                     status: 'active',
-//                 });
-//
-//                 for (const userSession of sessions) {
-//                     await clerk.sessions.updateSession(userSession.id, {
-//                         metadata: {
-//                             subscription: { status: 'active' },
-//                         },
-//                     });
-//                 }
-//
-//                 // Update Prisma subscription record
-//                 await prisma.subscription.upsert({
-//                     where: { userId: prismaUserId },
-//                     update: {
-//                         tier: 'PRO', // Match your TierType enum
-//                         status: 'ACTIVE', // Match your SubStatus enum
-//                         paymentId: session.subscription?.toString() || session.id,
-//                         currentPeriodStart: new Date(),
-//                         currentPeriodEnd: session.expires_at ? new Date(session.expires_at * 1000) : undefined
-//                     },
-//                     create: {
-//                         userId: prismaUserId,
-//                         tier: 'PRO', // Match your TierType enum
-//                         status: 'ACTIVE', // Match your SubStatus enum
-//                         paymentId: session.subscription?.toString() || session.id,
-//                         currentPeriodStart: new Date(),
-//                         currentPeriodEnd: session.expires_at ? new Date(session.expires_at * 1000) : undefined
-//                     },
-//                 });
-//             } catch (error) {
-//                 console.error('Error updating user subscription status:', error);
-//                 return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
-//             }
-//
-//             break;
-//         }
-//
-//         case 'customer.subscription.deleted': {
-//             const subscription = event.data.object as Stripe.Subscription;
-//
-//             // Access metadata safely with optional chaining
-//             const clerkUserId = subscription?.metadata?.clerkUserId;
-//             const prismaUserId = subscription?.metadata?.userId;
-//
-//             if (!clerkUserId || !prismaUserId) {
-//                 console.error('Missing user IDs in metadata', subscription.metadata);
-//                 return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
-//             }
-//
-//             try {
-//                 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-//
-//                 // Update Clerk user privateMetadata
-//                 await clerk.users.updateUser(clerkUserId, {
-//                     privateMetadata: {
-//                         subscription: { status: 'inactive' },
-//                     },
-//                 });
-//
-//                 // Update all active sessions for this user
-//                 const sessions = await clerk.sessions.getSessionList({
-//                     userId: clerkUserId,
-//                     status: 'active',
-//                 });
-//
-//                 for (const userSession of sessions) {
-//                     await clerk.sessions.updateSession(userSession.id, {
-//                         metadata: {
-//                             subscription: { status: 'inactive' },
-//                         },
-//                     });
-//                 }
-//
-//                 // Update Prisma subscription record
-//                 await prisma.subscription.update({
-//                     where: { userId: prismaUserId },
-//                     data: {
-//                         tier: 'FREE', // Match your TierType enum
-//                         status: 'INACTIVE', // Match your SubStatus enum
-//                         currentPeriodEnd: new Date(), // End the subscription now
-//                     },
-//                 });
-//             } catch (error) {
-//                 console.error('Error updating user subscription status:', error);
-//                 return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
-//             }
-//
-//             break;
-//         }
-//
-//         // You should also handle these important events
-//         case 'invoice.payment_succeeded': {
-//             const invoice = event.data.object as Stripe.Invoice;
-//             if (invoice.subscription) {
-//                 const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
-//
-//                 // Get user IDs from subscription metadata
-//                 const clerkUserId = subscription?.metadata?.clerkUserId;
-//                 const prismaUserId = subscription?.metadata?.userId;
-//
-//                 if (clerkUserId && prismaUserId) {
-//                     // Update subscription period end date in your database
-//                     await prisma.subscription.update({
-//                         where: { userId: prismaUserId },
-//                         data: {
-//                             currentPeriodStart: new Date(subscription.current_period_start * 1000),
-//                             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-//                         },
-//                     });
-//                 }
-//             }
-//             break;
-//         }
-//
-//         case 'invoice.payment_failed': {
-//             // Handle failed payments - you might want to notify the user
-//             const invoice = event.data.object as Stripe.Invoice;
-//             if (invoice.subscription) {
-//                 console.log(`Payment failed for subscription: ${invoice.subscription}`);
-//                 // You could send an email to the user here
-//             }
-//             break;
-//         }
-//
-//         default:
-//             console.log(`Unhandled event type: ${event.type}`);
-//     }
-//
-//     return NextResponse.json({ received: true });
-// }
-
+// app/api/webhooks/stripe/route.ts
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { prisma } from '@/app/db';
 import { createClerkClient } from '@clerk/clerk-sdk-node';
 import type { Stripe } from 'stripe';
 
-
-const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+// Rate limiting setup
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute window
+const MAX_REQUESTS_PER_WINDOW = 50;
+const requestTimestamps: number[] = [];
 
 export async function POST(req: Request) {
+    // Basic rate limiting
+    const now = Date.now();
+    requestTimestamps.push(now);
+    while (requestTimestamps.length > 0 && requestTimestamps[0] < now - RATE_LIMIT_WINDOW) {
+        requestTimestamps.shift();
+    }
 
+    if (requestTimestamps.length > MAX_REQUESTS_PER_WINDOW) {
+        console.warn('Rate limit exceeded for Stripe webhook');
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
+    // Verify webhook signature
     const body = await req.text();
     const sig = req.headers.get('stripe-signature') as string;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
-        return NextResponse.json(
-            { error: 'Webhook secret not configured' },
-            { status: 500 }
-        );
+        console.error('Missing STRIPE_WEBHOOK_SECRET environment variable');
+        return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
     let event: Stripe.Event;
-
     try {
         event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
     } catch (error) {
         console.error('Webhook signature verification failed:', error);
-        return NextResponse.json(
-            { error: 'Webhook signature verification failed' },
-            { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
     }
 
-    // Handle specific Stripe events
-    switch (event.type) {
-        case 'checkout.session.completed': {
-            const session = event.data.object as Stripe.Checkout.Session;
+    console.log(`Processing Stripe event: ${event.type}`);
 
-            // Access metadata safely with optional chaining
-            const clerkUserId = session?.metadata?.clerkUserId;
-            const prismaUserId = session?.metadata?.userId;
+    try {
+        switch (event.type) {
+            case 'checkout.session.completed': {
+                const session = event.data.object as Stripe.Checkout.Session;
 
-            if (!clerkUserId || !prismaUserId) {
-                console.error('Missing user IDs in metadata', session.metadata);
-                return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
-            }
+                // Make sure this is a subscription checkout
+                if (session.mode !== 'subscription' || !session.subscription) {
+                    console.log('Not a subscription checkout, skipping');
+                    break;
+                }
 
-            try {
-                // Update Clerk user metadata
-                await clerk.users.updateUserMetadata(clerkUserId, {
-                    publicMetadata: {
-                        subscription: { status: 'active' }
+                // Get metadata from the session
+                const clerkUserId = session.metadata?.clerkUserId;
+                const userId = session.metadata?.userId;
+
+                if (!clerkUserId || !userId) {
+                    console.error('Missing user IDs in checkout session metadata', session.id);
+                    return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
+                }
+
+                console.log(`Checkout completed for user ${userId} (Clerk ID: ${clerkUserId})`);
+
+                // Get subscription ID
+                const subscriptionId = session.subscription as string;
+
+                // IMPORTANT: Copy metadata from checkout session to the subscription
+                // This ensures the metadata is available for future subscription events
+                await stripe.subscriptions.update(subscriptionId, {
+                    metadata: {
+                        clerkUserId,
+                        userId
                     }
                 });
 
-                // Update Prisma subscription record
-                await prisma.subscription.upsert({
-                    where: { userId: prismaUserId },
-                    update: {
-                        tier: 'PRO', // Match your TierType enum
-                        status: 'ACTIVE', // Match your SubStatus enum
-                        paymentId: session.subscription?.toString() || session.id,
-                        currentPeriodStart: new Date(),
-                        currentPeriodEnd: session.expires_at ? new Date(session.expires_at * 1000) : undefined
-                    },
-                    create: {
-                        userId: prismaUserId,
-                        tier: 'PRO', // Match your TierType enum
-                        status: 'ACTIVE', // Match your SubStatus enum
-                        paymentId: session.subscription?.toString() || session.id,
-                        currentPeriodStart: new Date(),
-                        currentPeriodEnd: session.expires_at ? new Date(session.expires_at * 1000) : undefined
-                    },
-                });
-            } catch (error) {
-                console.error('Error updating user subscription status:', error);
-                return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
-            }
+                console.log(`Metadata copied to subscription ${subscriptionId}`);
 
-            break;
-        }
+                // Fetch subscription details
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-        case 'customer.subscription.deleted': {
-            const subscription = event.data.object as Stripe.Subscription;
-
-            // Access metadata safely with optional chaining
-            const clerkUserId = subscription?.metadata?.clerkUserId;
-            const prismaUserId = subscription?.metadata?.userId;
-
-            if (!clerkUserId || !prismaUserId) {
-                console.error('Missing user IDs in metadata', subscription.metadata);
-                return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
-            }
-
-            try {
                 // Update Clerk user metadata
-                await clerk.users.updateUserMetadata(clerkUserId, {
-                    publicMetadata: {
-                        subscription: { status: 'inactive' }
-                    }
-                });
-
-                // Update Prisma subscription record
-                await prisma.subscription.update({
-                    where: { userId: prismaUserId },
-                    data: {
-                        tier: 'FREE', // Match your TierType enum
-                        status: 'INACTIVE', // Match your SubStatus enum
-                        currentPeriodEnd: new Date(), // End the subscription now
-                    },
-                });
-            } catch (error) {
-                console.error('Error updating user subscription status:', error);
-                return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
-            }
-
-            break;
-        }
-
-        // Handle invoice payment succeeded
-        case 'invoice.payment_succeeded': {
-            const invoice = event.data.object as Stripe.Invoice;
-            if (invoice.subscription) {
-                const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
-
-                // Get user IDs from subscription metadata
-                const clerkUserId = subscription?.metadata?.clerkUserId;
-                const prismaUserId = subscription?.metadata?.userId;
-
-                if (clerkUserId && prismaUserId) {
-                    // Update subscription period end date in your database
-                    await prisma.subscription.update({
-                        where: { userId: prismaUserId },
-                        data: {
-                            currentPeriodStart: new Date(subscription.current_period_start * 1000),
-                            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+                try {
+                    const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+                    await clerk.users.updateUser(clerkUserId, {
+                        privateMetadata: {
+                            subscription: {
+                                status: 'active',
+                                tier: 'PRO',
+                                subscriptionId
+                            },
                         },
                     });
+                } catch (error) {
+                    console.error('Failed to update Clerk metadata:', error);
                 }
+
+                // Calculate period dates
+                const periodStart = new Date(subscription.current_period_start * 1000);
+                const periodEnd = new Date(subscription.current_period_end * 1000);
+
+                // Store subscription in database
+                await prisma.subscription.upsert({
+                    where: { userId },
+                    update: {
+                        tier: 'PRO',
+                        status: 'ACTIVE',
+                        paymentId: subscriptionId,
+                        currentPeriodStart: periodStart,
+                        currentPeriodEnd: periodEnd,
+                        updatedAt: new Date()
+                    },
+                    create: {
+                        userId,
+                        tier: 'PRO',
+                        status: 'ACTIVE',
+                        paymentId: subscriptionId,
+                        currentPeriodStart: periodStart,
+                        currentPeriodEnd: periodEnd
+                    },
+                });
+
+                console.log(`Subscription created/updated for user ${userId}`);
+                break;
             }
-            break;
+
+            case 'invoice.payment_succeeded': {
+                const invoice = event.data.object as Stripe.Invoice;
+                const subscriptionId = invoice.subscription as string;
+
+                if (!subscriptionId) {
+                    console.log('No subscription associated with this invoice');
+                    break;
+                }
+
+                // Fetch subscription to get metadata and period info
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                const userId = subscription.metadata?.userId;
+
+                if (!userId) {
+                    console.log('No userId in subscription metadata, skipping update');
+                    break;
+                }
+
+                // Update subscription period in database
+                await prisma.subscription.updateMany({
+                    where: {
+                        userId,
+                        paymentId: subscriptionId
+                    },
+                    data: {
+                        status: 'ACTIVE',
+                        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+                        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+                        updatedAt: new Date()
+                    }
+                });
+
+                console.log(`Subscription renewed for user ${userId}`);
+                break;
+            }
+
+            case 'invoice.payment_failed': {
+                const invoice = event.data.object as Stripe.Invoice;
+                const subscriptionId = invoice.subscription as string;
+
+                if (!subscriptionId) {
+                    console.log('No subscription associated with this invoice');
+                    break;
+                }
+
+                // Fetch subscription to get metadata
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                const userId = subscription.metadata?.userId;
+                const clerkUserId = subscription.metadata?.clerkUserId;
+
+                if (!userId) {
+                    console.log('No userId in subscription metadata, skipping update');
+                    break;
+                }
+
+                // Mark subscription as past_due in database
+                await prisma.subscription.updateMany({
+                    where: {
+                        userId,
+                        paymentId: subscriptionId
+                    },
+                    data: {
+                        status: 'PAST_DUE',
+                        updatedAt: new Date()
+                    }
+                });
+
+                // Update Clerk if we have the clerkUserId
+                if (clerkUserId) {
+                    try {
+                        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+                        await clerk.users.updateUser(clerkUserId, {
+                            privateMetadata: {
+                                subscription: {
+                                    status: 'past_due',
+                                    tier: 'PRO',
+                                    subscriptionId
+                                },
+                            },
+                        });
+                    } catch (error) {
+                        console.error('Failed to update Clerk metadata:', error);
+                    }
+                }
+
+                console.log(`Subscription marked as past due for user ${userId}`);
+                break;
+            }
+
+            case 'customer.subscription.updated': {
+                const subscription = event.data.object as Stripe.Subscription;
+                const userId = subscription.metadata?.userId;
+                const clerkUserId = subscription.metadata?.clerkUserId;
+
+                if (!userId) {
+                    console.log('No userId in subscription metadata, skipping update');
+                    break;
+                }
+
+                // Map Stripe status to your status enum
+                let status;
+                switch (subscription.status) {
+                    case 'active':
+                    case 'trialing':
+                        status = 'ACTIVE';
+                        break;
+                    case 'past_due':
+                        status = 'PAST_DUE';
+                        break;
+                    default:
+                        status = 'INACTIVE';
+                }
+
+                // Update subscription in database
+                await prisma.subscription.updateMany({
+                    where: {
+                        userId,
+                        paymentId: subscription.id
+                    },
+                    data: {
+                        // @ts-ignore
+                        status: status,
+                        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+                        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+                        updatedAt: new Date()
+                    }
+                });
+
+                // Update Clerk if we have the clerkUserId
+                if (clerkUserId) {
+                    try {
+                        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+                        await clerk.users.updateUser(clerkUserId, {
+                            privateMetadata: {
+                                subscription: {
+                                    status: subscription.status,
+                                    tier: status === 'ACTIVE' ? 'PRO' : 'FREE',
+                                    subscriptionId: subscription.id
+                                },
+                            },
+                        });
+                    } catch (error) {
+                        console.error('Failed to update Clerk metadata:', error);
+                    }
+                }
+
+                console.log(`Subscription updated for user ${userId} to status ${status}`);
+                break;
+            }
+
+            case 'customer.subscription.deleted': {
+                const subscription = event.data.object as Stripe.Subscription;
+                const userId = subscription.metadata?.userId;
+                const clerkUserId = subscription.metadata?.clerkUserId;
+
+                if (!userId) {
+                    console.log('No userId in subscription metadata, skipping update');
+                    break;
+                }
+
+                // Update subscription in database
+                await prisma.subscription.updateMany({
+                    where: {
+                        userId,
+                        paymentId: subscription.id
+                    },
+                    data: {
+                        status: 'INACTIVE',
+                        tier: 'FREE',
+                        updatedAt: new Date()
+                    }
+                });
+
+                // Update Clerk if we have the clerkUserId
+                if (clerkUserId) {
+                    try {
+                        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+                        await clerk.users.updateUser(clerkUserId, {
+                            privateMetadata: {
+                                subscription: {
+                                    status: 'inactive',
+                                    tier: 'FREE',
+                                },
+                            },
+                        });
+                    } catch (error) {
+                        console.error('Failed to update Clerk metadata:', error);
+                    }
+                }
+
+                console.log(`Subscription canceled for user ${userId}`);
+                break;
+            }
+
+            default:
+                console.log(`Unhandled event type: ${event.type}`);
         }
 
-        // Handle invoice payment failed
-        case 'invoice.payment_failed': {
-            const invoice = event.data.object as Stripe.Invoice;
-            if (invoice.subscription) {
-                console.log(`Payment failed for subscription: ${invoice.subscription}`);
-                // Here you could update the status or send a notification
-            }
-            break;
-        }
-
-        default:
-            console.log(`Unhandled event type: ${event.type}`);
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error processing webhook:', error);
+        return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
-
-    return NextResponse.json({ received: true });
 }
