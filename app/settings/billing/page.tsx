@@ -19,5 +19,12 @@ export default async function BillingPage() {
 
     const isSubscribed = user?.subscriptions?.status === 'ACTIVE';
 
-    return <BillingPageClient isSubscribed={isSubscribed} />;
+    // return <BillingPageClient isSubscribed={isSubscribed} />;
+
+    return <BillingPageClient subscription={{
+        isSubscribed: Boolean(user?.subscriptions),
+        tier: user?.subscriptions?.tier,
+        status: user?.subscriptions?.status,
+        currentPeriodEnd: user?.subscriptions?.currentPeriodEnd as Date
+    }} />
 }

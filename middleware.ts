@@ -1,95 +1,24 @@
-// import { NextResponse } from 'next/server';
-// import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-// import type { NextRequest } from 'next/server';
-//
-// // Define custom session claims type
-// interface CustomSessionClaims {
-//     metadata: {
-//         subscription?: {
-//             status?: string;
-//         };
-//     };
-// }
-//
-// // Define routes that require a paid subscription
-// const PAID_ROUTES = createRouteMatcher([
-//     '/app/premium(.*)',
-//     '/app/exercises(.*)',
-//     '/app/patients(.*)',
-//     '/app/analytics(.*)',
-// ]);
-//
-// // Public routes that don't require authentication
-// const PUBLIC_ROUTES = createRouteMatcher([
-//     '/',
-//     '/api/webhooks/clerk(.*)',
-//     '/api/webhooks/stripe(.*)',
-//     '/sign-in(.*)',
-//     '/sign-up(.*)',
-//     '/pricing',
-//     '/about',
-//     '/contact',
-// ]);
-//
-// export const middleware = clerkMiddleware(async (auth, req: NextRequest) => {
-//     const authData = await auth();
-//     const { userId, sessionClaims, redirectToSignIn } = authData;
-//
-//     const path = req.nextUrl.pathname;
-//
-//     if (PUBLIC_ROUTES(req)) {
-//         return NextResponse.next();
-//     }
-//
-//     if (!userId) {
-//         return redirectToSignIn({ returnBackUrl: req.url });
-//     }
-//
-//     if (!PAID_ROUTES(req)) {
-//         return NextResponse.next();
-//     }
-//
-//     try {
-//         const claims = sessionClaims as unknown as CustomSessionClaims;
-//         const subscriptionStatus = claims?.metadata?.subscription?.status;
-//         const isActive = subscriptionStatus === 'active';
-//
-//         if (!isActive) {
-//             return NextResponse.redirect(
-//                 new URL('/settings/billing?required=premium', req.url)
-//             );
-//         }
-//
-//         return NextResponse.next();
-//     } catch (error) {
-//         console.error('Error in subscription middleware:', error);
-//         return NextResponse.next();
-//     }
-// });
-//
-// export const config = {
-//     matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
-// };
+import {NextResponse} from 'next/server';
+import {clerkMiddleware, createRouteMatcher} from '@clerk/nextjs/server';
+import type {NextRequest} from 'next/server';
+import {createClerkClient} from '@clerk/clerk-sdk-node';
 
-import { NextResponse } from 'next/server';
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import type { NextRequest } from 'next/server';
+const clerk = createClerkClient({secretKey: process.env.CLERK_SECRET_KEY});
 
 // Define custom session claims type
 interface CustomSessionClaims {
-    metadata: {
-        subscription?: {
-            status?: string;
-        };
+    subscription?: {
+        status?: string;
+        tier?: string;
+        subscriptionId?: string;
+        currentPeriodEnd?: string;
     };
 }
 
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = createRouteMatcher([
     '/',
-    '/api/(.*)', // Add this line to exclude all API routes from middleware
-    '/api/webhooks/clerk(.*)',
-    '/api/webhooks/stripe(.*)',
+    '/api/webhooks/(.*)', // More specific to allow only webhook endpoints
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/pricing',
@@ -100,33 +29,48 @@ const PUBLIC_ROUTES = createRouteMatcher([
 
 export const middleware = clerkMiddleware(async (auth, req: NextRequest) => {
     const authData = await auth();
-    const { userId, sessionClaims, redirectToSignIn } = authData;
+    const {userId, sessionClaims, redirectToSignIn} = authData;
+    const path = req.nextUrl.pathname;
 
-    // Allow public routes
+    // Check if route is public
     if (PUBLIC_ROUTES(req)) {
         return NextResponse.next();
     }
 
     // Redirect to sign-in if not authenticated
     if (!userId) {
-        return redirectToSignIn({ returnBackUrl: req.url });
+        return redirectToSignIn({returnBackUrl: req.url});
+    }
+    // API routes (except webhooks) should be accessible to authenticated users
+    if (path.startsWith('/api/') && !path.startsWith('/api/webhooks/')) {
+        return NextResponse.next();
     }
 
-    // Check subscription status for ALL app routes
+    // Check subscription status for protected routes
     try {
         const claims = sessionClaims as unknown as CustomSessionClaims;
-        const subscriptionStatus = claims?.metadata?.subscription?.status;
-        const isActive = subscriptionStatus === 'active';
+        const user = await clerk.users.getUser(userId);
+        const privateMetadata = user.privateMetadata as CustomSessionClaims;
 
-        if (!isActive) {
+        const subscription = privateMetadata?.subscription;
+
+        const hasActiveSubscription =
+            subscription?.status === 'active' &&
+            (subscription?.tier === 'PRO' || subscription?.tier === 'pro');
+
+        if (!hasActiveSubscription) {
+            console.log(`Redirecting user ${userId} to billing: No active subscription`);
             return NextResponse.redirect(
                 new URL('/settings/billing?required=true', req.url)
             );
         }
 
+        // All checks passed, continue to protected route
         return NextResponse.next();
     } catch (error) {
         console.error('Error in subscription middleware:', error);
+        // On error, still allow access but log the issue
+        // You may want to change this behavior in production
         return NextResponse.next();
     }
 });

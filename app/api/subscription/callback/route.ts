@@ -1,6 +1,5 @@
 // app/api/subscription/callback/route.ts
 import { NextResponse } from "next/server"
-import { prisma } from "@/db"
 
 export async function POST(req: Request) {
     try {

@@ -10,6 +10,37 @@ const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute window
 const MAX_REQUESTS_PER_WINDOW = 50;
 const requestTimestamps: number[] = [];
 
+// Helper function to update Clerk user metadata with subscription details
+async function updateClerkUserMetadata(
+    clerkUserId: string,
+    status: string,
+    tier: string,
+    subscriptionId?: string,
+    currentPeriodEnd?: number
+) {
+    if (!clerkUserId) return;
+
+    try {
+        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+
+        const metadata = {
+            subscription: {
+                status,
+                tier,
+                ...(subscriptionId && { subscriptionId }),
+                ...(currentPeriodEnd && {
+                    currentPeriodEnd: new Date(currentPeriodEnd * 1000).toISOString()
+                })
+            }
+        };
+
+        await clerk.users.updateUser(clerkUserId, { privateMetadata: metadata });
+        console.log(`Clerk metadata updated for user ${clerkUserId}`);
+    } catch (error) {
+        console.error(`Failed to update Clerk metadata for user ${clerkUserId}:`, error);
+    }
+}
+
 export async function POST(req: Request) {
     // Basic rate limiting
     const now = Date.now();
@@ -83,20 +114,13 @@ export async function POST(req: Request) {
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
                 // Update Clerk user metadata
-                try {
-                    const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-                    await clerk.users.updateUser(clerkUserId, {
-                        privateMetadata: {
-                            subscription: {
-                                status: 'active',
-                                tier: 'PRO',
-                                subscriptionId
-                            },
-                        },
-                    });
-                } catch (error) {
-                    console.error('Failed to update Clerk metadata:', error);
-                }
+                await updateClerkUserMetadata(
+                    clerkUserId,
+                    'active',
+                    'PRO',
+                    subscriptionId,
+                    subscription.current_period_end
+                );
 
                 // Calculate period dates
                 const periodStart = new Date(subscription.current_period_start * 1000);
@@ -139,6 +163,7 @@ export async function POST(req: Request) {
                 // Fetch subscription to get metadata and period info
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
                 const userId = subscription.metadata?.userId;
+                const clerkUserId = subscription.metadata?.clerkUserId;
 
                 if (!userId) {
                     console.log('No userId in subscription metadata, skipping update');
@@ -158,6 +183,17 @@ export async function POST(req: Request) {
                         updatedAt: new Date()
                     }
                 });
+
+                // Update Clerk user metadata with new period end date
+                if (clerkUserId) {
+                    await updateClerkUserMetadata(
+                        clerkUserId,
+                        'active',
+                        'PRO',
+                        subscriptionId,
+                        subscription.current_period_end
+                    );
+                }
 
                 console.log(`Subscription renewed for user ${userId}`);
                 break;
@@ -196,20 +232,13 @@ export async function POST(req: Request) {
 
                 // Update Clerk if we have the clerkUserId
                 if (clerkUserId) {
-                    try {
-                        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-                        await clerk.users.updateUser(clerkUserId, {
-                            privateMetadata: {
-                                subscription: {
-                                    status: 'past_due',
-                                    tier: 'PRO',
-                                    subscriptionId
-                                },
-                            },
-                        });
-                    } catch (error) {
-                        console.error('Failed to update Clerk metadata:', error);
-                    }
+                    await updateClerkUserMetadata(
+                        clerkUserId,
+                        'past_due',
+                        'PRO',
+                        subscriptionId,
+                        subscription.current_period_end
+                    );
                 }
 
                 console.log(`Subscription marked as past due for user ${userId}`);
@@ -257,20 +286,13 @@ export async function POST(req: Request) {
 
                 // Update Clerk if we have the clerkUserId
                 if (clerkUserId) {
-                    try {
-                        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-                        await clerk.users.updateUser(clerkUserId, {
-                            privateMetadata: {
-                                subscription: {
-                                    status: subscription.status,
-                                    tier: status === 'ACTIVE' ? 'PRO' : 'FREE',
-                                    subscriptionId: subscription.id
-                                },
-                            },
-                        });
-                    } catch (error) {
-                        console.error('Failed to update Clerk metadata:', error);
-                    }
+                    await updateClerkUserMetadata(
+                        clerkUserId,
+                        subscription.status,
+                        status === 'ACTIVE' ? 'PRO' : 'FREE',
+                        subscription.id,
+                        subscription.current_period_end
+                    );
                 }
 
                 console.log(`Subscription updated for user ${userId} to status ${status}`);
@@ -302,19 +324,11 @@ export async function POST(req: Request) {
 
                 // Update Clerk if we have the clerkUserId
                 if (clerkUserId) {
-                    try {
-                        const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
-                        await clerk.users.updateUser(clerkUserId, {
-                            privateMetadata: {
-                                subscription: {
-                                    status: 'inactive',
-                                    tier: 'FREE',
-                                },
-                            },
-                        });
-                    } catch (error) {
-                        console.error('Failed to update Clerk metadata:', error);
-                    }
+                    await updateClerkUserMetadata(
+                        clerkUserId,
+                        'inactive',
+                        'FREE'
+                    );
                 }
 
                 console.log(`Subscription canceled for user ${userId}`);

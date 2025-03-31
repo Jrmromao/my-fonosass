@@ -1,10 +1,15 @@
-// components/SubscribeButton.tsx
 'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
 
-export function SubscribeButton() {
+interface SubscribeButtonProps {
+    className?: string;
+    priceId?: string;
+}
+
+export function SubscribeButton({ className, priceId }: SubscribeButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +23,8 @@ export function SubscribeButton() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: priceId ? JSON.stringify({ priceId }) : undefined
             });
 
             if (!response.ok) {
@@ -53,8 +59,9 @@ export function SubscribeButton() {
             <Button
                 onClick={handleSubscribe}
                 disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+                className={className || "bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"}
             >
+                <Sparkles size={18} className="mr-2" />
                 {isLoading ? 'Processing...' : 'Subscribe Now'}
             </Button>
         </div>
