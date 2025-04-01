@@ -15,27 +15,16 @@ declare global {
         include: { role: true; practice: true; patients: true; assessments: true }
     }>
 
-    type Patient = Prisma.PatientGetPayload<{
-        include: { practice: true; doctor: true; activities: true; assessments: true }
-    }>
-
     type Activity = Prisma.ActivityGetPayload<{
         include: { practice: true; patients: true; assessments: true }
     }>
 
-    type Assessment = Prisma.AssessmentGetPayload<{
-        include: { patient: true; activity: true; assessedBy: true }
-    }>
-
-    type Practice = Prisma.PracticeGetPayload<{
-        include: { plan: true; users: true; patients: true; activities: true }
-    }>
 
     type Plan = Prisma.PlanGetPayload<{
         include: { practices: true }
     }>
 
-    type Role = 'ADMIN' | 'DOCTOR' | 'STAFF'
+    type Role = 'ADMIN' | 'USER'
     type PlanType = 'FREE' | 'PRO' | 'ENTERPRISE'
 
     interface ServerResponse<T> {

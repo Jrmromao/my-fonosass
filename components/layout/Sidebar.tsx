@@ -4,20 +4,21 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Home, LogOut, Menu, Plane, Map, Calendar, Settings, X } from "lucide-react"
+import { Home, LogOut, Menu, Plane, Map, Calendar, Settings, X, Users } from "lucide-react"
 import { useClerk, UserButton, useUser } from "@clerk/nextjs"
 
 // Updated sidebar items for TripPlan AI
 const sidebarItems = [
     {
-        title: "Dashboard",
+        title: "Home",
         icon: Home,
         href: "/dashboard",
     },
     {
-        title: "My Trips",
-        icon: Plane,
-        href: "/dashboard/trips",
+        title: "Registered Users",
+        icon: Users,
+        href: "/dashboard/users",
+        visible: false
     },
     {
         title: "Explore",
@@ -144,7 +145,7 @@ export function Sidebar({ className }: SidebarProps) {
                         {sidebarItems.map((item) => {
                             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
                             return (
-                                <li key={item.href}>
+                                <li key={item.href} className={`hidden:${item.visible}`}>
                                     <Link
                                         href={item.href}
                                         className={cn(

@@ -20,6 +20,17 @@ export const registerSchema = z.object({
 });
 
 
+
+export const userSchema = z.object({
+    clerkUserId: z.string().optional(),
+    email: z.string().email(),
+    username: z.string(),
+    fullName: z.string(),
+    role: z.enum(['USER', 'ADMIN']).optional().default('USER')
+});
+
+
+
 export const practiceSchema = z.object({
     name: z.string().min(3, "Practice name must be at least 3 characters"),
     address: z.string().optional(),
@@ -153,3 +164,52 @@ export type ActivityInput = z.infer<typeof activitySchema>
 export type AssessmentInput = z.infer<typeof assessmentSchema>
 export type PracticeInput = z.infer<typeof practiceSchema>
 export type UserInput = z.infer<typeof createUserSchema>
+
+
+// export const userSchema = z.object({
+//     firstName: z.string().min(1, "First name is required"),
+//     lastName: z.string().min(1, "Last name is required"),
+//     email: z
+//         .string()
+//         .min(1, "Email is required")
+//         .email("Invalid email format")
+//         .refine(async (email) => {
+//             try {
+//                 const response = await fetch(`${baseUrl}/api/validate/email`, {
+//                     method: "POST",
+//                     headers: { "Content-Type": "application/json" },
+//                     body: JSON.stringify({ email }),
+//                     credentials: "same-origin",
+//                     cache: "no-store",
+//                 });
+//                 if (!response.ok) return false;
+//                 const data = await response.json();
+//                 return !data.exists;
+//             } catch (error) {
+//                 console.error("Email validation error:", error);
+//                 return false;
+//             }
+//         }, "Email already exists"),
+//     title: z.string().min(1, "Title is required"),
+//     employeeId: z
+//         .string()
+//         .min(1, "Employee ID is required")
+//         .refine(async (employeeId) => {
+//             try {
+//                 const response = await fetch(`${baseUrl}/api/validate/employeeId`, {
+//                     method: "POST",
+//                     headers: { "Content-Type": "application/json" },
+//                     body: JSON.stringify({ employeeId }),
+//                     credentials: "same-origin",
+//                     cache: "no-store",
+//                 });
+//                 if (!response.ok) return false;
+//                 const data = await response.json();
+//                 return !data.exists;
+//             } catch (error) {
+//                 console.error("EmployeeId validation error:", error);
+//                 return false;
+//             }
+//         }, "Employee ID already exists"),
+//     roleId: z.string().min(1, "Role is required"),
+// });
