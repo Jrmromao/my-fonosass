@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useUserQuery } from '@/hooks/queries/useUserQuery'
 import { UserRole } from '@prisma/client'
+import {useUserRole} from "@/hooks/useUserRole";
 
 // Zod schema for user creation matching Prisma UserRole
 const createUserSchema = z.object({
@@ -18,10 +19,13 @@ const createUserSchema = z.object({
     clerkUserId: z.string().optional()
 })
 
+
+
 const CreateUserForm: React.FC<{
     onClose?: () => void
 }> = ({ onClose }) => {
     const { createUser, isCreating } = useUserQuery()
+    const userRole = useUserRole()
 
     const {
         register,
@@ -54,6 +58,9 @@ const CreateUserForm: React.FC<{
     return (
         <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
             <h2 className="text-2xl font-bold mb-6 text-center">Create New User</h2>
+
+            <h3>ROLE {userRole.role}</h3>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Email Input */}
                 <div>

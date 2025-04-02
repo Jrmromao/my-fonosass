@@ -1,9 +1,8 @@
 import {NextResponse} from 'next/server';
 import {Webhook} from 'svix';
-import {WebhookEvent} from '@clerk/nextjs/server';
+import {WebhookEvent, clerkClient} from '@clerk/nextjs/server';
 import {Prisma, UserRole} from '@prisma/client';
 import {prisma} from "@/app/db";
-import {createClerkClient} from '@clerk/clerk-sdk-node';
 
 // Constants for security configurations
 const MAX_PAYLOAD_SIZE = 1048576; // 1MB in bytes
@@ -17,18 +16,6 @@ const requestTimestamps: number[] = [];
 // Email validation regex (basic validation - consider using a library in production)
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// Initialize Clerk client safely
-let clerk: ReturnType<typeof createClerkClient> | null = null;
-try {
-    const secretKey = process.env.CLERK_SECRET_KEY;
-    if (secretKey) {
-        clerk = createClerkClient({ secretKey });
-    } else {
-        console.error('Missing CLERK_SECRET_KEY - Clerk client initialization failed');
-    }
-} catch (error) {
-    console.error('Error initializing Clerk client:', error);
-}
 
 // Helper function to validate user ID format
 function isValidUserId(userId: string): boolean {
@@ -47,6 +34,10 @@ function sanitizeString(input: string | null | undefined): string {
     // Basic sanitization - remove control characters and limit length
     return input.replace(/[\u0000-\u001F\u007F-\u009F]/g, '').trim().substring(0, 255);
 }
+
+const clerk = await  clerkClient();
+
+
 
 // Helper function to create or update a user with proper error handling and input validation
 async function createOrUpdateUser(clerkUserId: string, email: string, firstName: string | null, lastName: string | null): Promise<boolean> {

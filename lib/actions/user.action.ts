@@ -1,10 +1,10 @@
 'use server'
 
-import { PrismaClient, User, UserRole } from '@prisma/client'
-import { z } from 'zod'
+import {User, UserRole} from '@prisma/client'
+import {z} from 'zod'
+import { prisma } from '@/app/db';
 import {userSchema} from "@/lib/schema";
-import {createClerkClient} from "@clerk/clerk-sdk-node";
-import { clerkClient} from '@clerk/express'
+import {clerkClient} from '@clerk/nextjs/server';
 
 
 // Data Transfer Object (DTO) for User
@@ -27,9 +27,11 @@ export type ActionResponse<T> = {
     error?: string
 }
 
-// Instantiate Prisma Client
-const prisma = new PrismaClient()
+
 import crypto from 'crypto'; // Node.js built-in module for random generation
+
+
+const clerk = await clerkClient();
 
 // Mapper function to convert User to UserDto
 const mapUserToDto = (user: User & {
@@ -51,7 +53,7 @@ const mapUserToDto = (user: User & {
 export const remove = async (id: string): Promise<ActionResponse<UserDto>> => {
     try {
         const deletedUser = await prisma.user.delete({
-            where: { id },
+            where: {id},
             include: {
                 createdActivities: true,
                 subscriptions: true
@@ -74,7 +76,7 @@ export const remove = async (id: string): Promise<ActionResponse<UserDto>> => {
 export const findById = async (id: string): Promise<ActionResponse<UserDto>> => {
     try {
         const user = await prisma.user.findUnique({
-            where: { id },
+            where: {id},
             include: {
                 createdActivities: true,
                 subscriptions: true
@@ -125,13 +127,70 @@ export const getAll = async (): Promise<ActionResponse<UserDto[]>> => {
 }
 
 // Insert a new user
-
-
 export const insert = async (
     userData: z.infer<typeof userSchema>
-): Promise<ActionResponse<UserDto>> => {
-    // const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+): Promise<ActionResponse<any>> => {
+    try {
+        console.log('Input data:', userData);
 
+        // Validate input using Zod schema
+        const validatedData = userSchema.parse(userData);
+
+        // Create an invitation instead of directly creating a user
+        const invitation = await clerk.invitations.createInvitation({
+            emailAddress: validatedData.email,
+            redirectUrl: `https://9670-2a06-5900-4049-a000-ed6d-2b62-1333-6b46.ngrok-free.app/onboarding`,
+            publicMetadata: {
+                role: validatedData.role || 'USER',
+                fullName: validatedData.fullName || '',
+                invitedAt: new Date().toISOString(),
+            },
+        });
+
+        console.log('Invitation created:', invitation.id);
+        console.log('Invitation email sent to:', validatedData.email);
+
+        return {
+            success: true,
+            data: {
+                email: validatedData.email,
+            },
+        };
+    } catch (error: unknown) {
+        console.error('Error creating invitation:', JSON.stringify(error, null, 2));
+
+        // Type guard for Clerk-specific errors
+        if (typeof error === 'object' && error !== null) {
+            if ('status' in error && error.status === 422 && 'clerkError' in error) {
+                const clerkError = error as { errors?: { message?: string }[] };
+                return {
+                    success: false,
+                    error: `Clerk Error: ${clerkError.errors?.[0]?.message || 'Invalid request'}`,
+                };
+            }
+
+            // Type guard for standard Error
+            if (error instanceof Error) {
+                return {
+                    success: false,
+                    error: error.message,
+                };
+            }
+        }
+
+        // Fallback for unknown error types
+        return {
+            success: false,
+            error: 'Failed to create invitation',
+        };
+    }
+};
+
+
+
+export const invite = async (
+    userData: z.infer<typeof userSchema>
+): Promise<ActionResponse<UserDto>> => {
     try {
         console.log('Input data:', userData);
 
@@ -142,44 +201,19 @@ export const insert = async (
         const randomPassword = generateRandomPassword();
         console.log('Generated password:', randomPassword); // For debugging; remove in production
 
-        // Create user in Clerk
-        // const clerkUser = await clerkClient.users.createUser({
-        //     emailAddress: [validatedData.email],
-        //     password: randomPassword,
-        //     firstName: validatedData.fullName.split(' ')[0],
-        //     lastName: validatedData.fullName.split(' ').slice(1).join(' ') || '',
-        //     username: "elisabete-romao_new",
-        //     privateMetadata: {
-        //         role: validatedData.role || 'USER',
-        //     },
-        // });
 
-
-        // const clerkUser = await clerkClient.users.createUser({
-        //     emailAddress: [validatedData.email],
-        //     skipPasswordChecks: true,
-        //     firstName: validatedData.fullName.split(' ')[0],
-        //     lastName: validatedData.fullName.split(' ').slice(1).join(' ') || '',
-        //     username: "elisabete",
-        //     privateMetadata: {
-        //         role: validatedData.role || 'USER',
-        //     },
-        // });
-
-        const invitation = await clerkClient.invitations.createInvitation({
+        const invitation = await clerk.invitations.createInvitation({
             emailAddress: validatedData.email,
             redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding`,
             publicMetadata: {
                 role: validatedData.role || 'USER',
             },
-            // inviterUserId: process.env.CLERK_ADMIN_USER_ID, // Uncomment if needed
         })
 
-        console.log(invitation)
 
         // Create user in your database
         const newUser = await prisma.user.findUnique({
-            where: { clerkUserId: invitation.id },
+            where: {clerkUserId: invitation.id},
             include: {
                 createdActivities: true,
                 subscriptions: true,
@@ -187,7 +221,6 @@ export const insert = async (
         });
 
         console.log(newUser)
-
 
 
         // Send invitation email via Clerk Invitations API
@@ -234,6 +267,8 @@ export const insert = async (
         };
     }
 };
+
+
 // Update a user
 export const update = async (
     id: string,
@@ -241,7 +276,7 @@ export const update = async (
 ): Promise<ActionResponse<UserDto>> => {
     try {
         const updatedUser = await prisma.user.update({
-            where: { id },
+            where: {id},
             data: userData,
             include: {
                 createdActivities: true,

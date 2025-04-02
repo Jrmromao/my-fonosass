@@ -4,38 +4,12 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Home, LogOut, Menu, Plane, Map, Calendar, Settings, X, Users } from "lucide-react"
+import { Home, LogOut, Menu, Map, Calendar, Settings, X, Users, Gamepad } from "lucide-react"
 import { useClerk, UserButton, useUser } from "@clerk/nextjs"
+import { useUserRole } from "@/hooks/useUserRole"
+import {APP_NAME} from "@/utils/constants";
 
-// Updated sidebar items for TripPlan AI
-const sidebarItems = [
-    {
-        title: "Home",
-        icon: Home,
-        href: "/dashboard",
-    },
-    {
-        title: "Registered Users",
-        icon: Users,
-        href: "/dashboard/users",
-        visible: false
-    },
-    {
-        title: "Explore",
-        icon: Map,
-        href: "/dashboard/explore",
-    },
-    {
-        title: "Itineraries",
-        icon: Calendar,
-        href: "/dashboard/itineraries",
-    },
-    {
-        title: "Settings",
-        icon: Settings,
-        href: "/dashboard/settings",
-    }
-]
+
 
 interface SidebarProps {
     className?: string
@@ -49,15 +23,36 @@ export function Sidebar({ className }: SidebarProps) {
     const { user } = useUser()
     const router = useRouter()
 
+    const userRole = useUserRole()
+
     const handleSignOut = () => {
         signOut(() => router.push('/'))
     }
+
+    const sidebarItems = [
+        {
+            title: "Home",
+            icon: Home,
+            href: "/dashboard",
+        },
+        {
+            title: "Registered Users",
+            icon: Users,
+            href: "/dashboard/users",
+            visible: userRole.role === 'ADMIN'
+        },
+        {
+            title: "Atividades",
+            icon: Gamepad,
+            href: "/dashboard/games",
+        },
+    ]
 
     // Handle resize and set initial collapsed state
     useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth
-            if (width < 768) { // md breakpoint for better tablet experience
+            if (width < 768) { // md breakpoint for tablet experience
                 setIsCollapsed(true)
             } else {
                 setIsCollapsed(false)
@@ -94,7 +89,7 @@ export function Sidebar({ className }: SidebarProps) {
         <>
             <MobileMenuButton />
 
-            {/* Mobile overlay with improved transition */}
+            {/* Mobile overlay with transition */}
             {isMobileMenuOpen && (
                 <div
                     className="md:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300"
@@ -102,21 +97,21 @@ export function Sidebar({ className }: SidebarProps) {
                 />
             )}
 
-            {/* Sidebar with improved layout */}
+            {/* Sidebar with gradient styling to match landing page */}
             <aside className={cn(
-                "fixed top-0 left-0 z-40 h-screen flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
+                "fixed top-0 left-0 z-40 h-screen flex flex-col bg-gradient-to-b from-cyan-50 to-blue-50 dark:from-indigo-900 dark:to-blue-900 border-r border-blue-200 dark:border-blue-800 transition-all duration-300 ease-in-out",
                 isCollapsed ? "w-20" : "w-64",
                 isMobileMenuOpen ? "translate-x-0 shadow-xl" : "-translate-x-full md:translate-x-0",
                 className
             )}>
                 {/* Logo */}
-                <div className="h-16 flex items-center px-4 border-b border-gray-100">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
+                <div className="h-16 flex items-center px-4 border-b border-blue-100 dark:border-blue-800">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-yellow-400">
                         <span className="text-sm font-black text-white">TP</span>
                     </div>
                     {!isCollapsed && (
-                        <span className="ml-3 text-lg font-semibold text-blue-600">
-                            TripPlan AI
+                        <span className="ml-3 text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
+                            {APP_NAME}
                         </span>
                     )}
 
@@ -124,7 +119,7 @@ export function Sidebar({ className }: SidebarProps) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="ml-auto hidden md:flex"
+                        className="ml-auto hidden md:flex text-blue-600 dark:text-blue-300 hover:text-pink-500 dark:hover:text-pink-400"
                         onClick={() => setIsCollapsed(!isCollapsed)}
                     >
                         {isCollapsed ? (
@@ -139,44 +134,48 @@ export function Sidebar({ className }: SidebarProps) {
                     </Button>
                 </div>
 
-                {/* Nav items with improved active state and spacing */}
+                {/* Nav items with improved active state and landing page styling */}
                 <nav className="flex-1 px-3 py-6 overflow-y-auto">
                     <ul className="space-y-2">
-                        {sidebarItems.map((item) => {
-                            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-                            return (
-                                <li key={item.href} className={`hidden:${item.visible}`}>
-                                    <Link
-                                        href={item.href}
-                                        className={cn(
-                                            "flex items-center rounded-lg transition-all duration-200",
-                                            isCollapsed ? "justify-center p-3" : "px-4 py-3",
-                                            isActive
-                                                ? "bg-blue-50 text-blue-600 font-medium"
-                                                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                                        )}
-                                    >
-                                        <item.icon className={cn(
-                                            "flex-shrink-0",
-                                            isActive ? "text-blue-600" : "text-gray-500",
-                                            isCollapsed ? "h-6 w-6" : "h-5 w-5"
-                                        )} />
+                        {sidebarItems
+                            .filter(item => item.visible === undefined || item.visible === true)
+                            .map((item) => {
+                                const isActive = pathname === item.href || pathname ===  `${item.href}/`
+                                
 
-                                        {!isCollapsed && (
-                                            <span className="ml-3 text-sm">
-                                                {item.title}
-                                            </span>
-                                        )}
-                                    </Link>
-                                </li>
-                            )
-                        })}
+                                return (
+                                    <li key={item.href}>
+                                        <Link
+                                            href={item.href}
+                                            className={cn(
+                                                "flex items-center rounded-lg transition-all duration-200",
+                                                isCollapsed ? "justify-center p-3" : "px-4 py-3",
+                                                isActive
+                                                    ? "bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-800/50 dark:to-purple-800/50 text-indigo-600 dark:text-indigo-300 font-medium"
+                                                    : "text-indigo-600 dark:text-cyan-300 hover:text-pink-500 dark:hover:text-yellow-300 hover:bg-blue-50 dark:hover:bg-indigo-800/50"
+                                            )}
+                                        >
+                                            <item.icon className={cn(
+                                                "flex-shrink-0",
+                                                isActive ? "text-indigo-600 dark:text-indigo-300" : "text-indigo-500 dark:text-cyan-300",
+                                                isCollapsed ? "h-6 w-6" : "h-5 w-5"
+                                            )} />
+
+                                            {!isCollapsed && (
+                                                <span className="ml-3 text-sm">
+                                                    {item.title}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    </li>
+                                )
+                            })}
                     </ul>
                 </nav>
 
-                {/* User profile with improved layout */}
+                {/* User profile with landing page styling */}
                 {user && (
-                    <div className="mt-auto border-t border-gray-200 p-4">
+                    <div className="mt-auto border-t border-blue-200 dark:border-blue-800 p-4">
                         <div className={cn(
                             "flex items-center",
                             !isCollapsed && "justify-between",
@@ -189,34 +188,34 @@ export function Sidebar({ className }: SidebarProps) {
                                 <UserButton />
                                 {!isCollapsed && (
                                     <div className="ml-3 overflow-hidden">
-                                        <p className="text-sm font-medium truncate">
+                                        <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300 truncate">
                                             {user.firstName || "User"}
                                         </p>
-                                        <p className="text-xs text-gray-500 truncate">
+                                        <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate">
                                             {user.primaryEmailAddress?.emailAddress || "user@example.com"}
                                         </p>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Sign out button with improved styling */}
-                            {/*{!isCollapsed ? (*/}
-                            {/*    <button*/}
-                            {/*        onClick={handleSignOut}*/}
-                            {/*        aria-label="Sign out"*/}
-                            {/*        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"*/}
-                            {/*    >*/}
-                            {/*        <LogOut className="h-4 w-4" />*/}
-                            {/*    </button>*/}
-                            {/*) : (*/}
-                            {/*    <button*/}
-                            {/*        onClick={handleSignOut}*/}
-                            {/*        aria-label="Sign out"*/}
-                            {/*        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"*/}
-                            {/*    >*/}
-                            {/*        <LogOut className="h-4 w-4" />*/}
-                            {/*    </button>*/}
-                            {/*)}*/}
+                            {/* Sign out button with landing page styling */}
+                            {!isCollapsed ? (
+                                <button
+                                    onClick={handleSignOut}
+                                    aria-label="Sign out"
+                                    className="p-2 text-indigo-500 hover:text-pink-500 dark:text-indigo-400 dark:hover:text-pink-400 hover:bg-blue-50 dark:hover:bg-indigo-800 rounded-md transition-colors"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleSignOut}
+                                    aria-label="Sign out"
+                                    className="p-2 text-indigo-500 hover:text-pink-500 dark:text-indigo-400 dark:hover:text-pink-400 hover:bg-blue-50 dark:hover:bg-indigo-800 rounded-md transition-colors"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -227,7 +226,6 @@ export function Sidebar({ className }: SidebarProps) {
                 "min-h-screen transition-all duration-300",
                 isCollapsed ? "md:ml-20" : "md:ml-64"
             )}>
-                {/* Your page content will go here */}
             </div>
         </>
     )

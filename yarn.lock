@@ -1484,17 +1484,6 @@
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
 
-"@clerk/backend@^1.21.6":
-  version "1.25.3"
-  resolved "https://registry.yarnpkg.com/@clerk/backend/-/backend-1.25.3.tgz#df6f082e69aa9acef84cbe4cdf97776f1dbf1f8f"
-  integrity sha512-UakIGrxZzTIL7CWX8/RiWNlskKzkcW2dXifO+yUy6kefUlo0m6qRIx6WL/REzyCrbUMo+GfcQJnROiYsw9Uraw==
-  dependencies:
-    "@clerk/shared" "^3.0.2"
-    "@clerk/types" "^4.49.0"
-    cookie "1.0.2"
-    snakecase-keys "8.0.1"
-    tslib "2.8.1"
-
 "@clerk/backend@^1.25.8":
   version "1.25.8"
   resolved "https://registry.yarnpkg.com/@clerk/backend/-/backend-1.25.8.tgz#db270e0b33d33d493d47330ee5ebc0b22642afff"
@@ -1511,26 +1500,6 @@
   resolved "https://registry.yarnpkg.com/@clerk/clerk-react/-/clerk-react-5.25.5.tgz#3ede4e56bf516fce931fd85197ad12221b799ec9"
   integrity sha512-euG4T9EaN4af4YH7N8Fl6hIKnXQl+KSZv1WTLgD4KP90hSpVTMPkhdWeOiRFpNQ5I6WwtkaUPY16nce5y/NTQA==
   dependencies:
-    "@clerk/shared" "^3.2.3"
-    "@clerk/types" "^4.50.1"
-    tslib "2.8.1"
-
-"@clerk/clerk-sdk-node@^5.1.6":
-  version "5.1.6"
-  resolved "https://registry.yarnpkg.com/@clerk/clerk-sdk-node/-/clerk-sdk-node-5.1.6.tgz#fc3d8cf6ed63d9c0956dc643557bb75ec91f9fa7"
-  integrity sha512-KeF5p0XP0gNoCx+YIHrfrkNNADBz8ZabwPAhOiJZ9Wo14r93WlzRA51IE0Qgteej8IpWwnvKu4/MpiV7FFoLqA==
-  dependencies:
-    "@clerk/backend" "^1.21.6"
-    "@clerk/shared" "^2.20.6"
-    "@clerk/types" "^4.40.2"
-    tslib "2.4.1"
-
-"@clerk/express@^1.3.59":
-  version "1.3.59"
-  resolved "https://registry.yarnpkg.com/@clerk/express/-/express-1.3.59.tgz#116b76c4d253f7954137e90c7f6d6acd773ea9a4"
-  integrity sha512-N3o4kmpEZtQQoh/Qf40DSQK1VqGMFKO4KmRhmf7tpZISQGpArvda2pIlByYfkZWicbEvqhUSCbu8RBwt2WBVlQ==
-  dependencies:
-    "@clerk/backend" "^1.25.8"
     "@clerk/shared" "^3.2.3"
     "@clerk/types" "^4.50.1"
     tslib "2.8.1"
@@ -1554,30 +1523,6 @@
     server-only "0.0.1"
     tslib "2.8.1"
 
-"@clerk/shared@^2.20.6":
-  version "2.22.0"
-  resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-2.22.0.tgz#c5c5b6f24241370a0ebb0e0109e8812219f55f9a"
-  integrity sha512-VWBeddOJVa3sqUPdvquaaQYw4h5hACSG3EUDOW7eSu2F6W3BXUozyLJQPBJ9C0MuoeHhOe/DeV8x2KqOgxVZaQ==
-  dependencies:
-    "@clerk/types" "^4.46.1"
-    dequal "2.0.3"
-    glob-to-regexp "0.4.1"
-    js-cookie "3.0.5"
-    std-env "^3.7.0"
-    swr "^2.2.0"
-
-"@clerk/shared@^3.0.2":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-3.0.2.tgz#1c7798440a8b33384ac42dbb4b5b1d2ee5435df5"
-  integrity sha512-d18X5GX70BLAZsJj6VkIjinnkht2Q/TJbhJbTlXZTvs7VOTax6mst5xaIXuS2EX8i/lyejbKg4j2whW7iAW4wA==
-  dependencies:
-    "@clerk/types" "^4.49.0"
-    dequal "2.0.3"
-    glob-to-regexp "0.4.1"
-    js-cookie "3.0.5"
-    std-env "^3.7.0"
-    swr "^2.2.0"
-
 "@clerk/shared@^3.2.3":
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-3.2.3.tgz#50bd6c61516463b17ad8602be93dfc57d2fc6f98"
@@ -1589,13 +1534,6 @@
     js-cookie "3.0.5"
     std-env "^3.7.0"
     swr "^2.2.0"
-
-"@clerk/types@^4.40.2", "@clerk/types@^4.46.1", "@clerk/types@^4.49.0":
-  version "4.49.0"
-  resolved "https://registry.yarnpkg.com/@clerk/types/-/types-4.49.0.tgz#236b78ae42418fcf440c3c7d52d18fc1233af6a9"
-  integrity sha512-ps/hKza4BS1VYuAjCVgALwmJ5xWYDJapxS1Zj4uBjiJRsZovofNznekKwHNIeaicAZZa0Emi+TranGuAam+9kw==
-  dependencies:
-    csstype "3.1.3"
 
 "@clerk/types@^4.50.1":
   version "4.50.1"
@@ -2229,6 +2167,16 @@
   dependencies:
     "@radix-ui/react-primitive" "2.0.0"
 
+"@radix-ui/react-avatar@^1.1.3":
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-avatar/-/react-avatar-1.1.3.tgz#8de2bcebdc38fbe14e952ccacf05ba2cb426bd83"
+  integrity sha512-Paen00T4P8L8gd9bNsRMw7Cbaz85oxiv+hzomsRZgFm2byltPFDtfcoqlWJ8GyZlIBWgLssJlzLCnKU0G0302g==
+  dependencies:
+    "@radix-ui/react-context" "1.1.1"
+    "@radix-ui/react-primitive" "2.0.2"
+    "@radix-ui/react-use-callback-ref" "1.1.0"
+    "@radix-ui/react-use-layout-effect" "1.1.0"
+
 "@radix-ui/react-checkbox@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-checkbox/-/react-checkbox-1.1.2.tgz#6465b800420923ecc39cbeaa8f357b5f09dbfd52"
@@ -2271,6 +2219,11 @@
   version "1.1.0"
   resolved "https://registry.npmjs.org/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.0.tgz"
   integrity sha512-b4inOtiaOnYf9KWyO3jAeeCG6FeyfY6ldiEPanbUjWd+xIk5wZeHa8yVwmrJ2vderhu/BQvzCrJI0lHd+wIiqw==
+
+"@radix-ui/react-compose-refs@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.1.tgz#6f766faa975f8738269ebb8a23bad4f5a8d2faec"
+  integrity sha512-Y9VzoRDSJtgFMUCoiZBDVo084VQ5hfpXxVE+NgkdNsjiDBByiImMZKKhxMwCbdHvhlENG6a833CbFkOQvTricw==
 
 "@radix-ui/react-context@1.1.0":
   version "1.1.0"
@@ -2443,6 +2396,13 @@
   dependencies:
     "@radix-ui/react-slot" "1.1.0"
 
+"@radix-ui/react-primitive@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-primitive/-/react-primitive-2.0.2.tgz#ac8b7854d87b0d7af388d058268d9a7eb64ca8ef"
+  integrity sha512-Ec/0d38EIuvDF+GZjcMU/Ze6MxntVJYO/fRlCPhCaVUyPY9WTalHJw54tp9sXeJo3tlShWpy41vQRgLRGOuz+w==
+  dependencies:
+    "@radix-ui/react-slot" "1.1.2"
+
 "@radix-ui/react-radio-group@^1.2.1":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-radio-group/-/react-radio-group-1.2.1.tgz#42b914c85f3a77be3ab766b6e49a9598680f76d1"
@@ -2507,6 +2467,13 @@
   integrity sha512-FUCf5XMfmW4dtYl69pdS4DbxKy8nj4M7SafBgPllysxmdachynNflAdp/gCsnYWNDnge6tI9onzMp5ARYc1KNw==
   dependencies:
     "@radix-ui/react-compose-refs" "1.1.0"
+
+"@radix-ui/react-slot@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-slot/-/react-slot-1.1.2.tgz#daffff7b2bfe99ade63b5168407680b93c00e1c6"
+  integrity sha512-YAKxaiGsSQJ38VzKH86/BPRC4rh+b1Jpa+JneA5LRE7skmLPNAyeG8kPJj/oo4STLvlrs8vkf/iYyc3A5stYCQ==
+  dependencies:
+    "@radix-ui/react-compose-refs" "1.1.1"
 
 "@radix-ui/react-switch@^1.1.1":
   version "1.1.1"
@@ -6978,11 +6945,6 @@ tsconfig-paths@^3.15.0:
     json5 "^1.0.2"
     minimist "^1.2.6"
     strip-bom "^3.0.0"
-
-tslib@2.4.1:
-  version "2.4.1"
-  resolved "https://registry.npmjs.org/tslib/-/tslib-2.4.1.tgz"
-  integrity sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==
 
 tslib@2.8.1, tslib@^2.0.0, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.6.2, tslib@^2.7.0, tslib@^2.8.0:
   version "2.8.1"
