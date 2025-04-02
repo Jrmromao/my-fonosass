@@ -4,7 +4,9 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { TierType, SubStatus } from '@prisma/client';
 
-export function useSubscription() {
+
+
+export function useSubscription({billingInterval}: {billingInterval: string}) {
     // Get subscription status
     const {
         data: subscription,
@@ -29,7 +31,7 @@ export function useSubscription() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ priceId, tier }),
+                body: JSON.stringify({ priceId, tier, billingInterval }),
             });
 
             if (!response.ok) {

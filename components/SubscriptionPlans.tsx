@@ -24,6 +24,9 @@ const PLAN = {
 };
 
 export function SubscriptionPlans() {
+    const [billingInterval, setBillingInterval] = useState<string>('monthly');
+
+
     const {
         isLoading,
         createCheckout,
@@ -31,9 +34,9 @@ export function SubscriptionPlans() {
         createPortal,
         isCreatingPortal,
         isActive
-    } = useSubscription();
-    const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly');
-
+    } = useSubscription({
+        billingInterval
+    });
     // Calculate yearly savings
     const yearlySavings = Math.round((PLAN.monthlyPrice * 12 - PLAN.yearlyPrice) / (PLAN.monthlyPrice * 12) * 100);
 

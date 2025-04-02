@@ -9,6 +9,8 @@ import SVGRender from "@/components/SVGRender";
 import Ballon from "@/components/Ballon";
 import EducationalToolbar from "@/components/Toolbar/EducationalToolbar";
 import {SubscriptionPlans} from "@/components/SubscriptionPlans";
+import {APP_NAME} from "@/utils/constants";
+import BalloonField from "@/components/ballons";
 
 export default function FomosaasLanding() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -41,7 +43,7 @@ export default function FomosaasLanding() {
                                 </div>
                                 <span
                                     className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
-                  App do Bete
+                 {APP_NAME}
                 </span>
                             </Link>
                         </div>
@@ -200,6 +202,7 @@ export default function FomosaasLanding() {
                     <div
                         className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
                         <Ballon/>
+
                     </div>
 
 

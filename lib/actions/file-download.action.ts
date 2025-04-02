@@ -11,6 +11,8 @@ interface GetFileDownloadUrlParams {
 
 export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownloadUrlParams) {
     try {
+
+        console.log(fileId)
         const { userId } = await auth();
 
         if (!userId) {

@@ -1,5 +1,25 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import React, {useCallback, useEffect, useRef, useState, useTransition} from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '@/components/ui/alert-dialog';
+import {getFileDownloadUrl} from "@/lib/actions/file-download.action";
+import {Activity, ActivityDifficulty, ActivityType, AgeRange} from "@prisma/client";
+import {useRouter} from "next/navigation";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import {CheckCircle2, ExternalLink, FileDown, Volume2, XCircle} from "lucide-react";
+import {cn} from "@/lib/utils";
+import {ColorMapping} from "@/components/ballons/types";
+import {balloonColors, colorNames, phonemes} from "@/components/ballons/constants";
+import {getActivitiesByPhoneme} from "@/lib/actions/activity.action";
+
 
 // TypeScript interfaces
 interface Balloon {
@@ -40,9 +60,48 @@ interface Fragment {
     color: string;
 }
 
-interface ColorMapping {
-    [key: string]: string;
+// Activity file type
+interface ActivityFile {
+    id: string;
+    name: string;
+    activityId: string;
+    s3Key: string;
+    s3Url: string;
+    fileType: string;
+    sizeInBytes: number;
+    uploadedById: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
+
+// Define an extended Activity type that includes files
+interface ActivityWithFiles extends Activity {
+    files?: ActivityFile[];
+}
+
+// Badge color utility functions
+const getBadgeVariant = {
+    difficulty: (difficulty: ActivityDifficulty) => {
+        const variants: { [key: string]: string } = {
+            "BEGINNER": "success",
+            "INTERMEDIATE": "warning",
+            "ADVANCED": "destructive",
+            "default": "secondary"
+        };
+        return variants[difficulty] || variants.default;
+    },
+    type: (type: ActivityType) => "secondary",
+    ageRange: (ageRange: AgeRange) => {
+        const variants: { [key: string]: string } = {
+            "TODDLER": "success",
+            "PRESCHOOL": "warning",
+            "ADULT": "default",
+            "default": "secondary"
+        };
+        return variants[ageRange] || variants.default;
+    }
+};
+
 
 interface BalloonFieldProps {
     balloonCount?: number;
@@ -67,6 +126,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     const [activeColor, setActiveColor] = useState<string>("");
     const [poppedBalloonId, setPoppedBalloonId] = useState<number | null>(null);
     const [activePhoneme, setActivePhoneme] = useState<string>("");
+
     const [stats, setStats] = useState<{
         totalPopped: number;
         lastPopped: string;
@@ -79,80 +139,17 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     const [draggingBalloonId, setDraggingBalloonId] = useState<number | null>(null);
     const [lastClickTime, setLastClickTime] = useState<number>(0);
     const [lastClickBalloonId, setLastClickBalloonId] = useState<number | null>(null);
-
-
-    // Phonemes to display on balloons
-    const phonemes: string[] = [
-        "P", "L", "K", "T", "S", "CH", "LH", "F", "B", "N", "G", "D", "Z",
-        "J", "NH", "V", "M", "R", "ARQ", "C/R/V", "C/L/V", "Vogais"
-    ];
-
-    // Generate vibrant balloon colors
-    const balloonColors: string[] = [
-        "#ff3333", // Red
-        "#ff9933", // Orange
-        "#ffff33", // Yellow
-        "#33ff33", // Green
-        "#33ffff", // Cyan
-        "#3333ff", // Blue
-        "#9933ff", // Purple
-        "#ff33ff", // Magenta
-        "#ff3399", // Pink
-        "#99ff33", // Lime
-        "#33ff99", // Mint
-        "#9999ff", // Lavender
-        "#ff9999", // Light Pink
-        "#ffcc33", // Gold
-        "#33ccff", // Sky Blue
-        "#cc33ff", // Violet
-        "#ffcc99", // Peach
-        "#99ffcc", // Seafoam
-        "#cc99ff", // Light Purple
-        "#33cc33", // Emerald
-        "#ff3366", // Rose
-        "#66ff33", // Bright Green
-        "#33cccc"  // Teal
-    ];
-
-    const colorNames: ColorMapping = {
-        "#ff3333": "Red",
-        "#ff9933": "Orange",
-        "#ffff33": "Yellow",
-        "#33ff33": "Green",
-        "#33ffff": "Cyan",
-        "#3333ff": "Blue",
-        "#9933ff": "Purple",
-        "#ff33ff": "Magenta",
-        "#ff3399": "Pink",
-        "#99ff33": "Lime",
-        "#33ff99": "Mint",
-        "#9999ff": "Lavender",
-        "#ff9999": "Light Pink",
-        "#ffcc33": "Gold",
-        "#33ccff": "Sky Blue",
-        "#cc33ff": "Violet",
-        "#ffcc99": "Peach",
-        "#99ffcc": "Seafoam",
-        "#cc99ff": "Light Purple",
-        "#33cc33": "Emerald",
-        "#ff3366": "Rose",
-        "#66ff33": "Bright Green",
-        "#33cccc": "Teal"
-    };
-    // const colorNames: ColorMapping = {
-    //     "#FFB6C1": "Light Pink",
-    //     "#FFDAB9": "Peach",
-    //     "#E6E6FA": "Lavender",
-    //     "#B0E0E6": "Powder Blue",
-    //     "#98FB98": "Pale Green",
-    //     "#F0E68C": "Khaki",
-    //     "#DDA0DD": "Plum",
-    //     "#ADD8E6": "Light Blue",
-    //     "#F5DEB3": "Wheat",
-    //     "#E0FFFF": "Light Cyan",
-    //     "#FFFACD": "Lemon Chiffon"
-    // };
+// /   / Add these near your other state declarations
+    const [activities, setActivities] = useState<ActivityWithFiles[]>([]);
+    const [isPending, startTransition] = useTransition();
+    const [isLoading, setIsLoading] = useState(false);
+    const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+    const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
+    const router = useRouter(); // Add this import from 'next/navigation'
     // Initialize canvas and balloons
+
+
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -229,6 +226,52 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         }
     }, [dialogOpen]);
 
+    const PHONEME_MESSAGES: { [key: string]: string } = {
+        "B": "A fresh red apple that recently fell from the tree.",
+        "P": "This apple has a beautiful crimson color.",
+        "T": "A crisp, tart apple perfect for baking.",
+        "D": "A dark red apple with a sweet taste.",
+        "K": "A firm apple with a balanced flavor.",
+        "G": "A green apple with a sour punch.",
+        "F": "A flawless apple with shiny skin.",
+        "V": "A perfectly ripe apple with a mix of red and yellow.",
+        "S": "A small, sweet apple great for snacking.",
+        "Z": "A zesty apple with bright flavor.",
+        "SH": "A shiny apple with smooth skin.",
+        "CH": "A chunky apple perfect for pies.",
+        "J": "A juicy apple that drips when bitten.",
+        "TH": "A thick-skinned apple that stores well.",
+        "DH": "A delightfully tasty heritage variety.",
+        "M": "A magnificent apple from a special tree.",
+        "N": "A nutritious apple packed with vitamins.",
+        "NG": "An elongated apple variety from distant orchards.",
+        "L": "A large apple that takes two hands to hold.",
+        "R": "A ruby-red apple with rich flavor.",
+        "W": "A wonderful apple that tastes like honey.",
+        "Y": "A yellow apple with a hint of sweetness.",
+        "H": "A healthy apple grown without pesticides.",
+        "Be": "A beautiful speckled apple variety."
+    };
+
+    useEffect(() => {
+        const fetchActivities = async () => {
+            setIsLoading(true);
+            try {
+                // Assume there's an API call to fetch activities based on the activePhoneme
+            } catch (error) {
+                console.error("Failed to fetch activities:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        console.log(activePhoneme)
+
+        if (activePhoneme) {
+            fetchActivities();
+        }
+    }, [activePhoneme]);
+
 
     // Check if two balloons overlap by more than 60%
     const checkOverlap = (balloon1: Balloon, balloon2: Balloon): boolean => {
@@ -246,69 +289,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         return distance < maxOverlap;
     };
 
-    // Find a valid position for a balloon
-    // const findValidPosition = (
-    //     balloons: Balloon[],
-    //     widthRange: [number, number],
-    //     heightRange: [number, number]
-    // ): { x: number, y: number } => {
-    //     let x: number, y: number;
-    //     let isValid = false;
-    //     let attempts = 0;
-    //
-    //     while (!isValid && attempts < 50) {
-    //         // Random position within the range
-    //         x = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
-    //         y = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
-    //
-    //         // Check against existing balloons
-    //         isValid = true;
-    //         for (const balloon of balloons) {
-    //             // Create a temporary balloon to check overlap
-    //             const tempBalloon: Balloon = {
-    //                 id: -1,
-    //                 x,
-    //                 y,
-    //                 color: "",
-    //                 size: 0.7 + Math.random() * 0.5,
-    //                 popped: false,
-    //                 floatPhase: 0,
-    //                 floatSpeed: 0,
-    //                 floatAmount: 0,
-    //                 rotation: 0,
-    //                 stringLength: 0,
-    //                 hovering: false,
-    //                 pressing: false,
-    //                 anchorGroup: 'left', // Default, not used for overlap check
-    //                 phoneme: '',
-    //                 zIndex: 0,
-    //                 isDragging: false
-    //             };
-    //
-    //             if (checkOverlap(tempBalloon, balloon)) {
-    //                 isValid = false;
-    //                 break;
-    //             }
-    //         }
-    //
-    //         attempts++;
-    //
-    //         // If valid position found, return it
-    //         if (isValid) {
-    //             return { x, y };
-    //         }
-    //     }
-    //
-    //     // If we couldn't find a valid position after many attempts,
-    //     // just return a random position and let them overlap
-    //     return {
-    //         x: widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]),
-    //         y: heightRange[0] + Math.random() * (heightRange[1] - heightRange[0])
-    //     };
-    // };
-
     // Initialize balloons with better positioning
-
     const initializeBalloons = (): void => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -399,6 +380,54 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         balloonsRef.current = balloons;
     };
 
+    // Add this function before the popBalloon function
+    const handleFileDownload = useCallback(async (fileId: string, fileName: string) => {
+        try {
+            setDownloadingFileId(fileId);
+            setDownloadError(null);
+
+            const result = await getFileDownloadUrl({fileId});
+
+            if (result.success) {
+                // Create a temporary link element
+                const link = document.createElement('a');
+                //@ts-ignore
+                link.href = result.url;
+                const safeFileName = fileName || `activity-${fileId}.pdf`;
+                link.setAttribute('download', safeFileName);
+
+                // Required for Firefox
+                document.body.appendChild(link);
+
+                // Trigger download
+                link.click();
+
+                // Cleanup
+                document.body.removeChild(link);
+
+                // Show success state briefly
+                setDownloadSuccess(fileId);
+                setTimeout(() => {
+                    setDownloadSuccess(null);
+                }, 2000);
+            } else {
+                setDownloadError(fileId);
+                setTimeout(() => {
+                    setDownloadError(null);
+                }, 3000);
+            }
+        } catch (error) {
+            console.error("Download failed:", error);
+            setDownloadError(fileId);
+            setTimeout(() => {
+                setDownloadError(null);
+            }, 3000);
+        } finally {
+            setDownloadingFileId(null);
+        }
+    }, []);
+
+
     const findValidPosition = (
         balloons: Balloon[],
         widthRange: [number, number],
@@ -460,7 +489,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         // If we couldn't find a valid position after attempts,
         // just use the last position we tried
-        return { x, y };
+        return {x, y};
     };
 
 
@@ -469,7 +498,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         if (animationRef.current) {
             cancelAnimationFrame(animationRef.current);
         }
-
 
 
         const animate = (timestamp: number): void => {
@@ -485,7 +513,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
             const canvas = canvasRef.current;
             if (!canvas) return;
 
-            const ctx = canvas.getContext('2d', { alpha: false });
+            const ctx = canvas.getContext('2d', {alpha: false});
             if (!ctx) return;
 
             const rect = canvas.getBoundingClientRect();
@@ -576,17 +604,17 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                 if (fragment.type === 'rubber') {
                     // Draw rubber piece - simplified path for performance
                     ctx.beginPath();
-                    ctx.moveTo(-fragment.size/2, -fragment.size/4);
-                    ctx.quadraticCurveTo(0, -fragment.size/2, fragment.size/2, -fragment.size/4);
-                    ctx.quadraticCurveTo(fragment.size/3, fragment.size/4, 0, fragment.size/2);
-                    ctx.quadraticCurveTo(-fragment.size/3, fragment.size/4, -fragment.size/2, -fragment.size/4);
+                    ctx.moveTo(-fragment.size / 2, -fragment.size / 4);
+                    ctx.quadraticCurveTo(0, -fragment.size / 2, fragment.size / 2, -fragment.size / 4);
+                    ctx.quadraticCurveTo(fragment.size / 3, fragment.size / 4, 0, fragment.size / 2);
+                    ctx.quadraticCurveTo(-fragment.size / 3, fragment.size / 4, -fragment.size / 2, -fragment.size / 4);
                     ctx.fillStyle = fragment.color;
                     ctx.fill();
                 } else {
                     // Draw dust particle - use rectangle for very small particles for performance
                     if (fragment.size < 3) {
                         ctx.fillStyle = fragment.color;
-                        ctx.fillRect(-fragment.size/2, -fragment.size/2, fragment.size, fragment.size);
+                        ctx.fillRect(-fragment.size / 2, -fragment.size / 2, fragment.size, fragment.size);
                     } else {
                         ctx.beginPath();
                         ctx.arc(0, 0, fragment.size / 2, 0, Math.PI * 2);
@@ -803,7 +831,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         anchorX: number,
         anchorY: number
     ): void => {
-        const { x, y, color, size, rotation, hovering, pressing } = balloon;
+        const {x, y, color, size, rotation, hovering, pressing} = balloon;
 
         // Updated balloon dimensions - slightly more rounded shape
         const balloonWidth = 100 * size;  // Wider
@@ -886,9 +914,9 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         // Smaller tie
         const tieSize = 10 * size;
         ctx.beginPath();
-        ctx.moveTo(-tieSize/2, balloonHeight/2);
-        ctx.lineTo(0, balloonHeight/2 + tieSize);
-        ctx.lineTo(tieSize/2, balloonHeight/2);
+        ctx.moveTo(-tieSize / 2, balloonHeight / 2);
+        ctx.lineTo(0, balloonHeight / 2 + tieSize);
+        ctx.lineTo(tieSize / 2, balloonHeight / 2);
         ctx.closePath();
         ctx.fillStyle = shadeColor(color, -20);
         ctx.fill();
@@ -898,7 +926,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         // Text styling (unchanged)
         ctx.save();
-        ctx.scale(1/scaleX, 1/scaleY);
+        ctx.scale(1 / scaleX, 1 / scaleY);
         ctx.rotate(-rotation);
         const fontSize = Math.max(36 * size, 24);
         ctx.font = `bold ${fontSize}px Arial, sans-serif`;
@@ -915,11 +943,11 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         // Updated string - dashed and thinner
         ctx.save();
-        const balloonBottom = balloonY + (balloonHeight/2 + tieSize) * scaleY;
+        const balloonBottom = balloonY + (balloonHeight / 2 + tieSize) * scaleY;
         ctx.beginPath();
         ctx.moveTo(anchorX, anchorY);
         const stringMidX = (x + anchorX) / 2;
-        const stringMidY = (balloonBottom + anchorY) / 2 + Math.sin(balloon.floatPhase/2) * 8;
+        const stringMidY = (balloonBottom + anchorY) / 2 + Math.sin(balloon.floatPhase / 2) * 8;
         ctx.quadraticCurveTo(
             stringMidX, stringMidY + 15,
             x, balloonBottom
@@ -931,6 +959,34 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         ctx.setLineDash([]); // Reset dash
         ctx.restore();
     };
+
+    // Handle apple click with server action call
+    const handleAppleClick = useCallback((phoneme: string) => {
+
+        setIsLoading(true);
+
+        startTransition(async () => {
+            try {
+                // Call the server action to get activities for this phoneme
+                const result = await getActivitiesByPhoneme({
+                    phoneme,
+                    includePrivate: false,
+                    limit: 5 // Limit to 5 activities for now
+                });
+
+
+                setActivities(result.items as unknown as ActivityWithFiles[]);
+            } catch (error) {
+                console.error("Error fetching activities:", error);
+            } finally {
+
+                setIsLoading(false);
+
+            }
+        });
+    }, []);
+
+
     // Generate fragments for a popped balloon
     const popBalloon = (balloonId: number): void => {
         const balloon = balloonsRef.current.find(b => b.id === balloonId);
@@ -946,8 +1002,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         // Store color and phoneme for dialog
         setActiveColor(balloon.color);
-        setActivePhoneme(balloon.phoneme);
 
+
+        setActivePhoneme(balloon.phoneme);
+        handleAppleClick(balloon.phoneme);
         // Update stats
         setStats(prev => {
             const newStreak = prev.lastPopped === balloon.phoneme ? prev.streak + 1 : 1;
@@ -966,14 +1024,15 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         // Play pop sound
         if (audioRef.current) {
             audioRef.current.currentTime = 0;
-            audioRef.current.play().catch(() => {});
+            audioRef.current.play().catch(() => {
+            });
         }
 
         const fragments: Fragment[] = [];
-        const { x, y, color, size } = balloon;
+        const {x, y, color, size} = balloon;
 
         // Large rubber pieces
-        for (let i = 0; i < Math.min(6, fragmentCount/4); i++) {
+        for (let i = 0; i < Math.min(6, fragmentCount / 4); i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 3 + Math.random() * 8;
             fragments.push({
@@ -996,7 +1055,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
 
         // Medium rubber pieces
-        for (let i = 0; i < Math.min(8, fragmentCount/3); i++) {
+        for (let i = 0; i < Math.min(8, fragmentCount / 3); i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 4 + Math.random() * 10;
             fragments.push({
@@ -1018,7 +1077,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         }
 
         // Small dust particles
-        for (let i = 0; i < Math.min(15, fragmentCount/2); i++) {
+        for (let i = 0; i < Math.min(15, fragmentCount / 2); i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 5 + Math.random() * 12;
             fragments.push({
@@ -1069,223 +1128,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
             (current.zIndex === top.zIndex && current.id > top.id) ? current : top
         );
     };
-
-    const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-
-        const topmostBalloon = findTopmostBalloon(clickX, clickY);
-        if (topmostBalloon) {
-            popBalloon(topmostBalloon.id);
-        }
-    };
-
-    // Handle click on canvas
-    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const rect = canvas.getBoundingClientRect();
-
-        // Get click position relative to canvas
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-
-        // Find the topmost balloon under the cursor
-        const topmostBalloon = findTopmostBalloon(clickX, clickY);
-
-        // If there's a balloon, pop it
-        if (topmostBalloon) {
-            popBalloon(topmostBalloon.id);
-        }
-    };
-
-    // Handle mouse movement for hover effects
-    // const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-    //     const canvas = canvasRef.current;
-    //     if (!canvas) return;
-    //
-    //     const rect = canvas.getBoundingClientRect();
-    //
-    //     // Get mouse position relative to canvas
-    //     const mouseX = e.clientX - rect.left;
-    //     const mouseY = e.clientY - rect.top;
-    //
-    //     // Track which balloons are being hovered
-    //     const hoveringBalloonIds = new Set<number>();
-    //
-    //     // First pass: determine which balloons are being hovered
-    //     balloonsRef.current.forEach(balloon => {
-    //         if (balloon.popped) return;
-    //
-    //         // Simple distance check
-    //         const dx = balloon.x - mouseX;
-    //         const dy = (balloon.y + Math.sin(balloon.floatPhase) * balloon.floatAmount) - mouseY;
-    //         const distance = Math.sqrt(dx * dx + dy * dy);
-    //
-    //         // Balloon hit radius based on size
-    //         const hitRadius = 50 * balloon.size;
-    //
-    //         if (distance < hitRadius) {
-    //             hoveringBalloonIds.add(balloon.id);
-    //         }
-    //     });
-    //
-    //     // Second pass: update hovering state and zIndex
-    //     balloonsRef.current = balloonsRef.current.map(balloon => {
-    //         const isHovering = hoveringBalloonIds.has(balloon.id);
-    //
-    //         // Update zIndex for proper layering
-    //         // If this balloon is hovering, it gets a high zIndex
-    //         // Otherwise, it keeps its original zIndex
-    //         const newZIndex = isHovering ? 100 : 0;
-    //
-    //         return {
-    //             ...balloon,
-    //             hovering: isHovering,
-    //             zIndex: isHovering ? newZIndex : balloon.zIndex
-    //         };
-    //     });
-    // };
-
-    // Handle dragging movement
-    // const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-    //     const canvas = canvasRef.current;
-    //     if (!canvas) return;
-    //
-    //     const rect = canvas.getBoundingClientRect();
-    //     const mouseX = e.clientX - rect.left;
-    //     const mouseY = e.clientY - rect.top;
-    //
-    //     if (draggingBalloonId !== null) {
-    //         // Update position of dragging balloon
-    //         balloonsRef.current = balloonsRef.current.map(balloon => {
-    //             if (balloon.id === draggingBalloonId && !balloon.popped) {
-    //                 return {
-    //                     ...balloon,
-    //                     x: mouseX,
-    //                     y: mouseY,
-    //                     zIndex: 100,  // Keep dragging balloon on top
-    //                 };
-    //             }
-    //             return balloon;
-    //         });
-    //     } else {
-    //         // Existing hover logic
-    //         const hoveringBalloonIds = new Set<number>();
-    //         balloonsRef.current.forEach(balloon => {
-    //             if (balloon.popped) return;
-    //             const dx = balloon.x - mouseX;
-    //             const dy = (balloon.y + Math.sin(balloon.floatPhase) * balloon.floatAmount) - mouseY;
-    //             const distance = Math.sqrt(dx * dx + dy * dy);
-    //             const hitRadius = 50 * balloon.size;
-    //             if (distance < hitRadius) {
-    //                 hoveringBalloonIds.add(balloon.id);
-    //             }
-    //         });
-    //
-    //         balloonsRef.current = balloonsRef.current.map(balloon => {
-    //             const isHovering = hoveringBalloonIds.has(balloon.id);
-    //             return {
-    //                 ...balloon,
-    //                 hovering: isHovering,
-    //                 zIndex: isHovering ? 100 : 0
-    //             };
-    //         });
-    //     }
-    // };
-    //
-    // const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-    //     const canvas = canvasRef.current;
-    //     if (!canvas) return;
-    //
-    //     const rect = canvas.getBoundingClientRect();
-    //     const clickX = e.clientX - rect.left;
-    //     const clickY = e.clientY - rect.top;
-    //
-    //     const topmostBalloon = findTopmostBalloon(clickX, clickY);
-    //
-    //     if (topmostBalloon) {
-    //         const currentTime = Date.now();
-    //         const timeSinceLastClick = currentTime - lastClickTime;
-    //
-    //         // Check if this is a double click (within 300ms)
-    //         if (timeSinceLastClick < 300 && lastClickBalloonId === topmostBalloon.id) {
-    //             popBalloon(topmostBalloon.id);
-    //             setLastClickTime(0);
-    //             setLastClickBalloonId(null);
-    //         } else {
-    //             // Start dragging
-    //             setDraggingBalloonId(topmostBalloon.id);
-    //             balloonsRef.current = balloonsRef.current.map(balloon => ({
-    //                 ...balloon,
-    //                 isDragging: balloon.id === topmostBalloon.id,
-    //                 pressing: balloon.id === topmostBalloon.id
-    //             }));
-    //             setLastClickTime(currentTime);
-    //             setLastClickBalloonId(topmostBalloon.id);
-    //         }
-    //     }
-    // };
-    // const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-    //     const canvas = canvasRef.current;
-    //     if (!canvas) return;
-    //
-    //     const rect = canvas.getBoundingClientRect();
-    //     const mouseX = e.clientX - rect.left;
-    //     const mouseY = e.clientY - rect.top;
-    //
-    //     if (draggingBalloonId !== null) {
-    //         // Update position of dragging balloon
-    //         balloonsRef.current = balloonsRef.current.map(balloon => {
-    //             if (balloon.id === draggingBalloonId && !balloon.popped) {
-    //                 return {
-    //                     ...balloon,
-    //                     x: mouseX,
-    //                     y: mouseY,
-    //                     zIndex: 100,
-    //                 };
-    //             }
-    //             return balloon;
-    //         });
-    //     } else {
-    //         // Hover logic
-    //         const hoveringBalloonIds = new Set<number>();
-    //         balloonsRef.current.forEach(balloon => {
-    //             if (balloon.popped) return;
-    //             const dx = balloon.x - mouseX;
-    //             const dy = (balloon.y + Math.sin(balloon.floatPhase) * balloon.floatAmount) - mouseY;
-    //             const distance = Math.sqrt(dx * dx + dy * dy);
-    //             const hitRadius = 50 * balloon.size;
-    //             if (distance < hitRadius) {
-    //                 hoveringBalloonIds.add(balloon.id);
-    //             }
-    //         });
-    //
-    //         balloonsRef.current = balloonsRef.current.map(balloon => {
-    //             const isHovering = hoveringBalloonIds.has(balloon.id);
-    //             return {
-    //                 ...balloon,
-    //                 hovering: isHovering,
-    //                 zIndex: isHovering ? 100 : 0
-    //             };
-    //         });
-    //     }
-    // };
-    // const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-    //     // Reset dragging states
-    //     balloonsRef.current = balloonsRef.current.map(balloon => ({
-    //         ...balloon,
-    //         isDragging: false,
-    //         pressing: false
-    //     }));
-    //     setDraggingBalloonId(null);
-    // };
-    //
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>): void => {
         e.preventDefault(); // Prevent default browser behavior
@@ -1365,7 +1207,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                         zIndex: isHovering && balloon.id !== draggingBalloonId ? 100 : balloon.zIndex
                     };
                 });
-            }        },
+            }
+        },
         [draggingBalloonId]
     );
 
@@ -1388,6 +1231,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         return colorNames[hexColor] || "Colorful";
     };
 
+    // @ts-ignore
     return (
         <div className="flex items-center justify-center h-96 w-full bg-gradient-to-b from-blue-300 to-teal-300 overflow-hidden">
             {/* Audio element for pop sound */}
@@ -1406,50 +1250,161 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                     onMouseLeave={handleMouseUp}
                 />
             </div>
-
-            {/* Balloon Pop Dialog */}
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <AlertDialogContent className="max-w-md">
+                <AlertDialogContent className="max-w-md max-h-[80vh] overflow-auto">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-2xl font-bold">
-                            {title}
+                        <AlertDialogTitle className="flex items-center gap-2">
+                            <div className="bg-purple-100 text-purple-600 p-1 rounded-full">
+                                <Volume2 className="h-4 w-4"/>
+                            </div>
+                            Phoneme "{activePhoneme}"
                         </AlertDialogTitle>
-                        <AlertDialogDescription
-                            className="text-lg">
-                            {/* Move content outside <p> tag that AlertDialogDescription creates */}
+                        <AlertDialogDescription className="text-slate-600">
+                            {PHONEME_MESSAGES[activePhoneme] || `Phoneme "${activePhoneme}" sound.`}
                         </AlertDialogDescription>
-
-                        {/* Place content directly in AlertDialogHeader */}
-                        <div className="flex flex-col items-center gap-4 py-4">
-                            <div
-                                className="w-16 h-16 rounded-full mb-2"
-                                style={{ backgroundColor: activeColor }}
-                            ></div>
-                            <div>
-                                You popped the phoneme <span className="font-bold text-4xl" style={{ color: activeColor }}>{activePhoneme}</span>
-                            </div>
-                            <div>
-                                (<span className="font-bold" style={{ color: activeColor }}>{getColorName(activeColor)}</span> balloon)
-                            </div>
-
-                            {stats.streak > 1 && (
-                                <div className="bg-blue-50 text-blue-800 px-4 py-2 rounded-lg mt-2">
-                                    <div className="font-bold">Streak: {stats.streak} 🔥</div>
-                                </div>
-                            )}
-
-                            <div className="text-sm text-gray-600 mt-4">
-                                {description}
-                            </div>
-                        </div>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={handleCloseDialog} className="bg-blue-500 hover:bg-blue-600 text-white">
-                            Continue
+
+                    {/* Phoneme info section */}
+                    <div className="flex flex-col items-center gap-2 py-3 border-b border-slate-100 mb-3">
+                        <div
+                            className="w-16 h-16 rounded-full mb-1 shadow-inner"
+                            style={{backgroundColor: activeColor}}
+                        ></div>
+
+                        <div className="text-sm text-slate-500">
+                            <span className="font-medium"
+                                  style={{color: activeColor}}>{getColorName(activeColor)}</span> balloon
+                        </div>
+
+                        {stats.streak > 1 && (
+                            <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium mt-1">
+                                Streak: {stats.streak} 🔥
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Activities section */}
+                    <div className="py-2">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-medium text-slate-800">Activities</h3>
+                            {activities.length > 0 && (
+                                <Badge variant="outline" className="bg-primary/5">
+                                    {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+                                </Badge>
+                            )}
+                        </div>
+
+                        {isPending || isLoading ? (
+                            <div className="flex justify-center py-8">
+                                <div
+                                    className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>
+                            </div>
+                        ) : activities.length > 0 ? (
+                            <ul className="space-y-3">
+                                {activities.map((activity) => (
+                                    <li key={activity.id}
+                                        className="bg-slate-50 p-4 rounded-lg border border-slate-100 transition-all hover:shadow-sm">
+                                        <div className="flex justify-between items-start">
+                                            <h4 className="font-semibold text-slate-800">{activity.name}</h4>
+
+                                            {/* Files download button - only shown if activity has files */}
+                                            {activity.files?.[0] && (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className={cn(
+                                                                    "ml-2 h-8 px-2 flex items-center gap-1",
+                                                                    downloadSuccess === activity.files[0].id && "bg-green-50 text-green-600 border-green-200",
+                                                                    downloadError === activity.files[0].id && "bg-red-50 text-red-600 border-red-200"
+                                                                )}
+                                                                // @ts-ignore
+                                                                onClick={() => handleFileDownload(activity?.files[0].id, activity?.files[0].name)}
+                                                                disabled={downloadingFileId === activity.files[0].id}
+                                                            >
+                                                                {downloadingFileId === activity.files[0].id ? (
+                                                                    <>
+                                                                        <div
+                                                                            className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"/>
+                                                                        <span className="text-xs">Downloading...</span>
+                                                                    </>
+                                                                ) : downloadSuccess === activity.files[0].id ? (
+                                                                    <>
+                                                                        <CheckCircle2 className="h-3 w-3"/>
+                                                                        <span className="text-xs">Downloaded</span>
+                                                                    </>
+                                                                ) : downloadError === activity.files[0].id ? (
+                                                                    <>
+                                                                        <XCircle className="h-3 w-3"/>
+                                                                        <span className="text-xs">Failed</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <FileDown className="h-3 w-3"/>
+                                                                        <span className="text-xs">PDF</span>
+                                                                    </>
+                                                                )}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Download activity PDF</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+                                        </div>
+
+                                        <p className="text-sm text-slate-600 mt-1 line-clamp-2">{activity.description}</p>
+
+                                        <div className="flex gap-2 mt-3 flex-wrap">
+                                            <Badge variant={getBadgeVariant.type(activity.type) as any}
+                                                   className="text-xs font-normal">
+                                                {activity.type}
+                                            </Badge>
+                                            <Badge variant={getBadgeVariant.difficulty(activity.difficulty) as any}
+                                                   className="text-xs font-normal">
+                                                {activity.difficulty}
+                                            </Badge>
+                                            <Badge variant={getBadgeVariant.ageRange(activity.ageRange) as any}
+                                                   className="text-xs font-normal">
+                                                {activity.ageRange}
+                                            </Badge>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <div
+                                className="text-center py-8 px-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                                <XCircle className="h-8 w-8 mx-auto text-slate-300 mb-2"/>
+                                <p className="text-slate-500 mb-1">No activities found</p>
+                                <p className="text-sm text-slate-400">There are no activities for this phoneme yet.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <AlertDialogFooter className="pt-2 gap-2">
+                        <AlertDialogAction onClick={handleCloseDialog}
+                                           className="px-6 py-3 rounded-full border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-all flex items-center w-full sm:w-auto justify-center gap-1 mt-0"
+
+
+                        >
+                            Close
                         </AlertDialogAction>
+                        {activities.length > 0 && (
+                            <Button variant="default"
+                                    className="px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/20 transition-all flex items-center w-full sm:w-auto justify-center gap-1"
+                                    onClick={() => router.push(`/dashboard/games`)}>
+                                <ExternalLink className="h-4 w-4"/>
+                                View All Activities
+                            </Button>
+                        )}
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
         </div>
     );
 };
