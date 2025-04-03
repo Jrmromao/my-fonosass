@@ -1,4 +1,6 @@
 // constants.ts
+import {ColorMapping} from "@/components/ballons/types";
+
 export const phonemes: string[] = [
     "P", "L", "K", "T", "S", "CH", "LH", "F", "B", "N", "G", "D", "Z",
     "J", "NH", "V", "M", "R", "ARQ", "C/R/V", "C/L/V", "Vogais"

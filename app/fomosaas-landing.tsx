@@ -1,16 +1,14 @@
 "use client"
 
-import React, {useState, useEffect} from "react"
+import React, {useEffect, useState} from "react"
 import {motion} from "framer-motion"
-import {ArrowRight, CheckCircle, ChevronDown, Menu, Mic, Music, Play, Star, Volume2, X} from "lucide-react"
+import {ArrowRight, ChevronDown, Menu, Mic, Music, Play, Star, Volume2, X} from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import SVGRender from "@/components/SVGRender";
 import Ballon from "@/components/Ballon";
 import EducationalToolbar from "@/components/Toolbar/EducationalToolbar";
 import {SubscriptionPlans} from "@/components/SubscriptionPlans";
 import {APP_NAME} from "@/utils/constants";
-import BalloonField from "@/components/ballons";
 
 export default function FomosaasLanding() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -202,7 +200,6 @@ export default function FomosaasLanding() {
                     <div
                         className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
                         <Ballon/>
-
                     </div>
 
 

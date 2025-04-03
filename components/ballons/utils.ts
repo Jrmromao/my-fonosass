@@ -1,5 +1,6 @@
 // utils.ts
 import { Balloon } from './types';
+import {balloonColors, phonemes} from "@/components/ballons/constants";
 
 export const shadeColor = (color: string, percent: number): string => {
     let R = parseInt(color.substring(1, 3), 16);
@@ -179,3 +180,4 @@ export const drawBalloon = (
     ctx.setLineDash([]);
     ctx.restore();
 };
+
