@@ -240,6 +240,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
     // Add this function before the popBalloon function
     const handleFileDownload = useCallback(async (fileId: string, fileName: string) => {
+        console.log('\n\n\n')
+        console.log(fileId)
+        console.log(fileName)
+
         try {
             setDownloadingFileId(fileId);
             setDownloadError(null);
@@ -999,6 +1003,58 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                                 {activities.map((activity) => (
                                     <li key={activity.id}
                                         className="bg-slate-50 p-4 rounded-xl border border-slate-100 transition-all hover:bg-slate-100 hover:border-slate-200">
+
+
+                                        {/*<div className="flex justify-between items-start">*/}
+                                        {/*    <h4 className="font-semibold text-slate-800">{activity.name}</h4>*/}
+
+                                        {/*    /!* Files download button - only shown if activity has files *!/*/}
+                                        {/*    {activity.files?.[0] && (*/}
+                                        {/*        <TooltipProvider>*/}
+                                        {/*            <Tooltip>*/}
+                                        {/*                <TooltipTrigger asChild>*/}
+                                        {/*                    <Button*/}
+                                        {/*                        variant="outline"*/}
+                                        {/*                        size="sm"*/}
+                                        {/*                        className={cn(*/}
+                                        {/*                            "ml-2 h-8 px-2 flex items-center gap-1 rounded-full transition-all",*/}
+                                        {/*                            downloadSuccess === activity.files[0].id && "bg-green-50 text-green-600 border-green-200",*/}
+                                        {/*                            downloadError === activity.files[0].id && "bg-red-50 text-red-600 border-red-200"*/}
+                                        {/*                        )}*/}
+                                        {/*                        disabled={downloadingFileId === activity.files[0].id}*/}
+                                        {/*                    >*/}
+                                        {/*                        {downloadingFileId === activity.files[0].id ? (*/}
+                                        {/*                            <>*/}
+                                        {/*                                <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"/>*/}
+                                        {/*                                <span className="text-xs">Downloading...</span>*/}
+                                        {/*                            </>*/}
+                                        {/*                        ) : downloadSuccess === activity.files[0].id ? (*/}
+                                        {/*                            <>*/}
+                                        {/*                                <CheckCircle2 className="h-3 w-3"/>*/}
+                                        {/*                                <span className="text-xs">Downloaded</span>*/}
+                                        {/*                            </>*/}
+                                        {/*                        ) : downloadError === activity.files[0].id ? (*/}
+                                        {/*                            <>*/}
+                                        {/*                                <XCircle className="h-3 w-3"/>*/}
+                                        {/*                                <span className="text-xs">Failed</span>*/}
+                                        {/*                            </>*/}
+                                        {/*                        ) : (*/}
+                                        {/*                            <>*/}
+                                        {/*                                <FileDown className="h-3 w-3"/>*/}
+                                        {/*                                <span className="text-xs">PDF</span>*/}
+                                        {/*                            </>*/}
+                                        {/*                        )}*/}
+                                        {/*                    </Button>*/}
+                                        {/*                </TooltipTrigger>*/}
+                                        {/*                <TooltipContent>*/}
+                                        {/*                    <p>Download activity PDF</p>*/}
+                                        {/*                </TooltipContent>*/}
+                                        {/*            </Tooltip>*/}
+                                        {/*        </TooltipProvider>*/}
+                                        {/*    )}*/}
+                                        {/*</div>*/}
+
+
                                         <div className="flex justify-between items-start">
                                             <h4 className="font-semibold text-slate-800">{activity.name}</h4>
 
@@ -1015,19 +1071,25 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                                                                     downloadSuccess === activity.files[0].id && "bg-green-50 text-green-600 border-green-200",
                                                                     downloadError === activity.files[0].id && "bg-red-50 text-red-600 border-red-200"
                                                                 )}
-                                                                disabled={downloadingFileId === activity.files[0].id}
+                                                                disabled={downloadingFileId === activity.files?.[0]?.id}
+                                                                onClick={() => {
+                                                                    if (activity.files?.[0]?.id) {
+                                                                        handleFileDownload(activity.files[0].id, `${activity.name}.pdf`);
+                                                                    }
+                                                                }}
                                                             >
-                                                                {downloadingFileId === activity.files[0].id ? (
+                                                                {downloadingFileId === activity.files?.[0]?.id ? (
                                                                     <>
-                                                                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"/>
+                                                                        <div
+                                                                            className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"/>
                                                                         <span className="text-xs">Downloading...</span>
                                                                     </>
-                                                                ) : downloadSuccess === activity.files[0].id ? (
+                                                                ) : downloadSuccess === activity.files?.[0]?.id ? (
                                                                     <>
                                                                         <CheckCircle2 className="h-3 w-3"/>
                                                                         <span className="text-xs">Downloaded</span>
                                                                     </>
-                                                                ) : downloadError === activity.files[0].id ? (
+                                                                ) : downloadError === activity.files?.[0]?.id ? (
                                                                     <>
                                                                         <XCircle className="h-3 w-3"/>
                                                                         <span className="text-xs">Failed</span>
@@ -1068,8 +1130,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                                 ))}
                             </ul>
                         ) : (
-                            <div className="text-center py-8 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                <div className="bg-slate-100 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <div
+                                className="text-center py-8 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                <div
+                                    className="bg-slate-100 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <XCircle className="h-8 w-8 text-slate-400"/>
                                 </div>
                                 <p className="text-slate-700 font-medium mb-1">No activities found</p>
@@ -1083,7 +1147,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                             onClick={handleCloseDialog}
                             className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-all flex items-center w-full sm:w-auto justify-center gap-1.5 mt-0"
                         >
-                            <X className="h-4 w-4" />
+                            <X className="h-4 w-4"/>
                             Close
                         </AlertDialogAction>
                         {activities.length > 0 && (

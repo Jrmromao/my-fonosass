@@ -3,6 +3,7 @@ import {Webhook} from 'svix';
 import {WebhookEvent, clerkClient} from '@clerk/nextjs/server';
 import {Prisma, UserRole} from '@prisma/client';
 import {prisma} from "@/app/db";
+import S3Service from "@/services/S3Service";
 
 // Constants for security configurations
 const MAX_PAYLOAD_SIZE = 1048576; // 1MB in bytes
@@ -56,6 +57,8 @@ async function createOrUpdateUser(clerkUserId: string, email: string, firstName:
     const sanitizedFirstName = sanitizeString(firstName);
     const sanitizedLastName = sanitizeString(lastName);
 
+    // create a dir in S3 for this user (company)
+    await S3Service.getInstance().initializeCompanyStorage(clerkUserId)
     // Construct full name safely
     const fullName = `${sanitizedFirstName} ${sanitizedLastName}`.trim() || 'User';
 

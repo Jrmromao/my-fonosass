@@ -3,7 +3,10 @@ import { clerkMiddleware, createRouteMatcher, clerkClient } from '@clerk/nextjs/
 import type { NextRequest } from 'next/server';
 
 // Define custom session claims type
-interface CustomSessionClaims {
+
+interface UserMetadata {
+    role: string;
+    onboarded: boolean;
     subscription?: {
         iat: number;
         status?: string;
@@ -11,11 +14,6 @@ interface CustomSessionClaims {
         subscriptionId?: string;
         currentPeriodEnd?: string;
     };
-}
-
-interface UserMetadata {
-    role: string;
-    onboarded: boolean;
 }
 
 // Public routes that don't require authentication
@@ -56,7 +54,6 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
     // Check subscription status for protected routes
     try {
-        const claims = sessionClaims as unknown as CustomSessionClaims;
 
         const user = await clerkUser.users.getUser(userId);
 
@@ -69,8 +66,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
         // Check if user is an admin or has an active subscription
         const isAdmin = metadata?.role === 'ADMIN';
         const hasActiveSubscription =
-            claims?.subscription?.status === 'active' &&
-            ['PRO', 'pro'].includes(claims?.subscription?.tier || '');
+            metadata?.subscription?.status ===  'active' &&
+            ['PRO', 'pro'].includes(metadata?.subscription?.tier || '');
 
         // Check if user needs to complete onboarding
         // if (!metadata?.onboarded && !path.startsWith('/onboarding')) {

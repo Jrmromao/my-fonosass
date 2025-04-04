@@ -10,7 +10,8 @@ import { activitiesColumns } from "@/components/table/columns/activities"
 import { useDebounce } from "@/hooks/use-debounce"
 import { getActivities } from "@/lib/actions/activity.action"
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ActivityWithFiles } from "@/types/activity" // Import from shared types
+import { ActivityWithFiles } from "@/types/activity"
+import {useUserRole} from "@/hooks/useUserRole"; // Import from shared types
 
 // Create a client
 const queryClient = new QueryClient()
@@ -27,7 +28,7 @@ export default function ActivitiesPage() {
 function ActivitiesContent() {
     const [searchTerm, setSearchTerm] = useState("")
     const debouncedSearch = useDebounce(searchTerm, 500)
-
+    const { role } = useUserRole();
     // Use React Query to fetch and cache activities
     const { data, isLoading } = useQuery({
         queryKey: ['activities', debouncedSearch],
@@ -60,12 +61,12 @@ function ActivitiesContent() {
                     </h1>
                     <p className="text-muted-foreground mt-1">
                         Gerencie todas as suas atividades terapêuticas
+
                     </p>
                 </div>
-                <NewActivityDialog onSuccess={() => {
-                    // Invalidate and refetch activities
-                    queryClient.invalidateQueries({ queryKey: ['activities'] })
-                }} />
+                {!isLoading && role === 'ADMIN' && <NewActivityDialog onSuccess={() => {
+                    queryClient.invalidateQueries({queryKey: ['activities']})
+                }}/>}
             </div>
 
             <div className="flex gap-4 mb-6">
