@@ -11,10 +11,7 @@ interface GetFileDownloadUrlParams {
 
 export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownloadUrlParams) {
     try {
-
-        console.log(fileId)
         const { userId } = await auth();
-
         if (!userId) {
             return { success: false, error: "Unauthorized" };
         }
@@ -62,14 +59,10 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
         // Set content disposition to force download with original filename
         const contentDisposition = `attachment; filename="${encodeURIComponent(file.name)}"`;
 
-
-        console.log(file.s3Key)
-
-        const fileUrl = `companies/${file.s3Key}`
         // Create the command to get the object
         const command = new GetObjectCommand({
             Bucket: bucketName,
-            Key: fileUrl,
+            Key: file.s3Key,
             ResponseContentDisposition: contentDisposition,
         });
         // Generate a pre-signed URL that expires in 5 minutes (300 seconds)
@@ -77,6 +70,7 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
             expiresIn: 300
         });
 
+        // TODO need to add the activity file download count to get user metrics
         // // Log the download attempt for analytics (optional)
         // await prisma.activityFileDownload.create({
         //     data: {

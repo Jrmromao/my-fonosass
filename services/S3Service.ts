@@ -22,11 +22,9 @@ class S3Service {
     private static instance: S3Service;
     private s3Client: S3Client;
     private readonly mainBucketName: string;
-    private readonly env: string;
 
     private constructor() {
-        this.env = process.env.NODE_ENV || "development";
-        this.mainBucketName = `${this.env}-fono-storage`;
+        this.mainBucketName = process.env.AWS_S3_BUCKET_NAME as string;
 
         const clientConfig: S3ClientConfig = {
             credentials: {
@@ -142,50 +140,46 @@ class S3Service {
         }
     }
 
-    private getCompanyPrefix(companyId: string): string {
-        return `companies/${companyId}/`;
-    }
-
-    public async initializeCompanyStorage(companyId: string): Promise<void> {
-        console.log(`Initializing storage for company: ${companyId}`);
-        try {
-            await this.ensureMainBucketExists();
-            const prefix = this.getCompanyPrefix(companyId);
-
-            // Create a dummy file to establish the prefix
-            await this.uploadFile(
-                companyId,
-                ".init",
-                Buffer.from(""),
-                "application/json",
-            );
-            console.log("Company storage initialized");
-        } catch (error: unknown) {
-            const errorMessage =
-                error instanceof Error ? error.message : "Unknown error";
-            throw new Error(
-                `Failed to initialize storage for company ${companyId}: ${errorMessage}`,
-            );
-        }
-    }
+    // private getCompanyPrefix(companyId: string): string {
+    //     return `companies/${companyId}/`;
+    // }
+    // this will be used when we start uploading files per user and company
+    // public async initializeCompanyStorage(): Promise<void> {
+    //     console.log(`Initializing storage for company: ${companyId}`);
+    //     try {
+    //         await this.ensureMainBucketExists();
+    //         const prefix = this.getCompanyPrefix(companyId);
+    //
+    //         // Create a dummy file to establish the prefix
+    //         await this.uploadFile(
+    //             ".init",
+    //             Buffer.from(""),
+    //             "application/json",
+    //         );
+    //         console.log("Company storage initialized");
+    //     } catch (error: unknown) {
+    //         const errorMessage =
+    //             error instanceof Error ? error.message : "Unknown error";
+    //         throw new Error(
+    //             `Failed to initialize storage for company ${companyId}: ${errorMessage}`,
+    //         );
+    //     }
+    // }
 
     public async uploadFile(
-        companyId: string,
         key: string,
         data: Buffer | Uint8Array | string,
         contentType: string,
     ): Promise<CompleteMultipartUploadCommandOutput> {
-        console.log(`Uploading file for company ${companyId}, key: ${key}`);
+        console.log(`Uploading file with key: ${key}`);
         try {
             await this.ensureMainBucketExists();
-            const prefix = this.getCompanyPrefix(companyId);
-            const fullKey = `${prefix}${key}`;
 
             const upload = new Upload({
                 client: this.s3Client,
                 params: {
                     Bucket: this.mainBucketName,
-                    Key: fullKey,
+                    Key: key,
                     Body: data,
                     ContentType: contentType,
                     ServerSideEncryption: "AES256",
@@ -199,7 +193,7 @@ class S3Service {
             const errorMessage =
                 error instanceof Error ? error.message : "Unknown error";
             throw new Error(
-                `Failed to upload file for company ${companyId}: ${errorMessage}`,
+                `Failed to upload file with key ${key}: ${errorMessage}`,
             );
         }
     }
@@ -209,13 +203,13 @@ class S3Service {
         key: string,
     ): Promise<GetObjectCommandOutput> {
         try {
-            const prefix = this.getCompanyPrefix(companyId);
-            const fullKey = `${prefix}${key}`;
+            // const prefix = this.getCompanyPrefix(companyId);
+            // const fullKey = `${prefix}${key}`;
 
             return await this.s3Client.send(
                 new GetObjectCommand({
                     Bucket: this.mainBucketName,
-                    Key: fullKey,
+                    Key: key,
                 }),
             );
         } catch (error: unknown) {
@@ -232,14 +226,14 @@ class S3Service {
         prefix?: string,
     ): Promise<_Object[]> {
         try {
-            const companyPrefix = this.getCompanyPrefix(companyId);
-            const fullPrefix = prefix ? `${companyPrefix}${prefix}` : companyPrefix;
+            // const companyPrefix = this.getCompanyPrefix(companyId);
+            // const fullPrefix = prefix ? `${companyPrefix}${prefix}` : companyPrefix;
 
-            console.log(fullPrefix)
+
             const response = await this.s3Client.send(
                 new ListObjectsV2Command({
                     Bucket: this.mainBucketName,
-                    Prefix: fullPrefix,
+                    Prefix: prefix,
                 }),
             );
 
@@ -255,13 +249,13 @@ class S3Service {
 
     public async deleteFile(companyId: string, key: string): Promise<void> {
         try {
-            const prefix = this.getCompanyPrefix(companyId);
-            const fullKey = `${prefix}${key}`;
+            // const prefix = this.getCompanyPrefix(companyId);
+            // const fullKey = `${prefix}${key}`;
 
             await this.s3Client.send(
                 new DeleteObjectCommand({
                     Bucket: this.mainBucketName,
-                    Key: fullKey,
+                    Key: key,
                 }),
             );
         } catch (error: unknown) {
@@ -275,13 +269,13 @@ class S3Service {
 
     public async deleteCompanyStorage(companyId: string): Promise<void> {
         try {
-            const prefix = this.getCompanyPrefix(companyId);
+            // const prefix = this.getCompanyPrefix(companyId);
 
             // List all objects with company prefix
             const listResponse = await this.s3Client.send(
                 new ListObjectsV2Command({
                     Bucket: this.mainBucketName,
-                    Prefix: prefix,
+                    Prefix: companyId,
                 }),
             );
 

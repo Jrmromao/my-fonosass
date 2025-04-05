@@ -57,8 +57,6 @@ async function createOrUpdateUser(clerkUserId: string, email: string, firstName:
     const sanitizedFirstName = sanitizeString(firstName);
     const sanitizedLastName = sanitizeString(lastName);
 
-    // create a dir in S3 for this user (company)
-    await S3Service.getInstance().initializeCompanyStorage(clerkUserId)
     // Construct full name safely
     const fullName = `${sanitizedFirstName} ${sanitizedLastName}`.trim() || 'User';
 
@@ -199,7 +197,6 @@ async function processWebhook(req: Request): Promise<NextResponse> {
             case 'session.created': {
                 // Extract user data from the session
                 const { user_id } = evt.data;
-
                 if (!user_id || !isValidUserId(user_id)) {
                     console.error('Invalid user ID in session data');
                     return NextResponse.json(
@@ -280,6 +277,9 @@ async function processWebhook(req: Request): Promise<NextResponse> {
                         { status: 400 }
                     );
                 }
+
+
+
 
                 const primaryEmail = email_addresses?.[0]?.email_address;
 
