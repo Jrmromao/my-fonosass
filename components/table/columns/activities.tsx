@@ -396,7 +396,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
 import DataTableRowActions from "@/components/table/DataTableRowActions";
 import { cn } from "@/lib/utils";
-import { Activity as PrismaActivity, ActivityDifficulty, ActivityType, AgeRange } from "@prisma/client";
+import { ActivityDifficulty, ActivityType, AgeRange } from "@prisma/client";
 import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
 import { ActivityWithFiles } from "@/types/activity"; // Import from shared types
 
@@ -458,12 +458,7 @@ const DownloadButton = ({ file, activityId }: {
                 //@ts-ignore
                 link.href = result.url;
 
-                // Ensure we have a valid string for the download attribute
-                const safeFileName: string = typeof file.name === 'string' && file.name.trim() !== ''
-                    ? file.name
-                    : `activity-${activityId}.pdf`;
-
-                link.setAttribute('download', safeFileName);
+                link.setAttribute('download', file.name);
 
                 // Required for Firefox
                 document.body.appendChild(link);

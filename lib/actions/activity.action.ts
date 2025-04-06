@@ -54,6 +54,7 @@ export async function createActivity(formData: FormData) {
         const ageRange = (formData.get("ageRange") as string) || "ADULT";
         const isPublic = formData.get("isPublic") === "true";
         const phoneme = formData.get("phoneme") as string;
+
         // Create activity in database
         const activity = await prisma.activity.create({
             data: {
@@ -97,7 +98,7 @@ export async function createActivity(formData: FormData) {
                             data: {
                                 activityId: activity.id,
                                 name: file.name,
-                                s3Key: `${userId}/${activity.id}/${file.name}`,
+                                s3Key: `${activity.id}/${file.name}`,
                                 s3Url: s3Result.Location || "",
                                 fileType: file.type,
                                 sizeInBytes: buffer.length,
@@ -221,8 +222,6 @@ export async function getActivities({
             orderBy: { createdAt: 'desc' },
         });
 
-
-        console.log(activities[0].files[0].s3Url)
         return {
             success: true,
             activities,

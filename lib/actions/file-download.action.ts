@@ -40,12 +40,12 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
         }
 
         // Check permission - user can download if:
-        const isCreator = file.activity.createdById === userId;
-        const isPublic = file.activity.isPublic;
-
-        if (!isCreator && !isPublic) {
-            return { success: false, error: "You don't have permission to download this file" };
-        }
+        // const isCreator = file.activity.createdById === userId;
+        // const isPublic = file.activity.isPublic;
+        //
+        // if (!isCreator && !isPublic) {
+        //     return { success: false, error: "You don't have permission to download this file" };
+        // }
 
         // Initialize S3 client
         const s3Client = new S3Client({
