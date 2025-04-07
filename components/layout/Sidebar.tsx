@@ -4,12 +4,10 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Home, LogOut, Menu, Map, Calendar, Settings, X, Users, Gamepad } from "lucide-react"
+import { Home, LogOut, Menu, Calendar, Settings, X, Users, Gamepad, BarChart2, FileText } from "lucide-react"
 import { useClerk, UserButton, useUser } from "@clerk/nextjs"
 import { useUserRole } from "@/hooks/useUserRole"
-import {APP_NAME} from "@/utils/constants";
-
-
+import { APP_NAME } from "@/utils/constants";
 
 interface SidebarProps {
     className?: string
@@ -31,21 +29,25 @@ export function Sidebar({ className }: SidebarProps) {
 
     const sidebarItems = [
         {
-            title: "Home",
-            icon: Home,
+            title: "Dashboard",
+            icon: BarChart2,
             href: "/dashboard",
         },
-        {
-            title: "Registered Users",
-            icon: Users,
-            href: "/dashboard/users",
-            visible: userRole.role === 'ADMIN'
-        },
+        // {
+        //     title: "Pacientes",
+        //     icon: Users,
+        //     href: "/dashboard/patient",
+        // },
         {
             title: "Atividades",
-            icon: Gamepad,
+            icon: FileText,
             href: "/dashboard/games",
         },
+        {
+            title: "Configurações",
+            icon: Settings,
+            href: "/settings",
+        }
     ]
 
     // Handle resize and set initial collapsed state
@@ -74,13 +76,13 @@ export function Sidebar({ className }: SidebarProps) {
         <Button
             variant="ghost"
             size="icon"
-            className="md:hidden fixed top-4 left-4 z-50 rounded-full bg-white shadow-sm hover:bg-blue-50"
+            className="md:hidden fixed top-4 left-4 z-50 rounded-full bg-white shadow-md hover:bg-gray-100"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
             {isMobileMenuOpen ? (
-                <X className="h-5 w-5 text-blue-600" />
+                <X className="h-5 w-5 text-gray-700" />
             ) : (
-                <Menu className="h-5 w-5 text-blue-600" />
+                <Menu className="h-5 w-5 text-gray-700" />
             )}
         </Button>
     )
@@ -89,7 +91,7 @@ export function Sidebar({ className }: SidebarProps) {
         <>
             <MobileMenuButton />
 
-            {/* Mobile overlay with transition */}
+            {/* Mobile overlay */}
             {isMobileMenuOpen && (
                 <div
                     className="md:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300"
@@ -97,29 +99,29 @@ export function Sidebar({ className }: SidebarProps) {
                 />
             )}
 
-            {/* Sidebar with gradient styling to match landing page */}
+            {/* Sidebar with professional styling */}
             <aside className={cn(
-                "fixed top-0 left-0 z-40 h-screen flex flex-col bg-gradient-to-b from-cyan-50 to-blue-50 dark:from-indigo-900 dark:to-blue-900 border-r border-blue-200 dark:border-blue-800 transition-all duration-300 ease-in-out",
+                "fixed top-0 left-0 z-40 h-screen flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out",
                 isCollapsed ? "w-20" : "w-64",
                 isMobileMenuOpen ? "translate-x-0 shadow-xl" : "-translate-x-full md:translate-x-0",
                 className
             )}>
-                {/* Logo */}
-                <div className="h-16 flex items-center px-4 border-b border-blue-100 dark:border-blue-800">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-yellow-400">
-                        <span className="text-sm font-black text-white">TP</span>
+                {/* Logo area */}
+                <div className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-teal-500">
+                        <span className="text-sm font-bold text-white">TP</span>
                     </div>
                     {!isCollapsed && (
-                        <span className="ml-3 text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
+                        <span className="ml-3 text-lg font-semibold text-gray-900 dark:text-white">
                             {APP_NAME}
                         </span>
                     )}
 
-                    {/* Collapse toggle on desktop */}
+                    {/* Collapse toggle for desktop */}
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="ml-auto hidden md:flex text-blue-600 dark:text-blue-300 hover:text-pink-500 dark:hover:text-pink-400"
+                        className="ml-auto hidden md:flex text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                         onClick={() => setIsCollapsed(!isCollapsed)}
                     >
                         {isCollapsed ? (
@@ -134,48 +136,47 @@ export function Sidebar({ className }: SidebarProps) {
                     </Button>
                 </div>
 
-                {/* Nav items with improved active state and landing page styling */}
+                {/* Nav items with professional styling */}
                 <nav className="flex-1 px-3 py-6 overflow-y-auto">
-                    <ul className="space-y-2">
-                        {sidebarItems
-                            .filter(item => item.visible === undefined || item.visible === true)
-                            .map((item) => {
-                                const isActive = pathname === item.href || pathname ===  `${item.href}/`
-                                
+                    <ul className="space-y-1">
+                        {sidebarItems.map((item) => {
 
-                                return (
-                                    <li key={item.href}>
-                                        <Link
-                                            href={item.href}
-                                            className={cn(
-                                                "flex items-center rounded-lg transition-all duration-200",
-                                                isCollapsed ? "justify-center p-3" : "px-4 py-3",
-                                                isActive
-                                                    ? "bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-800/50 dark:to-purple-800/50 text-indigo-600 dark:text-indigo-300 font-medium"
-                                                    : "text-indigo-600 dark:text-cyan-300 hover:text-pink-500 dark:hover:text-yellow-300 hover:bg-blue-50 dark:hover:bg-indigo-800/50"
-                                            )}
-                                        >
-                                            <item.icon className={cn(
-                                                "flex-shrink-0",
-                                                isActive ? "text-indigo-600 dark:text-indigo-300" : "text-indigo-500 dark:text-cyan-300",
-                                                isCollapsed ? "h-6 w-6" : "h-5 w-5"
-                                            )} />
+                            const isActive = pathname === item.href ||
+                                (pathname.startsWith(item.href + '/') && item.href !== '/dashboard') ||
+                                (item.href === '/dashboard' && pathname === '/dashboard');
+                            return (
+                                <li key={item.href}>
+                                    <Link
+                                        href={item.href}
+                                        className={cn(
+                                            "flex items-center rounded-lg transition-all duration-200",
+                                            isCollapsed ? "justify-center p-3" : "px-4 py-3",
+                                            isActive
+                                                ? "bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-medium"
+                                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-blue-600 dark:hover:text-blue-400"
+                                        )}
+                                    >
+                                        <item.icon className={cn(
+                                            "flex-shrink-0",
+                                            isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400",
+                                            isCollapsed ? "h-6 w-6" : "h-5 w-5"
+                                        )} />
 
-                                            {!isCollapsed && (
-                                                <span className="ml-3 text-sm">
-                                                    {item.title}
-                                                </span>
-                                            )}
-                                        </Link>
-                                    </li>
-                                )
-                            })}
+                                        {!isCollapsed && (
+                                            <span className="ml-3 text-sm font-medium">
+                                                {item.title}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </li>
+                            )
+                        })}
                     </ul>
                 </nav>
 
-                {/* User profile with landing page styling */}
+                {/* User profile section */}
                 {user && (
-                    <div className="mt-auto border-t border-blue-200 dark:border-blue-800 p-4">
+                    <div className="mt-auto border-t border-gray-200 dark:border-gray-800 p-4">
                         <div className={cn(
                             "flex items-center",
                             !isCollapsed && "justify-between",
@@ -188,40 +189,30 @@ export function Sidebar({ className }: SidebarProps) {
                                 <UserButton />
                                 {!isCollapsed && (
                                     <div className="ml-3 overflow-hidden">
-                                        <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300 truncate">
+                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                                             {user.firstName || "User"}
                                         </p>
-                                        <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                             {user.primaryEmailAddress?.emailAddress || "user@example.com"}
                                         </p>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Sign out button with landing page styling */}
-                            {!isCollapsed ? (
-                                <button
-                                    onClick={handleSignOut}
-                                    aria-label="Sign out"
-                                    className="p-2 text-indigo-500 hover:text-pink-500 dark:text-indigo-400 dark:hover:text-pink-400 hover:bg-blue-50 dark:hover:bg-indigo-800 rounded-md transition-colors"
-                                >
-                                    <LogOut className="h-4 w-4" />
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleSignOut}
-                                    aria-label="Sign out"
-                                    className="p-2 text-indigo-500 hover:text-pink-500 dark:text-indigo-400 dark:hover:text-pink-400 hover:bg-blue-50 dark:hover:bg-indigo-800 rounded-md transition-colors"
-                                >
-                                    <LogOut className="h-4 w-4" />
-                                </button>
-                            )}
+                            {/* Sign out button */}
+                            <button
+                                onClick={handleSignOut}
+                                aria-label="Sign out"
+                                className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
+                            >
+                                <LogOut className="h-4 w-4" />
+                            </button>
                         </div>
                     </div>
                 )}
             </aside>
 
-            {/* Content wrapper to ensure proper layout with fixed sidebar */}
+            {/* Content wrapper */}
             <div className={cn(
                 "min-h-screen transition-all duration-300",
                 isCollapsed ? "md:ml-20" : "md:ml-64"

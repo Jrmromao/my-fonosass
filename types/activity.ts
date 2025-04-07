@@ -15,6 +15,7 @@ export interface ActivityWithFiles {
     createdById: string;
     createdAt: Date;
     updatedAt: Date;
+    accessorKey: string;
 
     // Related fields with optional flags
     createdBy?: {
