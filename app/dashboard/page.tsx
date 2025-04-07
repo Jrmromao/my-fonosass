@@ -1,753 +1,727 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Search,
-    Grid3X3,
-    LayoutList,
-    BookOpen,
-    Star,
-    Clock,
-    Mic,
-    Volume2,
-    BarChart2,
-    BookmarkPlus,
-    Music,
-    SlidersHorizontal,
-    ChevronDown,
     Calendar,
+    Users,
+    Clock,
     PlusCircle,
-    TrendingUp,
-    CheckCircle2,
-    HelpCircle,
-    FileText,
-    Download,
-    User,
-    Settings
+    ChevronRight,
+    BarChart2,
+    ListFilter,
+    LayoutGrid,
+    CheckCircle,
+    AlertCircle,
+    ArrowRight
 } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 const Dashboard = () => {
-    const [viewMode, setViewMode] = useState('grid');
-    const [filterOpen, setFilterOpen] = useState(false);
-    const [activeCategory, setActiveCategory] = useState('all');
+    const [activeTab, setActiveTab] = useState('overview');
 
-    // Phoneme categories with enhanced data
-    const phonemeCategories = [
-        { id: 'plosivas', name: 'Plosivas', count: 28, icon: <Mic size={18} />, color: 'from-pink-500 to-yellow-400', usage: 65 },
-        { id: 'fricativas', name: 'Fricativas', count: 36, icon: <Volume2 size={18} />, color: 'from-indigo-500 to-purple-500', usage: 82 },
-        { id: 'nasais', name: 'Nasais', count: 14, icon: <Music size={18} />, color: 'from-green-400 to-cyan-500', usage: 45 },
-        { id: 'liquidas', name: 'Líquidas', count: 22, icon: <Volume2 size={18} />, color: 'from-orange-400 to-pink-500', usage: 58 },
-        { id: 'vogais', name: 'Vogais', count: 31, icon: <Music size={18} />, color: 'from-blue-500 to-indigo-600', usage: 73 }
-    ];
-
-    // Recent exercises with enhanced metadata
-    const recentExercises = [
+    // Mock data for patients
+    const patients = [
         {
-            id: 1,
-            title: 'Jogo dos Sons Sibilantes',
-            description: 'Exercícios para fonemas S, Z e X',
-            category: 'fricativas',
-            categoryName: 'Fricativas',
-            age: '3-6 anos',
-            difficulty: 'Iniciante',
-            views: 245,
-            completions: 183,
-            favorite: true,
-            dateAdded: '2 dias atrás',
-            icon: <Volume2 size={20} />,
-            color: 'from-indigo-500 to-purple-500'
+            id: 'p1',
+            name: 'Maria Silva',
+            age: 6,
+            nextSession: '2025-04-09T14:30:00',
+            progress: 68,
+            phonemes: ['R', 'S'],
+            status: 'active'
         },
         {
-            id: 2,
-            title: 'Rimas Divertidas com Vogais',
-            description: 'Atividade para reconhecimento de vogais',
-            category: 'vogais',
-            categoryName: 'Vogais',
-            age: '4-7 anos',
-            difficulty: 'Intermediário',
-            views: 187,
-            completions: 142,
-            favorite: false,
-            dateAdded: '4 dias atrás',
-            icon: <Music size={20} />,
-            color: 'from-blue-500 to-indigo-600'
+            id: 'p2',
+            name: 'Pedro Santos',
+            age: 8,
+            nextSession: '2025-04-10T15:00:00',
+            progress: 42,
+            phonemes: ['L', 'TH'],
+            status: 'active'
         },
         {
-            id: 3,
-            title: 'Histórias com Fonemas Líquidos',
-            description: 'Narrativas para prática de R e L',
-            category: 'liquidas',
-            categoryName: 'Líquidas',
-            age: '5-9 anos',
-            difficulty: 'Avançado',
-            views: 132,
-            completions: 97,
-            favorite: true,
-            dateAdded: '1 semana atrás',
-            icon: <Volume2 size={20} />,
-            color: 'from-orange-400 to-pink-500'
+            id: 'p3',
+            name: 'Ana Oliveira',
+            age: 5,
+            nextSession: '2025-04-08T10:15:00',
+            progress: 91,
+            phonemes: ['CH', 'SH'],
+            status: 'active'
         },
         {
-            id: 4,
-            title: 'Sequência de Plosivas',
-            description: 'Exercício para fonemas P, B, T, D, K, G',
-            category: 'plosivas',
-            categoryName: 'Plosivas',
-            age: '4-8 anos',
-            difficulty: 'Intermediário',
-            views: 98,
-            completions: 76,
-            favorite: false,
-            dateAdded: '1 semana atrás',
-            icon: <Mic size={20} />,
-            color: 'from-pink-500 to-yellow-400'
+            id: 'p4',
+            name: 'Lucas Costa',
+            age: 7,
+            nextSession: '2025-04-12T16:45:00',
+            progress: 35,
+            phonemes: ['F', 'V'],
+            status: 'active'
         }
     ];
 
-    // Usage stats with trend indicators
-    const usageStats = [
+    // Mock data for upcoming sessions
+    const upcomingSessions = [
         {
-            label: 'Total de Exercícios',
-            value: '136',
-            trend: '+12%',
-            trendUp: true,
-            icon: <BookOpen size={20} className="text-white" />,
-            color: 'from-pink-500 to-yellow-400'
+            id: 's1',
+            patientId: 'p1',
+            patientName: 'Maria Silva',
+            date: '2025-04-09T14:30:00',
+            focus: 'R sound in medial position',
+            duration: 45
         },
         {
-            label: 'Categorias de Fonemas',
-            value: '5',
-            trend: '',
-            trendUp: true,
-            icon: <Grid3X3 size={20} className="text-white" />,
-            color: 'from-indigo-500 to-purple-500'
+            id: 's2',
+            patientId: 'p2',
+            patientName: 'Pedro Santos',
+            date: '2025-04-10T15:00:00',
+            focus: 'L blends in words',
+            duration: 30
         },
         {
-            label: 'Exercícios Favoritos',
-            value: '24',
-            trend: '+8%',
-            trendUp: true,
-            icon: <Star size={20} className="text-white" />,
-            color: 'from-blue-500 to-indigo-600'
-        },
-        {
-            label: 'Adicionados Recentemente',
-            value: '12',
-            trend: '+4',
-            trendUp: true,
-            icon: <Clock size={20} className="text-white" />,
-            color: 'from-emerald-500 to-teal-500'
+            id: 's3',
+            patientId: 'p3',
+            patientName: 'Ana Oliveira',
+            date: '2025-04-08T10:15:00',
+            focus: 'CH/SH discrimination',
+            duration: 45
         }
     ];
 
-    // Suggested exercises based on usage
-    const suggestedExercises = [
+    // Mock treatment plans data
+    const treatmentPlans = [
         {
-            title: 'Trilha Fonêmica',
-            category: 'Múltiplos Fonemas',
-            match: '98% de match com seus perfis',
-            icon: <CheckCircle2 size={16} className="text-emerald-500" />
+            id: 'tp1',
+            patientId: 'p1',
+            patientName: 'Maria Silva',
+            createdAt: '2025-03-15',
+            targetPhonemes: ['R', 'S'],
+            status: 'in-progress',
+            completedSessions: 8,
+            totalSessions: 12
         },
         {
-            title: 'Sequências Articulatórias',
-            category: 'Fricativas',
-            match: '95% de match com seus perfis',
-            icon: <CheckCircle2 size={16} className="text-emerald-500" />
+            id: 'tp2',
+            patientId: 'p2',
+            patientName: 'Pedro Santos',
+            createdAt: '2025-03-22',
+            targetPhonemes: ['L', 'TH'],
+            status: 'in-progress',
+            completedSessions: 4,
+            totalSessions: 10
         },
         {
-            title: 'Jogo da Língua',
-            category: 'Líquidas',
-            match: '89% de match com seus perfis',
-            icon: <CheckCircle2 size={16} className="text-emerald-500" />
+            id: 'tp3',
+            patientId: 'p3',
+            patientName: 'Ana Oliveira',
+            createdAt: '2025-02-10',
+            targetPhonemes: ['CH', 'SH'],
+            status: 'completed',
+            completedSessions: 14,
+            totalSessions: 14
+        },
+        {
+            id: 'tp4',
+            patientId: 'p4',
+            patientName: 'Lucas Costa',
+            createdAt: '2025-04-01',
+            targetPhonemes: ['F', 'V'],
+            status: 'in-progress',
+            completedSessions: 2,
+            totalSessions: 8
         }
     ];
 
-    const getCategoryById = (id: string) => {
-        return phonemeCategories.find(category => category.id === id) ||
-            { color: 'from-gray-400 to-gray-500', icon: <HelpCircle size={18} /> };
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('pt-BR', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-cyan-50 to-fuchsia-50 dark:from-indigo-950 dark:to-fuchsia-950">
-            {/* Top Navigation */}
-            <div className="bg-white dark:bg-indigo-900 border-b border-indigo-100 dark:border-indigo-800 sticky top-0 z-10">
-                <div className="container mx-auto px-4 py-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-6">
-                            <h1 className="text-xl font-bold text-indigo-900 dark:text-white">Biblioteca Fonêmica</h1>
+        <div className="h-full p-6 bg-gray-50 dark:bg-gray-900">
+            {/* Dashboard Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
+                        Dashboard
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Gerencie seus pacientes e planejamentos
+                    </p>
+                </div>
 
-                            <div className="relative hidden md:block max-w-md">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Search size={16} className="text-indigo-400" />
-                                </div>
-                                <input
-                                    type="text"
-                                    className="w-full pl-10 pr-4 py-1.5 text-sm border border-indigo-200 dark:border-indigo-700 rounded-lg bg-indigo-50 dark:bg-indigo-800/50 text-indigo-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                                    placeholder="Buscar exercícios, categorias, fonemas..."
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center space-x-4">
-                            <button className="w-8 h-8 flex items-center justify-center rounded-full text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800">
-                                <HelpCircle size={18} />
-                            </button>
-                            <button className="w-8 h-8 flex items-center justify-center rounded-full text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800">
-                                <Settings size={18} />
-                            </button>
-                            <div className="relative ml-2">
-                                <button className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 flex items-center justify-center text-white">
-                                        <User size={16} />
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
+                <div className="flex items-center gap-4 mt-4 md:mt-0">
+                    <div className="relative w-64">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input placeholder="Buscar paciente..." className="pl-9" />
                     </div>
+                    <Button variant="default" className="flex items-center gap-2">
+                        <PlusCircle className="h-4 w-4" />
+                        <span>Novo Paciente</span>
+                    </Button>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-6">
-                {/* Dashboard Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-                    <div>
-                        <h2 className="text-2xl font-bold text-indigo-900 dark:text-white mb-1">Dashboard</h2>
-                        <p className="text-indigo-600 dark:text-indigo-300 text-sm">Biblioteca de exercícios fonêmicos para fonoaudiólogos</p>
-                    </div>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card className="bg-white dark:bg-gray-800">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                                <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-muted-foreground">Pacientes Ativos</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">12</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                    <div className="flex mt-4 md:mt-0 space-x-3">
-                        <button className="inline-flex items-center px-4 py-2 bg-indigo-50 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200 text-sm font-medium rounded-lg border border-indigo-200 dark:border-indigo-700 hover:bg-indigo-100 dark:hover:bg-indigo-700">
-                            <FileText size={16} className="mr-2" />
-                            Relatórios
-                        </button>
-                        <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-yellow-400 text-white text-sm font-medium rounded-lg hover:shadow-lg hover:shadow-pink-500/20 transition-all">
-                            <PlusCircle size={16} className="mr-2" />
-                            Novo Exercício
-                        </button>
-                    </div>
-                </div>
+                <Card className="bg-white dark:bg-gray-800">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-muted-foreground">Sessões Hoje</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">4</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                    {usageStats.map((stat, index) => (
-                        <div key={index} className="bg-white dark:bg-indigo-900/70 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 overflow-hidden">
-                            <div className="flex">
-                                <div className={`w-3 bg-gradient-to-b ${stat.color}`}></div>
-                                <div className="p-4 w-full">
-                                    <div className="flex justify-between">
-                                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3`}>
-                                            {stat.icon}
-                                        </div>
-                                        {stat.trend && (
-                                            <div className={`flex items-center text-xs font-medium ${stat.trendUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                                {stat.trendUp ? <TrendingUp size={12} className="mr-1" /> : <TrendingUp size={12} className="mr-1 transform rotate-180" />}
-                                                {stat.trend}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-indigo-900 dark:text-white mb-1">{stat.value}</h3>
-                                    <p className="text-indigo-600 dark:text-indigo-400 text-sm">{stat.label}</p>
+                <Card className="bg-white dark:bg-gray-800">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-muted-foreground">Planos Ativos</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">8</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-gray-800">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
+                                <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-muted-foreground">Necessitam Atenção</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">3</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Main Content Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <TabsList className="w-full sm:w-auto grid grid-cols-3 md:grid-cols-3 sm:inline-flex">
+                    <TabsTrigger value="overview" className="px-4 py-2">
+                        Visão Geral
+                    </TabsTrigger>
+                    <TabsTrigger value="patients" className="px-4 py-2">
+                        Pacientes
+                    </TabsTrigger>
+                    <TabsTrigger value="planning" className="px-4 py-2">
+                        Planejamento
+                    </TabsTrigger>
+                </TabsList>
+
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Today's Sessions */}
+                        <Card className="lg:col-span-2 bg-white dark:bg-gray-800">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg font-semibold">Próximas Sessões</CardTitle>
+                                    <Button variant="ghost" size="sm" className="text-sm text-muted-foreground">
+                                        Ver todas <ChevronRight className="ml-1 h-4 w-4" />
+                                    </Button>
                                 </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Search and Filter Row - Mobile */}
-                <div className="md:hidden mb-6">
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search size={16} className="text-indigo-400" />
-                        </div>
-                        <input
-                            type="text"
-                            className="w-full pl-10 pr-4 py-2 border border-indigo-200 dark:border-indigo-700 rounded-lg bg-white dark:bg-indigo-800 text-indigo-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
-                            placeholder="Buscar exercícios, categorias, fonemas..."
-                        />
-                    </div>
-                </div>
-
-                {/* Filter and View Toggle */}
-                <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-                    <div className="flex flex-wrap items-center bg-white dark:bg-indigo-900/70 rounded-lg border border-indigo-100 dark:border-indigo-800 shadow-sm divide-x divide-indigo-100 dark:divide-indigo-800">
-                        <button
-                            onClick={() => setActiveCategory('all')}
-                            className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
-                                activeCategory === 'all'
-                                    ? 'text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-800'
-                                    : 'text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-800/50'
-                            }`}
-                        >
-                            Todos
-                        </button>
-
-                        {phonemeCategories.slice(0, 3).map((category) => (
-                            <button
-                                key={category.id}
-                                onClick={() => setActiveCategory(category.id)}
-                                className={`px-4 py-2 text-sm font-medium ${
-                                    activeCategory === category.id
-                                        ? 'text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-800'
-                                        : 'text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-800/50'
-                                }`}
-                            >
-                                {category.name}
-                            </button>
-                        ))}
-
-                        <div className="relative">
-                            <button
-                                onClick={() => setFilterOpen(!filterOpen)}
-                                className="px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-800/50 rounded-r-lg flex items-center"
-                            >
-                                <SlidersHorizontal size={14} className="mr-1" />
-                                Filtros
-                            </button>
-
-                            {filterOpen && (
-                                <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-indigo-900 rounded-lg shadow-lg border border-indigo-200 dark:border-indigo-700 z-10">
-                                    <div className="p-3">
-                                        <h3 className="font-medium text-indigo-900 dark:text-white text-sm mb-2">Filtrar por</h3>
-                                        <div className="space-y-3">
-                                            <div>
-                                                <label className="block text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-1">Faixa Etária</label>
-                                                <select className="w-full p-1.5 text-sm border border-indigo-200 dark:border-indigo-700 rounded-lg bg-white dark:bg-indigo-800 text-indigo-900 dark:text-white">
-                                                    <option value="">Todas as idades</option>
-                                                    <option value="3-6">3-6 anos</option>
-                                                    <option value="4-7">4-7 anos</option>
-                                                    <option value="5-9">5-9 anos</option>
-                                                </select>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-1">Dificuldade</label>
-                                                <select className="w-full p-1.5 text-sm border border-indigo-200 dark:border-indigo-700 rounded-lg bg-white dark:bg-indigo-800 text-indigo-900 dark:text-white">
-                                                    <option value="">Todos os níveis</option>
-                                                    <option value="iniciante">Iniciante</option>
-                                                    <option value="intermediario">Intermediário</option>
-                                                    <option value="avancado">Avançado</option>
-                                                </select>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-1">Ordenar por</label>
-                                                <select className="w-full p-1.5 text-sm border border-indigo-200 dark:border-indigo-700 rounded-lg bg-white dark:bg-indigo-800 text-indigo-900 dark:text-white">
-                                                    <option value="recent">Mais recentes</option>
-                                                    <option value="popular">Mais populares</option>
-                                                    <option value="az">A-Z</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex justify-end mt-3 pt-3 border-t border-indigo-100 dark:border-indigo-800">
-                                            <button className="px-3 py-1.5 text-xs bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-white rounded-lg mr-2">
-                                                Limpar
-                                            </button>
-                                            <button className="px-3 py-1.5 text-xs bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-lg">
-                                                Aplicar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-lg ${viewMode === 'grid'
-                                ? 'bg-gradient-to-r from-pink-500 to-yellow-400 text-white shadow-sm'
-                                : 'bg-white dark:bg-indigo-900/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'}`}
-                        >
-                            <Grid3X3 size={16} />
-                        </button>
-
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-lg ${viewMode === 'list'
-                                ? 'bg-gradient-to-r from-pink-500 to-yellow-400 text-white shadow-sm'
-                                : 'bg-white dark:bg-indigo-900/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'}`}
-                        >
-                            <LayoutList size={16} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column */}
-                    <div className="lg:col-span-2">
-                        {/* Exercises Display */}
-                        <div className="bg-white dark:bg-indigo-900/70 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 overflow-hidden mb-6">
-                            <div className="p-4 border-b border-indigo-100 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-900 dark:to-indigo-800 flex justify-between items-center">
-                                <h2 className="text-lg font-semibold text-indigo-900 dark:text-white flex items-center">
-                                    <Clock size={18} className="mr-2 text-indigo-500 dark:text-indigo-400" />
-                                    <span>Exercícios Recentes</span>
-                                </h2>
-                                <button className="text-indigo-600 dark:text-indigo-300 hover:text-pink-500 dark:hover:text-pink-400 text-sm font-medium flex items-center">
-                                    Ver todos
-                                    <ChevronDown size={16} className="ml-1 transform -rotate-90" />
-                                </button>
-                            </div>
-
-                            <div className="p-4">
-                                {viewMode === 'grid' ? (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
-                                        {recentExercises.map((exercise) => {
-                                            const category = exercise.category;
-                                            const categoryData = getCategoryById(category);
-
-                                            return (
-                                                <div key={exercise.id} className="group relative bg-white dark:bg-indigo-900 rounded-xl border border-indigo-100 dark:border-indigo-800 overflow-hidden hover:shadow-md transition-shadow duration-300">
-                                                    <div className={`h-24 bg-gradient-to-r ${categoryData.color} relative p-4 flex items-end`}>
-                                                        <div className="absolute top-3 right-3 flex space-x-1">
-                                                            {exercise.favorite && (
-                                                                <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                                                    <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                                                                </div>
-                                                            )}
-                                                            <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xs font-medium">
-                                                                {exercise.difficulty.charAt(0)}
-                                                            </div>
-                                                        </div>
-                                                        <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-black/30 to-transparent"></div>
-                                                        <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-white mr-3 relative z-10">
-                                                            {exercise.icon}
-                                                        </div>
-                                                        <h3 className="text-white font-medium relative z-10 text-sm">{exercise.categoryName}</h3>
-                                                    </div>
-                                                    <div className="p-4">
-                                                        <h3 className="font-semibold text-indigo-900 dark:text-white mb-1 line-clamp-1">
-                                                            {exercise.title}
-                                                        </h3>
-                                                        <p className="text-indigo-600 dark:text-indigo-400 text-sm mb-3 line-clamp-2">
-                                                            {exercise.description}
-                                                        </p>
-                                                        <div className="flex items-center justify-between text-xs">
-                                                            <div className="flex items-center text-indigo-500 dark:text-indigo-300">
-                                <span className="bg-indigo-50 dark:bg-indigo-800 px-2 py-0.5 rounded-full">
-                                  {exercise.age}
-                                </span>
-                                                            </div>
-                                                            <span className="text-indigo-500 dark:text-indigo-400">{exercise.dateAdded}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="absolute inset-0 bg-indigo-900/5 dark:bg-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {recentExercises.map((exercise) => {
-                                            const category = exercise.category;
-                                            const categoryData = getCategoryById(category);
-
-                                            return (
-                                                <div key={exercise.id} className="flex items-stretch bg-white dark:bg-indigo-900 rounded-lg border border-indigo-100 dark:border-indigo-800 overflow-hidden hover:shadow-sm transition-shadow">
-                                                    <div className={`w-2 bg-gradient-to-b ${categoryData.color}`}></div>
-                                                    <div className="p-3 flex items-center flex-grow">
-                                                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${categoryData.color} flex items-center justify-center text-white mr-4 flex-shrink-0`}>
-                                                            {exercise.icon}
-                                                        </div>
-                                                        <div className="flex-grow min-w-0">
-                                                            <div className="flex items-start justify-between mb-1">
-                                                                <h3 className="font-medium text-indigo-900 dark:text-white text-sm truncate mr-2">
-                                                                    {exercise.title}
-                                                                </h3>
-                                                                {exercise.favorite && (
-                                                                    <Star size={14} className="flex-shrink-0 fill-yellow-400 text-yellow-400" />
-                                                                )}
-                                                            </div>
-                                                            <div className="flex items-center text-xs text-indigo-600 dark:text-indigo-400 flex-wrap">
-                                <span className="bg-indigo-50 dark:bg-indigo-800 px-1.5 py-0.5 rounded-full mr-2">
-                                  {exercise.categoryName}
-                                </span>
-                                                                <span className="flex items-center mr-2">
-                                  <Clock size={10} className="mr-1" />
-                                                                    {exercise.dateAdded}
-                                </span>
-                                                                <span>{exercise.age}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center space-x-3 ml-2 flex-shrink-0">
-                                                            <div className="text-right">
-                                                                <div className="text-xs font-medium text-indigo-900 dark:text-white">
-                                                                    {exercise.views}
-                                                                </div>
-                                                                <div className="text-xs text-indigo-500 dark:text-indigo-400">
-                                                                    visualizações
-                                                                </div>
-                                                            </div>
-                                                            <button className="p-1.5 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-800">
-                                                                <Download size={16} className="text-indigo-500 dark:text-indigo-400" />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-
-                                <button className="w-full mt-4 p-3 rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-800/70 transition-colors flex items-center justify-center">
-                                    <PlusCircle size={16} className="mr-2" /> Adicionar Novo Exercício
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Activity Calendar */}
-                        <div className="bg-white dark:bg-indigo-900/70 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 overflow-hidden">
-                            <div className="p-4 border-b border-indigo-100 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-900 dark:to-indigo-800">
-                                <h2 className="text-lg font-semibold text-indigo-900 dark:text-white flex items-center">
-                                    <Calendar size={18} className="mr-2 text-indigo-500 dark:text-indigo-400" />
-                                    <span>Calendário de Atividades</span>
-                                </h2>
-                            </div>
-
-                            <div className="p-4">
-                                <div className="flex items-center justify-between mb-4">
-                                    <button className="text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-white">
-                                        <ChevronDown size={18} className="transform rotate-90" />
-                                    </button>
-                                    <h3 className="font-medium text-indigo-900 dark:text-white">Abril 2025</h3>
-                                    <button className="text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-white">
-                                        <ChevronDown size={18} className="transform -rotate-90" />
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-7 gap-2 text-center text-xs font-medium text-indigo-700 dark:text-indigo-300 mb-2">
-                                    <div>DOM</div>
-                                    <div>SEG</div>
-                                    <div>TER</div>
-                                    <div>QUA</div>
-                                    <div>QUI</div>
-                                    <div>SEX</div>
-                                    <div>SÁB</div>
-                                </div>
-
-                                <div className="grid grid-cols-7 gap-2">
-                                    {/* First row - Empty days from previous month */}
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">28</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">29</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">30</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">31</div>
-
-                                    {/* April days */}
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">1</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">2</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">3</div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">4</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">5</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-700">6</div>
-
-                                    {/* Current day */}
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-white bg-gradient-to-r from-pink-500 to-yellow-400 shadow-sm">
-                                        <div className="relative">
-                                            7
-                                            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500"></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">8</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">9</div>
-
-                                    {/* Day with activities */}
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-700 relative">
-                                        <div className="relative">
-                                            10
-                                            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-500"></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">11</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">12</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-700">13</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">14</div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-700 relative">
-                                        <div className="relative">
-                                            15
-                                            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-500"></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">16</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">17</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">18</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">19</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-700">20</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">21</div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-700 relative">
-                                        <div className="relative">
-                                            22
-                                            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-500"></div>
-                                        </div>
-                                    </div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">23</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">24</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">25</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">26</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-900 dark:text-white bg-indigo-100 dark:bg-indigo-700">27</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">28</div>
-
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">29</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs font-medium text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">30</div>
-
-                                    {/* May days */}
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">1</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">2</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">3</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">4</div>
-                                    <div className="h-10 flex items-center justify-center rounded-lg text-xs text-indigo-400 dark:text-indigo-500">5</div>
-                                </div>
-
-                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-800 text-xs">
-                                    <div className="flex items-center">
-                                        <div className="w-3 h-3 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 mr-2"></div>
-                                        <span className="text-indigo-700 dark:text-indigo-300">Hoje</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <div className="w-3 h-3 rounded-full bg-indigo-100 dark:bg-indigo-700 mr-2"></div>
-                                        <span className="text-indigo-700 dark:text-indigo-300">Exercícios Programados</span>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                                        <span className="text-indigo-700 dark:text-indigo-300">Adicionados</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Column - Sidebars */}
-                    <div className="lg:col-span-1 space-y-6">
-                        {/* Categories Card */}
-                        <div className="bg-white dark:bg-indigo-900/70 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 overflow-hidden">
-                            <div className="p-4 border-b border-indigo-100 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-900 dark:to-indigo-800">
-                                <h2 className="text-lg font-semibold text-indigo-900 dark:text-white flex items-center">
-                                    <Grid3X3 size={18} className="mr-2 text-indigo-500 dark:text-indigo-400" />
-                                    <span>Categorias de Fonemas</span>
-                                </h2>
-                            </div>
-
-                            <div className="p-4">
-                                <ul className="space-y-2">
-                                    {phonemeCategories.map((category, index) => (
-                                        <li key={index}>
-                                            <a
-                                                href="#"
-                                                className={`flex items-center justify-between p-3 rounded-lg ${
-                                                    activeCategory === category.id
-                                                        ? 'bg-indigo-50 dark:bg-indigo-800 border-l-4 border-blue-500'
-                                                        : 'hover:bg-indigo-50 dark:hover:bg-indigo-800/50 border-l-4 border-transparent'
-                                                } transition-all`}
-                                            >
-                                                <div className="flex items-center">
-                                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center text-white mr-3`}>
-                                                        {category.icon}
-                                                    </div>
-                                                    <span className="font-medium text-indigo-900 dark:text-white text-sm">{category.name}</span>
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                          <span className="bg-indigo-100 dark:bg-indigo-800 text-indigo-800 dark:text-indigo-300 text-xs py-0.5 px-2 rounded-full">
-                            {category.count}
-                          </span>
-                                                    <div className="h-1.5 w-10 rounded-full bg-indigo-100 dark:bg-indigo-800 overflow-hidden">
-                                                        <div
-                                                            className={`h-full bg-gradient-to-r ${category.color}`}
-                                                            style={{ width: `${category.usage}%` }}
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <button className="w-full mt-4 p-2.5 rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-800/70 transition-colors flex items-center justify-center text-sm">
-                                    <PlusCircle size={14} className="mr-2" /> Nova Categoria
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Suggested Exercises */}
-                        <div className="bg-white dark:bg-indigo-900/70 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 overflow-hidden">
-                            <div className="p-4 border-b border-indigo-100 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-900 dark:to-indigo-800">
-                                <h2 className="text-lg font-semibold text-indigo-900 dark:text-white flex items-center">
-                                    <BookmarkPlus size={18} className="mr-2 text-indigo-500 dark:text-indigo-400" />
-                                    <span>Sugestões Para Você</span>
-                                </h2>
-                            </div>
-
-                            <div className="p-4">
-                                <ul className="space-y-3">
-                                    {suggestedExercises.map((exercise, index) => (
-                                        <li key={index} className="p-3 rounded-lg bg-gradient-to-r from-indigo-50/50 to-fuchsia-50/50 dark:from-indigo-800/30 dark:to-fuchsia-900/30 border border-indigo-100 dark:border-indigo-800">
-                                            <h3 className="font-medium text-indigo-900 dark:text-white text-sm mb-1">{exercise.title}</h3>
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="text-indigo-600 dark:text-indigo-400">{exercise.category}</span>
-                                                <span className="flex items-center text-emerald-600 dark:text-emerald-400">
-                          {exercise.icon}
-                                                    <span className="ml-1">{exercise.match}</span>
-                        </span>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <button className="w-full mt-4 p-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:shadow-lg transition-shadow flex items-center justify-center text-sm">
-                                    Ver Mais Sugestões
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Usage Stats */}
-                        <div className="bg-white dark:bg-indigo-900/70 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 overflow-hidden">
-                            <div className="p-4 border-b border-indigo-100 dark:border-indigo-800 bg-gradient-to-r from-indigo-50 to-indigo-100/50 dark:from-indigo-900 dark:to-indigo-800">
-                                <h2 className="text-lg font-semibold text-indigo-900 dark:text-white flex items-center">
-                                    <BarChart2 size={18} className="mr-2 text-indigo-500 dark:text-indigo-400" />
-                                    <span>Uso por Categoria</span>
-                                </h2>
-                            </div>
-
-                            <div className="p-4">
+                            </CardHeader>
+                            <CardContent>
                                 <div className="space-y-4">
-                                    {phonemeCategories.map((category) => (
-                                        <div key={category.id}>
-                                            <div className="flex justify-between mb-1">
-                        <span className="text-xs font-medium text-indigo-900 dark:text-white flex items-center">
-                          <div className={`w-3 h-3 rounded-lg bg-gradient-to-br ${category.color} mr-2`}></div>
-                            {category.name}
-                        </span>
-                                                <span className="text-xs text-indigo-600 dark:text-indigo-400">{category.usage}%</span>
+                                    {upcomingSessions.map((session) => (
+                                        <div key={session.id} className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-4 last:border-0 last:pb-0">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400">
+                                                        {session.patientName.split(' ').map(n => n[0]).join('')}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-medium text-gray-900 dark:text-white">{session.patientName}</p>
+                                                    <p className="text-sm text-muted-foreground">{session.focus}</p>
+                                                </div>
                                             </div>
-                                            <div className="w-full h-2 bg-indigo-100 dark:bg-indigo-800 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full bg-gradient-to-r ${category.color}`}
-                                                    style={{ width: `${category.usage}%` }}
-                                                ></div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(session.date)}</span>
+                                                <span className="text-xs text-muted-foreground">{session.duration} min</span>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
+                            </CardContent>
+                            <CardFooter className="pt-0">
+                                <Button variant="outline" className="w-full">Agendar Nova Sessão</Button>
+                            </CardFooter>
+                        </Card>
 
-                                <div className="mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-800">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">Taxa de Conclusão</span>
-                                        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-500">78%</span>
+                        {/* Treatment Plan Summary */}
+                        <Card className="bg-white dark:bg-gray-800">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg font-semibold">Planos de Tratamento</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-6">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-sm font-medium text-muted-foreground">Em Progresso</p>
+                                            <span className="text-sm font-medium text-purple-600 dark:text-purple-400">8</span>
+                                        </div>
+                                        <Progress value={67} className="h-2 bg-gray-100 dark:bg-gray-700" />
                                     </div>
-                                    <div className="w-full h-2 bg-indigo-100 dark:bg-indigo-800 rounded-full overflow-hidden">
-                                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: '78%' }}></div>
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-sm font-medium text-muted-foreground">Completados</p>
+                                            <span className="text-sm font-medium text-green-600 dark:text-green-400">4</span>
+                                        </div>
+                                        <Progress value={33} className="h-2 bg-gray-100 dark:bg-gray-700" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-sm font-medium text-muted-foreground">Não Iniciados</p>
+                                            <span className="text-sm font-medium text-amber-600 dark:text-amber-400">2</span>
+                                        </div>
+                                        <Progress value={17} className="h-2 bg-gray-100 dark:bg-gray-700" />
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 space-y-3">
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white">Fonemas mais trabalhados</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        <Badge variant="secondary" className="bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">R (8)</Badge>
+                                        <Badge variant="secondary" className="bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">S (6)</Badge>
+                                        <Badge variant="secondary" className="bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">L (5)</Badge>
+                                        <Badge variant="secondary" className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400">CH (4)</Badge>
+                                        <Badge variant="secondary" className="bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400">TH (3)</Badge>
+                                    </div>
+                                </div>
+                            </CardContent>
+                            <CardFooter className="pt-0">
+                                <Button variant="outline" className="w-full">Ver Relatório Completo</Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
+
+                    {/* Patient Progress */}
+                    <Card className="bg-white dark:bg-gray-800">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg font-semibold">Progresso dos Pacientes</CardTitle>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm">
+                                            <ListFilter className="h-4 w-4 mr-1" />
+                                            Filtrar
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Mostrar por</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem>Todos os Pacientes</DropdownMenuItem>
+                                        <DropdownMenuItem>Maior Progresso</DropdownMenuItem>
+                                        <DropdownMenuItem>Menor Progresso</DropdownMenuItem>
+                                        <DropdownMenuItem>Sessões Recentes</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {patients.map((patient) => (
+                                    <div key={patient.id} className="flex items-center space-x-4">
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400">
+                                                {patient.name.split(' ').map(n => n[0]).join('')}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{patient.name}</p>
+                                                <span className="text-xs font-medium text-muted-foreground">{patient.progress}%</span>
+                                            </div>
+                                            <Progress value={patient.progress} className="h-2 bg-gray-100 dark:bg-gray-700" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {/* Patients Tab */}
+                <TabsContent value="patients" className="space-y-6">
+                    <Card className="bg-white dark:bg-gray-800">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg font-semibold">Meus Pacientes</CardTitle>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="ghost" size="sm">
+                                        <ListFilter className="h-4 w-4 mr-1" />
+                                        Filtrar
+                                    </Button>
+                                    <Button variant="ghost" size="sm">
+                                        <LayoutGrid className="h-4 w-4 mr-1" />
+                                        Visualização
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {patients.map((patient) => (
+                                    <div key={patient.id} className="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="h-12 w-12">
+                                                <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400">
+                                                    {patient.name.split(' ').map(n => n[0]).join('')}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <h3 className="font-medium text-gray-900 dark:text-white">{patient.name}</h3>
+                                                <div className="flex items-center text-sm text-muted-foreground">
+                                                    <span className="mr-3">{patient.age} anos</span>
+                                                    <div className="flex items-center">
+                                                        <span>Fonemas: </span>
+                                                        <div className="flex ml-1">
+                                                            {patient.phonemes.map((phoneme, idx) => (
+                                                                <Badge key={idx} variant="outline" className="ml-1 text-xs">
+                                                                    {phoneme}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-right mr-4">
+                                                <p className="text-xs text-muted-foreground">Próxima Sessão</p>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDate(patient.nextSession)}</p>
+                                            </div>
+                                            <Button size="sm" className="flex items-center gap-1">
+                                                Detalhes
+                                                <ChevronRight className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                        <CardFooter className="pt-0">
+                            <Button variant="outline" className="w-full">
+                                <PlusCircle className="h-4 w-4 mr-2" />
+                                Adicionar Novo Paciente
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+
+                {/* Planning Tab */}
+                <TabsContent value="planning" className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Treatment Plans */}
+                        <Card className="lg:col-span-2 bg-white dark:bg-gray-800">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg font-semibold">Planos de Tratamento</CardTitle>
+                                    <div className="flex items-center gap-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="sm">
+                                                    <ListFilter className="h-4 w-4 mr-1" />
+                                                    Filtrar
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Filtrar por status</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem>Todos</DropdownMenuItem>
+                                                <DropdownMenuItem>Em Progresso</DropdownMenuItem>
+                                                <DropdownMenuItem>Completados</DropdownMenuItem>
+                                                <DropdownMenuItem>Não Iniciados</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    {treatmentPlans.map((plan) => (
+                                        <div key={plan.id} className="p-4 border border-gray-100 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-10 w-10">
+                                                        <AvatarFallback className="bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400">
+                                                            {plan.patientName.split(' ').map(n => n[0]).join('')}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <h3 className="font-medium text-gray-900 dark:text-white">{plan.patientName}</h3>
+                                                        <p className="text-xs text-muted-foreground">Criado em {new Date(plan.createdAt).toLocaleDateString('pt-BR')}</p>
+                                                    </div>
+                                                </div>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={
+                                                        plan.status === 'completed'
+                                                            ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400'
+                                                            : 'bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400'
+                                                    }
+                                                >
+                                                    {plan.status === 'completed' ? 'Completado' : 'Em progresso'}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="mb-3">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-xs text-muted-foreground">Progresso</span>
+                                                    <span className="text-xs font-medium">
+                            {plan.completedSessions}/{plan.totalSessions} sessões
+                          </span>
+                                                </div>
+                                                <Progress
+                                                    value={(plan.completedSessions / plan.totalSessions) * 100}
+                                                    className="h-2 bg-gray-100 dark:bg-gray-700"
+                                                />
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <span className="text-xs text-muted-foreground mr-2">Fonemas:</span>
+                                                    {plan.targetPhonemes.map((phoneme, idx) => (
+                                                        <Badge key={idx} variant="outline" className="mr-1">
+                                                            {phoneme}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                                <Button size="sm" variant="ghost" className="text-purple-600 dark:text-purple-400">
+                                                    Ver detalhes
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                            <CardFooter className="pt-0">
+                                <Button className="w-full">
+                                    <PlusCircle className="h-4 w-4 mr-2" />
+                                    Criar Novo Plano
+                                </Button>
+                            </CardFooter>
+                        </Card>
+
+                        {/* AI Assistant & Quick Actions */}
+                        <div className="space-y-6">
+                            <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-100 dark:border-purple-800">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-lg font-semibold text-purple-900 dark:text-purple-100">Assistente IA</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-purple-700 dark:text-purple-300 mb-4">
+                                        Gere planos de tratamento personalizados e receba sugestões de atividades com a ajuda da IA.
+                                    </p>
+                                    <div className="space-y-3">
+                                        <Button variant="secondary" className="w-full justify-start">
+                                            <PlusCircle className="h-4 w-4 mr-2" />
+                                            Plano de tratamento para R
+                                        </Button>
+                                        <Button variant="secondary" className="w-full justify-start">
+                                            <PlusCircle className="h-4 w-4 mr-2" />
+                                            Atividades para fonema S
+                                        </Button>
+                                        <Button variant="secondary" className="w-full justify-start">
+                                            <PlusCircle className="h-4 w-4 mr-2" />
+                                            Sugestão para sessão
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                                <CardFooter className="pt-0">
+                                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                                        Abrir Assistente
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+
+                            <Card className="bg-white dark:bg-gray-800">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-lg font-semibold">Ações Rápidas</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-3">
+                                        <Button variant="outline" className="w-full justify-start">
+                                            <Calendar className="h-4 w-4 mr-2" />
+                                            Agendar Nova Sessão
+                                        </Button>
+                                        <Button variant="outline" className="w-full justify-start">
+                                            <BarChart2 className="h-4 w-4 mr-2" />
+                                            Relatório de Progresso
+                                        </Button>
+                                        <Button variant="outline" className="w-full justify-start">
+                                            <Users className="h-4 w-4 mr-2" />
+                                            Adicionar Paciente
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+
+                    {/* Recent Activities */}
+                    <Card className="bg-white dark:bg-gray-800">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg font-semibold">Atividades Recentes</CardTitle>
+                                <Button variant="ghost" size="sm" className="text-sm text-muted-foreground">
+                                    Ver todas <ChevronRight className="ml-1 h-4 w-4" />
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mt-1">
+                                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-medium text-gray-900 dark:text-white">Plano de tratamento atualizado</p>
+                                            <span className="text-xs text-muted-foreground">Hoje, 14:30</span>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Plano para Maria Silva atualizado com novos exercícios para fonema R</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mt-1">
+                                        <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-medium text-gray-900 dark:text-white">Sessão agendada</p>
+                                            <span className="text-xs text-muted-foreground">Hoje, 10:15</span>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Nova sessão agendada com Pedro Santos para amanhã às 15:00</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center mt-1">
+                                        <BarChart2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-medium text-gray-900 dark:text-white">Progresso registrado</p>
+                                            <span className="text-xs text-muted-foreground">Ontem, 16:45</span>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Ana Oliveira completou sessão com 90% de acertos nos exercícios</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center mt-1">
+                                        <PlusCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-medium text-gray-900 dark:text-white">Novo plano criado</p>
+                                            <span className="text-xs text-muted-foreground">05/04, 09:20</span>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Plano de tratamento criado para Lucas Costa com foco nos fonemas F e V</p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </CardContent>
+                        <CardFooter className="pt-0">
+                            <Button variant="outline" className="w-full">Ver Histórico Completo</Button>
+                        </CardFooter>
+                    </Card>
+
+                    {/* Exercise Plans */}
+                    <Card className="bg-white dark:bg-gray-800">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg font-semibold">Exercícios Recomendados</CardTitle>
+                                <Button variant="ghost" size="sm" className="text-sm text-muted-foreground">
+                                    Biblioteca de Exercícios <ArrowRight className="ml-1 h-4 w-4" />
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                    <Badge className="mb-2 bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400">Fonema R</Badge>
+                                    <h3 className="font-medium text-gray-900 dark:text-white mb-1">Jogo das Rimas</h3>
+                                    <p className="text-sm text-muted-foreground mb-3">Atividade para praticar palavras com R em posição inicial</p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground">5-7 anos</span>
+                                        <Button size="sm" variant="ghost">Adicionar</Button>
+                                    </div>
+                                </div>
+
+                                <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                    <Badge className="mb-2 bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">Fonema S</Badge>
+                                    <h3 className="font-medium text-gray-900 dark:text-white mb-1">Caça ao Tesouro</h3>
+                                    <p className="text-sm text-muted-foreground mb-3">Identificação de objetos com som S em posição medial</p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground">4-6 anos</span>
+                                        <Button size="sm" variant="ghost">Adicionar</Button>
+                                    </div>
+                                </div>
+
+                                <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                    <Badge className="mb-2 bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">Fonema L</Badge>
+                                    <h3 className="font-medium text-gray-900 dark:text-white mb-1">História Interativa</h3>
+                                    <p className="text-sm text-muted-foreground mb-3">Narrativa com foco em palavras com L em posição inicial</p>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground">6-8 anos</span>
+                                        <Button size="sm" variant="ghost">Adicionar</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 };

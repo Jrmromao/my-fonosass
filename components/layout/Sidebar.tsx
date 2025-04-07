@@ -35,12 +35,12 @@ export function Sidebar({ className }: SidebarProps) {
             icon: Home,
             href: "/dashboard",
         },
-        {
-            title: "Registered Users",
-            icon: Users,
-            href: "/dashboard/users",
-            visible: userRole.role === 'ADMIN'
-        },
+        // {
+        //     title: "Registered Users",
+        //     icon: Users,
+        //     href: "/dashboard/users",
+        //     visible: userRole.role === 'ADMIN'
+        // },
         {
             title: "Atividades",
             icon: Gamepad,
@@ -138,11 +138,9 @@ export function Sidebar({ className }: SidebarProps) {
                 <nav className="flex-1 px-3 py-6 overflow-y-auto">
                     <ul className="space-y-2">
                         {sidebarItems
-                            .filter(item => item.visible === undefined || item.visible === true)
+                            // .filter(item => item.visible === undefined || item.visible === true)
                             .map((item) => {
                                 const isActive = pathname === item.href || pathname ===  `${item.href}/`
-                                
-
                                 return (
                                     <li key={item.href}>
                                         <Link
