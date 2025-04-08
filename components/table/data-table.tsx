@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import TableSkeleton from "@/components/table/TableSkeleton";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -92,7 +93,7 @@ export function DataTable<TData, TValue>({
     return (
         <div className="w-full">
             {/* Desktop View */}
-            <div className="hidden md:block rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+            <div className="hidden md:block rounded-lg border border-purple-100 dark:border-purple-900/30 shadow-sm overflow-hidden">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -100,33 +101,33 @@ export function DataTable<TData, TValue>({
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
-                                        className="h-11 px-6 text-xs font-medium text-slate-600 bg-slate-100 border-b border-slate-200"
+                                        className="h-11 px-6 text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/30"
                                     >
                                         {!header.isPlaceholder &&
                                             flexRender(
                                                 header.column.columnDef.header,
-                                                header.getContext(),
+                                                header.getContext()
                                             )}
                                     </TableHead>
                                 ))}
                             </TableRow>
                         ))}
                     </TableHeader>
-                    <TableBody className="bg-white">
+                    <TableBody className="bg-white dark:bg-gray-900">
                         {hasRows ? (
                             rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    className="hover:bg-slate-50/80 border-b border-slate-100 last:border-none"
+                                    className="hover:bg-purple-50/50 dark:hover:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20 last:border-none transition-colors"
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell
                                             key={cell.id}
-                                            className="px-6 py-3 text-sm text-slate-700"
+                                            className="px-6 py-3 text-sm text-gray-700 dark:text-gray-300"
                                         >
                                             {flexRender(
                                                 cell.column.columnDef.cell,
-                                                cell.getContext(),
+                                                cell.getContext()
                                             )}
                                         </TableCell>
                                     ))}
@@ -136,7 +137,7 @@ export function DataTable<TData, TValue>({
                             <TableRow>
                                 <TableCell
                                     colSpan={columns.length}
-                                    className="h-24 text-center text-sm text-slate-600"
+                                    className="h-24 text-center text-sm text-gray-500 dark:text-gray-400"
                                 >
                                     No results.
                                 </TableCell>
@@ -150,28 +151,39 @@ export function DataTable<TData, TValue>({
             <div className="md:hidden space-y-4">
                 {hasRows ? (
                     rows.map((row) => (
-                        <Card key={row.id} className="p-4 bg-white shadow-sm">
+                        <Card key={row.id} className="p-4 bg-white dark:bg-gray-900 border-purple-100 dark:border-purple-900/30 shadow-sm">
                             <div className="space-y-3">
-                                {row.getVisibleCells().map((cell) => {
+                                {row.getVisibleCells().map((cell, index) => {
                                     const headerValue = cell.column.columnDef.header;
                                     const header = typeof headerValue === 'function'
                                         ? cell.column.id
                                         : headerValue as string;
+
+                                    // First cell gets special treatment (usually the name/title)
+                                    if (index === 0) {
+                                        return (
+                                            <div key={cell.id} className="pb-2 mb-2 border-b border-purple-100 dark:border-purple-900/20">
+                                                <div className="font-medium text-gray-900 dark:text-white">
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
 
                                     return (
                                         <div
                                             key={cell.id}
                                             className="flex justify-between items-center gap-2"
                                         >
-                                            <span className="text-xs font-medium text-slate-600">
-                                                {header}
-                                            </span>
-                                            <span className="text-sm text-slate-700 text-right">
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
-                                            </span>
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                        {header}
+                      </span>
+                                            <span className="text-sm text-gray-700 dark:text-gray-300 text-right">
+                        {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                        )}
+                      </span>
                                         </div>
                                     );
                                 })}
@@ -179,21 +191,22 @@ export function DataTable<TData, TValue>({
                         </Card>
                     ))
                 ) : (
-                    <div className="text-center text-sm text-slate-600 py-8">
+                    <div className="text-center text-sm text-gray-500 dark:text-gray-400 py-8 bg-white dark:bg-gray-900 rounded-lg border border-purple-100 dark:border-purple-900/30">
                         No results.
                     </div>
                 )}
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between py-4 px-2 gap-4">
-                <div className="flex flex-col md:flex-row md:items-center gap-4 text-sm text-slate-600">
+            {/* Pagination Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between py-4 px-2 gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                         <span>Rows per page</span>
                         <Select
                             value={pageSize.toString()}
                             onValueChange={(value) => table.setPageSize(Number(value))}
                         >
-                            <SelectTrigger className="h-8 w-16 border-slate-200">
+                            <SelectTrigger className="h-8 w-16 border-gray-200 dark:border-gray-700">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -216,8 +229,9 @@ export function DataTable<TData, TValue>({
                         size="sm"
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
-                        className="h-8 border-slate-200 text-slate-600 hover:bg-slate-50"
+                        className="h-8 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                     >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
                         Previous
                     </Button>
                     <Button
@@ -225,9 +239,10 @@ export function DataTable<TData, TValue>({
                         size="sm"
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
-                        className="h-8 border-slate-200 text-slate-600 hover:bg-slate-50"
+                        className="h-8 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                     >
                         Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                 </div>
             </div>

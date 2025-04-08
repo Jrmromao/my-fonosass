@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState, useEffect } from "react"
+import React, { useMemo, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -8,7 +8,7 @@ import {
     LayoutGrid,
     LayoutList,
     SlidersHorizontal,
-    ChevronDown
+    ChevronDown, Users, Calendar, CheckCircle, AlertCircle
 } from 'lucide-react'
 import { NewActivityDialog } from "@/components/dialogs/new-activity-dialog"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge"
 import { activitiesColumns } from "@/components/table/columns/activities"
 import PhonemeTabs from "@/components/layout/PhonemeTabs";
 import ActivityStatsBar from "@/components/layout/ActivityStatsBar";
+import {Card, CardContent} from "@/components/ui/card";
 
 
 const queryClient = new QueryClient()
@@ -184,7 +185,7 @@ function ActivitiesContent() {
                         {!isLoading && role === 'ADMIN' && (
                             <NewActivityDialog
                                 onSuccess={() => {
-                                    queryClient.invalidateQueries({ queryKey: ['activities'] })
+                                    queryClient.invalidateQueries({queryKey: ['activities']})
                                 }}
                             />
                         )}
@@ -193,7 +194,8 @@ function ActivitiesContent() {
                     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between mt-6">
                         {/* Search */}
                         <div className="relative flex-1 w-full sm:max-w-md">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
+                            <Search
+                                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4"/>
                             <Input
                                 placeholder="Buscar atividades..."
                                 className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
@@ -219,10 +221,11 @@ function ActivitiesContent() {
                                 <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" className="relative">
-                                            <ListFilter className="w-4 h-4 sm:mr-2" />
+                                            <ListFilter className="w-4 h-4 sm:mr-2"/>
                                             <span className="hidden sm:inline">Filtros</span>
                                             {activeFilterCount > 0 && (
-                                                <Badge className="ml-1 px-1 min-w-5 h-5 rounded-full bg-blue-500 text-white">
+                                                <Badge
+                                                    className="ml-1 px-1 min-w-5 h-5 rounded-full bg-blue-500 text-white">
                                                     {activeFilterCount}
                                                 </Badge>
                                             )}
@@ -230,7 +233,7 @@ function ActivitiesContent() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-56">
                                         <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
+                                        <DropdownMenuSeparator/>
                                         <div className="p-2">
                                             <h4 className="mb-2 text-sm font-medium">Nivel de dificuldade</h4>
                                             {availableDifficultyLevels.map(level => (
@@ -258,17 +261,87 @@ function ActivitiesContent() {
                 isLoading={isLoading}
             />
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+                <Card className="overflow-hidden border-0 shadow-md">
+                    <div className="h-1 bg-gradient-to-r from-blue-500 to-blue-600"></div>
+                    <CardContent className="p-6 bg-white dark:bg-gray-800">
+                        <div className="flex items-center justify-between">
+                            <div
+                                className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                                <Users className="h-6 w-6 text-white"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pacientes Ativos</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">12</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden border-0 shadow-md">
+                    <div className="h-1 bg-gradient-to-r from-teal-500 to-teal-600"></div>
+                    <CardContent className="p-6 bg-white dark:bg-gray-800">
+                        <div className="flex items-center justify-between">
+                            <div
+                                className="w-14 h-14 rounded-full bg-gradient-to-r from-teal-500 to-teal-600 flex items-center justify-center shadow-lg">
+                                <Calendar className="h-6 w-6 text-white"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sessões Hoje</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">4</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden border-0 shadow-md">
+                    <div className="h-1 bg-gradient-to-r from-green-500 to-green-600"></div>
+                    <CardContent className="p-6 bg-white dark:bg-gray-800">
+                        <div className="flex items-center justify-between">
+                            <div
+                                className="w-14 h-14 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                                <CheckCircle className="h-6 w-6 text-white"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Planos Ativos</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">8</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="overflow-hidden border-0 shadow-md">
+                    <div className="h-1 bg-gradient-to-r from-amber-500 to-amber-600"></div>
+                    <CardContent className="p-6 bg-white dark:bg-gray-800">
+                        <div className="flex items-center justify-between">
+                            <div
+                                className="w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
+                                <AlertCircle className="h-6 w-6 text-white"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Necessitam
+                                    Atenção</p>
+                                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">3</h3>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+
             {/* Active Filters */}
             {activeFilterCount > 0 && (
-                <div className="flex flex-wrap gap-2 p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                <div
+                    className="flex flex-wrap gap-2 p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                     {filters.difficultyLevels.map(level => (
-                        <Badge key={level} variant="outline" className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800">
+                        <Badge key={level} variant="outline"
+                               className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800">
                             Nivel: {level}
                             <button
                                 className="ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-0.5"
                                 onClick={() => toggleFilter('difficultyLevels', level)}
                             >
-                                <ChevronDown className="w-3 h-3 transform rotate-45" />
+                                <ChevronDown className="w-3 h-3 transform rotate-45"/>
                             </button>
                         </Badge>
                     ))}
