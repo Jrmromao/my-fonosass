@@ -1,27 +1,24 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, {useState} from 'react';
 import {
-    Search,
-    Calendar,
-    Users,
-    Clock,
-    PlusCircle,
-    ChevronRight,
-    BarChart2,
-    ListFilter,
-    LayoutGrid,
-    CheckCircle,
     AlertCircle,
     ArrowRight,
-    Brain,
-    BookOpen,
-    Sparkles
+    BarChart2,
+    Calendar,
+    CheckCircle,
+    ChevronRight,
+    LayoutGrid,
+    ListFilter,
+    PlusCircle,
+    Search,
+    Sparkles,
+    Users
 } from 'lucide-react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import {Input} from '@/components/ui/input';
+import {Avatar, AvatarFallback} from '@/components/ui/avatar';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -31,12 +28,14 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { formatDateTime } from '@/lib/utils';
+import {useRouter} from "next/navigation";
+import {CustomButton} from "@/app/dashboard/customButton";
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [searchTerm, setSearchTerm] = useState('');
+    const router = useRouter();
 
     // Mock data for patients
     const patients = [
@@ -168,7 +167,7 @@ const Dashboard = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-teal-400">
-                                Dashboard FonoSaaS
+                                FonoSaaS
                             </h1>
                             <p className="text-gray-600 dark:text-gray-400 mt-1">
                                 Gerencie seus pacientes e planejamentos terapêuticos
@@ -176,45 +175,53 @@ const Dashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-                                <PlusCircle className="h-4 w-4" />
-                                <span>Novo Paciente</span>
-                            </Button>
+                            {/*<Button className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200">*/}
+                            {/*    <PlusCircle className="h-4 w-4" />*/}
+                            {/*    <span>Novo Paciente</span>*/}
+                            {/*</Button>*/}
+                            <CustomButton
+                                variant="gradient"
+                                leftIcon={<PlusCircle className="h-4 w-4" />}
+                            >
+                                Novo Paciente
+                            </CustomButton>
                         </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mt-4">
-                        {/* Search */}
-                        <div className="relative flex-1 w-full sm:max-w-md">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
-                            <Input
-                                placeholder="Buscar pacientes..."
-                                className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
+                    {/*<div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mt-4">*/}
+                    {/*     Search */}
+                    {/*    <div className="relative flex-1 w-full sm:max-w-md">*/}
+                    {/*        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
+                    {/*        <Input*/}
+                    {/*            placeholder="Buscar pacientes..."*/}
+                    {/*            className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"*/}
+                    {/*            value={searchTerm}*/}
+                    {/*            onChange={(e) => setSearchTerm(e.target.value)}*/}
+                    {/*        />*/}
+                    {/*    </div>*/}
 
-                        {/* Filters */}
-                        <div className="flex items-center gap-2 self-end sm:self-auto">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="flex items-center gap-2">
-                                        <ListFilter className="h-4 w-4" />
-                                        <span className="hidden sm:inline">Filtros</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>Todos os Pacientes</DropdownMenuItem>
-                                    <DropdownMenuItem>Sessões de Hoje</DropdownMenuItem>
-                                    <DropdownMenuItem>Planos Ativos</DropdownMenuItem>
-                                    <DropdownMenuItem>Recém Adicionados</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </div>
+                    {/*     Filters */}
+                    {/*    <div className="flex items-center gap-2 self-end sm:self-auto">*/}
+                    {/*        <DropdownMenu>*/}
+                    {/*            <DropdownMenuTrigger asChild>*/}
+                    {/*                <CustomButton*/}
+                    {/*                    variant="outline"*/}
+                    {/*                    leftIcon={<ListFilter className="h-4 w-4" />}*/}
+                    {/*                >*/}
+                    {/*                    <span className="hidden sm:inline">Filtros</span>*/}
+                    {/*                </CustomButton>*/}
+                    {/*            </DropdownMenuTrigger>*/}
+                    {/*            <DropdownMenuContent align="end">*/}
+                    {/*                <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>*/}
+                    {/*                <DropdownMenuSeparator />*/}
+                    {/*                <DropdownMenuItem>Todos os Pacientes</DropdownMenuItem>*/}
+                    {/*                <DropdownMenuItem>Sessões de Hoje</DropdownMenuItem>*/}
+                    {/*                <DropdownMenuItem>Planos Ativos</DropdownMenuItem>*/}
+                    {/*                <DropdownMenuItem>Recém Adicionados</DropdownMenuItem>*/}
+                    {/*            </DropdownMenuContent>*/}
+                    {/*        </DropdownMenu>*/}
+                    {/*    </div>*/}
+                    {/*</div>*/}
                 </div>
             </div>
 
@@ -475,7 +482,7 @@ const Dashboard = () => {
                             <CardHeader className="pb-2">
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg font-semibold">Exercícios Recomendados</CardTitle>
-                                    <Button variant="ghost" size="sm" className="text-sm text-blue-600 dark:text-blue-400">
+                                    <Button variant="ghost" size="sm" className="text-sm text-blue-600 dark:text-blue-400" onClick={() => router.push('/dashboard/games')}>
                                         Biblioteca de Atividades <ArrowRight className="ml-1 h-4 w-4" />
                                     </Button>
                                 </div>
@@ -868,3 +875,6 @@ const Dashboard = () => {
     );
 };
 export default Dashboard;
+
+
+
