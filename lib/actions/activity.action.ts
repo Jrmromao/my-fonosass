@@ -46,14 +46,17 @@ export async function createActivity(formData: FormData) {
             return { success: false, error: "Unauthorized" };
         }
 
+        console.log("Creating activity with user ID:", userId);
+
+
         // Extract data from FormData
         const name = formData.get("name") as string;
         const description = formData.get("description") as string;
         const type = (formData.get("type") as string) || "OTHER";
         const difficulty = (formData.get("difficulty") as string) || "BEGINNER";
         const ageRange = (formData.get("ageRange") as string) || "ADULT";
-        const isPublic = formData.get("isPublic") === "true";
         const phoneme = formData.get("phoneme") as string;
+
 
         // Create activity in database
         const activity = await prisma.activity.create({
@@ -64,7 +67,6 @@ export async function createActivity(formData: FormData) {
                 type: type as "SPEECH" | "LANGUAGE" | "COGNITIVE" | "MOTOR" | "SOCIAL" | "OTHER",
                 difficulty: difficulty as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT",
                 ageRange: ageRange as "TODDLER" | "PRESCHOOL" | "CHILD" | "TEENAGER" | "ADULT",
-                isPublic,
                 createdBy: { connect: { clerkUserId: userId} }
             },
         });
