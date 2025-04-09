@@ -75,8 +75,7 @@ const PhonemeTabs: React.FC<PhonemesTabsProps> = ({
                             <button
                                 key={phoneme}
                                 onClick={() => setActiveTab(phoneme)}
-                                className={`px-3 py-1.5 text-xs font-medium rounded-full flex items-center
-                ${
+                                className={`px-3 py-1.5 text-xs font-medium rounded-full flex items-center ${
                                     isActive
                                         ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                                         : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"

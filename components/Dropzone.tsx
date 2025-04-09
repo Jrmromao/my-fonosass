@@ -85,7 +85,7 @@ export function Dropzone({
                             "Solte os arquivos aqui"
                         ) : (
                             <>
-                                Arraste arquivos ou <span className="text-purple-600">clique para fazer upload</span>
+                                Arraste arquivos ou <span className="text-teal-700">clique para fazer upload</span>
                                 <br />
                                 <span className="text-xs text-gray-500">
                   Máximo de {maxFiles} arquivos (até {formatFileSize(maxSize)} cada)

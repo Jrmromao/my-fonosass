@@ -46,7 +46,7 @@ export function Sidebar({ className }: SidebarProps) {
         {
             title: "Configurações",
             icon: Settings,
-            href: "/settings",
+            href: "/dashboard/settings",
         }
     ]
 

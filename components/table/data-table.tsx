@@ -93,7 +93,7 @@ export function DataTable<TData, TValue>({
     return (
         <div className="w-full">
             {/* Desktop View */}
-            <div className="hidden md:block rounded-lg border border-purple-100 dark:border-purple-900/30 shadow-sm overflow-hidden">
+            <div className="hidden md:block rounded-lg border border-gray-200 dark:border-gray-900/30 shadow-sm overflow-hidden">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -101,7 +101,7 @@ export function DataTable<TData, TValue>({
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
-                                        className="h-11 px-6 text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 border-b border-purple-100 dark:border-purple-800/30"
+                                        className="h-11 px-6 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700"
                                     >
                                         {!header.isPlaceholder &&
                                             flexRender(
@@ -118,8 +118,7 @@ export function DataTable<TData, TValue>({
                             rows.map((row) => (
                                 <TableRow
                                     key={row.id}
-                                    className="hover:bg-purple-50/50 dark:hover:bg-purple-900/10 border-b border-purple-100 dark:border-purple-900/20 last:border-none transition-colors"
-                                >
+                                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 last:border-none transition-colors"                                >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell
                                             key={cell.id}

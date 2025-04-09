@@ -175,10 +175,6 @@ const Dashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            {/*<Button className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200">*/}
-                            {/*    <PlusCircle className="h-4 w-4" />*/}
-                            {/*    <span>Novo Paciente</span>*/}
-                            {/*</Button>*/}
                             <CustomButton
                                 variant="gradient"
                                 leftIcon={<PlusCircle className="h-4 w-4" />}
@@ -187,41 +183,6 @@ const Dashboard = () => {
                             </CustomButton>
                         </div>
                     </div>
-
-                    {/*<div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mt-4">*/}
-                    {/*     Search */}
-                    {/*    <div className="relative flex-1 w-full sm:max-w-md">*/}
-                    {/*        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
-                    {/*        <Input*/}
-                    {/*            placeholder="Buscar pacientes..."*/}
-                    {/*            className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"*/}
-                    {/*            value={searchTerm}*/}
-                    {/*            onChange={(e) => setSearchTerm(e.target.value)}*/}
-                    {/*        />*/}
-                    {/*    </div>*/}
-
-                    {/*     Filters */}
-                    {/*    <div className="flex items-center gap-2 self-end sm:self-auto">*/}
-                    {/*        <DropdownMenu>*/}
-                    {/*            <DropdownMenuTrigger asChild>*/}
-                    {/*                <CustomButton*/}
-                    {/*                    variant="outline"*/}
-                    {/*                    leftIcon={<ListFilter className="h-4 w-4" />}*/}
-                    {/*                >*/}
-                    {/*                    <span className="hidden sm:inline">Filtros</span>*/}
-                    {/*                </CustomButton>*/}
-                    {/*            </DropdownMenuTrigger>*/}
-                    {/*            <DropdownMenuContent align="end">*/}
-                    {/*                <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>*/}
-                    {/*                <DropdownMenuSeparator />*/}
-                    {/*                <DropdownMenuItem>Todos os Pacientes</DropdownMenuItem>*/}
-                    {/*                <DropdownMenuItem>Sessões de Hoje</DropdownMenuItem>*/}
-                    {/*                <DropdownMenuItem>Planos Ativos</DropdownMenuItem>*/}
-                    {/*                <DropdownMenuItem>Recém Adicionados</DropdownMenuItem>*/}
-                    {/*            </DropdownMenuContent>*/}
-                    {/*        </DropdownMenu>*/}
-                    {/*    </div>*/}
-                    {/*</div>*/}
                 </div>
             </div>
 
