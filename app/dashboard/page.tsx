@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDateTime } from '@/lib/utils';
 import {useRouter} from "next/navigation";
 import {CustomButton} from "@/app/dashboard/customButton";
+import {NewPatientDialog} from "@/components/dialogs/new-patient-dialog";
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -175,12 +176,14 @@ const Dashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <CustomButton
-                                variant="gradient"
-                                leftIcon={<PlusCircle className="h-4 w-4" />}
-                            >
-                                Novo Paciente
-                            </CustomButton>
+                            {/*<CustomButton*/}
+                            {/*    variant="gradient"*/}
+                            {/*    leftIcon={<PlusCircle className="h-4 w-4" />}*/}
+                            {/*>*/}
+                            {/*    Novo Paciente*/}
+                            {/*</CustomButton>*/}
+                            <NewPatientDialog />
+
                         </div>
                     </div>
                 </div>
