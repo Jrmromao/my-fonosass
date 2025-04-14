@@ -1,6 +1,7 @@
 'use server';
 
 import { auth, currentUser } from '@clerk/nextjs/server';
+import {colorNames} from "@/components/ballons/constants";
 
 type UserRole = 'ADMIN' | 'USER' | 'GUEST';
 
@@ -32,3 +33,5 @@ export async function getCurrentUserRole(): Promise<UserRole> {
         return 'GUEST';
     }
 }
+
+// Get color name

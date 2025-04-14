@@ -20,6 +20,8 @@ import {balloonColors, colorNames, PHONEME_MESSAGES, phonemes} from "@/component
 import {getActivitiesByPhoneme} from "@/lib/actions/activity.action";
 import {ActivityWithFiles} from "@/types/activity";
 import {getBadgeVariant} from './ballons/utils';
+import PhonemeDialog from "@/components/dialogs/phonemeDialog";
+import { getColorName } from '@/utils/phonemeList';
 
 
 const BalloonField: React.FC<BalloonFieldProps> = ({
@@ -240,9 +242,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
     // Add this function before the popBalloon function
     const handleFileDownload = useCallback(async (fileId: string, fileName: string) => {
-        console.log('\n\n\n')
-        console.log(fileId)
-        console.log(fileName)
 
         try {
             setDownloadingFileId(fileId);
@@ -913,14 +912,12 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         setDialogOpen(false);
     };
 
-    // Get color name
-    const getColorName = (hexColor: string): string => {
-        return colorNames[hexColor] || "Colorful";
-    };
+
 
     // @ts-ignore
     return (
-        <div className="flex items-center justify-center h-96 w-full bg-gradient-to-b from-blue-300 to-teal-300 overflow-hidden">
+        <div
+            className="flex items-center justify-center h-96 w-full bg-gradient-to-b from-blue-300 to-teal-300 overflow-hidden">
             {/* Audio element for pop sound */}
             <audio ref={audioRef} preload="auto" className="hidden">
                 {/* Pop sound would go here */}
@@ -939,230 +936,11 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
             </div>
 
 
-
-            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <AlertDialogContent className="max-w-md max-h-[80vh] overflow-auto rounded-xl border-0 shadow-lg">
-                    <AlertDialogHeader className="pb-3 border-b">
-                        <AlertDialogTitle className="flex items-center gap-2 text-xl">
-                            <div
-                                className="p-2 rounded-full flex items-center justify-center"
-                                style={{backgroundColor: `${activeColor}20`}}
-                            >
-                                <Volume2 className="h-5 w-5" style={{color: activeColor}}/>
-                            </div>
-                            <span>Phoneme "{activePhoneme}"</span>
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-600 mt-2">
-                            {PHONEME_MESSAGES[activePhoneme] || `Phoneme "${activePhoneme}" sound.`}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    {/* Phoneme info section */}
-                    <div className="flex items-center justify-between py-4 border-b border-slate-100">
-                        <div className="flex items-center gap-3">
-                            <div
-                                className="w-14 h-14 rounded-full shadow-md flex items-center justify-center relative"
-                                style={{backgroundColor: `${activeColor}15`}}
-                            >
-                                <div
-                                    className="w-10 h-10 rounded-full absolute"
-                                    style={{backgroundColor: activeColor}}
-                                ></div>
-                            </div>
-                            <div>
-                                <div className="text-sm text-slate-500">Balloon Color</div>
-                                <div className="font-medium text-lg" style={{color: activeColor}}>
-                                    {getColorName(activeColor)}
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {/* Activities section */}
-                    <div className="py-4">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-primary/70" />
-                                Activities
-                            </h3>
-                            {activities.length > 0 && (
-                                <Badge variant="outline" className="bg-primary/5 px-3 py-1 rounded-full">
-                                    {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
-                                </Badge>
-                            )}
-                        </div>
-
-                        {isPending || isLoading ? (
-                            <div className="flex flex-col items-center justify-center py-10 gap-3">
-                                <div className="animate-spin h-8 w-8 border-3 border-primary border-t-transparent rounded-full"></div>
-                                <p className="text-sm text-slate-500">Loading activities...</p>
-                            </div>
-                        ) : activities.length > 0 ? (
-                            <ul className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-                                {activities.map((activity) => (
-                                    <li key={activity.id}
-                                        className="bg-slate-50 p-4 rounded-xl border border-slate-100 transition-all hover:bg-slate-100 hover:border-slate-200">
-
-
-                                        {/*<div className="flex justify-between items-start">*/}
-                                        {/*    <h4 className="font-semibold text-slate-800">{activity.name}</h4>*/}
-
-                                        {/*    /!* Files download button - only shown if activity has files *!/*/}
-                                        {/*    {activity.files?.[0] && (*/}
-                                        {/*        <TooltipProvider>*/}
-                                        {/*            <Tooltip>*/}
-                                        {/*                <TooltipTrigger asChild>*/}
-                                        {/*                    <Button*/}
-                                        {/*                        variant="outline"*/}
-                                        {/*                        size="sm"*/}
-                                        {/*                        className={cn(*/}
-                                        {/*                            "ml-2 h-8 px-2 flex items-center gap-1 rounded-full transition-all",*/}
-                                        {/*                            downloadSuccess === activity.files[0].id && "bg-green-50 text-green-600 border-green-200",*/}
-                                        {/*                            downloadError === activity.files[0].id && "bg-red-50 text-red-600 border-red-200"*/}
-                                        {/*                        )}*/}
-                                        {/*                        disabled={downloadingFileId === activity.files[0].id}*/}
-                                        {/*                    >*/}
-                                        {/*                        {downloadingFileId === activity.files[0].id ? (*/}
-                                        {/*                            <>*/}
-                                        {/*                                <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"/>*/}
-                                        {/*                                <span className="text-xs">Downloading...</span>*/}
-                                        {/*                            </>*/}
-                                        {/*                        ) : downloadSuccess === activity.files[0].id ? (*/}
-                                        {/*                            <>*/}
-                                        {/*                                <CheckCircle2 className="h-3 w-3"/>*/}
-                                        {/*                                <span className="text-xs">Downloaded</span>*/}
-                                        {/*                            </>*/}
-                                        {/*                        ) : downloadError === activity.files[0].id ? (*/}
-                                        {/*                            <>*/}
-                                        {/*                                <XCircle className="h-3 w-3"/>*/}
-                                        {/*                                <span className="text-xs">Failed</span>*/}
-                                        {/*                            </>*/}
-                                        {/*                        ) : (*/}
-                                        {/*                            <>*/}
-                                        {/*                                <FileDown className="h-3 w-3"/>*/}
-                                        {/*                                <span className="text-xs">PDF</span>*/}
-                                        {/*                            </>*/}
-                                        {/*                        )}*/}
-                                        {/*                    </Button>*/}
-                                        {/*                </TooltipTrigger>*/}
-                                        {/*                <TooltipContent>*/}
-                                        {/*                    <p>Download activity PDF</p>*/}
-                                        {/*                </TooltipContent>*/}
-                                        {/*            </Tooltip>*/}
-                                        {/*        </TooltipProvider>*/}
-                                        {/*    )}*/}
-                                        {/*</div>*/}
-
-
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="font-semibold text-slate-800">{activity.name}</h4>
-
-                                            {/* Files download button - only shown if activity has files */}
-                                            {activity.files?.[0] && (
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className={cn(
-                                                                    "ml-2 h-8 px-2 flex items-center gap-1 rounded-full transition-all",
-                                                                    downloadSuccess === activity.files[0].id && "bg-green-50 text-green-600 border-green-200",
-                                                                    downloadError === activity.files[0].id && "bg-red-50 text-red-600 border-red-200"
-                                                                )}
-                                                                disabled={downloadingFileId === activity.files?.[0]?.id}
-                                                                onClick={() => {
-                                                                    if (activity.files?.[0]?.id) {
-                                                                        handleFileDownload(activity.files[0].id, `${activity.name}.pdf`);
-                                                                    }
-                                                                }}
-                                                            >
-                                                                {downloadingFileId === activity.files?.[0]?.id ? (
-                                                                    <>
-                                                                        <div
-                                                                            className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"/>
-                                                                        <span className="text-xs">Downloading...</span>
-                                                                    </>
-                                                                ) : downloadSuccess === activity.files?.[0]?.id ? (
-                                                                    <>
-                                                                        <CheckCircle2 className="h-3 w-3"/>
-                                                                        <span className="text-xs">Downloaded</span>
-                                                                    </>
-                                                                ) : downloadError === activity.files?.[0]?.id ? (
-                                                                    <>
-                                                                        <XCircle className="h-3 w-3"/>
-                                                                        <span className="text-xs">Failed</span>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <FileDown className="h-3 w-3"/>
-                                                                        <span className="text-xs">PDF</span>
-                                                                    </>
-                                                                )}
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Download activity PDF</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            )}
-                                        </div>
-
-                                        <p className="text-sm text-slate-600 mt-2 line-clamp-2">{activity.description}</p>
-
-                                        <div className="flex gap-2 mt-3 flex-wrap">
-                                            <Badge variant={getBadgeVariant.type(activity.type) as any}
-                                                   className="text-xs font-normal px-2.5 py-1 rounded-full">
-                                                {activity.type}
-                                            </Badge>
-                                            <Badge variant={getBadgeVariant.difficulty(activity.difficulty) as any}
-                                                   className="text-xs font-normal px-2.5 py-1 rounded-full">
-                                                {activity.difficulty}
-                                            </Badge>
-                                            <Badge variant={getBadgeVariant.ageRange(activity.ageRange) as any}
-                                                   className="text-xs font-normal px-2.5 py-1 rounded-full">
-                                                {activity.ageRange}
-                                            </Badge>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <div
-                                className="text-center py-8 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                                <div
-                                    className="bg-slate-100 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <XCircle className="h-8 w-8 text-slate-400"/>
-                                </div>
-                                <p className="text-slate-700 font-medium mb-1">No activities found</p>
-                                <p className="text-sm text-slate-500">There are no activities for this phoneme yet.</p>
-                            </div>
-                        )}
-                    </div>
-
-                    <AlertDialogFooter className="pt-3 gap-3 border-t">
-                        <AlertDialogAction
-                            onClick={handleCloseDialog}
-                            className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-all flex items-center w-full sm:w-auto justify-center gap-1.5 mt-0"
-                        >
-                            <X className="h-4 w-4"/>
-                            Close
-                        </AlertDialogAction>
-                        {activities.length > 0 && (
-                            <Button
-                                variant="default"
-                                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white font-medium hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center w-full sm:w-auto justify-center gap-1.5"
-                                onClick={() => router.push(`/dashboard/games`)}
-                            >
-                                <ExternalLink className="h-4 w-4"/>
-                                View All Activities
-                            </Button>
-                        )}
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <PhonemeDialog setDialogOpen={setDialogOpen} dialogOpen={dialogOpen} activeColor={activeColor}
+                           activePhoneme={activePhoneme} activities={activities} isLoading={isLoading}
+                           isPending={isPending} downloadingFileId={downloadingFileId} downloadSuccess={downloadSuccess}
+                           downloadError={downloadError} handleFileDownload={handleFileDownload}
+                           handleCloseDialog={handleCloseDialog} getColorName={getColorName}/>
         </div>
     );
 };

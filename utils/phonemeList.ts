@@ -64,6 +64,8 @@
 //
 // export default phonemes;
 
+import {colorNames} from "@/components/ballons/constants";
+
 interface Option {
     value: string;
     label: string;
@@ -96,3 +98,8 @@ const phonemes: Option[] = [
 ].sort((a, b) => a.label.localeCompare(b.label));
 
 export default phonemes;
+
+
+export const getColorName = (hexColor: string): string => {
+    return colorNames[hexColor] || "Colorful";
+};

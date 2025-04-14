@@ -1,6 +1,6 @@
 "use client"; // Ensure this is a client component
 
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useTransition, useCallback} from "react";
 import {
     Cat,
     Palette,
@@ -12,8 +12,13 @@ import {
     User,
     Hash,
     Smile,
+    X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import PhonemeDialog from "@/components/dialogs/phonemeDialog";
+import { getColorName } from "@/utils/phonemeList";
+import {ActivityWithFiles} from "@/types/activity";
+import {getFileDownloadUrl} from "@/lib/actions/file-download.action";
 
 // Define TypeScript interfaces
 interface Category {
@@ -22,17 +27,77 @@ interface Category {
     color: string;
     bgColor: string;
     darkBgColor: string;
+    content?: string; // Content to display in the dialog
 }
+
+
 
 interface ToolbarButtonProps {
     category: Category;
     index: number;
+    onClick: (index: number) => void;
+}
+
+interface DialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    category: Category | null;
 }
 
 const EducationalToolbar: React.FC = () => {
     const [activeTab, setActiveTab] = useState<number>(0);
     const [hoveredTab, setHoveredTab] = useState<number | null>(null);
-    const [bubbles, setBubbles] = useState<React.ReactNode[]>([]); // State for bubbles
+    const [bubbles, setBubbles] = useState<React.ReactNode[]>([]);
+
+    // Dialog state
+    const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const handleFileDownload = useCallback(async (fileId: string, fileName: string) => {
+
+        try {
+            setDownloadingFileId(fileId);
+            setDownloadError(null);
+
+            const result = await getFileDownloadUrl({fileId});
+
+            if (result.success) {
+                // Create a temporary link element
+                const link = document.createElement('a');
+                //@ts-ignore
+                link.href = result.url;
+                const safeFileName = fileName || `activity-${fileId}.pdf`;
+                link.setAttribute('download', safeFileName);
+
+                // Required for Firefox
+                document.body.appendChild(link);
+
+                // Trigger download
+                link.click();
+
+                // Cleanup
+                document.body.removeChild(link);
+
+                // Show success state briefly
+                setDownloadSuccess(fileId);
+                setTimeout(() => {
+                    setDownloadSuccess(null);
+                }, 2000);
+            } else {
+                setDownloadError(fileId);
+                setTimeout(() => {
+                    setDownloadError(null);
+                }, 3000);
+            }
+        } catch (error) {
+            console.error("Download failed:", error);
+            setDownloadError(fileId);
+            setTimeout(() => {
+                setDownloadError(null);
+            }, 3000);
+        } finally {
+            setDownloadingFileId(null);
+        }
+    }, []);
 
     // Playful, child-friendly categories with bright colors
     const categories: Category[] = [
@@ -42,6 +107,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#FF6B6B", // Bright red
             bgColor: "#FFEEEE",
             darkBgColor: "#4D0000",
+            content: "Explore diferentes animais e seus sons. Ótimo para desenvolver vocabulário e consciência fonológica."
         },
         {
             label: "Cores",
@@ -49,6 +115,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#FF9E40", // Orange
             bgColor: "#FFF3E0",
             darkBgColor: "#4D2800",
+            content: "Aprenda sobre cores primárias e secundárias através de atividades divertidas e interativas."
         },
         {
             label: "Meios de transporte",
@@ -56,6 +123,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#FFDA45", // Yellow
             bgColor: "#FFFDE7",
             darkBgColor: "#4D4000",
+            content: "Descubra diferentes meios de transporte e os sons que eles fazem. Excelente para trabalhar onomatopeias."
         },
         {
             label: "Profissões",
@@ -63,6 +131,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#48DA89", // Green
             bgColor: "#E8F5E9",
             darkBgColor: "#003D00",
+            content: "Explore diferentes profissões e vocabulário relacionado ao mundo do trabalho."
         },
         {
             label: "Vestuário",
@@ -70,6 +139,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#64C9E2", // Light Blue
             bgColor: "#E3F2FD",
             darkBgColor: "#00384D",
+            content: "Aprenda sobre diferentes peças de roupa e quando utilizá-las."
         },
         {
             label: "Linguagem",
@@ -77,6 +147,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#5B6DEE", // Blue
             bgColor: "#E8EAF6",
             darkBgColor: "#00004D",
+            content: "Exercícios focados em desenvolvimento de fala, vocabulário e gramática."
         },
         {
             label: "Figuras geométricas",
@@ -84,6 +155,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#B278EF", // Purple
             bgColor: "#F3E5F5",
             darkBgColor: "#3F004D",
+            content: "Aprenda sobre formas geométricas básicas através de jogos e atividades."
         },
         {
             label: "Corpo humano",
@@ -91,6 +163,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#FF69B4", // Hot Pink
             bgColor: "#FCE4EC",
             darkBgColor: "#4D0033",
+            content: "Conheça as partes do corpo e suas funções com atividades lúdicas."
         },
         {
             label: "Números e letras",
@@ -98,6 +171,7 @@ const EducationalToolbar: React.FC = () => {
             color: "#FFA726", // Amber
             bgColor: "#FFF8E1",
             darkBgColor: "#4D3200",
+            content: "Aprenda os números e o alfabeto com exercícios adequados para cada faixa etária."
         },
         {
             label: "Motricidade",
@@ -105,8 +179,19 @@ const EducationalToolbar: React.FC = () => {
             color: "#26C6DA", // Cyan
             bgColor: "#E0F7FA",
             darkBgColor: "#006064",
+            content: "Atividades para desenvolver a motricidade oral e facial, fundamentais para a fala."
         },
     ];
+
+    // Handle button click to open dialog
+    const handleCategoryClick = (index: number) => {
+        setActiveTab(index);
+        setSelectedCategory(categories[index]);
+        setDialogOpen(true);
+    };
+    const handleCloseDialog = (): void => {
+        setDialogOpen(false);
+    };
 
     // Generate bubbles only on client-side mount
     useEffect(() => {
@@ -147,7 +232,7 @@ const EducationalToolbar: React.FC = () => {
     }, []); // Empty dependency array ensures this runs only once on mount
 
     // Individual toolbar item with fun animations
-    const ToolbarButton: React.FC<ToolbarButtonProps> = ({ category, index }) => {
+    const ToolbarButton: React.FC<ToolbarButtonProps> = ({ category, index, onClick }) => {
         const isActive = activeTab === index;
         const isHovered = hoveredTab === index;
 
@@ -160,7 +245,7 @@ const EducationalToolbar: React.FC = () => {
                 whileTap={{ scale: 0.9 }}
             >
                 <button
-                    onClick={() => setActiveTab(index)}
+                    onClick={() => onClick(index)}
                     className={`relative flex flex-col items-center justify-center p-2 w-full rounded-xl overflow-hidden transition-all duration-200`}
                     style={{
                         backgroundColor: isActive ? category.color : "transparent",
@@ -216,8 +301,8 @@ const EducationalToolbar: React.FC = () => {
                             color: isActive ? "white" : category.color,
                         }}
                     >
-            {category.label}
-          </span>
+                        {category.label}
+                    </span>
 
                     {/* Fun confetti animation when activated */}
                     <AnimatePresence>
@@ -262,38 +347,59 @@ const EducationalToolbar: React.FC = () => {
         );
     };
 
+    const [activities, setActivities] = useState<ActivityWithFiles[]>([]);
+    const [isPending, startTransition] = useTransition();
+    const [isLoading, setIsLoading] = useState(false);
+    const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+    const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
+
     return (
-        <div className="relative rounded-2xl overflow-hidden shadow-lg border-4 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900">
-            {/* Playful background bubbles */}
-            <div className="absolute inset-0 overflow-hidden">{bubbles}</div>
+        <>
+            <div className="relative rounded-2xl overflow-hidden shadow-lg border-4 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900">
+                {/* Playful background bubbles */}
+                <div className="absolute inset-0 overflow-hidden">{bubbles}</div>
 
-            {/* Rainbow border effect - with proper z-index */}
-            <div
-                className="absolute inset-0 border-8 border-transparent rounded-xl z-5"
-                style={{
-                    background: `linear-gradient(90deg, 
-            ${categories[0].color}, 
-            ${categories[1].color}, 
-            ${categories[2].color}, 
-            ${categories[3].color}, 
-            ${categories[4].color}, 
-            ${categories[5].color}, 
-            ${categories[6].color}, 
-            ${categories[7].color},
-            ${categories[8].color},
-            ${categories[9].color}) border-box`,
-                    mask: "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
-                    maskComposite: "exclude",
-                }}
-            ></div>
+                {/* Rainbow border effect - with proper z-index */}
+                <div
+                    className="absolute inset-0 border-8 border-transparent rounded-xl z-5"
+                    style={{
+                        background: `linear-gradient(90deg, 
+                ${categories[0].color}, 
+                ${categories[1].color}, 
+                ${categories[2].color}, 
+                ${categories[3].color}, 
+                ${categories[4].color}, 
+                ${categories[5].color}, 
+                ${categories[6].color}, 
+                ${categories[7].color},
+                ${categories[8].color},
+                ${categories[9].color}) border-box`,
+                        mask: "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
+                        maskComposite: "exclude",
+                    }}
+                ></div>
 
-            {/* Main toolbar with fun, rounded buttons */}
-            <div className="relative grid grid-cols-5 md:grid-cols-10 gap-3 p-4 z-10">
-                {categories.map((category, index) => (
-                    <ToolbarButton key={index} category={category} index={index} />
-                ))}
+                {/* Main toolbar with fun, rounded buttons */}
+                <div className="relative grid grid-cols-5 md:grid-cols-10 gap-3 p-4 z-10">
+                    {categories.map((category, index) => (
+                        <ToolbarButton
+                            key={index}
+                            category={category}
+                            index={index}
+                            onClick={handleCategoryClick}
+                        />
+                    ))}
+                </div>
             </div>
-        </div>
+
+            {/* Dialog component */}
+         <PhonemeDialog setDialogOpen={setDialogOpen} dialogOpen={dialogOpen} activeColor={categories[activeTab].color}
+                        activePhoneme={categories[activeTab].label} activities={activities} isLoading={isLoading}
+                        isPending={isPending} downloadingFileId={downloadingFileId} downloadSuccess={downloadSuccess}
+                        downloadError={downloadError} handleFileDownload={handleFileDownload}
+                        handleCloseDialog={handleCloseDialog} getColorName={getColorName}/>
+        </>
     );
 };
 
