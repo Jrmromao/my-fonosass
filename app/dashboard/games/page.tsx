@@ -5,10 +5,7 @@ import { Input } from "@/components/ui/input"
 import {
     Search,
     ListFilter,
-    LayoutGrid,
-    LayoutList,
-    SlidersHorizontal,
-    ChevronDown, Users, Calendar, CheckCircle, AlertCircle
+    ChevronDown,
 } from 'lucide-react'
 import { NewActivityDialog } from "@/components/dialogs/new-activity-dialog"
 import { useDebounce } from "@/hooks/use-debounce"
@@ -28,8 +25,9 @@ import { Badge } from "@/components/ui/badge"
 import { activitiesColumns } from "@/components/table/columns/activities"
 import PhonemeTabs from "@/components/layout/PhonemeTabs";
 import ActivityStatsBar from "@/components/layout/ActivityStatsBar";
-import {Card, CardContent} from "@/components/ui/card";
-
+import {Card, CardContent, CardHeader} from "@/components/ui/card";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import { DataTable } from "@/components/table/data-table";
 
 const queryClient = new QueryClient()
 
@@ -47,6 +45,7 @@ function ActivitiesContent() {
     const debouncedSearch = useDebounce(searchTerm, 500)
     const { role } = useUserRole()
     const [activeTab, setActiveTab] = useState("all")
+    const [mainTab, setMainTab] = useState("phonemes") // Add state for main tabs
 
     // Client-side filters
     const [filters, setFilters] = useState({
@@ -173,12 +172,11 @@ function ActivitiesContent() {
                 <div className="py-6 px-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                         <div>
-
-                            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent dark:from-blue-400 dark:to-teal-400">
+                            <h1 className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
                                 Biblioteca de Atividades
                             </h1>
-                            <p className="text-gray-600 dark:text-gray-400 mt-1">
-                                Gerencie todas as suas atividades terapêuticas
+                            <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+                                Gerencie suas atividades terapêuticas
                             </p>
                         </div>
 
@@ -198,7 +196,7 @@ function ActivitiesContent() {
                                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4"/>
                             <Input
                                 placeholder="Buscar atividades..."
-                                className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
+                                className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:border-blue-500 dark:focus:border-blue-400"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -211,21 +209,21 @@ function ActivitiesContent() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={clearFilters}
-                                    className="flex items-center gap-1 text-gray-600 dark:text-gray-400"
+                                    className="flex items-center gap-1 text-gray-500 dark:text-gray-400"
                                 >
-                                    <span className="hidden sm:inline">Limpar filtros</span>
+                                    <span className="hidden sm:inline">Limpar</span>
                                 </Button>
                             )}
 
                             <div className="flex items-center">
                                 <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="relative">
+                                        <Button variant="outline" size="sm" className="relative">
                                             <ListFilter className="w-4 h-4 sm:mr-2"/>
                                             <span className="hidden sm:inline">Filtros</span>
                                             {activeFilterCount > 0 && (
                                                 <Badge
-                                                    className="ml-1 px-1 min-w-5 h-5 rounded-full bg-blue-500 text-white">
+                                                    className="ml-1 px-1 min-w-5 h-5 rounded-full bg-blue-500 text-white border-none">
                                                     {activeFilterCount}
                                                 </Badge>
                                             )}
@@ -235,7 +233,7 @@ function ActivitiesContent() {
                                         <DropdownMenuLabel>Filtrar por</DropdownMenuLabel>
                                         <DropdownMenuSeparator/>
                                         <div className="p-2">
-                                            <h4 className="mb-2 text-sm font-medium">Nivel de dificuldade</h4>
+                                            <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Nível de dificuldade</h4>
                                             {availableDifficultyLevels.map(level => (
                                                 <DropdownMenuCheckboxItem
                                                     key={level}
@@ -261,38 +259,73 @@ function ActivitiesContent() {
                 isLoading={isLoading}
             />
 
-
-
             {/* Active Filters */}
             {activeFilterCount > 0 && (
                 <div
-                    className="flex flex-wrap gap-2 p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                    className="flex flex-wrap gap-2 p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                     {filters.difficultyLevels.map(level => (
-                        <Badge key={level} variant="outline"
-                               className="flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800">
-                            Nivel: {level}
+                        <Badge key={level} className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 border-none">
+                            Nível: {level}
                             <button
-                                className="ml-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 p-0.5"
+                                className="ml-1 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 p-0.5 -mr-0.5"
                                 onClick={() => toggleFilter('difficultyLevels', level)}
                             >
-                                <ChevronDown className="w-3 h-3 transform rotate-45"/>
+                                <ChevronDown className="w-3 h-3 transform rotate-45 text-blue-700 dark:text-blue-300"/>
                             </button>
                         </Badge>
                     ))}
                 </div>
             )}
 
-            {/* Phoneme Tabs */}
-            <PhonemeTabs
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                activities={activities}
-                availablePhonemes={availablePhonemes}
-                phonemeGroups={phonemeGroups}
-                columns={columns}
-                filteredActivities={filteredActivities}
-                isLoading={isLoading}
-            />
+            {/* Main Activity Category Tabs - Modern Elevated Style */}
+            <div className="p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
+                    <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto bg-gray-50 dark:bg-gray-800 p-1 rounded-lg shadow-sm">
+                        <TabsTrigger
+                            value="phonemes"
+                            className="relative rounded-md py-2 text-sm font-medium text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            Fonemas
+                            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-500 data-[state=active]:block hidden transition-all" />
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="cognitive_language"
+                            className="relative rounded-md py-2 text-sm font-medium text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            Cognitivo e Linguagem
+                            <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-500 data-[state=active]:block hidden transition-all" />
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="phonemes" className="mt-6">
+                        <Card className="border-gray-200 dark:border-gray-800 overflow-hidden shadow-md">
+                            <CardContent className="p-0">
+                                <PhonemeTabs
+                                    activeTab={activeTab}
+                                    setActiveTab={setActiveTab}
+                                    activities={activities}
+                                    availablePhonemes={availablePhonemes}
+                                    phonemeGroups={phonemeGroups}
+                                    columns={columns}
+                                    filteredActivities={filteredActivities}
+                                    isLoading={isLoading}
+                                />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="cognitive_language" className="mt-6">
+                        <Card className="border-gray-200 dark:border-gray-800 overflow-hidden shadow-md">
+                            <CardHeader className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+                                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Cognitivo e linguagem</h3>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <DataTable columns={columns} data={[]} isLoading={isLoading} />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
     )
 }

@@ -1,9 +1,9 @@
 import React from "react";
-import { Volume2 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { DataTable } from "@/components/table/data-table";
-import { ActivityWithFiles } from "@/types/activity";
+import {Volume2} from "lucide-react";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Card, CardContent} from "@/components/ui/card";
+import {DataTable} from "@/components/table/data-table";
+import {ActivityWithFiles} from "@/types/activity";
 
 interface PhonemesTabsProps {
     activeTab: string;
@@ -30,14 +30,16 @@ const PhonemeTabs: React.FC<PhonemesTabsProps> = ({
         <div className="p-4 md:p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <div className="overflow-x-auto pb-3">
-                    <TabsList className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 w-auto inline-flex rounded-md">
+                    <TabsList
+                        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 w-auto inline-flex rounded-md">
                         <TabsTrigger
                             value="all"
                             className="min-w-[80px] px-4 data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800"
                         >
               <span className="flex items-center whitespace-nowrap">
                 <span className="font-medium">Todos</span>
-                <span className="ml-1.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded-full">
+                <span
+                    className="ml-1.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded-full">
                   {activities.length}
                 </span>
               </span>
@@ -51,14 +53,16 @@ const PhonemeTabs: React.FC<PhonemesTabsProps> = ({
                             >
                                 <div className="flex items-center whitespace-nowrap">
                                     {activeTab === phoneme && (
-                                        <div className="w-4 h-4 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/40 mr-1.5">
-                                            <Volume2 className="h-2.5 w-2.5 text-blue-600 dark:text-blue-400" />
+                                        <div
+                                            className="w-4 h-4 rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/40 mr-1.5">
+                                            <Volume2 className="h-2.5 w-2.5 text-blue-600 dark:text-blue-400"/>
                                         </div>
                                     )}
                                     <span className="font-medium">{phoneme}</span>
-                                    <span className="ml-1.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded-full">
-                    {phonemeGroups[phoneme]?.length || 0}
-                  </span>
+                                    <span
+                                        className="ml-1.5 text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded-full">
+                                {phonemeGroups[phoneme]?.length || 0}
+                             </span>
                                 </div>
                             </TabsTrigger>
                         ))}
