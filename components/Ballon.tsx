@@ -1,27 +1,11 @@
 import React, {useCallback, useEffect, useRef, useState, useTransition} from 'react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle
-} from '@/components/ui/alert-dialog';
 import {getFileDownloadUrl} from "@/lib/actions/file-download.action";
 import {useRouter} from "next/navigation";
-import {Button} from "@/components/ui/button";
-import {Badge} from "@/components/ui/badge";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
-import {CheckCircle2, ExternalLink, FileDown, Volume2, XCircle, X, BookOpen} from "lucide-react";
-import {cn} from "@/lib/utils";
 import {Balloon, BalloonFieldProps, Fragment} from "@/components/ballons/types";
-import {balloonColors, colorNames, PHONEME_MESSAGES, phonemes} from "@/components/ballons/constants";
+import {balloonColors, phonemes} from "@/components/ballons/constants";
 import {getActivitiesByPhoneme} from "@/lib/actions/activity.action";
 import {ActivityWithFiles} from "@/types/activity";
-import {getBadgeVariant} from './ballons/utils';
 import PhonemeDialog from "@/components/dialogs/phonemeDialog";
-import { getColorName } from '@/utils/phonemeList';
 
 
 const BalloonField: React.FC<BalloonFieldProps> = ({
@@ -937,10 +921,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
 
             <PhonemeDialog setDialogOpen={setDialogOpen} dialogOpen={dialogOpen} activeColor={activeColor}
-                           activePhoneme={activePhoneme} activities={activities} isLoading={isLoading}
+                           activeTitle={activePhoneme} activities={activities} isLoading={isLoading}
                            isPending={isPending} downloadingFileId={downloadingFileId} downloadSuccess={downloadSuccess}
                            downloadError={downloadError} handleFileDownload={handleFileDownload}
-                           handleCloseDialog={handleCloseDialog} getColorName={getColorName}/>
+                           handleCloseDialog={handleCloseDialog} type={"phoneme"} />
         </div>
     );
 };

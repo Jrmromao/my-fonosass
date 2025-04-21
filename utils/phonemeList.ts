@@ -100,6 +100,6 @@ const phonemes: Option[] = [
 export default phonemes;
 
 
-export const getColorName = (hexColor: string): string => {
-    return colorNames[hexColor] || "Colorful";
-};
+// export const getColorName = (hexColor: string): string => {
+//     return colorNames[hexColor] || "Colorful";
+// };

@@ -21,7 +21,7 @@ interface PhonemeDialogProps {
     setDialogOpen: (open: boolean) => void;
     dialogOpen: boolean;
     activeColor: string;
-    activePhoneme: string;
+    activeTitle: string;
     activities: ActivityWithFiles[];
     isLoading: boolean;
     isPending: boolean;
@@ -30,12 +30,14 @@ interface PhonemeDialogProps {
     downloadError: string | null;
     handleFileDownload: (fileId: string, fileName: string) => void;
     handleCloseDialog: () => void;
-    getColorName: (color: string) => string;
+    type: string;
+
 }
 
 
-function PhonemeDialog({setDialogOpen, dialogOpen, activePhoneme, activeColor,
+function PhonemeDialog({setDialogOpen, dialogOpen, activeTitle, activeColor,
     activities,
+    type = "phoneme",
     isLoading,
     isPending,
     downloadingFileId,
@@ -43,7 +45,6 @@ function PhonemeDialog({setDialogOpen, dialogOpen, activePhoneme, activeColor,
     downloadError,
     handleFileDownload,
     handleCloseDialog,
-    getColorName
 }: PhonemeDialogProps) {
 
 
@@ -61,11 +62,15 @@ function PhonemeDialog({setDialogOpen, dialogOpen, activePhoneme, activeColor,
                             >
                                 <Volume2 className="h-5 w-5" style={{color: activeColor}}/>
                             </div>
-                            <span>Phoneme "{activePhoneme}"</span>
+                            {type === "phoneme" ? <span>Fonema /{activeTitle}/</span>  : <span>Exercícios para {activeTitle}</span>}
+
+
+
+
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-slate-600 mt-2">
-                            {PHONEME_MESSAGES[activePhoneme] || `Phoneme "${activePhoneme}" sound.`}
-                        </AlertDialogDescription>
+                        {type === "phoneme" && <AlertDialogDescription className="text-slate-600">
+                            {PHONEME_MESSAGES[activeTitle]}
+                        </AlertDialogDescription>}
                     </AlertDialogHeader>
 
                     {/* Phoneme info section */}
@@ -81,10 +86,8 @@ function PhonemeDialog({setDialogOpen, dialogOpen, activePhoneme, activeColor,
                                 ></div>
                             </div>
                             <div>
-                                <div className="text-sm text-slate-500">Balloon Color</div>
-                                <div className="font-medium text-lg" style={{color: activeColor}}>
-                                    {getColorName(activeColor)}
-                                </div>
+                                <div className="text-sm text-slate-500">{type === "phoneme" ? "Cor do Balão" : "Cor da Caixa"}</div>
+
                             </div>
                         </div>
 

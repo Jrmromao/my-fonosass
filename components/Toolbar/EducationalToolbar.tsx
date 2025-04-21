@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PhonemeDialog from "@/components/dialogs/phonemeDialog";
-import { getColorName } from "@/utils/phonemeList";
 import {ActivityWithFiles} from "@/types/activity";
 import {getFileDownloadUrl} from "@/lib/actions/file-download.action";
 
@@ -395,10 +394,10 @@ const EducationalToolbar: React.FC = () => {
 
             {/* Dialog component */}
          <PhonemeDialog setDialogOpen={setDialogOpen} dialogOpen={dialogOpen} activeColor={categories[activeTab].color}
-                        activePhoneme={categories[activeTab].label} activities={activities} isLoading={isLoading}
+                        activeTitle={categories[activeTab].label} activities={activities} isLoading={isLoading}
                         isPending={isPending} downloadingFileId={downloadingFileId} downloadSuccess={downloadSuccess}
                         downloadError={downloadError} handleFileDownload={handleFileDownload}
-                        handleCloseDialog={handleCloseDialog} getColorName={getColorName}/>
+                        handleCloseDialog={handleCloseDialog} type={"exercise"}/>
         </>
     );
 };
