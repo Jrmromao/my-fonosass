@@ -2,7 +2,7 @@
 
 
 import React from "react";
-import Ballon from "@/components/Ballon";
+import Ballon from "@/components/Balloon";
 import dynamic from "next/dynamic";
 
 

@@ -1,6 +1,6 @@
 // utils.ts
 import { Balloon } from './types';
-import {balloonColors, phonemes} from "@/components/ballons/constants";
+import {balloonColors, phonemes} from "@/components/Balloon/constants";
 
 export const shadeColor = (color: string, percent: number): string => {
     let R = parseInt(color.substring(1, 3), 16);

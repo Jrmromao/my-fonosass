@@ -1,7 +1,7 @@
 'use server';
 
 import { auth, currentUser } from '@clerk/nextjs/server';
-import {colorNames} from "@/components/ballons/constants";
+import {colorNames} from "@/components/Balloon/constants";
 
 type UserRole = 'ADMIN' | 'USER' | 'GUEST';
 

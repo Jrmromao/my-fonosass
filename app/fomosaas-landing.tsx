@@ -5,14 +5,18 @@ import {motion} from "framer-motion"
 import {ArrowRight, ChevronDown, Menu, Mic, Music, Play, Star, Volume2, X} from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import Ballon from "@/components/Ballon";
+import Balloon from "@/components/Balloon";
 import EducationalToolbar from "@/components/Toolbar/EducationalToolbar";
 import {SubscriptionPlans} from "@/components/SubscriptionPlans";
 import {APP_NAME} from "@/utils/constants";
+import {useAuth} from "@clerk/nextjs";
+
 
 export default function FomosaasLanding() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
+
+    const {isSignedIn} = useAuth()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -48,14 +52,7 @@ export default function FomosaasLanding() {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center space-x-8">
-                            <Link
-                                href="#recursos"
-                                className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
-                            >
-                                Recursos
-                            </Link>
-                            <Link
-                                href="#como-funciona"
+                            <Link  href="#como-funciona"
                                 className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
                             >
                                 Como Funciona
@@ -72,25 +69,37 @@ export default function FomosaasLanding() {
                             >
                                 Depoimentos
                             </Link>
-                            <Link
-                                href="/sign-in"
-                                className="px-4 py-2 rounded-full bg-white dark:bg-indigo-800 text-indigo-600 dark:text-white border border-indigo-200 dark:border-indigo-700 hover:border-pink-400 dark:hover:border-pink-500 transition-all shadow-sm hover:shadow font-medium"
-                            >
-                                Entrar
-                            </Link>
-                            <Link
-                                href="/sign-up"
-                                className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white hover:shadow-lg hover:shadow-pink-500/20 transition-all font-medium"
-                            >
-                                Experimente Grátis
-                            </Link>
-                        </nav>
 
-                        {/* Mobile menu button */}
-                        <button
-                            className="md:hidden p-2 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-500 dark:text-blue-400"
-                            onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        >
+
+                            {isSignedIn ? (
+                                    <Link
+                                        href="/dashboard"
+                                        className="px-4 py-2 rounded-full bg-white dark:bg-indigo-800 text-indigo-600 dark:text-white border border-indigo-200 dark:border-indigo-700 hover:border-pink-400 dark:hover:border-pink-500 transition-all shadow-sm hover:shadow font-medium"
+                                    >
+                                        Painel de Controle
+                                    </Link>
+                                ) :
+                                (
+
+                                    <><Link
+                                        href="/sign-in"
+                                        className="px-4 py-2 rounded-full bg-white dark:bg-indigo-800 text-indigo-600 dark:text-white border border-indigo-200 dark:border-indigo-700 hover:border-pink-400 dark:hover:border-pink-500 transition-all shadow-sm hover:shadow font-medium"
+                                    >
+                                        Entrar
+                                    </Link><Link
+                                        href="/sign-up"
+                                        className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white hover:shadow-lg hover:shadow-pink-500/20 transition-all font-medium"
+                                    >
+                                        Experimente Grátis
+                                    </Link></>
+                                )}
+
+
+                                </nav>
+                            {/* Mobile menu button */}
+                                <button
+                                className="md:hidden p-2 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-500 dark:text-blue-400"
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}>
                             {isMenuOpen ? <X size={20}/> : <Menu size={20}/>}
                         </button>
                     </div>
@@ -105,13 +114,6 @@ export default function FomosaasLanding() {
                         className="md:hidden bg-white dark:bg-blue-900 shadow-lg"
                     >
                         <div className="px-4 py-5 space-y-4">
-                            <Link
-                                href="#recursos"
-                                className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                Recursos
-                            </Link>
                             <Link
                                 href="#como-funciona"
                                 className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
@@ -199,7 +201,7 @@ export default function FomosaasLanding() {
                 >
                     <div
                         className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
-                        <Ballon/>
+                        <Balloon/>
                     </div>
 
 
@@ -817,11 +819,16 @@ export default function FomosaasLanding() {
                 </div>
             </footer>
         </div>
-    )
+)
 }
 
 // FAQ Item Component
-function FaqItem({question, answer}: { question: string; answer: string }) {
+function FaqItem({
+    question, answer
+}: {
+    question: string;
+    answer: string
+}) {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
@@ -851,228 +858,351 @@ function FaqItem({question, answer}: { question: string; answer: string }) {
 
 // Data
 const features = [
-    {
-        title: "Exercícios Interativos",
-        description: "Mais de 100 exercícios divertidos e interativos para desenvolver diferentes aspectos da fala.",
-        icon: <Mic size={24}/>,
-    },
-    {
-        title: "Jogos Educativos",
-        description: "Jogos coloridos e envolventes que tornam o aprendizado divertido e eficaz para crianças.",
-        icon: <Play size={24}/>,
-    },
-    {
-        title: "Acompanhamento Profissional",
-        description: "Relatórios detalhados e orientações de especialistas em fonoaudiologia.",
-        icon: (
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-        ),
-    },
-    {
-        title: "Atividades Personalizadas",
-        description: "Exercícios adaptados às necessidades específicas de cada criança e seu desenvolvimento.",
-        icon: (
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <path
-                    d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-        ),
-    },
-    {
-        title: "Biblioteca de Sons",
-        description: "Ampla biblioteca de sons e pronúncias para praticar diferentes fonemas e palavras.",
-        icon: <Volume2 size={24}/>,
-    },
-    {
-        title: "Músicas e Rimas",
-        description: "Músicas infantis e rimas divertidas que ajudam no desenvolvimento da linguagem.",
-        icon: <Music size={24}/>,
-    },
+{
+    title: "Exercícios Interativos",
+        description
+:
+    "Mais de 100 exercícios divertidos e interativos para desenvolver diferentes aspectos da fala.",
+        icon
+:
+    <Mic size={24}/>,
+},
+{
+    title: "Jogos Educativos",
+        description
+:
+    "Jogos coloridos e envolventes que tornam o aprendizado divertido e eficaz para crianças.",
+        icon
+:
+    <Play size={24}/>,
+},
+{
+    title: "Acompanhamento Profissional",
+        description
+:
+    "Relatórios detalhados e orientações de especialistas em fonoaudiologia.",
+        icon
+:
+    (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+    ),
+},
+{
+    title: "Atividades Personalizadas",
+        description
+:
+    "Exercícios adaptados às necessidades específicas de cada criança e seu desenvolvimento.",
+        icon
+:
+    (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24              24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+        <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+    ),
+},
+{
+    title: "Biblioteca de Sons",
+        description
+:
+    "Ampla biblioteca de sons e pronúncias para praticar diferentes fonemas e palavras.",
+        icon
+:
+    <Volume2 size={24}/>,
+},
+{
+    title: "Músicas e Rimas",
+        description
+:
+    "Músicas infantis e rimas divertidas que ajudam no desenvolvimento da linguagem.",
+        icon
+:
+    <Music size={24}/>,
+},
 ]
 
 const steps = [
-    {
-        title: "Cadastre-se",
-        description: "Crie uma conta gratuita e preencha um breve questionário sobre as necessidades do seu filho.",
-    },
-    {
-        title: "Receba um Plano Personalizado",
-        description: "Nosso sistema criará um plano de exercícios personalizado com base nas necessidades específicas.",
-    },
-    {
-        title: "Comece a Praticar",
-        description: "Acesse os exercícios interativos e acompanhe o progresso do seu filho de forma divertida.",
-    },
+{
+    title: "Cadastre-se",
+        description
+:
+    "Crie uma conta gratuita e preencha um breve questionário sobre as necessidades do seu filho.",
+},
+{
+    title: "Receba um Plano Personalizado",
+        description
+:
+    "Nosso sistema criará um plano de exercícios personalizado com base nas necessidades específicas.",
+},
+{
+    title: "Comece a Praticar",
+        description
+:
+    "Acesse os exercícios interativos e acompanhe o progresso do seu filho de forma divertida.",
+},
 ]
 
 const exercises = [
-    {
-        title: "Jogo dos Sons",
-        description: "Ajuda crianças a identificar e reproduzir diferentes sons e fonemas.",
-        age: "3-6 anos",
-        difficulty: "Iniciante",
-        icon: <Volume2 size={16}/>,
-        image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-        title: "Rimas Divertidas",
-        description: "Exercícios com rimas para desenvolver consciência fonológica.",
-        age: "4-7 anos",
-        difficulty: "Intermediário",
-        icon: <Music size={16}/>,
-        image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-        title: "Histórias Faladas",
-        description: "Narrativas interativas que incentivam a prática da fala em contextos.",
-        age: "5-9 anos",
-        difficulty: "Avançado",
-        icon: (
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            >
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
-                <path d="M8 7h6"></path>
-                <path d="M8 11h8"></path>
-                <path d="M8 15h5"></path>
-            </svg>
-        ),
-        image: "/placeholder.svg?height=200&width=400",
-    },
+{
+    title: "Jogo dos Sons",
+        description
+:
+    "Ajuda crianças a identificar e reproduzir diferentes sons e fonemas.",
+        age
+:
+    "3-6 anos",
+        difficulty
+:
+    "Iniciante",
+        icon
+:
+    <Volume2 size={16}/>,
+        image
+:
+    "/placeholder.svg?height=200&width=400",
+},
+{
+    title: "Rimas Divertidas",
+        description
+:
+    "Exercícios com rimas para desenvolver consciência fonológica.",
+        age
+:
+    "4-7 anos",
+        difficulty
+:
+    "Intermediário",
+        icon
+:
+    <Music size={16}/>,
+        image
+:
+    "/placeholder.svg?height=200&width=400",
+},
+{
+    title: "Histórias Faladas",
+        description
+:
+    "Narrativas interativas que incentivam a prática da fala em contextos.",
+        age
+:
+    "5-9 anos",
+        difficulty
+:
+    "Avançado",
+        icon
+:
+    (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+            <path d="M8 7h6"></path>
+            <path d="M8 11h8"></path>
+            <path d="M8 15h5"></path>
+        </svg>
+    ),
+        image
+:
+    "/placeholder.svg?height=200&width=400",
+},
 ]
 
 const testimonials = [
-    {
-        name: "Ana Silva",
-        relation: "Mãe do Pedro, 5 anos",
-        avatar: "/placeholder.svg?height=48&width=48",
-        quote:
-            "O Fomosaas transformou a vida do meu filho. Em apenas 3 meses, ele já consegue pronunciar palavras que antes eram um desafio!",
-    },
-    {
-        name: "Carlos Oliveira",
-        relation: "Pai da Júlia, 7 anos",
-        avatar: "/placeholder.svg?height=48&width=48",
-        quote: "Minha filha adora os jogos e nem percebe que está fazendo terapia. Os resultados são impressionantes!",
-    },
-    {
-        name: "Dra. Mariana Santos",
-        relation: "Fonoaudióloga",
-        avatar: "/placeholder.svg?height=48&width=48",
-        quote:
-            "Como profissional, recomendo o Fomosaas para complementar as sessões presenciais. A plataforma é baseada em metodologias comprovadas.",
-    },
+{
+    name: "Ana Silva",
+        relation
+:
+    "Mãe do Pedro, 5 anos",
+        avatar
+:
+    "/placeholder.svg?height=48&width=48",
+        quote
+:
+    "O Fomosaas transformou a vida do meu filho. Em apenas 3 meses, ele já consegue pronunciar palavras que antes eram um desafio!",
+},
+{
+    name: "Carlos Oliveira",
+        relation
+:
+    "Pai da Júlia, 7 anos",
+        avatar
+:
+    "/placeholder.svg?height=48&width=48",
+        quote
+:
+    "Minha filha adora os jogos e nem percebe que está fazendo terapia. Os resultados são impressionantes!",
+},
+{
+    name: "Dra. Mariana Santos",
+        relation
+:
+    "Fonoaudióloga",
+        avatar
+:
+    "/placeholder.svg?height=48&width=48",
+        quote
+:
+    "Como profissional, recomendo o Fomosaas para complementar as sessões presenciais. A plataforma é baseada em metodologias comprovadas.",
+},
 ]
 
 const pricingPlans = [
-    {
-        name: "Básico",
-        description: "Ideal para começar a jornada de desenvolvimento da fala.",
-        price: "49,90",
-        period: "mês",
-        features: [
-            "Acesso a 30+ exercícios básicos",
-            "Relatórios mensais de progresso",
-            "Suporte por e-mail",
-            "Acesso para 1 criança",
-        ],
-        ctaText: "Começar Agora",
-        ctaLink: "/cadastro",
-        featured: false,
-    },
-    {
-        name: "Premium",
-        description: "Nossa opção mais popular para famílias.",
-        price: "89,90",
-        period: "mês",
-        features: [
-            "Acesso a 100+ exercícios",
-            "Relatórios semanais detalhados",
-            "Suporte prioritário",
-            "Acesso para até 3 crianças",
-            "Consulta mensal com especialista",
-        ],
-        ctaText: "Experimente Grátis",
-        ctaLink: "/trial",
-        featured: true,
-    },
-    {
-        name: "Escolas",
-        description: "Para instituições educacionais e clínicas.",
-        price: "249,90",
-        period: "mês",
-        features: [
-            "Acesso ilimitado a todos exercícios",
-            "Painel administrativo para educadores",
-            "Suporte dedicado",
-            "Acesso para até 15 crianças",
-            "Treinamento para educadores",
-        ],
-        ctaText: "Fale Conosco",
-        ctaLink: "/contato",
-        featured: false,
-    },
+{
+    name: "Básico",
+        description
+:
+    "Ideal para começar a jornada de desenvolvimento da fala.",
+        price
+:
+    "49,90",
+        period
+:
+    "mês",
+        features
+:
+    [
+        "Acesso a 30+ exercícios básicos",
+        "Relatórios mensais de progresso",
+        "Suporte por e-mail",
+        "Acesso para 1 criança",
+    ],
+        ctaText
+:
+    "Começar Agora",
+        ctaLink
+:
+    "/cadastro",
+        featured
+:
+    false,
+},
+{
+    name: "Premium",
+        description
+:
+    "Nossa opção mais popular para famílias.",
+        price
+:
+    "89,90",
+        period
+:
+    "mês",
+        features
+:
+    [
+        "Acesso a 100+ exercícios",
+        "Relatórios semanais detalhados",
+        "Suporte prioritário",
+        "Acesso para até 3 crianças",
+        "Consulta mensal com especialista",
+    ],
+        ctaText
+:
+    "Experimente Grátis",
+        ctaLink
+:
+    "/trial",
+        featured
+:
+    true,
+},
+{
+    name: "Escolas",
+        description
+:
+    "Para instituições educacionais e clínicas.",
+        price
+:
+    "249,90",
+        period
+:
+    "mês",
+        features
+:
+    [
+        "Acesso ilimitado a todos exercícios",
+        "Painel administrativo para educadores",
+        "Suporte dedicado",
+        "Acesso para até 15 crianças",
+        "Treinamento para educadores",
+    ],
+        ctaText
+:
+    "Fale Conosco",
+        ctaLink
+:
+    "/contato",
+        featured
+:
+    false,
+},
 ]
 
 const faqs = [
-    {
-        question: "O que é o Fomosaas?",
-        answer:
-            "Fomosaas é uma plataforma online de exercícios de fonoaudiologia desenvolvida especialmente para crianças brasileiras. Oferecemos jogos interativos e atividades divertidas que ajudam no desenvolvimento da fala e linguagem.",
-    },
-    {
-        question: "A partir de qual idade posso usar o Fomosaas?",
-        answer:
-            "Nossa plataforma possui exercícios para crianças a partir de 3 anos de idade. Temos atividades específicas para diferentes faixas etárias e níveis de desenvolvimento.",
-    },
-    {
-        question: "O Fomosaas substitui a terapia com um fonoaudiólogo?",
-        answer:
-            "Não. O Fomosaas é uma ferramenta complementar ao tratamento fonoaudiológico. Recomendamos sempre o acompanhamento de um profissional especializado para casos que necessitem de intervenção terapêutica.",
-    },
-    {
-        question: "Posso cancelar minha assinatura a qualquer momento?",
-        answer:
-            "Sim, você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanecerá ativo até o final do período já pago.",
-    },
-    {
-        question: "Como sei se o Fomosaas é adequado para meu filho?",
-        answer:
-            "Oferecemos um período de teste gratuito de 7 dias para que você possa experimentar nossa plataforma. Além disso, nosso questionário inicial ajuda a identificar as necessidades específicas da criança.",
-    },
+{
+    question: "O que é o Fomosaas?",
+        answer
+:
+    "Fomosaas é uma plataforma online de exercícios de fonoaudiologia desenvolvida especialmente para crianças brasileiras. Oferecemos jogos interativos e atividades divertidas que ajudam no desenvolvimento da fala e linguagem.",
+},
+{
+    question: "A partir de qual idade posso usar o Fomosaas?",
+        answer
+:
+    "Nossa plataforma possui exercícios para crianças a partir de 3 anos de idade. Temos atividades específicas para diferentes faixas etárias e níveis de desenvolvimento.",
+},
+{
+    question: "O Fomosaas substitui a terapia com um fonoaudiólogo?",
+        answer
+:
+    "Não. O Fomosaas é uma ferramenta complementar ao tratamento fonoaudiológico. Recomendamos sempre o acompanhamento de um profissional especializado para casos que necessitem de intervenção terapêutica.",
+},
+{
+    question: "Posso cancelar minha assinatura a qualquer momento?",
+        answer
+:
+    "Sim, você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanecerá ativo até o final do período já pago.",
+},
+{
+    question: "Como sei se o Fomosaas é adequado para meu filho?",
+        answer
+:
+    "Oferecemos um período de teste gratuito de 7 dias para que você possa experimentar nossa plataforma. Além disso, nosso questionário inicial ajuda a identificar as necessidades específicas da criança.",
+},
 ]
 

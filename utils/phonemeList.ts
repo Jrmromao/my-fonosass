@@ -64,7 +64,7 @@
 //
 // export default phonemes;
 
-import {colorNames} from "@/components/ballons/constants";
+import {colorNames} from "@/components/Balloon/constants";
 
 interface Option {
     value: string;

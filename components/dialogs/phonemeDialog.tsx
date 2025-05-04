@@ -7,12 +7,12 @@ import {
     AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import {BookOpen, CheckCircle2, ExternalLink, FileDown, Volume2, X, XCircle} from "lucide-react";
-import {PHONEME_MESSAGES} from "@/components/ballons/constants";
+import {PHONEME_MESSAGES} from "@/components/Balloon/constants";
 import {Badge} from "@/components/ui/badge";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 import {Button} from "@/components/ui/button";
 import {cn} from "@/lib/utils";
-import {getBadgeVariant} from "@/components/ballons/utils";
+import {getBadgeVariant} from "@/components/Balloon/utils";
 import {useRouter} from "next/navigation";
 import {ActivityWithFiles} from "@/types/activity";
 

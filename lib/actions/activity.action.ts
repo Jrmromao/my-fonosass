@@ -46,9 +46,6 @@ export async function createActivity(formData: FormData) {
             return { success: false, error: "Unauthorized" };
         }
 
-        console.log("Creating activity with user ID:", userId);
-
-
         // Extract data from FormData
         const name = formData.get("name") as string;
         const description = formData.get("description") as string;
@@ -67,9 +64,16 @@ export async function createActivity(formData: FormData) {
                 type: type as "SPEECH" | "LANGUAGE" | "COGNITIVE" | "MOTOR" | "SOCIAL" | "OTHER",
                 difficulty: difficulty as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT",
                 ageRange: ageRange as "TODDLER" | "PRESCHOOL" | "CHILD" | "TEENAGER" | "ADULT",
-                createdBy: { connect: { clerkUserId: userId} }
+                createdBy: { connect: { clerkUserId: userId} },
+                categories: {
+                    connect: {
+                        id: "1"
+                    }
+                }
             },
         });
+
+
 
 
         // Extract files from FormData

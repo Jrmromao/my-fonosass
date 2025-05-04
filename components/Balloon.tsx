@@ -1,8 +1,8 @@
 import React, {useCallback, useEffect, useRef, useState, useTransition} from 'react';
 import {getFileDownloadUrl} from "@/lib/actions/file-download.action";
 import {useRouter} from "next/navigation";
-import {Balloon, BalloonFieldProps, Fragment} from "@/components/ballons/types";
-import {balloonColors, phonemes} from "@/components/ballons/constants";
+import {Balloon, BalloonFieldProps, Fragment} from "@/components/Balloon/types";
+import {balloonColors, phonemes} from "@/components/Balloon/constants";
 import {getActivitiesByPhoneme} from "@/lib/actions/activity.action";
 import {ActivityWithFiles} from "@/types/activity";
 import PhonemeDialog from "@/components/dialogs/phonemeDialog";
