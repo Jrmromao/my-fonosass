@@ -1,18 +1,18 @@
 'use client'
-import React, { useMemo, useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import React, {useMemo, useState, useEffect} from "react"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
 import {
     Search,
     ListFilter,
     ChevronDown,
 } from 'lucide-react'
-import { NewActivityDialog } from "@/components/dialogs/new-activity-dialog"
-import { useDebounce } from "@/hooks/use-debounce"
-import { getActivities } from "@/lib/actions/activity.action"
-import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ActivityWithFiles } from "@/types/activity"
-import { useUserRole } from "@/hooks/useUserRole"
+import {NewActivityDialog} from "@/components/dialogs/new-activity-dialog"
+import {useDebounce} from "@/hooks/use-debounce"
+import {getActivities} from "@/lib/actions/activity.action"
+import {useQuery, QueryClient, QueryClientProvider} from "@tanstack/react-query"
+import {ActivityWithFiles} from "@/types/activity"
+import {useUserRole} from "@/hooks/useUserRole"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,13 +21,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { activitiesColumns } from "@/components/table/columns/activities"
+import {Badge} from "@/components/ui/badge"
+import {activitiesColumns} from "@/components/table/columns/activities"
 import PhonemeTabs from "@/components/layout/PhonemeTabs";
 import ActivityStatsBar from "@/components/layout/ActivityStatsBar";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import { DataTable } from "@/components/table/data-table";
+import {DataTable} from "@/components/table/data-table";
 
 const queryClient = new QueryClient()
 
@@ -35,15 +35,20 @@ const queryClient = new QueryClient()
 export default function ActivitiesPage() {
     return (
         <QueryClientProvider client={queryClient}>
-            <ActivitiesContent />
+            <ActivitiesContent/>
         </QueryClientProvider>
     )
 }
 
-function ActivityFilters(searchTerm: string, setSearchTerm: (value: (((prevState: string) => string) | string)) => void, activeFilterCount: number, clearFilters: () => void, isFilterOpen: boolean, setIsFilterOpen: (value: (((prevState: boolean) => boolean) | boolean)) => void, availableDifficultyLevels: string[], filters: {
+function ActivityFilters(searchTerm: string, setSearchTerm: (value: (((prevState: string) => string) | string)) => void, activeFilterCount: number, clearFilters: () => void, isFilterOpen: boolean, setIsFilterOpen: (value: (((prevState: boolean) => boolean) | boolean)) => void, availableDifficultyLevels: string[], availableTypeOfActivity: string[], filters: {
     difficultyLevels: string[];
+    typeOfActivity: string[];
     createdAfter: string | null
-}, toggleFilter: (type: keyof { difficultyLevels: string[]; createdAfter: string | null }, value: string) => void) {
+}, toggleFilter: (type: keyof {
+    difficultyLevels: string[];
+    createdAfter: string | null,
+    typeOfActivity: string[]
+}, value: string) => void) {
     return <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between mt-6">
         {/* Search */}
         <div className="relative flex-1 w-full sm:max-w-md">
@@ -100,6 +105,21 @@ function ActivityFilters(searchTerm: string, setSearchTerm: (value: (((prevState
                                 </DropdownMenuCheckboxItem>
                             ))}
                         </div>
+
+                        {availableTypeOfActivity.length > 0 && <div className="p-2">
+
+                            <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de
+                                Atividade</h4>
+                            {availableTypeOfActivity.map(level => (
+                                <DropdownMenuCheckboxItem
+                                    key={level}
+                                    checked={filters.typeOfActivity.includes(level)}
+                                    onCheckedChange={() => toggleFilter('typeOfActivity', level)}
+                                >
+                                    {level}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </div>}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -110,7 +130,7 @@ function ActivityFilters(searchTerm: string, setSearchTerm: (value: (((prevState
 function ActivitiesContent() {
     const [searchTerm, setSearchTerm] = useState<string>("")
     const debouncedSearch = useDebounce(searchTerm, 500)
-    const { role } = useUserRole()
+    const {role} = useUserRole()
     const [activeTab, setActiveTab] = useState("all")
     const [mainTab, setMainTab] = useState("phonemes") // Add state for main tabs
 
@@ -118,6 +138,7 @@ function ActivitiesContent() {
     const [filters, setFilters] = useState({
         difficultyLevels: [] as string[],
         createdAfter: null as string | null,
+        typeOfActivity: [] as string[],
     })
 
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
@@ -125,9 +146,10 @@ function ActivitiesContent() {
     // Get unique values for filters
     const [availablePhonemes, setAvailablePhonemes] = useState<string[]>([])
     const [availableDifficultyLevels, setAvailableDifficultyLevels] = useState<string[]>([])
+    const [availableTypeOfActivity, setAvailableTypeOfActivity] = useState<string[]>([])
 
     // Use React Query to fetch and cache activities
-    const { data, isLoading } = useQuery({
+    const {data, isLoading} = useQuery({
         queryKey: ['activities', debouncedSearch],
         queryFn: async () => {
             const result = await getActivities({
@@ -140,9 +162,13 @@ function ActivitiesContent() {
                 if (result.activities.length > 0) {
                     const phoneme = [...new Set(result.activities.map(item => item.phoneme).filter(Boolean))] as string[]
                     const difficulty = [...new Set(result.activities.map(item => item.difficulty).filter(Boolean))] as string[]
+                    const typeOfActivity = [...new Set(result.activities.map(item => item.type).filter(Boolean))] as string[]
+
+                    console.log(phoneme, difficulty, typeOfActivity)
 
                     setAvailablePhonemes(phoneme)
                     setAvailableDifficultyLevels(difficulty)
+                    setAvailableTypeOfActivity(typeOfActivity)
                 }
 
                 return result.activities as unknown as ActivityWithFiles[]
@@ -180,7 +206,12 @@ function ActivitiesContent() {
             }
 
             // Filter by creation date
-            if(filters.createdAfter && new Date(activity.createdAt) < new Date(filters.createdAfter)) {
+            if (filters.createdAfter && new Date(activity.createdAt) < new Date(filters.createdAfter)) {
+                return false
+            }
+
+            // Filter by type of activity
+            if (filters.typeOfActivity.length > 0 && !filters.typeOfActivity.includes(activity.type)) {
                 return false
             }
 
@@ -226,6 +257,7 @@ function ActivitiesContent() {
         setFilters({
             difficultyLevels: [],
             createdAfter: null,
+            typeOfActivity: [],
         })
     }
 
@@ -256,7 +288,7 @@ function ActivitiesContent() {
                         )}
                     </div>
 
-                    {ActivityFilters(searchTerm, setSearchTerm, activeFilterCount, clearFilters, isFilterOpen, setIsFilterOpen, availableDifficultyLevels, filters, toggleFilter)}
+                    {ActivityFilters(searchTerm, setSearchTerm, activeFilterCount, clearFilters, isFilterOpen, setIsFilterOpen, availableDifficultyLevels, availableTypeOfActivity, filters, toggleFilter)}
                 </div>
             </div>
 
@@ -287,28 +319,7 @@ function ActivitiesContent() {
             )}
 
             <div className="text-left p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-                <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">
-                    <TabsList
-                        className="grid grid-cols-2 w-full max-w-md mx-auto bg-gray-50 dark:bg-gray-800 p-1 rounded-lg shadow-sm">
-                        <TabsTrigger
-                            value="phonemes"
-                            className="relative rounded-md py-2 text-sm font-medium text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            Fonemas
-                            <span
-                                className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-500 data-[state=active]:block hidden transition-all"/>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="cognitive_language"
-                            className="relative rounded-md py-2 text-sm font-medium text-gray-700 dark:text-gray-300 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            Cognitivo e Linguagem
-                            <span
-                                className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-500 data-[state=active]:block hidden transition-all"/>
-                        </TabsTrigger>
-                    </TabsList>
 
-                    <TabsContent value="phonemes" className="mt-6">
                         <Card className="border-gray-200 dark:border-gray-800 overflow-hidden shadow-md">
                             <CardContent className="p-0">
                                 <PhonemeTabs
@@ -323,21 +334,6 @@ function ActivitiesContent() {
                                 />
                             </CardContent>
                         </Card>
-                    </TabsContent>
-
-                    <TabsContent value="cognitive_language" className="mt-6">
-                        <Card className="border-gray-200 dark:border-gray-800 overflow-hidden shadow-md">
-                            <CardHeader
-                                className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-                                <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">Cognitivo e
-                                    linguagem</h3>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <DataTable columns={columns} data={[]} isLoading={isLoading}/>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
             </div>
         </div>
     )

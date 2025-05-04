@@ -209,7 +209,7 @@ export default function FomosaasLanding() {
                         className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
                         <div
                             className="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10"></div>
-                        <EducationalToolbar/>
+                        <EducationalToolbar />
 
                     </div>
                     {/* Decorative elements */}

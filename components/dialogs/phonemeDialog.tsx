@@ -64,9 +64,6 @@ function PhonemeDialog({setDialogOpen, dialogOpen, activeTitle, activeColor,
                             </div>
                             {type === "phoneme" ? <span>Fonema /{activeTitle}/</span>  : <span>Exercícios para {activeTitle}</span>}
 
-
-
-
                         </AlertDialogTitle>
                         {type === "phoneme" && <AlertDialogDescription className="text-slate-600">
                             {PHONEME_MESSAGES[activeTitle]}
@@ -84,10 +81,6 @@ function PhonemeDialog({setDialogOpen, dialogOpen, activeTitle, activeColor,
                                     className="w-10 h-10 rounded-full absolute"
                                     style={{backgroundColor: activeColor}}
                                 ></div>
-                            </div>
-                            <div>
-                                <div className="text-sm text-slate-500">{type === "phoneme" ? "Cor do Balão" : "Cor da Caixa"}</div>
-
                             </div>
                         </div>
 
@@ -107,6 +100,7 @@ function PhonemeDialog({setDialogOpen, dialogOpen, activeTitle, activeColor,
                             )}
                         </div>
 
+
                         {isPending || isLoading ? (
                             <div className="flex flex-col items-center justify-center py-10 gap-3">
                                 <div
@@ -115,6 +109,8 @@ function PhonemeDialog({setDialogOpen, dialogOpen, activeTitle, activeColor,
                             </div>
                         ) : activities.length > 0 ? (
                             <ul className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+
+
                                 {activities.map((activity) => (
                                     <li key={activity.id}
                                         className="bg-slate-50 p-4 rounded-xl border border-slate-100 transition-all hover:bg-slate-100 hover:border-slate-200">

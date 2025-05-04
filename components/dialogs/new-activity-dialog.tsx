@@ -24,31 +24,9 @@ import { Dropzone } from "@/components/Dropzone"
 import { createActivity } from "@/lib/actions/activity.action"
 import { CustomSelect } from "@/components/form/CustomSelect"
 import phonemes from "@/utils/phonemeList"
+import {activityTypes, ageRanges, difficultyLevels} from "@/utils/constants";
 
-// Define activity types, difficulty levels, and age ranges
-const activityTypes = [
-    { value: "SPEECH", label: "Fala" },
-    { value: "LANGUAGE", label: "Linguagem" },
-    { value: "COGNITIVE", label: "Cognitivo" },
-    { value: "MOTOR", label: "Motor" },
-    { value: "SOCIAL", label: "Social" },
-    { value: "OTHER", label: "Outro" }
-]
 
-const difficultyLevels = [
-    { value: "BEGINNER", label: "Iniciante" },
-    { value: "INTERMEDIATE", label: "Intermediário" },
-    { value: "ADVANCED", label: "Avançado" },
-    { value: "EXPERT", label: "Especialista" }
-]
-
-const ageRanges = [
-    { value: "TODDLER", label: "Bebês (1-3 anos)" },
-    { value: "PRESCHOOL", label: "Pré-escolar (3-5 anos)" },
-    { value: "CHILD", label: "Criança (6-12 anos)" },
-    { value: "TEENAGER", label: "Adolescente (13-17 anos)" },
-    { value: "ADULT", label: "Adulto (18+ anos)" }
-]
 
 // Form schema (client-side only)
 const activitySchema = z.object({

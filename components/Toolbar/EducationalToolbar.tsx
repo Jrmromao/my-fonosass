@@ -16,12 +16,15 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PhonemeDialog from "@/components/dialogs/phonemeDialog";
-import {ActivityWithFiles} from "@/types/activity";
+import {ActivityWithFiles, Option} from "@/types/activity";
 import {getFileDownloadUrl} from "@/lib/actions/file-download.action";
+import {getActivitiesByPhoneme, getActivitiesByType} from "@/lib/actions/activity.action";
+import {ActivityType} from "@prisma/client";
 
 // Define TypeScript interfaces
-interface Category {
+interface Type {
     label: string;
+    key: string;
     icon: React.ReactNode;
     color: string;
     bgColor: string;
@@ -32,7 +35,7 @@ interface Category {
 
 
 interface ToolbarButtonProps {
-    category: Category;
+    category: Type;
     index: number;
     onClick: (index: number) => void;
 }
@@ -40,7 +43,7 @@ interface ToolbarButtonProps {
 interface DialogProps {
     isOpen: boolean;
     onClose: () => void;
-    category: Category | null;
+    category: Type | null;
 }
 
 const EducationalToolbar: React.FC = () => {
@@ -50,7 +53,7 @@ const EducationalToolbar: React.FC = () => {
 
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<Type | null>(null);
     const handleFileDownload = useCallback(async (fileId: string, fileName: string) => {
 
         try {
@@ -99,9 +102,10 @@ const EducationalToolbar: React.FC = () => {
     }, []);
 
     // Playful, child-friendly categories with bright colors
-    const categories: Category[] = [
+    const types: Type[] = [
         {
             label: "Animais",
+            key: "ANIMALS",
             icon: <Cat size={24} />,
             color: "#FF6B6B", // Bright red
             bgColor: "#FFEEEE",
@@ -110,6 +114,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Cores",
+            key: "COLOURS",
             icon: <Palette size={24} />,
             color: "#FF9E40", // Orange
             bgColor: "#FFF3E0",
@@ -118,6 +123,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Meios de transporte",
+            key: "MEANS_OF_TRANSPORT",
             icon: <Car size={24} />,
             color: "#FFDA45", // Yellow
             bgColor: "#FFFDE7",
@@ -126,6 +132,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Profissões",
+            key: "PROFESSIONS",
             icon: <Briefcase size={24} />,
             color: "#48DA89", // Green
             bgColor: "#E8F5E9",
@@ -134,6 +141,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Vestuário",
+            key: "CLOTHING",
             icon: <Shirt size={24} />,
             color: "#64C9E2", // Light Blue
             bgColor: "#E3F2FD",
@@ -142,6 +150,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Linguagem",
+            key: "LANGUAGE",
             icon: <MessageSquare size={24} />,
             color: "#5B6DEE", // Blue
             bgColor: "#E8EAF6",
@@ -150,6 +159,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Figuras geométricas",
+            key: "GEOMETRIC_SHAPES",
             icon: <Triangle size={24} />,
             color: "#B278EF", // Purple
             bgColor: "#F3E5F5",
@@ -158,6 +168,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Corpo humano",
+            key: "HUMAN_BODY",
             icon: <User size={24} />,
             color: "#FF69B4", // Hot Pink
             bgColor: "#FCE4EC",
@@ -166,6 +177,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Números e letras",
+            key: "NUMBERS_AND_LETTERS",
             icon: <Hash size={24} />,
             color: "#FFA726", // Amber
             bgColor: "#FFF8E1",
@@ -174,6 +186,7 @@ const EducationalToolbar: React.FC = () => {
         },
         {
             label: "Motricidade",
+            key: "MOTOR_SKILLS",
             icon: <Smile size={24} />, // Using Smile icon for motricidade (lips/tongue motor skills)
             color: "#26C6DA", // Cyan
             bgColor: "#E0F7FA",
@@ -182,12 +195,37 @@ const EducationalToolbar: React.FC = () => {
         },
     ];
 
-    // Handle button click to open dialog
-    const handleCategoryClick = (index: number) => {
-        setActiveTab(index);
-        setSelectedCategory(categories[index]);
+
+    // Handle apple click with server action call
+    const handleCategoryClick = useCallback((index: number) => {
+
+        setIsLoading(true);
         setDialogOpen(true);
-    };
+        setActiveTab(index);
+        startTransition(async () => {
+            try {
+                // Call the server action to get activities for this phoneme
+                const result = await getActivitiesByType({
+                    type: types[index].key as ActivityType,
+                    includePrivate: false,
+                    limit: 5 // Limit to 5 activities for now
+                });
+
+                console.log("\n\n\n")
+                console.log(result)
+
+                setActivities(result.items as unknown as ActivityWithFiles[]);
+            } catch (error) {
+                console.error("Error fetching activities:", error);
+            } finally {
+
+                setIsLoading(false);
+
+            }
+        });
+    }, []);
+
+
     const handleCloseDialog = (): void => {
         setDialogOpen(false);
     };
@@ -206,7 +244,7 @@ const EducationalToolbar: React.FC = () => {
                         height: size,
                         left: `${Math.random() * 100}%`,
                         top: `${Math.random() * 100}%`,
-                        backgroundColor: categories[i % categories.length].color,
+                        backgroundColor: types[i % types.length].color,
                         zIndex: 1,
                     }}
                     initial={{
@@ -347,6 +385,8 @@ const EducationalToolbar: React.FC = () => {
     };
 
     const [activities, setActivities] = useState<ActivityWithFiles[]>([]);
+
+
     const [isPending, startTransition] = useTransition();
     const [isLoading, setIsLoading] = useState(false);
     const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
@@ -364,16 +404,16 @@ const EducationalToolbar: React.FC = () => {
                     className="absolute inset-0 border-8 border-transparent rounded-xl z-5"
                     style={{
                         background: `linear-gradient(90deg, 
-                ${categories[0].color}, 
-                ${categories[1].color}, 
-                ${categories[2].color}, 
-                ${categories[3].color}, 
-                ${categories[4].color}, 
-                ${categories[5].color}, 
-                ${categories[6].color}, 
-                ${categories[7].color},
-                ${categories[8].color},
-                ${categories[9].color}) border-box`,
+                ${types[0].color}, 
+                ${types[1].color}, 
+                ${types[2].color}, 
+                ${types[3].color}, 
+                ${types[4].color}, 
+                ${types[5].color}, 
+                ${types[6].color}, 
+                ${types[7].color},
+                ${types[8].color},
+                ${types[9].color}) border-box`,
                         mask: "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
                         maskComposite: "exclude",
                     }}
@@ -381,7 +421,9 @@ const EducationalToolbar: React.FC = () => {
 
                 {/* Main toolbar with fun, rounded buttons */}
                 <div className="relative grid grid-cols-5 md:grid-cols-10 gap-3 p-4 z-10">
-                    {categories.map((category, index) => (
+                    {types.map((category, index) => (
+
+
                         <ToolbarButton
                             key={index}
                             category={category}
@@ -393,8 +435,8 @@ const EducationalToolbar: React.FC = () => {
             </div>
 
             {/* Dialog component */}
-         <PhonemeDialog setDialogOpen={setDialogOpen} dialogOpen={dialogOpen} activeColor={categories[activeTab].color}
-                        activeTitle={categories[activeTab].label} activities={activities} isLoading={isLoading}
+         <PhonemeDialog setDialogOpen={setDialogOpen} dialogOpen={dialogOpen} activeColor={types[activeTab].color}
+                        activeTitle={types[activeTab].label} activities={activities} isLoading={isLoading}
                         isPending={isPending} downloadingFileId={downloadingFileId} downloadSuccess={downloadSuccess}
                         downloadError={downloadError} handleFileDownload={handleFileDownload}
                         handleCloseDialog={handleCloseDialog} type={"exercise"}/>

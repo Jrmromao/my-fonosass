@@ -2,6 +2,12 @@
 
 import { Activity, ActivityDifficulty, ActivityType, AgeRange } from "@prisma/client";
 
+export interface Option {
+    value: string;
+    label: string;
+}
+
+
 // Define the standard activity with files interface
 export interface ActivityWithFiles {
     id: string;

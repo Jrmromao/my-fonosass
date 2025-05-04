@@ -14,6 +14,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                                                        description = "Pop balloons to learn phonemes",
                                                        onBalloonPopped
                                                    }) => {
+
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const balloonsRef = useRef<Balloon[]>([]);
     const fragmentsRef = useRef<Fragment[]>([]);
@@ -27,7 +28,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     const [draggingBalloonId, setDraggingBalloonId] = useState<number | null>(null);
     const [lastClickTime, setLastClickTime] = useState<number>(0);
     const [lastClickBalloonId, setLastClickBalloonId] = useState<number | null>(null);
-// /   / Add these near your other state declarations
+    // Add these near your other state declarations
     const [activities, setActivities] = useState<ActivityWithFiles[]>([]);
     const [isPending, startTransition] = useTransition();
     const [isLoading, setIsLoading] = useState(false);

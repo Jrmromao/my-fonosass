@@ -65,11 +65,9 @@
 // export default phonemes;
 
 import {colorNames} from "@/components/Balloon/constants";
+import {Stripe} from "stripe";
+import {Option} from "@/types/activity";
 
-interface Option {
-    value: string;
-    label: string;
-}
 
 const phonemes: Option[] = [
     { value: "B", label: "B (boca)" },

@@ -46,6 +46,8 @@ export async function createActivity(formData: FormData) {
             return { success: false, error: "Unauthorized" };
         }
 
+        console.log(formData)
+
         // Extract data from FormData
         const name = formData.get("name") as string;
         const description = formData.get("description") as string;
@@ -67,7 +69,7 @@ export async function createActivity(formData: FormData) {
                 createdBy: { connect: { clerkUserId: userId} },
                 categories: {
                     connect: {
-                        id: "1"
+                        id: "216bd108-39d2-4f7e-a6fd-49b2a1b1f2e9"
                     }
                 }
             },
@@ -438,7 +440,8 @@ export async function deleteActivityFile(activityId: string, fileId: string) {
 
 
 export interface GetActivitiesByPhonemeParams {
-    phoneme: string
+    phoneme?: string
+    type?:  keyof typeof ActivityType
     includePrivate?: boolean
     limit?: number
     cursor?: string
@@ -543,6 +546,126 @@ export async function getActivitiesByPhoneme({
         throw new Error("Failed to fetch activities by phoneme")
     }
 }
+
+
+export async function getActivitiesByType({
+                                                 type,
+                                                 includePrivate = false,
+                                                 limit = 10,
+                                                 cursor,
+                                                 categoryIds = [],
+                                                 types = [],
+                                                 difficulties = [],
+                                                 ageRanges = [],
+                                             }: GetActivitiesByPhonemeParams) {
+    try {
+        const { userId } = await auth()
+
+        if (!type) {
+            return {
+                items: [],
+                nextCursor: null,
+            }
+        }
+
+        // Build where conditions
+        const where: any = {
+            type: type as ActivityType,
+            // If includePrivate is true and user is authenticated, include their private activities
+            // Otherwise only include public activities
+            OR: [
+                { isPublic: true },
+                ...(includePrivate && userId ? [{ createdById: userId, isPublic: false }] : []),
+            ],
+        }
+
+        // Add optional filters
+        if (categoryIds.length > 0) {
+            where.categories = {
+                some: {
+                    categoryId: {
+                        in: categoryIds,
+                    },
+                },
+            }
+        }
+
+        if (types.length > 0) {
+            where.type = {
+                in: types,
+            }
+        }
+
+        if (difficulties.length > 0) {
+            where.difficulty = {
+                in: difficulties,
+            }
+        }
+
+        if (ageRanges.length > 0) {
+            where.ageRange = {
+                in: ageRanges,
+            }
+        }
+
+        // If cursor is provided, fetch items after that cursor
+        if (cursor) {
+            where.id = {
+                gt: cursor,
+            }
+        }
+
+        // Query activities
+        const items = await prisma.activity.findMany({
+            where,
+            take: limit + 1, // Fetch one more to determine if there are more items
+            orderBy: {
+                createdAt: 'desc',
+            },
+            include: {
+                files: true,
+            },
+        })
+
+        // Check if there are more items
+        let nextCursor: string | null = null
+        if (items.length > limit) {
+            const nextItem = items.pop()
+            nextCursor = nextItem?.id ?? null
+        }
+
+        return {
+            items,
+            nextCursor,
+        }
+    } catch (error) {
+        console.error("Failed to fetch activities by type:", error)
+        throw new Error("Failed to fetch activities by type")
+    }
+}
+
+
+
+// get activities by type
+// export async function getActivitiesByType(type: string) {
+//     try {
+//
+//         console.log(type)
+//
+//         const activities = await prisma.activity.findMany({
+//             where: { type: type as ActivityType },
+//             include: {
+//                 files: true,
+//             },
+//         })
+//
+//         return activities
+//     } catch (error) {
+//         console.error("Failed to fetch activities by type:", error)
+//         throw new Error("Failed to fetch activities by type")
+//     }
+// }
+
 /**
  * Get activity categories
  */
