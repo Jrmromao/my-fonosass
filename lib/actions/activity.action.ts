@@ -37,18 +37,27 @@ type ActivityInput = {
     files: File[];
 };
 
+
 /**
  * Create a new activity
  */
+
+import fs from "fs/promises";
+import path from "path";
+import { Buffer } from "buffer";
+
+// Define ActivityType for type safety
+
 export async function createActivity(formData: FormData) {
+
     try {
         // Get user authentication
-        const { userId } = await  auth();
+        const { userId } = await auth();
         if (!userId) {
             return { success: false, error: "Unauthorized" };
         }
 
-        console.log(formData)
+        console.log(formData);
 
         // Extract data from FormData
         const name = formData.get("name") as string;
@@ -57,7 +66,6 @@ export async function createActivity(formData: FormData) {
         const difficulty = (formData.get("difficulty") as string) || "BEGINNER";
         const ageRange = (formData.get("ageRange") as string) || "ADULT";
         const phoneme = formData.get("phoneme") as string;
-
 
         // Create activity in database
         const activity = await prisma.activity.create({
@@ -68,17 +76,14 @@ export async function createActivity(formData: FormData) {
                 type: type as ActivityType,
                 difficulty: difficulty as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT",
                 ageRange: ageRange as "TODDLER" | "PRESCHOOL" | "CHILD" | "TEENAGER" | "ADULT",
-                createdBy: { connect: { clerkUserId: userId} },
+                createdBy: { connect: { clerkUserId: userId } },
                 categories: {
                     connect: {
-                        id: "216bd108-39d2-4f7e-a6fd-49b2a1b1f2e9"
-                    }
-                }
+                        id: "216bd108-39d2-4f7e-a6fd-49b2a1b1f2e9",
+                    },
+                },
             },
         });
-
-
-
 
         // Extract files from FormData
         const fileEntries = Array.from(formData.entries())
@@ -88,11 +93,21 @@ export async function createActivity(formData: FormData) {
         // Process files
         if (fileEntries.length > 0) {
             const user = await prisma.user.findUnique({
-                where: { clerkUserId: userId},
-                select: { id: true }
+                where: { clerkUserId: userId },
+                select: { id: true },
             });
 
             if (user) {
+                // Load the app logo
+                let logoBuffer: Buffer;
+                try {
+                    const logoPath = path.join(process.cwd(), "public", "logo.png"); // Adjust path as needed
+                    logoBuffer = await fs.readFile(logoPath);
+                } catch (error) {
+                    console.error("Error loading logo:", error);
+                    throw new Error("Failed to load watermark logo");
+                }
+
                 for (const file of fileEntries) {
                     if (!(file instanceof File)) continue;
                     let s3Result: any;
@@ -101,13 +116,20 @@ export async function createActivity(formData: FormData) {
                         const buffer = Buffer.from(await file.arrayBuffer());
 
                         if (file.type === "application/pdf") {
-                           s3Result = await pdfService.watermarkAndUploadPDF(
+                            s3Result = await pdfService.watermarkAndUploadPDF(
                                 buffer,
-                                "Fomosaas",
+                                logoBuffer, // Pass the logo Buffer
+                                "Fomosaas", // Keep original text watermark
                                 `${activity.id}/${file.name}`,
+                                {
+                                    logoScale: 0.5, // 10% of original logo size
+                                    tileSpacing: 150, // 150px between logos
+                                    logoOpacity: 0.2, // Subtle transparency
+                                    logoRotation: 30, // 30-degree rotation
+                                }
                             );
                         } else {
-                          s3Result =  await s3Service.uploadFile(
+                            s3Result = await s3Service.uploadFile(
                                 `${activity.id}/${file.name}`,
                                 buffer,
                                 file.type
@@ -140,7 +162,7 @@ export async function createActivity(formData: FormData) {
         console.error("Error creating activity:", error);
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to create activity"
+            error: error instanceof Error ? error.message : "Failed to create activity",
         };
     }
 }

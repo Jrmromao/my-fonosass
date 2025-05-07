@@ -4,6 +4,12 @@ import {Option} from "@/types/activity";
 export const APP_NAME = 'App do Joao'
 
 
+export enum Role {
+    ADMIN = 'ADMIN',
+    USER = 'USER'
+}
+
+
 // constants.ts
 export const phonemes: string[] = [
     "P", "L", "K", "T", "S", "CH", "LH", "F", "B", "N", "G", "D", "Z",
