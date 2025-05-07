@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { clerkMiddleware, createRouteMatcher, clerkClient } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
+import {Role} from "@/utils/constants";
 
 // Define custom session claims type
 
@@ -64,7 +65,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
         const metadata = user?.privateMetadata as unknown as UserMetadata;
 
         // Check if user is an admin or has an active subscription
-        const isAdmin = metadata?.role === 'ADMIN';
+        const isAdmin = metadata?.role ===  Role.ADMIN;
         const hasActiveSubscription =
             metadata?.subscription?.status ===  'active' &&
             ['PRO', 'pro'].includes(metadata?.subscription?.tier || '');
