@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {Webhook} from 'svix';
 import {WebhookEvent, clerkClient} from '@clerk/nextjs/server';
-import {Prisma, UserRole} from '@prisma/client';
+import {Prisma} from '@prisma/client';
 import {prisma} from "@/app/db";
 import S3Service from "@/services/S3Service";
 
@@ -73,9 +73,7 @@ async function createOrUpdateUser(clerkUserId: string, email: string, firstName:
                 create: {
                     clerkUserId,
                     email,
-                    fullName,
-                    role: UserRole.USER,
-                },
+                    fullName},
             });
         }, {
             timeout: 5000, // 5 second timeout for the transaction
@@ -94,7 +92,6 @@ async function createOrUpdateUser(clerkUserId: string, email: string, firstName:
         return false;
     }
 }
-
 export async function POST(req: Request) {
     // Implement basic rate limiting
     const now = Date.now();
@@ -277,10 +274,6 @@ async function processWebhook(req: Request): Promise<NextResponse> {
                         { status: 400 }
                     );
                 }
-
-
-
-
                 const primaryEmail = email_addresses?.[0]?.email_address;
 
                 if (!primaryEmail || !isValidEmail(primaryEmail)) {

@@ -43,11 +43,11 @@ export function Sidebar({ className }: SidebarProps) {
             icon: FileText,
             href: "/dashboard/games",
         },
-        {
-            title: "Configurações",
-            icon: Settings,
-            href: "/dashboard/settings",
-        }
+        // {
+        //     title: "Configurações",
+        //     icon: Settings,
+        //     href: "/dashboard/settings",
+        // }
     ]
 
     // Handle resize and set initial collapsed state

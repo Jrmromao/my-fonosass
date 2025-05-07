@@ -7,6 +7,9 @@ import { prisma } from '@/app/db';
 export async function POST(req: Request) {
     try {
 
+        console.log("Starting checkout creation");
+        console.log(req.body)
+
 
         if (!process.env.STRIPE_MONTHLY_PRICE_ID) {
             console.error('Missing STRIPE_MONTHLY_PRICE_ID environment variable');

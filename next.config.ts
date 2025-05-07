@@ -12,6 +12,14 @@ const config: NextConfig = {
     // Add compression
     compress: true,
 
+    // Increase the body size limit for Server Actions (if using App Router)
+    // Adjust the limit as needed for your file sizes
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '25mb', // Example limit, change to suit your needs
+        },
+    },
+
     // Advanced webpack optimizations if needed
     webpack: (config, { dev, isServer }) => {
         // Optimize only in production builds

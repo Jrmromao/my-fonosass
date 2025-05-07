@@ -14,8 +14,8 @@ interface DropzoneProps {
 
 export function Dropzone({
                              onFilesAdded,
-                             maxFiles = 5,
-                             maxSize = 5 * 1024 * 1024, // 5MB default
+                             maxFiles = 1,
+                             maxSize = 10 * 1024 * 1024, // 10MB default
                              accept = {
                                  'application/pdf': ['.pdf'],
                                  'image/*': ['.png', '.jpg', '.jpeg'],

@@ -7,9 +7,11 @@ import {$Enums, ActivityDifficulty, AgeRange} from "@prisma/client";
 import S3Service from "@/services/S3Service";
 import {auth} from "@clerk/nextjs/server";
 import ActivityType = $Enums.ActivityType;
+import PDFService from "@/services/PDFService";
 
 
 const s3Service = S3Service.getInstance();
+const pdfService = PDFService.getInstance();
 
 // Validation schemas
 const activitySchema = z.object({
@@ -63,7 +65,7 @@ export async function createActivity(formData: FormData) {
                 name,
                 description,
                 phoneme,
-                type: type as "SPEECH" | "LANGUAGE" | "COGNITIVE" | "MOTOR" | "SOCIAL" | "OTHER",
+                type: type as ActivityType,
                 difficulty: difficulty as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT",
                 ageRange: ageRange as "TODDLER" | "PRESCHOOL" | "CHILD" | "TEENAGER" | "ADULT",
                 createdBy: { connect: { clerkUserId: userId} },
@@ -93,14 +95,24 @@ export async function createActivity(formData: FormData) {
             if (user) {
                 for (const file of fileEntries) {
                     if (!(file instanceof File)) continue;
+                    let s3Result: any;
 
                     try {
                         const buffer = Buffer.from(await file.arrayBuffer());
-                        const s3Result = await s3Service.uploadFile(
-                            `${activity.id}/${file.name}`,
-                            buffer,
-                            file.type
-                        );
+
+                        if (file.type === "application/pdf") {
+                           s3Result = await pdfService.watermarkAndUploadPDF(
+                                buffer,
+                                "Fomosaas",
+                                `${activity.id}/${file.name}`,
+                            );
+                        } else {
+                          s3Result =  await s3Service.uploadFile(
+                                `${activity.id}/${file.name}`,
+                                buffer,
+                                file.type
+                            );
+                        }
 
                         await prisma.activityFile.create({
                             data: {
@@ -119,10 +131,6 @@ export async function createActivity(formData: FormData) {
                 }
             }
         }
-
-        const bucketObjects = await s3Service.listFiles(userId);
-
-        console.log(bucketObjects)
 
         revalidatePath("/activities");
         revalidatePath("/dashboard/games");

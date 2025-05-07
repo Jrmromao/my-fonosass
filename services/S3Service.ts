@@ -175,6 +175,9 @@ class S3Service {
         try {
             await this.ensureMainBucketExists();
 
+
+
+
             const upload = new Upload({
                 client: this.s3Client,
                 params: {
@@ -185,6 +188,9 @@ class S3Service {
                     ServerSideEncryption: "AES256",
                 },
             });
+
+
+
 
             const result = await upload.done();
             console.log("File uploaded successfully");

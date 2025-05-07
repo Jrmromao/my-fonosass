@@ -52,11 +52,11 @@ export default function FomosaasLanding() {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center space-x-8">
-                            <Link  href="#como-funciona"
-                                className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
-                            >
-                                Como Funciona
-                            </Link>
+                            {/*<Link  href="#como-funciona"*/}
+                            {/*    className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"*/}
+                            {/*>*/}
+                            {/*    Como Funciona*/}
+                            {/*</Link>*/}
                             <Link
                                 href="#assinatura"
                                 className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
@@ -737,14 +737,14 @@ export default function FomosaasLanding() {
                                 Suporte
                             </h3>
                             <ul className="space-y-3">
-                                <li>
-                                    <Link
-                                        href="/ajuda"
-                                        className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                                    >
-                                        Central de Ajuda
-                                    </Link>
-                                </li>
+                                {/*<li>*/}
+                                {/*    <Link*/}
+                                {/*        href="/ajuda"*/}
+                                {/*        className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"*/}
+                                {/*    >*/}
+                                {/*        Central de Ajuda*/}
+                                {/*    </Link>*/}
+                                {/*</li>*/}
                                 <li>
                                     <Link
                                         href="/contato"
