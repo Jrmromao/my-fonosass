@@ -32,8 +32,8 @@ const ActivityStatsBar: React.FC<ActivityStatsBarProps> = ({
         },
         {
             id: "files",
-            label: "Execicios para Linguagem",
-            value: activities.filter(a => a.phoneme === "").length,
+            label: "Atividades Diversas",
+            value: activities.filter(a => a.type !== "OTHER").length,
             icon: FileDown,
             color: "sunshine"
         },

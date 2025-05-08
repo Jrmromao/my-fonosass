@@ -1,6 +1,8 @@
-"use client"
+// Your provided code - it looks correct for client-side handling
+// The issue is likely external to this specific file's logic
+"use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ListFilter, ChevronDown } from "lucide-react";
@@ -26,10 +28,12 @@ import EmptyState from "@/components/layout/EmptyState";
 import ActivityStatsBar from "@/components/layout/ActivityStatsBar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DataTable } from "@/components/table/data-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import {Role} from "@/utils/constants";
+import ActivityStatsBarPlaceholder from "@/components/layout/ActivityStatsBarPlaceholder";
+import {DataTable} from "@/components/table/data-table";
 
+// Keep the QueryClientProvider setup outside
 const queryClient = new QueryClient();
 
 export default function ActivitiesPage() {
@@ -40,101 +44,6 @@ export default function ActivitiesPage() {
     );
 }
 
-function ActivityFilters(
-    searchTerm: string,
-    setSearchTerm: (value: string | ((prevState: string) => string)) => void,
-    activeFilterCount: number,
-    clearFilters: () => void,
-    isFilterOpen: boolean,
-    setIsFilterOpen: (value: boolean | ((prevState: boolean) => boolean)) => void,
-    availableDifficultyLevels: string[],
-    availableTypeOfActivity: string[],
-    filters: {
-        difficultyLevels: string[];
-        typeOfActivity: string[];
-        createdAfter: string | null;
-    },
-    toggleFilter: (type: keyof typeof filters, value: string) => void,
-    mainTab: string
-) {
-    return (
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mt-6">
-            {/* Search */}
-            <div className="relative flex-1 w-full sm:max-w-md">
-                {/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
-                {/*<Input*/}
-                {/*    placeholder="Buscar atividades..."*/}
-                {/*    className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"*/}
-                {/*    value={searchTerm}*/}
-                {/*    onChange={(e) => setSearchTerm(e.target.value)}*/}
-                {/*/>*/}
-            </div>
-
-            {/* Filter Buttons */}
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-                {activeFilterCount > 0 && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearFilters}
-                        className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                    >
-                        <span>Limpar Filtros</span>
-                    </Button>
-                )}
-                <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="relative border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
-                        >
-                            <ListFilter className="w-4 h-4 mr-2" />
-                            Filtros
-                            {activeFilterCount > 0 && (
-                                <Badge className="ml-2 px-2 h-5 rounded-full bg-blue-500 text-white border-none">
-                                    {activeFilterCount}
-                                </Badge>
-                            )}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800 shadow-lg rounded-md">
-                        <DropdownMenuLabel className="text-gray-700 dark:text-gray-300">Filtrar por</DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
-                        <div className="p-2">
-                            <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Nível de dificuldade</h4>
-                            {availableDifficultyLevels.map((level) => (
-                                <DropdownMenuCheckboxItem
-                                    key={level}
-                                    checked={filters.difficultyLevels.includes(level)}
-                                    onCheckedChange={() => toggleFilter("difficultyLevels", level)}
-                                    className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                >
-                                    {level}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                        </div>
-                        {mainTab !== "types" && availableTypeOfActivity.length > 0 && (
-                            <div className="p-2">
-                                <h4 className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Tipo de Atividade</h4>
-                                {availableTypeOfActivity.map((type) => (
-                                    <DropdownMenuCheckboxItem
-                                        key={type}
-                                        checked={filters.typeOfActivity.includes(type)}
-                                        onCheckedChange={() => toggleFilter("typeOfActivity", type)}
-                                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                    >
-                                        {type}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                            </div>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </div>
-    );
-}
 
 function ActivitiesContent() {
     const [searchTerm, setSearchTerm] = useState<string>("");
@@ -144,11 +53,11 @@ function ActivitiesContent() {
     const [selectedPhoneme, setSelectedPhoneme] = useState("all");
     const [selectedType, setSelectedType] = useState("all");
 
-    // Client-side filters
+    // Client-side filters (difficulty and potentially type when on phonemes tab)
     const [filters, setFilters] = useState({
         difficultyLevels: [] as string[],
         createdAfter: null as string | null,
-        typeOfActivity: [] as string[],
+        typeOfActivity: [] as string[], // Used only when mainTab is 'phonemes'
     });
 
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
@@ -159,72 +68,111 @@ function ActivitiesContent() {
     const [availableTypeOfActivity, setAvailableTypeOfActivity] = useState<string[]>([]);
 
     // Use React Query to fetch and cache activities
+    // Include mainTab in the queryKey to refetch data when the tab changes
     const { data, isLoading } = useQuery({
-        queryKey: ["activities", debouncedSearch],
+        queryKey: ["activities", debouncedSearch, mainTab], // ADD mainTab here
         queryFn: async () => {
+            console.log("Fetching activities for tab:", mainTab); // Log to see when refetch happens
+            // You *could* pass mainTab and potentially selectedPhoneme/selectedType
+            // to your getActivities action here for server-side filtering,
+            // if your backend action supports it. For now, we just refetch all
+            // based on search term and rely on client-side filtering.
             const result = await getActivities({
                 searchTerm: debouncedSearch,
                 limit: 50,
+                // Example of passing tab/filter to backend if supported:
+                // filterCategory: mainTab,
+                // filterValue: mainTab === 'phonemes' ? selectedPhoneme : selectedType,
             });
 
             if (result.success && result.activities) {
+                // Process all activities fetched to extract available filters
                 if (result.activities.length > 0) {
-                    const phonemes = [...new Set(result.activities.map((item) => item.phoneme).filter(Boolean))] as string[];
-                    const difficulties = [...new Set(result.activities.map((item) => item.difficulty).filter(Boolean))] as string[];
-                    const types = [...new Set(
+                    // Extract phonemes, difficulties, and types from the *entire* fetched dataset
+                    // to populate the filter options correctly regardless of the current tab/selection.
+                    const allPhonemes = [...new Set(result.activities.map((item) => item.phoneme).filter(Boolean))] as string[];
+                    const allDifficulties = [...new Set(result.activities.map((item) => item.difficulty).filter(Boolean))] as string[];
+                    const allTypes = [...new Set(
                         result.activities
-                            .filter(item => item.type !== "OTHER")
+                            .filter(item => item.type && item.type !== "OTHER") // Exclude "OTHER" from type filters
                             .map(item => item.type)
                     )] as string[];
 
-
-                    setAvailablePhonemes(phonemes);
-                    setAvailableDifficultyLevels(difficulties);
-                    setAvailableTypeOfActivity(types);
+                    setAvailablePhonemes(allPhonemes);
+                    setAvailableDifficultyLevels(allDifficulties);
+                    setAvailableTypeOfActivity(allTypes);
+                } else {
+                    setAvailablePhonemes([]);
+                    setAvailableDifficultyLevels([]);
+                    setAvailableTypeOfActivity([]);
                 }
                 return result.activities as unknown as ActivityWithFiles[];
             }
+            // Handle error or empty result
+            setAvailablePhonemes([]);
+            setAvailableDifficultyLevels([]);
+            setAvailableTypeOfActivity([]);
             return [] as ActivityWithFiles[];
         },
+        // Optional: You can add a staleTime or gcTime if needed
+        // staleTime: 5 * 60 * 1000, // Data is considered fresh for 5 minutes
     });
 
     const activities = data || [];
 
-    // Apply client-side filters
+    // --- Corrected Client-side filtering logic ---
     const filteredActivities = useMemo(() => {
-        let filtered = activities;
+        let currentFiltered = activities;
 
-        // Filter based on main tab and selected phoneme/type
-        if (mainTab === "phonemes" && selectedPhoneme !== "all") {
-            filtered = filtered.filter((a) => a.phoneme === selectedPhoneme);
-        } else if (mainTab === "types" && selectedType !== "all") {
-            filtered = filtered.filter((a) => a.type === selectedType);
+        // Apply primary filter based on the active main tab
+        if (mainTab === "phonemes") {
+            // On phonemes tab, show activities with a defined phoneme initially
+            currentFiltered = currentFiltered.filter(a => a.phoneme && a.phoneme !== '');
+            // Then apply the specific selected phoneme filter if not "all"
+            if (selectedPhoneme !== "all") {
+                currentFiltered = currentFiltered.filter((a) => a.phoneme === selectedPhoneme);
+            }
+        } else if (mainTab === "types") {
+            // On types tab, show activities with a specific type initially (exclude "OTHER")
+            currentFiltered = currentFiltered.filter(a => a.type && a.type !== 'OTHER');
+            // Then apply the specific selected type filter if not "all"
+            if (selectedType !== "all") {
+                currentFiltered = currentFiltered.filter((a) => a.type === selectedType);
+            }
         }
 
-        // Apply additional filters
-        return filtered.filter((activity) => {
+        // Apply secondary filters from the dropdown (difficulty, and type if on phonemes tab)
+        currentFiltered = currentFiltered.filter((activity) => {
+            // Difficulty filter applies to both tabs
             if (filters.difficultyLevels.length > 0 && !filters.difficultyLevels.includes(activity.difficulty)) {
                 return false;
             }
-            if (filters.createdAfter && new Date(activity.createdAt) < new Date(filters.createdAfter)) {
+            // Type filter from dropdown applies ONLY if we are on the 'phonemes' tab
+            // because on the 'types' tab, `selectedType` is the primary filter handled above.
+            if (mainTab === "phonemes" && filters.typeOfActivity.length > 0 && !filters.typeOfActivity.includes(activity.type)) {
                 return false;
             }
-            if (filters.typeOfActivity.length > 0 && !filters.typeOfActivity.includes(activity.type)) {
-                return false;
-            }
+            // createdAfter filter is commented out, but would go here...
+            // if (filters.createdAfter && new Date(activity.createdAt) < new Date(filters.createdAfter)) {
+            //     return false;
+            // }
             return true;
         });
-    }, [activities, filters, mainTab, selectedPhoneme, selectedType]);
 
+        return currentFiltered;
+    }, [activities, filters, mainTab, selectedPhoneme, selectedType]); // Depend on relevant states
+
+    // DEFINE columns using useMemo
     const columns = useMemo(
         () =>
             activitiesColumns({
                 role: role || "USER",
+                isPhoneme: mainTab === "phonemes", // This correctly sets the prop
             }),
-        [role]
+        [role, mainTab]
     );
 
-    // Toggle filter value
+    // Toggle filter value (Keep as is)
     const toggleFilter = (type: keyof typeof filters, value: string): void => {
         setFilters((prev) => {
             if (type === "createdAfter") {
@@ -247,7 +195,7 @@ function ActivitiesContent() {
         });
     };
 
-    // Clear all filters
+    // Clear all filters (Keep as is)
     const clearFilters = (): void => {
         setFilters({
             difficultyLevels: [],
@@ -256,9 +204,20 @@ function ActivitiesContent() {
         });
     };
 
-    // Count active filters
+    // Count active filters (Keep as is)
     const activeFilterCount =
         filters.difficultyLevels.length + (filters.createdAfter ? 1 : 0) + filters.typeOfActivity.length;
+
+
+    // Effect to reset filters when the main tab changes
+    useEffect(() => {
+        // Reset dropdown filters when switching main tabs
+        clearFilters();
+        // selectedPhoneme and selectedType are also reset in the onValueChange handler for Tabs
+        setSelectedPhoneme("all"); // Ensure these are reset on tab change
+        setSelectedType("all");
+    }, [mainTab]); // Run this effect whenever mainTab changes
+
 
     return (
         <div className="h-full bg-gray-50 dark:bg-gray-950">
@@ -275,29 +234,25 @@ function ActivitiesContent() {
                         {!isLoading && role === Role.ADMIN && (
                             <NewActivityDialog
                                 onSuccess={() => {
-                                    queryClient.invalidateQueries({ queryKey: ["activities"] });
+                                    // Invalidate queries relevant to the current tab to refetch
+                                    queryClient.invalidateQueries({ queryKey: ["activities", debouncedSearch, mainTab] });
                                 }}
                             />
                         )}
                     </div>
-                    {/*{ActivityFilters(*/}
-                    {/*    searchTerm,*/}
-                    {/*    setSearchTerm,*/}
-                    {/*    activeFilterCount,*/}
-                    {/*    clearFilters,*/}
-                    {/*    isFilterOpen,*/}
-                    {/*    setIsFilterOpen,*/}
-                    {/*    availableDifficultyLevels,*/}
-                    {/*    availableTypeOfActivity,*/}
-                    {/*    filters,*/}
-                    {/*    toggleFilter,*/}
-                    {/*    mainTab*/}
-                    {/*)}*/}
+                    {/* ActivityFilters component - if its contents are moved, you can remove this call */}
+                    {/*{ActivityFilters(...)}*/}
                 </div>
             </div>
 
             {/* Stats Bar */}
-            <ActivityStatsBar activities={activities} availablePhonemes={availablePhonemes} isLoading={isLoading} />
+            {isLoading ? (
+                <ActivityStatsBarPlaceholder />
+            ) : (
+                // Pass all activities to the stats bar so it can calculate totals across all categories
+                <ActivityStatsBar activities={activities} availablePhonemes={availablePhonemes} isLoading={isLoading} />
+            )}
+
 
             {/* Active Filters */}
             {activeFilterCount > 0 && (
@@ -316,7 +271,8 @@ function ActivitiesContent() {
                             </button>
                         </Badge>
                     ))}
-                    {filters.typeOfActivity.map((type) => (
+                    {/* Only show Type filter badge if on the phonemes tab */}
+                    {mainTab === "phonemes" && filters.typeOfActivity.map((type) => (
                         <Badge
                             key={type}
                             className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 border-none"
@@ -343,20 +299,21 @@ function ActivitiesContent() {
                                 setMainTab(value);
                                 setSelectedPhoneme("all");
                                 setSelectedType("all");
+                                clearFilters(); // Also clear dropdown filters on tab change
+                                console.log("Tab changed to:", value);
                             }}
                             className="w-full"
                         >
                             <TabsList
-                                className="relative flex justify-start bg-gray-100 dark:bg-gray-800 rounded-t-md overflow-x-auto scrollbar-hide scroll-smooth snap-x after:content-[''] after:absolute after:right-0 after:top-0 after:h-full after:w-6 after:bg-gradient-to-l after:from-gray-100 after:to-transparent dark:after:from-gray-800"
-                            >
+                                className="flex justify-start bg-gray-100 dark:bg-gray-800 p-1 gap-1 rounded-lg"                            >
                                 <TabsTrigger
                                     value="phonemes"
                                     className="snap-start min-w-max px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-               data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
-               data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
-               data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
-               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-               transition-all rounded-md"
+                               data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
+                               data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
+                               data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
+                               transition-all rounded-md"
                                     aria-label="Visualizar atividades por fonemas"
                                 >
                                     Fonemas
@@ -365,35 +322,53 @@ function ActivitiesContent() {
                                 <TabsTrigger
                                     value="types"
                                     className="snap-start min-w-max px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-               data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
-               data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
-               data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
-               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-               transition-all rounded-md"
+                               data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
+                               data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
+                               data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
+                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
+                               transition-all rounded-md"
                                     aria-label="Visualizar atividades por tipos"
                                 >
-                                    Tipos de Atividade
+                                    Atividades Diversas
                                 </TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="phonemes" className="p-6">
+                                {/* CardHeader for Phonemes Tab - Modified */}
                                 <Card className="border-gray-200 dark:border-gray-800">
-                                    <CardHeader>
-                                        <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                                            Atividades por Fonema
-                                        </CardTitle>
-                                        <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                                            Explore atividades agrupadas por fonema ou selecione um fonema específico.
-                                        </CardDescription>
+                                    <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between"> {/* Added responsive flex classes */}
+                                        {/* Wrapper for Title and Description - takes full width on small screens */}
+                                        <div className="w-full sm:w-auto flex flex-col space-y-1 md:space-y-0">
+                                            <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                                                Atividades por Fonema
+                                            </CardTitle>
+                                            <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                                                Explore atividades agrupadas por fonema ou selecione um fonema específico.
+                                            </CardDescription>
+                                        </div>
+
+                                        {/* Search Input Container */}
+                                        <div className="relative w-full max-w-xs sm:ml-auto"> {/* sm:ml-auto pushes to right on larger screens */}
+                                            {/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
+                                            {/*<Input*/}
+                                            {/*    placeholder="Buscar atividades..."*/}
+                                            {/*    className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"*/}
+                                            {/*    value={searchTerm}*/}
+                                            {/*    onChange={(e) => setSearchTerm(e.target.value)}*/}
+                                            {/*/>*/}
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
+                                        {/* Phoneme Filter */}
                                         <div className="flex items-center justify-between mb-4">
                                             <PhonemeFilter
                                                 selectedPhoneme={selectedPhoneme}
                                                 setSelectedPhoneme={setSelectedPhoneme}
                                                 availablePhonemes={availablePhonemes}
                                             />
+                                            {/* Include search and dropdown filters here if desired - Search is now in header */}
                                         </div>
+                                        {/* DataTable or Skeleton/EmptyState */}
                                         {isLoading ? (
                                             <div className="space-y-4">
                                                 <Skeleton className="h-10 w-full" />
@@ -407,17 +382,34 @@ function ActivitiesContent() {
                                     </CardContent>
                                 </Card>
                             </TabsContent>
+
                             <TabsContent value="types" className="p-6">
+                                {/* CardHeader for Types Tab - Modified (Same structure as Phonemes tab) */}
                                 <Card className="border-gray-200 dark:border-gray-800">
-                                    <CardHeader>
-                                        <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                                            Atividades por Tipo
-                                        </CardTitle>
-                                        <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                                            Explore atividades agrupadas por tipo ou selecione um tipo específico.
-                                        </CardDescription>
+                                    <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between"> {/* Added responsive flex classes */}
+                                        {/* Wrapper for Title and Description - takes full width on small screens */}
+                                        <div className="w-full sm:w-auto flex flex-col space-y-1 md:space-y-0">
+                                            <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                                                Atividades por Tipo
+                                            </CardTitle>
+                                            <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                                                Explore atividades agrupadas por tipo ou selecione um tipo específico.
+                                            </CardDescription>
+                                        </div>
+
+                                        {/* Search Input Container */}
+                                        <div className="relative w-full max-w-xs sm:ml-auto"> {/* sm:ml-auto pushes to right on larger screens */}
+                                            {/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
+                                            {/*<Input*/}
+                                            {/*    placeholder="Buscar atividades..." // You might change placeholder text*/}
+                                            {/*    className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"*/}
+                                            {/*    value={searchTerm}*/}
+                                            {/*    onChange={(e) => setSearchTerm(e.target.value)}*/}
+                                            {/*/>*/}
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
+                                        {/* Type Filter */}
                                         <div className="flex items-center justify-between mb-4">
                                             <TypeFilter
                                                 selectedType={selectedType}
@@ -425,6 +417,7 @@ function ActivitiesContent() {
                                                 availableTypes={availableTypeOfActivity}
                                             />
                                         </div>
+                                        {/* DataTable or Skeleton/EmptyState */}
                                         {isLoading ? (
                                             <div className="space-y-4">
                                                 <Skeleton className="h-10 w-full" />

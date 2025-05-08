@@ -1,5 +1,5 @@
 import React from "react";
-import { Row } from "@tanstack/react-table";
+import {Row} from "@tanstack/react-table";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -8,22 +8,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface DataTableRowActionsProps<TData> {
-    row: Row<TData>;
-    onView?: (value: TData) => void;
-    onDelete?: (value: TData) => void;
-    onUpdate?: (value: TData) => void;
-    onDisable?: (value: TData) => void;
-    className?: string;
+    row: Row<TData>,
+    onView?: (value: TData) => void,
+    onDelete?: (value: TData) => void,
+    onUpdate?: (value: TData) => void,
+    onDisable?: (value: TData) => void,
+    className?: string,
+    role?: string | undefined
 }
 
-const DataTableRowActions = <TData,>({
-                                         row,
-                                         onView,
-                                         onDelete,
-                                         onUpdate,
-                                         onDisable,
-                                         className = "",
-                                     }: DataTableRowActionsProps<TData>) => {
+const DataTableRowActions = <TData, >({
+                                          row,
+                                          onView,
+                                          onDelete,
+                                          onUpdate,
+                                          onDisable,
+                                          className = "",
+                                          role
+                                      }: DataTableRowActionsProps<TData>) => {
     const handleDisable = () => {
 
     };

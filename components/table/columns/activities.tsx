@@ -18,58 +18,63 @@ import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
 import DataTableRowActions from "@/components/table/DataTableRowActions";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils"; // Assuming cn is imported and used elsewhere if not here
 import { ActivityDifficulty, ActivityType, AgeRange } from "@prisma/client";
 import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
 import { ActivityWithFiles } from "@/types/activity";
+import { Role } from "@/utils/constants"; // Assuming Role is used in DataTableRowActions or elsewhere
 
 // Modern badge variants with more subtle, professional colors
 const getDifficultyVariant = (difficulty: ActivityDifficulty) => {
     const variants = {
-        BEGINNER: "bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800",
-        INTERMEDIATE: "bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-        ADVANCED: "bg-orange-50 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 border-orange-200 dark:border-orange-800",
-        EXPERT: "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300 border-red-200 dark:border-red-800"
+        BEGINNER: "bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800",
+        INTERMEDIATE: "bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800",
+        ADVANCED: "bg-orange-50 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 border border-orange-200 dark:border-orange-800",
+        EXPERT: "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800"
     };
 
-    return variants[difficulty] || "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700";
+    // Added 'border' class to all variants for consistency with the gray fallback
+    return variants[difficulty] || "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700";
 };
 
 const getTypeVariant = (type: ActivityType) => {
     const variants = {
-        SPEECH: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-        LANGUAGE: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
-        COGNITIVE: "bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-        MOTOR: "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
-        SOCIAL: "bg-pink-50 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border-pink-200 dark:border-pink-800",
-        OTHER: "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700",
-        ANIMALS: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-        COLOURS: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
-        MEANS_OF_TRANSPORT: "bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-        CLOTHING: "bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800",
-        PROFESSIONS: "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300 border-red-200 dark:border-red-800",
-        GEOMETRIC_SHAPES: "bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300 border-lime-200 dark:border-lime-800",
-        NUMBERS_AND_LETTERS: "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800",
-        HUMAN_BODY: "bg-pink-50 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border-pink-200 dark:border-pink-800",
-        MOTOR_SKILLS: "bg-orange-50 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 border-orange-200 dark:border-orange-800",
+        SPEECH: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800",
+        LANGUAGE: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800",
+        COGNITIVE: "bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800",
+        MOTOR: "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800",
+        SOCIAL: "bg-pink-50 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border border-pink-200 dark:border-pink-800",
+        OTHER: "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700",
+        ANIMALS: "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800",
+        COLOURS: "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800",
+        MEANS_OF_TRANSPORT: "bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800",
+        CLOTHING: "bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800",
+        PROFESSIONS: "bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-300 border border-red-200 dark:border-red-800",
+        GEOMETRIC_SHAPES: "bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300 border border-lime-200 dark:border-lime-800",
+        NUMBERS_AND_LETTERS: "bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800",
+        HUMAN_BODY: "bg-pink-50 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 border border-pink-200 dark:border-pink-800",
+        MOTOR_SKILLS: "bg-orange-50 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300 border border-orange-200 dark:border-orange-800",
     };
 
+    // Added 'border' class to all variants for consistency with the gray fallback
     return variants[type] || variants.OTHER;
 };
 
 const getAgeRangeVariant = (ageRange: AgeRange) => {
     const variants = {
-        TODDLER: "bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 border-sky-200 dark:border-sky-800",
-        PRESCHOOL: "bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300 border-teal-200 dark:border-teal-800",
-        CHILD: "bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-300 border-green-200 dark:border-green-800",
-        TEENAGER: "bg-violet-50 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 border-violet-200 dark:border-violet-800",
-        ADULT: "bg-slate-50 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300 border-slate-200 dark:border-slate-800"
+        TODDLER: "bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800",
+        PRESCHOOL: "bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300 border border-teal-200 dark:border-teal-800",
+        CHILD: "bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-300 border border-green-200 dark:border-green-800",
+        TEENAGER: "bg-violet-50 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 border border-violet-200 dark:border-violet-800",
+        ADULT: "bg-slate-50 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
     };
 
-    return variants[ageRange] || "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-700";
+    // Added 'border' class to all variants for consistency with the gray fallback
+    return variants[ageRange] || "bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700";
 };
 
-// Redesigned DownloadButton component
+
+// Redesigned DownloadButton component (Kept as is, seems correct)
 const DownloadButton = ({ file, activityId }: {
     file: NonNullable<ActivityWithFiles['files']>[0],
     activityId: string
@@ -88,7 +93,7 @@ const DownloadButton = ({ file, activityId }: {
             if (result.success) {
                 // Create a temporary link element
                 const link = document.createElement('a');
-                //@ts-ignore
+                //@ts-ignore // Added ts-ignore because result.url might not be explicitly typed as string
                 link.href = result.url;
                 link.setAttribute('download', file.name);
 
@@ -182,16 +187,19 @@ const DownloadButton = ({ file, activityId }: {
 interface ActivitiesColumnsProps {
     onDelete?: (value: ActivityWithFiles) => void;
     onView?: (value: ActivityWithFiles) => void;
-    role?: string
+    role?: string; // Assuming Role is used in DataTableRowActions
+    isPhoneme?: boolean; // Prop to control the phoneme column
 }
 
 export const activitiesColumns = ({
                                       onDelete,
                                       onView,
+                                      isPhoneme = false, // Default isPhoneme to false
                                       role
                                   }: ActivitiesColumnsProps = {}): ColumnDef<ActivityWithFiles>[] => {
-    // Define all the columns
-    const columns: ColumnDef<ActivityWithFiles>[] = [
+
+    // Define the columns that are always present
+    const baseColumns: ColumnDef<ActivityWithFiles>[] = [
         {
             accessorKey: "name",
             header: ({column}) => {
@@ -215,19 +223,7 @@ export const activitiesColumns = ({
                 );
             },
         },
-        {
-            accessorKey: "type",
-            header: "Tipo",
-            cell: ({row}) => {
-                const activity = row.original;
-                return (
-                    <div
-                        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getTypeVariant(activity.type)}`}>
-                        {activity.type}
-                    </div>
-                );
-            },
-        },
+
         {
             accessorKey: "difficulty",
             header: "Dificuldade",
@@ -254,38 +250,61 @@ export const activitiesColumns = ({
                 );
             },
         },
+    ];
+
+    // Define the phoneme column separately
+    const phonemeColumn: ColumnDef<ActivityWithFiles> = {
+        accessorKey: "phoneme",
+        header: ({column}) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    className="font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                >
+                    Fonema
+                    <ArrowUpDown className="ml-2 h-4 w-4 opacity-50"/>
+                </Button>
+            );
+        },
+        cell: ({row}) => {
+            const activity = row.original;
+            return activity.phoneme ? (
+                <div className="flex items-center">
+                    <div
+                        className="bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 p-1.5 rounded-md mr-2">
+                        <Volume2 className="h-3.5 w-3.5"/>
+                    </div>
+                    <span className="font-medium text-gray-900 dark:text-white">{activity.phoneme}</span>
+                </div>
+            ) : (
+                <span className="text-gray-500 dark:text-gray-400 flex items-center">
+                    <CircleSlash className="h-3.5 w-3.5 mr-1.5"/>
+                    Não definido
+                </span>
+            );
+        },
+    };
+
+
+    const activityTypeColumn: ColumnDef<ActivityWithFiles> =
         {
-            accessorKey: "phoneme",
-            header: ({column}) => {
-                return (
-                    <Button
-                        variant="ghost"
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                    >
-                        Fonema
-                        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50"/>
-                    </Button>
-                );
-            },
+            accessorKey: "type",
+            header: "Tipo de Atividade",
             cell: ({row}) => {
                 const activity = row.original;
-                return activity.phoneme ? (
-                    <div className="flex items-center">
-                        <div
-                            className="bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 p-1.5 rounded-md mr-2">
-                            <Volume2 className="h-3.5 w-3.5"/>
-                        </div>
-                        <span className="font-medium text-gray-900 dark:text-white">{activity.phoneme}</span>
+                return (
+                    <div
+                        className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getTypeVariant(activity.type)}`}>
+                        {activity.type}
                     </div>
-                ) : (
-                    <span className="text-gray-500 dark:text-gray-400 flex items-center">
-            <CircleSlash className="h-3.5 w-3.5 mr-1.5"/>
-            Não definido
-          </span>
                 );
             },
-        },
+        }
+
+
+    // Define the trailing columns
+    const trailingColumns: ColumnDef<ActivityWithFiles>[] = [
         {
             accessorKey: "files",
             header: "Arquivos",
@@ -297,9 +316,9 @@ export const activitiesColumns = ({
                 if (!hasFiles) {
                     return (
                         <span className="text-gray-500 dark:text-gray-400 flex items-center">
-              <XCircle className="h-3.5 w-3.5 mr-1.5"/>
-              Sem arquivo
-            </span>
+                            <XCircle className="h-3.5 w-3.5 mr-1.5"/>
+                            Sem arquivo
+                        </span>
                     );
                 }
 
@@ -311,9 +330,9 @@ export const activitiesColumns = ({
                 // Fallback in case of empty array with undefined first element
                 return (
                     <span className="text-gray-500 dark:text-gray-400 flex items-center">
-            <XCircle className="h-3.5 w-3.5 mr-1.5"/>
-            Arquivo inválido
-          </span>
+                        <XCircle className="h-3.5 w-3.5 mr-1.5"/>
+                        Arquivo inválido
+                    </span>
                 );
             },
         },
@@ -344,19 +363,32 @@ export const activitiesColumns = ({
         {
             id: "actions",
             cell: ({row}) => {
+                // Pass the role to DataTableRowActions if it needs it
                 return (
                     <DataTableRowActions
                         row={row}
                         onDelete={onDelete}
                         onView={onView}
+                        role={role} // Pass role here
                     />
                 );
             },
         },
-
-
     ];
 
+    // Build the final columns array
+    const finalColumns: ColumnDef<ActivityWithFiles>[] = [...baseColumns];
 
-    return columns;
-}
+    if (isPhoneme) {
+        // Insert the phoneme column after base columns if needed
+        finalColumns.push(phonemeColumn);
+    }
+    else {
+        finalColumns.push(activityTypeColumn);
+    }
+
+    // Add the trailing columns
+    finalColumns.push(...trailingColumns);
+
+    return finalColumns;
+};
