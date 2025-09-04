@@ -1,0 +1,84 @@
+name: CI - Continuous Integration
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop, feature/*]
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run TypeScript check
+        run: yarn tsc --noEmit
+
+      - name: Run tests
+        run: yarn test
+        env:
+          NODE_ENV: test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-node-${{ matrix.node-version }}
+          path: |
+            coverage/
+            test-results/
+
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run ESLint
+        run: yarn lint
+
+      - name: Check for TODO/FIXME comments
+        run: |
+          if grep -r "TODO\|FIXME" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" .; then
+            echo "❌ Found TODO/FIXME comments in code"
+            exit 1
+          else
+            echo "✅ No TODO/FIXME comments found"
+          fi
+
+      - name: Check for console.log statements
+        run: |
+          if grep -r "console\.log" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" . --exclude-dir=node_modules --exclude-dir=.next; then
+            echo "❌ Found console.log statements in code"
+            exit 1
+          else
+            echo "✅ No console.log statements found"
+          fi

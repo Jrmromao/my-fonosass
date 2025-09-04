@@ -1,0 +1,127 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: 'Custom version (optional, overrides release_type)'
+        required: false
+        type: string
+      release_notes:
+        description: 'Release notes'
+        required: false
+        default: 'Manual release created via GitHub Actions'
+        type: string
+
+jobs:
+  create-release:
+    name: Create Manual Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          # Get the latest tag, defaulting to v1.4.0 if none exists
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.4.0")
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate version
+        id: new_version
+        run: |
+          if [ -n "${{ inputs.custom_version }}" ]; then
+            # Use custom version if provided
+            NEW_VERSION="${{ inputs.custom_version }}"
+            if [[ ! $NEW_VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              NEW_VERSION="v$NEW_VERSION"
+            fi
+          else
+            # Extract version number and increment based on release type
+            VERSION=${GITHUB_REF_NAME#v}
+            if [[ $VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              MAJOR=${BASH_REMATCH[1]}
+              MINOR=${BASH_REMATCH[2]}
+              PATCH=${BASH_REMATCH[3]}
+              
+              case "${{ inputs.release_type }}" in
+                "major")
+                  NEW_MAJOR=$((MAJOR + 1))
+                  NEW_VERSION="v${NEW_MAJOR}.0.0"
+                  ;;
+                "minor")
+                  NEW_MINOR=$((MINOR + 1))
+                  NEW_VERSION="v${MAJOR}.${NEW_MINOR}.0"
+                  ;;
+                "patch")
+                  NEW_PATCH=$((PATCH + 1))
+                  NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+                  ;;
+                *)
+                  NEW_PATCH=$((PATCH + 1))
+                  NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+                  ;;
+              esac
+            else
+              # Fallback to v1.5.0 if version format is unexpected
+              NEW_VERSION="v1.5.0"
+            fi
+          fi
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Validate version doesn't exist
+        run: |
+          if git tag -l | grep -q "^${{ steps.new_version.outputs.new_version }}$"; then
+            echo "❌ Version ${{ steps.new_version.outputs.new_version }} already exists!"
+            exit 1
+          else
+            echo "✅ Version ${{ steps.new_version.outputs.new_version }} is available"
+          fi
+
+      - name: Create and push tag
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a ${{ steps.new_version.outputs.new_version }} -m "Manual release ${{ steps.new_version.outputs.new_version }}"
+          git push origin ${{ steps.new_version.outputs.new_version }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.new_version.outputs.new_version }}
+          release_name: Release ${{ steps.new_version.outputs.new_version }}
+          body: |
+            🚀 **Manual Release** ${{ steps.new_version.outputs.new_version }}
+            
+            ${{ inputs.release_notes }}
+            
+            **Release Details:**
+            - Type: ${{ inputs.release_type }}
+            - Created by: ${{ github.actor }}
+            - Branch: ${{ github.ref_name }}
+            - Commit: ${{ github.sha }}
+            - Workflow: ${{ github.workflow }}
+            
+            **Previous Version:** ${{ steps.get_latest_tag.outputs.latest_tag }}
+          draft: false
+          prerelease: false
+
+      - name: Success notification
+        run: |
+          echo "✅ Manual release ${{ steps.new_version.outputs.new_version }} created successfully!"
+          echo "🔗 View release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.new_version.outputs.new_version }}"
