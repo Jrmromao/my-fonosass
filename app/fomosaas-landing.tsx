@@ -21,10 +21,12 @@ import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { APP_NAME } from "@/utils/constants";
 import { useAuth } from "@clerk/nextjs";
 import BalloonOptimizedMinimal from "@/components/Balloon/BalloonOptimizedMinimal";
+import WaitingListAlert from "@/components/WaitingListAlert";
 
 export default function FomosaasLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showWaitingList, setShowWaitingList] = useState(true);
 
   const { isSignedIn } = useAuth();
 
@@ -38,9 +40,16 @@ export default function FomosaasLanding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900 overflow-hidden">
+      {/* Waiting List Alert */}
+      {showWaitingList && (
+        <WaitingListAlert onClose={() => setShowWaitingList(false)} />
+      )}
+      
       {/* Navbar */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
+          showWaitingList ? 'top-16' : 'top-0'
+        } ${
           scrolled
             ? "bg-white/80 dark:bg-indigo-800/80 backdrop-blur-md shadow-sm"
             : "bg-transparent"
@@ -168,7 +177,7 @@ export default function FomosaasLanding() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 md:pt-40 md:pb-32">
+      <section className={`${showWaitingList ? 'pt-48 pb-20 md:pt-56 md:pb-32' : 'pt-32 pb-20 md:pt-40 md:pb-32'}`}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
