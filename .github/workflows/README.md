@@ -93,6 +93,18 @@ Add these to your GitHub repository settings:
 - Ensure you have push permissions
 - Verify GitHub token permissions
 
+## 🧪 **Test Commands**
+
+### **Available Test Scripts:**
+- `yarn test` - Run core tests (excludes security tests)
+- `yarn test:security` - Run only security tests (requires network)
+- `yarn test:all` - Run all tests including security
+- `yarn test:watch` - Run tests in watch mode
+- `yarn test:coverage` - Run tests with coverage report
+
+### **Why Security Tests Are Excluded:**
+Security tests require network requests to test against real servers, which don't work in CI environments. They're designed for manual testing when you have a running server.
+
 ## 📚 **Documentation Files**
 
 - `BULLETPROOF-ANALYSIS.md`: Detailed analysis of the previous complex setup

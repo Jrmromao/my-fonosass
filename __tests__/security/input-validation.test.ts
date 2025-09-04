@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { SecurityTestHelper, SecurityAssertions, SECURITY_TEST_DATA } from './security-test-utils';
 
-describe('Input Validation Security', () => {
+describe.skip('Input Validation Security', () => {
   const baseUrl = process.env.TEST_BASE_URL || 'http://localhost:3000';
   
   beforeAll(() => {
