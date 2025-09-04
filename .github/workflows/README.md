@@ -93,6 +93,43 @@ Add these to your GitHub repository settings:
 - Ensure you have push permissions
 - Verify GitHub token permissions
 
+## 🔐 **Required GitHub Secrets**
+
+### **Clerk Authentication:**
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`
+- `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL`
+- `CLERK_WEBHOOK_SECRET`
+
+### **AWS S3 Storage:**
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- `AWS_S3_BUCKET_NAME`
+
+### **Stripe Payment Processing:**
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_MONTHLY_PRICE_ID`
+- `STRIPE_ANNUAL_PRICE_ID`
+- `NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID`
+- `NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID`
+
+### **Application Configuration:**
+- `NEXT_PUBLIC_APP_URL`
+- `DATABASE_URL`
+
+### **Vercel Deployment:**
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+### **GitHub:**
+- `GITHUB_TOKEN` (automatically provided)
+
 ## 🧪 **Test Commands**
 
 ### **Available Test Scripts:**
