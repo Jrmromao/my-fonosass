@@ -51,7 +51,10 @@ export default function FomosaasLanding() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">F</span>
+                  {/* Icon placeholder - replace with actual icon */}
+                  <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">F</span>
+                  </div>
                 </div>
                 <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
                   {APP_NAME}

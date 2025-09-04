@@ -1,7 +1,7 @@
 import {Stripe} from "stripe";
 import {Option} from "@/types/activity";
 
-export const APP_NAME = 'App do Joao'
+export const APP_NAME = 'Almanaque da Fala'
 
 
 export enum Role {

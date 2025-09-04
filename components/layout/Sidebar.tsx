@@ -32,21 +32,25 @@ export function Sidebar({ className }: SidebarProps) {
             title: "Dashboard",
             icon: BarChart2,
             href: "/dashboard",
+            iconPlaceholder: "📊", // Placeholder for custom icon
         },
         // {
         //     title: "Pacientes",
         //     icon: Users,
         //     href: "/dashboard/patient",
+        //     iconPlaceholder: "👥", // Placeholder for custom icon
         // },
         {
             title: "Atividades",
             icon: FileText,
             href: "/dashboard/games",
+            iconPlaceholder: "🎮", // Placeholder for custom icon
         },
         // {
         //     title: "Configurações",
         //     icon: Settings,
         //     href: "/dashboard/settings",
+        //     iconPlaceholder: "⚙️", // Placeholder for custom icon
         // }
     ]
 
@@ -109,7 +113,10 @@ export function Sidebar({ className }: SidebarProps) {
                 {/* Logo area */}
                 <div className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-teal-500">
-                        <span className="text-sm font-bold text-white">TP</span>
+                        {/* Icon placeholder - replace with actual icon */}
+                        <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+                            <span className="text-sm font-bold text-white">TP</span>
+                        </div>
                     </div>
                     {!isCollapsed && (
                         <span className="ml-3 text-lg font-semibold text-gray-900 dark:text-white">
@@ -156,11 +163,17 @@ export function Sidebar({ className }: SidebarProps) {
                                                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-blue-600 dark:hover:text-blue-400"
                                         )}
                                     >
-                                        <item.icon className={cn(
-                                            "flex-shrink-0",
-                                            isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400",
-                                            isCollapsed ? "h-6 w-6" : "h-5 w-5"
-                                        )} />
+                                        <div className="flex items-center gap-2">
+                                            <item.icon className={cn(
+                                                "flex-shrink-0",
+                                                isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400",
+                                                isCollapsed ? "h-6 w-6" : "h-5 w-5"
+                                            )} />
+                                            {/* Icon placeholder - replace with actual custom icon */}
+                                            <span className="text-xs opacity-60">
+                                                {item.iconPlaceholder}
+                                            </span>
+                                        </div>
 
                                         {!isCollapsed && (
                                             <span className="ml-3 text-sm font-medium">

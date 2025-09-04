@@ -21,7 +21,10 @@ export default function Header() {
         <nav className="flex items-center justify-between w-full max-w-7xl mx-auto">
           <a className="flex items-center gap-2 text-2xl font-bold text-indigo-600" href="#">
             <div className="size-10 bg-indigo-600 text-white flex items-center justify-center rounded-lg rotate-3 hover:rotate-6 transition-transform">
-              <span className="font-black">FS</span>
+              {/* Icon placeholder - replace with actual icon */}
+              <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+                <span className="font-black text-sm">FS</span>
+              </div>
             </div>
             <span className="hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
             FonoSaaS
