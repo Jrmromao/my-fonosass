@@ -21,6 +21,7 @@ interface UserMetadata {
 const PUBLIC_ROUTES = createRouteMatcher([
     '/',
     '/api/webhooks/(.*)',
+    '/api/waiting-list(.*)',
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/pricing',
