@@ -5,7 +5,7 @@
  */
 
 // Set test environment variables
-process.env.NODE_ENV = 'test';
+(process.env as any).NODE_ENV = 'test';
 process.env.TEST_BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 
 // Mock environment variables for testing

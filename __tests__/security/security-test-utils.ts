@@ -5,7 +5,21 @@
  * across the FonoSaaS application.
  */
 
-import { NextRequest } from 'next/server';
+// Mock NextRequest for testing
+class NextRequest {
+  public method: string;
+  public url: string;
+  public headers: Headers;
+  public body: ReadableStream | null;
+  public bodyUsed: boolean = false;
+  
+  constructor(input: RequestInfo | URL, init?: RequestInit) {
+    this.url = typeof input === 'string' ? input : input.toString();
+    this.method = init?.method || 'GET';
+    this.headers = new Headers(init?.headers);
+    this.body = init?.body ? new ReadableStream() : null;
+  }
+}
 
 // Test data for security testing
 export const SECURITY_TEST_DATA = {
@@ -102,7 +116,7 @@ export class SecurityTestHelper {
       
       return { vulnerable, response: responseText };
     } catch (error) {
-      return { vulnerable: false, response: error.message };
+      return { vulnerable: false, response: (error as Error).message };
     }
   }
 
@@ -130,7 +144,7 @@ export class SecurityTestHelper {
       
       return { vulnerable, response: responseText };
     } catch (error) {
-      return { vulnerable: false, response: error.message };
+      return { vulnerable: false, response: (error as Error).message };
     }
   }
 
@@ -156,7 +170,7 @@ export class SecurityTestHelper {
       
       return { allowed, response: responseText };
     } catch (error) {
-      return { allowed: false, response: error.message };
+      return { allowed: false, response: (error as Error).message };
     }
   }
 
@@ -180,7 +194,7 @@ export class SecurityTestHelper {
       
       return { bypassed, response: responseText };
     } catch (error) {
-      return { bypassed: false, response: error.message };
+      return { bypassed: false, response: (error as Error).message };
     }
   }
 
@@ -206,7 +220,7 @@ export class SecurityTestHelper {
           break;
         }
       } catch (error) {
-        responses.push(error.message);
+        responses.push((error as Error).message);
       }
     }
     

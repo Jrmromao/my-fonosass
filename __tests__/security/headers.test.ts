@@ -181,7 +181,7 @@ describe('Security Headers', () => {
       const maxAgeMatch = hsts.match(/max-age=(\d+)/);
       expect(maxAgeMatch).toBeDefined();
       
-      const maxAge = parseInt(maxAgeMatch[1]);
+      const maxAge = parseInt(maxAgeMatch![1]);
       expect(maxAge).toBeGreaterThanOrEqual(31536000); // At least 1 year
     });
   });

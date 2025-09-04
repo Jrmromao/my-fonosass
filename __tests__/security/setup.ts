@@ -73,6 +73,10 @@ if (!global.FormData) {
       return this.data.get(key)?.value;
     }
     
+    getAll(key: string) {
+      return [this.data.get(key)?.value].filter(Boolean);
+    }
+    
     has(key: string) {
       return this.data.has(key);
     }
@@ -100,7 +104,11 @@ if (!global.FormData) {
     values() {
       return Array.from(this.data.values()).map(item => item.value);
     }
-  };
+    
+    [Symbol.iterator]() {
+      return this.entries()[Symbol.iterator]();
+    }
+  } as any;
 }
 
 // Mock Blob if not available
@@ -114,6 +122,10 @@ if (!global.Blob) {
     
     get type() {
       return this.options.type || '';
+    }
+    
+    get bytes() {
+      return new Uint8Array(this.parts.join('').split('').map(c => c.charCodeAt(0)));
     }
     
     slice(start?: number, end?: number, contentType?: string) {
@@ -137,7 +149,7 @@ if (!global.Blob) {
       }
       return Promise.resolve(buffer);
     }
-  };
+  } as any;
 }
 
 // Mock Headers if not available
@@ -170,6 +182,10 @@ if (!global.Headers) {
       return this.headers.get(name.toLowerCase()) || null;
     }
     
+    getSetCookie() {
+      return this.headers.get('set-cookie') ? [this.headers.get('set-cookie')!] : [];
+    }
+    
     has(name: string) {
       return this.headers.has(name.toLowerCase());
     }
@@ -193,7 +209,11 @@ if (!global.Headers) {
     values() {
       return this.headers.values();
     }
-  };
+    
+    [Symbol.iterator]() {
+      return this.entries()[Symbol.iterator]();
+    }
+  } as any;
 }
 
 // Mock Response if not available
@@ -228,6 +248,21 @@ if (!global.Response) {
       return '';
     }
     
+    static error() {
+      return new Response(null, { status: 500, statusText: 'Internal Server Error' });
+    }
+    
+    static json(data: any, init?: ResponseInit) {
+      return new Response(JSON.stringify(data), {
+        ...init,
+        headers: { 'Content-Type': 'application/json', ...init?.headers },
+      });
+    }
+    
+    static redirect(url: string | URL, status?: number) {
+      return new Response(null, { status: status || 302, headers: { Location: url.toString() } });
+    }
+    
     clone() {
       return new Response(this.body, {
         status: this.status,
@@ -260,7 +295,7 @@ if (!global.Response) {
       this.bodyUsed = true;
       return '';
     }
-  };
+  } as any;
 }
 
 // Mock Request if not available
@@ -276,7 +311,7 @@ if (!global.Request) {
       this.url = typeof input === 'string' ? input : input.toString();
       this.method = init?.method || 'GET';
       this.headers = new Headers(init?.headers);
-      this.body = init?.body || null;
+      this.body = init?.body ? new ReadableStream() : null;
     }
     
     get cache() {
@@ -319,6 +354,10 @@ if (!global.Request) {
       return new AbortSignal();
     }
     
+    get bytes() {
+      return new Uint8Array(0);
+    }
+    
     clone() {
       return new Request(this.url, {
         method: this.method,
@@ -351,7 +390,7 @@ if (!global.Request) {
       this.bodyUsed = true;
       return '';
     }
-  };
+  } as any;
 }
 
 // Mock AbortSignal if not available
@@ -359,6 +398,26 @@ if (!global.AbortSignal) {
   global.AbortSignal = class AbortSignal {
     public aborted: boolean = false;
     public reason: any = undefined;
+    
+    static abort(reason?: any) {
+      const signal = new AbortSignal();
+      signal.aborted = true;
+      signal.reason = reason;
+      return signal;
+    }
+    
+    static any(signals: AbortSignal[]) {
+      const signal = new AbortSignal();
+      // Mock implementation - check if any signal is aborted
+      signal.aborted = signals.some(s => s.aborted);
+      return signal;
+    }
+    
+    static timeout(milliseconds: number) {
+      const signal = new AbortSignal();
+      // Mock implementation - would normally set a timeout
+      return signal;
+    }
     
     addEventListener(type: string, listener: EventListener) {
       // Mock implementation
@@ -371,7 +430,7 @@ if (!global.AbortSignal) {
     dispatchEvent(event: Event) {
       return false;
     }
-  };
+  } as any;
 }
 
 export {};

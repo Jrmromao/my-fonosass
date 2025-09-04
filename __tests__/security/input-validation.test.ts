@@ -84,7 +84,8 @@ describe('Input Validation Security', () => {
       for (const endpoint of searchEndpoints) {
         for (const payload of sqlPayloads) {
           const result = await SecurityTestHelper.testSQLInjection(
-            `${baseUrl}${endpoint}${encodeURIComponent(payload)}`
+            `${baseUrl}${endpoint}${encodeURIComponent(payload)}`,
+            payload
           );
           SecurityAssertions.assertSQLInjectionProtection(result);
         }
@@ -197,9 +198,12 @@ describe('Input Validation Security', () => {
       ];
 
       for (const fileName of maliciousFileNames) {
+        const formData = new FormData();
+        formData.append('file', new Blob(['test'], { type: 'text/plain' }), fileName);
+        
         const response = await fetch(`${baseUrl}/api/upload`, {
           method: 'POST',
-          body: new FormData().append('file', new Blob(['test'], { type: 'text/plain' }), fileName),
+          body: formData,
         });
 
         // Should either reject or sanitize malicious file names

@@ -13,6 +13,13 @@ module.exports = {
         }],
     },
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-    testPathIgnorePatterns: ['/node_modules/', '/.next/', '/dist/'],
+    testPathIgnorePatterns: ['/node_modules/', '/.next/', '/dist/', '/__tests__/setup/'],
+    testMatch: [
+        '<rootDir>/__tests__/unit/**/*.test.{js,jsx,ts,tsx}',
+        '<rootDir>/__tests__/integration/**/*.test.{js,jsx,ts,tsx}',
+        '<rootDir>/__tests__/security/**/*.test.{js,jsx,ts,tsx}',
+        '<rootDir>/services/**/*.test.{js,jsx,ts,tsx}',
+    ],
+    setupFilesAfterEnv: ['<rootDir>/__tests__/setup/jest.setup.js'],
     verbose: true,
 };
