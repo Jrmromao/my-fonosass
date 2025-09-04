@@ -29,25 +29,27 @@ jobs:
         run: yarn jest --config jest.ci.config.js
         env:
           NODE_ENV: test
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}
-          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          STRIPE_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_MONTHLY_PRICE_ID }}
-          STRIPE_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_ANNUAL_PRICE_ID }}
-          NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID: ${{ secrets.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID }}
-          NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID: ${{ secrets.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Mock environment variables for testing only
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_mock
+          CLERK_SECRET_KEY: sk_test_mock
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
+          CLERK_WEBHOOK_SECRET: whsec_mock
+          AWS_ACCESS_KEY_ID: mock_access_key
+          AWS_SECRET_ACCESS_KEY: mock_secret_key
+          AWS_REGION: us-east-1
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_S3_BUCKET_NAME: mock-bucket
+          STRIPE_SECRET_KEY: sk_test_mock
+          STRIPE_WEBHOOK_SECRET: whsec_mock
+          STRIPE_MONTHLY_PRICE_ID: price_mock_monthly
+          STRIPE_ANNUAL_PRICE_ID: price_mock_annual
+          NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID: price_mock_monthly
+          NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID: price_mock_annual
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
 
   build:
     name: Build Application
@@ -71,25 +73,28 @@ jobs:
         run: yarn build
         env:
           NODE_ENV: production
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}
-          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          STRIPE_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_MONTHLY_PRICE_ID }}
-          STRIPE_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_ANNUAL_PRICE_ID }}
-          NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID: ${{ secrets.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID }}
-          NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID: ${{ secrets.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Mock environment variables for build validation only
+          # Real environment variables are managed by Vercel
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_mock
+          CLERK_SECRET_KEY: sk_test_mock
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
+          CLERK_WEBHOOK_SECRET: whsec_mock
+          AWS_ACCESS_KEY_ID: mock_access_key
+          AWS_SECRET_ACCESS_KEY: mock_secret_key
+          AWS_REGION: us-east-1
+          AWS_DEFAULT_REGION: us-east-1
+          AWS_S3_BUCKET_NAME: mock-bucket
+          STRIPE_SECRET_KEY: sk_test_mock
+          STRIPE_WEBHOOK_SECRET: whsec_mock
+          STRIPE_MONTHLY_PRICE_ID: price_mock_monthly
+          STRIPE_ANNUAL_PRICE_ID: price_mock_annual
+          NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID: price_mock_monthly
+          NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID: price_mock_annual
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          DATABASE_URL: postgresql://mock:mock@localhost:5432/mock
 
   deploy:
     name: Deploy to Production
@@ -108,26 +113,8 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
           working-directory: ./
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL }}
-          CLERK_WEBHOOK_SECRET: ${{ secrets.CLERK_WEBHOOK_SECRET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          STRIPE_MONTHLY_PRICE_ID: ${{ secrets.STRIPE_MONTHLY_PRICE_ID }}
-          STRIPE_ANNUAL_PRICE_ID: ${{ secrets.STRIPE_ANNUAL_PRICE_ID }}
-          NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID: ${{ secrets.NEXT_PUBLIC_STRIPE_MONTHLY_PRICE_ID }}
-          NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID: ${{ secrets.NEXT_PUBLIC_STRIPE_ANNUAL_PRICE_ID }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        # Environment variables are managed by Vercel
+        # No need to pass them here as Vercel uses its own configuration
 
   create-release:
     name: Create Release Tag
