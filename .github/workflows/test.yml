@@ -1,0 +1,83 @@
+name: Test Suite
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop, feature/*]
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run linting
+        run: yarn lint
+
+      - name: Run type checking
+        run: yarn tsc --noEmit
+
+      - name: Run unit tests
+        run: yarn test --coverage --watchAll=false
+
+      - name: Run security tests
+        run: yarn test:security --coverage --watchAll=false
+
+      - name: Run integration tests
+        run: yarn test:integration --coverage --watchAll=false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: |
+            coverage/
+            test-results/
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            let comment = '## 🧪 Test Results\n\n';
+            
+            try {
+              // Check if coverage files exist
+              if (fs.existsSync('coverage/lcov-report/index.html')) {
+                comment += '✅ **Unit Tests**: Passed\n';
+              }
+              if (fs.existsSync('coverage/security/lcov-report/index.html')) {
+                comment += '✅ **Security Tests**: Passed\n';
+              }
+              if (fs.existsSync('coverage/integration/lcov-report/index.html')) {
+                comment += '✅ **Integration Tests**: Passed\n';
+              }
+              
+              comment += '\n📊 All tests completed successfully!';
+            } catch (error) {
+              comment += '❌ Some tests may have failed. Check the workflow logs for details.';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

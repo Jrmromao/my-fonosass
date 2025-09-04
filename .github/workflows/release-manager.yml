@@ -1,0 +1,304 @@
+name: Release Manager
+
+on:
+  # Trigger on successful production deployments
+  workflow_run:
+    workflows: ["Deploy to Production", "Bulletproof Production Deploy"]
+    types: [completed]
+    branches: [main]
+  
+  # Daily releases at 9 AM UTC
+  schedule:
+    - cron: '0 9 * * *'
+  
+  # Manual release creation
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: 'Custom version (overrides release_type)'
+        required: false
+        type: string
+      release_notes:
+        description: 'Custom release notes'
+        required: false
+        type: string
+
+env:
+  STARTING_VERSION: "1.5.0"
+
+jobs:
+  determine-release-type:
+    name: Determine Release Type
+    runs-on: ubuntu-latest
+    outputs:
+      should_create_release: ${{ steps.determine.outputs.should_create_release }}
+      release_type: ${{ steps.determine.outputs.release_type }}
+      release_reason: ${{ steps.determine.outputs.release_reason }}
+    
+    steps:
+      - name: Determine release parameters
+        id: determine
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_run" && "${{ github.event.workflow_run.conclusion }}" == "success" ]]; then
+            echo "should_create_release=true" >> $GITHUB_OUTPUT
+            echo "release_type=patch" >> $GITHUB_OUTPUT
+            echo "release_reason=production_deployment" >> $GITHUB_OUTPUT
+            echo "🚀 Production deployment detected - creating patch release"
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "should_create_release=true" >> $GITHUB_OUTPUT
+            echo "release_type=patch" >> $GITHUB_OUTPUT
+            echo "release_reason=daily_release" >> $GITHUB_OUTPUT
+            echo "📅 Daily release scheduled - creating patch release"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_create_release=true" >> $GITHUB_OUTPUT
+            echo "release_type=${{ github.event.inputs.release_type }}" >> $GITHUB_OUTPUT
+            echo "release_reason=manual_release" >> $GITHUB_OUTPUT
+            echo "👤 Manual release requested - creating ${{ github.event.inputs.release_type }} release"
+          else
+            echo "should_create_release=false" >> $GITHUB_OUTPUT
+            echo "release_type=none" >> $GITHUB_OUTPUT
+            echo "release_reason=none" >> $GITHUB_OUTPUT
+            echo "⏭️ No release needed"
+          fi
+
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: determine-release-type
+    if: needs.determine-release-type.outputs.should_create_release == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          # Get the latest tag, default to starting version if no tags exist
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v${{ env.STARTING_VERSION }}")
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "📋 Latest tag: $LATEST_TAG"
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          LATEST_TAG="${{ steps.get_tag.outputs.latest_tag }}"
+          
+          # Remove 'v' prefix if present
+          LATEST_TAG=${LATEST_TAG#v}
+          
+          # Check if custom version is provided
+          if [[ -n "${{ github.event.inputs.custom_version }}" ]]; then
+            NEW_VERSION="${{ github.event.inputs.custom_version }}"
+            echo "🎯 Using custom version: $NEW_VERSION"
+          else
+            # Split version into parts
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
+            
+            # Determine release type
+            RELEASE_TYPE="${{ needs.determine-release-type.outputs.release_type }}"
+            
+            case "$RELEASE_TYPE" in
+              "major")
+                NEW_MAJOR=$((MAJOR + 1))
+                NEW_VERSION="$NEW_MAJOR.0.0"
+                ;;
+              "minor")
+                NEW_MINOR=$((MINOR + 1))
+                NEW_VERSION="$MAJOR.$NEW_MINOR.0"
+                ;;
+              "patch")
+                NEW_PATCH=$((PATCH + 1))
+                NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+                ;;
+            esac
+          fi
+          
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "📈 Next version: v$NEW_VERSION"
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          NEW_TAG="${{ steps.next_version.outputs.new_tag }}"
+          if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Tag $NEW_TAG already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag $NEW_TAG is available"
+          fi
+
+      - name: Get commit messages since last tag
+        if: steps.check_tag.outputs.exists == 'false'
+        id: get_changes
+        run: |
+          LATEST_TAG="${{ steps.get_tag.outputs.latest_tag }}"
+          
+          # Get commits since last tag
+          COMMITS=$(git log --pretty=format:"- %s (%h)" "$LATEST_TAG..HEAD" 2>/dev/null || git log --pretty=format:"- %s (%h)" -10)
+          
+          if [[ -z "$COMMITS" ]]; then
+            COMMITS="- No new commits since last release"
+          fi
+          
+          echo "changes<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        if: steps.check_tag.outputs.exists == 'false'
+        id: release_notes
+        run: |
+          RELEASE_REASON="${{ needs.determine-release-type.outputs.release_reason }}"
+          NEW_VERSION="${{ steps.next_version.outputs.new_version }}"
+          
+          case "$RELEASE_REASON" in
+            "production_deployment")
+              TITLE="🚀 Production Deployment"
+              DESCRIPTION="Production deployment completed successfully with all tests passing."
+              ;;
+            "daily_release")
+              TITLE="📅 Daily Release"
+              DESCRIPTION="Automated daily release created by GitHub Actions."
+              ;;
+            "manual_release")
+              TITLE="👤 Manual Release"
+              DESCRIPTION="Manual release created by ${{ github.actor }}."
+              ;;
+          esac
+          
+          # Use custom release notes if provided
+          if [[ -n "${{ github.event.inputs.release_notes }}" ]]; then
+            DESCRIPTION="${{ github.event.inputs.release_notes }}"
+          fi
+          
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          NEW_TAG="${{ steps.next_version.outputs.new_tag }}"
+          NEW_VERSION="${{ steps.next_version.outputs.new_version }}"
+          RELEASE_REASON="${{ needs.determine-release-type.outputs.release_reason }}"
+          
+          # Create tag with message
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          # Create annotated tag
+          git tag -a "$NEW_TAG" -m "Release $NEW_VERSION - ${{ steps.release_notes.outputs.title }}
+          
+          ${{ steps.release_notes.outputs.description }}
+          
+          **Version:** $NEW_VERSION
+          **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Commit:** ${{ github.sha }}
+          **Trigger:** ${{ github.event_name }}
+          **Reason:** $RELEASE_REASON
+          
+          **Changes since last release:**
+          ${{ steps.get_changes.outputs.changes }}
+          
+          ---
+          *This release was automatically created by GitHub Actions*"
+          
+          # Push tag to repository
+          git push origin "$NEW_TAG"
+          
+          echo "✅ Created and pushed tag: $NEW_TAG"
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.next_version.outputs.new_tag }}
+          release_name: "Release ${{ steps.next_version.outputs.new_version }} - ${{ steps.release_notes.outputs.title }}"
+          body: |
+            ${{ steps.release_notes.outputs.title }}
+            
+            ${{ steps.release_notes.outputs.description }}
+            
+            **Version:** ${{ steps.next_version.outputs.new_version }}
+            **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            **Commit:** ${{ github.sha }}
+            **Trigger:** ${{ github.event_name }}
+            **Reason:** ${{ needs.determine-release-type.outputs.release_reason }}
+            
+            ## 📝 Changes Since Last Release
+            
+            ${{ steps.get_changes.outputs.changes }}
+            
+            ## 📊 Release Information
+            
+            - **Release Type:** ${{ needs.determine-release-type.outputs.release_type }}
+            - **Previous Version:** ${{ steps.get_tag.outputs.latest_tag }}
+            - **New Version:** ${{ steps.next_version.outputs.new_tag }}
+            - **Created By:** ${{ github.actor }}
+            
+            ## 🔗 Links
+            
+            - **Commit:** [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            - **Compare:** [${{ steps.get_tag.outputs.latest_tag }}...${{ steps.next_version.outputs.new_tag }}](https://github.com/${{ github.repository }}/compare/${{ steps.get_tag.outputs.latest_tag }}...${{ steps.next_version.outputs.new_tag }})
+            
+            ## 📝 Notes
+            
+            This release was automatically created by GitHub Actions based on the trigger: ${{ github.event_name }}
+            
+            ---
+            *Automatically generated by GitHub Actions*
+          draft: false
+          prerelease: false
+
+      - name: Update package.json version
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          NEW_VERSION="${{ steps.next_version.outputs.new_version }}"
+          
+          # Update package.json version
+          npm version "$NEW_VERSION" --no-git-tag-version
+          
+          # Commit the version update
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add package.json
+          git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+          git push origin main
+          
+          echo "✅ Updated package.json to version $NEW_VERSION"
+
+      - name: Notify success
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          NEW_TAG="${{ steps.next_version.outputs.new_tag }}"
+          NEW_VERSION="${{ steps.next_version.outputs.new_version }}"
+          RELEASE_REASON="${{ needs.determine-release-type.outputs.release_reason }}"
+          
+          echo "🎉 RELEASE CREATED SUCCESSFULLY!"
+          echo "🏷️  Tag: $NEW_TAG"
+          echo "📦 Version: $NEW_VERSION"
+          echo "📋 Reason: $RELEASE_REASON"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/$NEW_TAG"
+
+      - name: Notify if tag exists
+        if: steps.check_tag.outputs.exists == 'true'
+        run: |
+          echo "⚠️ SKIPPING RELEASE CREATION"
+          echo "📋 Tag ${{ steps.next_version.outputs.new_tag }} already exists"
+          echo "🔄 This usually means the release was already created"
