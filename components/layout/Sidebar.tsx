@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Home, LogOut, Menu, Calendar, Settings, X, Users, Gamepad, BarChart2, FileText } from "lucide-react"
+import { Home, Menu, Calendar, Settings, X, Users, Gamepad, BarChart2, FileText, User } from "lucide-react"
 import { useClerk, UserButton, useUser } from "@clerk/nextjs"
 import { useUserRole } from "@/hooks/useUserRole"
 import { APP_NAME } from "@/utils/constants";
@@ -23,16 +23,16 @@ export function Sidebar({ className }: SidebarProps) {
 
     const userRole = useUserRole()
 
-    const handleSignOut = () => {
-        signOut(() => router.push('/'))
-    }
-
     const sidebarItems = [
         {
             title: "Dashboard",
             icon: BarChart2,
             href: "/dashboard",
-            iconPlaceholder: "📊", // Placeholder for custom icon
+        },
+        {
+            title: "Exercícios",
+            icon: FileText,
+            href: "/dashboard/games",
         },
         // {
         //     title: "Pacientes",
@@ -40,12 +40,6 @@ export function Sidebar({ className }: SidebarProps) {
         //     href: "/dashboard/patient",
         //     iconPlaceholder: "👥", // Placeholder for custom icon
         // },
-        {
-            title: "Exercícios",
-            icon: FileText,
-            href: "/dashboard/games",
-            iconPlaceholder: "🎮", // Placeholder for custom icon
-        },
         // {
         //     title: "Configurações",
         //     icon: Settings,
@@ -171,10 +165,7 @@ export function Sidebar({ className }: SidebarProps) {
                                                 isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400",
                                                 isCollapsed ? "h-6 w-6" : "h-5 w-5"
                                             )} />
-                                            {/* Icon placeholder - replace with actual custom icon */}
-                                            <span className="text-xs opacity-60" suppressHydrationWarning={true}>
-                                                {item.iconPlaceholder}
-                                            </span>
+                                          
                                         </div>
 
                                         {!isCollapsed && (
@@ -201,7 +192,15 @@ export function Sidebar({ className }: SidebarProps) {
                                 "flex items-center",
                                 isCollapsed && "flex-col gap-2"
                             )}>
-                                <UserButton />
+                                <UserButton 
+                                    appearance={{
+                                        elements: {
+                                            avatarBox: "w-10 h-10"
+                                        }
+                                    }}
+                                    userProfileMode="navigation"
+                                    userProfileUrl="/dashboard/profile"
+                                />
                                 {!isCollapsed && (
                                     <div className="ml-3 overflow-hidden">
                                         <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" suppressHydrationWarning={true}>
@@ -214,14 +213,6 @@ export function Sidebar({ className }: SidebarProps) {
                                 )}
                             </div>
 
-                            {/* Sign out button */}
-                            <button
-                                onClick={handleSignOut}
-                                aria-label="Sign out"
-                                className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-                            >
-                                <LogOut className="h-4 w-4" />
-                            </button>
                         </div>
                     </div>
                 )}

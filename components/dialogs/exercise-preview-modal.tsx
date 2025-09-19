@@ -144,14 +144,72 @@ export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePrev
                 <Lock className="h-6 w-6 text-purple-600" />
                 <div>
                   <h3 className="font-semibold text-purple-900">Conteúdo Completo Disponível</h3>
-                  <p className="text-sm text-purple-700">Faça upgrade para acessar todos os materiais</p>
+                  <p className="text-sm text-purple-700">5 downloads grátis por mês • Upgrade para downloads ilimitados</p>
                 </div>
               </div>
               
               <div className="flex gap-3">
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                <Button 
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  onClick={async () => {
+                    try {
+                      // Check download limit first
+                      const response = await fetch('/api/download-limit')
+                      const data = await response.json()
+                      
+                      if (data.success && data.data.canDownload) {
+                        // Record download with exercise details
+                        const downloadResponse = await fetch('/api/download-limit', { 
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            activityId: exercise.id,
+                            fileName: `${exercise.name}_materials.pdf`,
+                            fileSize: 1024000 // Mock file size
+                          })
+                        })
+                        
+                        const downloadData = await downloadResponse.json()
+                        
+                        if (downloadData.success) {
+                          alert(`Download iniciado! Restam ${downloadData.data.remaining} downloads gratuitos.`)
+                        } else {
+                          alert(downloadData.error || 'Erro no download')
+                        }
+                      } else {
+                        alert('Limite de downloads atingido! Faça upgrade para Pro.')
+                      }
+                    } catch (error) {
+                      alert('Erro ao processar download. Tente novamente.')
+                    }
+                  }}
+                >
                   <Download className="h-4 w-4 mr-2" />
-                  Fazer Upgrade - R$ 39,90/mês
+                  Download Grátis
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/stripe/create-checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                      })
+                      
+                      const data = await response.json()
+                      
+                      if (data.url) {
+                        window.location.href = data.url
+                      } else {
+                        alert('Erro ao processar pagamento. Tente novamente.')
+                      }
+                    } catch (error) {
+                      alert('Erro ao processar pagamento. Tente novamente.')
+                    }
+                  }}
+                >
+                  Upgrade Pro - R$ 39,90/mês
                 </Button>
                 <Button variant="outline" onClick={onClose}>
                   Fechar Preview

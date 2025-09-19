@@ -461,7 +461,7 @@ export async function POST(req: Request) {
                     }
                 });
 
-                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
 
                 await updateClerkUserMetadata(
                     clerkUserId,

@@ -16,8 +16,8 @@ import SvgImage from "@/components/SVGImage";
 import AppleComponent from "@/components/AppleComponent";
 import { AppleType } from "@/types/types";
 import { Activity, ActivityType, ActivityDifficulty, AgeRange } from "@prisma/client";
-import { getActivitiesByPhoneme } from "@/lib/actions/activity.action";
-import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
+// import { getActivitiesByPhoneme } from "@/lib/actions/activity.action";
+// import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -124,7 +124,7 @@ const SVGRender = () => {
         return PHONEME_MESSAGES[phoneme] || `An apple representing the "${phoneme}" sound.`;
     }, []);
 
-    // Function to download a file
+    // Function to download a file - temporarily disabled
     const handleFileDownload = useCallback(async (fileId: string, fileName: string) => {
         if (!isMounted) return; // Safety check
 
@@ -132,40 +132,14 @@ const SVGRender = () => {
             setDownloadingFileId(fileId);
             setDownloadError(null);
 
-            const result = await getFileDownloadUrl({ fileId });
-
-            if (result.success) {
-                // Create a temporary link element
-                const link = document.createElement('a');
-                //@ts-ignore
-                link.href = result.url;
-                const safeFileName = fileName || `activity-${fileId}.pdf`;
-                link.setAttribute('download', safeFileName);
-
-                // Required for Firefox
-                document.body.appendChild(link);
-
-                // Trigger download
-                link.click();
-
-                // Cleanup
-                document.body.removeChild(link);
-
-                // Show success state briefly
-                setDownloadSuccess(fileId);
-                setTimeout(() => {
-                    if (isMounted) { // Check if component is still mounted
-                        setDownloadSuccess(null);
-                    }
-                }, 2000);
-            } else {
-                setDownloadError(fileId);
-                setTimeout(() => {
-                    if (isMounted) { // Check if component is still mounted
-                        setDownloadError(null);
-                    }
-                }, 3000);
-            }
+            // TODO: Implement API call instead of server action
+            // For now, just show error
+            setDownloadError(fileId);
+            setTimeout(() => {
+                if (isMounted) { // Check if component is still mounted
+                    setDownloadError(null);
+                }
+            }, 3000);
         } catch (error) {
             console.error("Download failed:", error);
             setDownloadError(fileId);
@@ -179,7 +153,7 @@ const SVGRender = () => {
         }
     }, [isMounted]);
 
-    // Handle apple click with server action call
+    // Handle apple click - temporarily disabled server action call
     const handleAppleClick = useCallback((apple: AppleType) => {
         if (!isMounted) return; // Safety check
 
@@ -188,15 +162,10 @@ const SVGRender = () => {
 
         startTransition(async () => {
             try {
-                // Call the server action to get activities for this phoneme
-                const result = await getActivitiesByPhoneme({
-                    phoneme: apple.phoneme,
-                    includePrivate: false,
-                    limit: 5 // Limit to 5 activities for now
-                });
-
+                // TODO: Implement API call instead of server action
+                // For now, just show empty state
                 if (isMounted) {
-                    setActivities(result.items as unknown as ActivityWithFiles[]);
+                    setActivities([]);
                 }
             } catch (error) {
                 console.error("Error fetching activities:", error);

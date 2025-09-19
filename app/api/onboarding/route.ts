@@ -4,6 +4,11 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { prisma } from '@/app/db';
 
+// Generate secure password for test users
+const generateSecurePassword = () => {
+  return Math.random().toString(36).slice(-12) + '@2024!';
+};
+
 // Validation schema
 const onboardingSchema = z.object({
     email: z.string().email(),
@@ -38,7 +43,7 @@ export async function POST(request: Request) {
         // Create a new user in Clerk
         const clerkUser = await clerk.users.createUser({
             emailAddress: [validatedData.email],
-            password: "MERDAP@ssword2023!",
+            password: generateSecurePassword(),
             firstName: "firstName",
             lastName: "lastName",
             publicMetadata: {

@@ -4,6 +4,7 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from '@/app/db';
+import { DownloadLimitService } from '@/services/downloadLimitService';
 interface GetFileDownloadUrlParams {
     fileId: string;
     activityId?: string;
@@ -28,6 +29,7 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
             include: {
                 activity: {
                     select: {
+                        id: true,
                         createdById: true,
                         isPublic: true,
                     }
@@ -70,14 +72,44 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
             expiresIn: 300
         });
 
-        // TODO need to add the activity file download count to get user metrics
-        // // Log the download attempt for analytics (optional)
-        // await prisma.activityFileDownload.create({
-        //     data: {
-        //         activityFileId: file.id,
-        //         userId,
-        //     }
-        // });
+        // Record download in our tracking system
+        try {
+            // Get user from database
+            const user = await prisma.user.findUnique({
+                where: { clerkUserId: userId }
+            })
+
+            if (user) {
+                // Check if user is Pro
+                const isPro = await DownloadLimitService.hasProAccess(user.id)
+                
+                if (!isPro) {
+                    // Check download limits for free users
+                    const limit = await DownloadLimitService.checkDownloadLimit(user.id)
+                    
+                    if (!limit.canDownload) {
+                        return { 
+                            success: false, 
+                            error: 'Download limit reached. Upgrade to Pro for unlimited downloads.' 
+                        }
+                    }
+                }
+
+                // Record the download
+                await DownloadLimitService.recordDownload(
+                    user.id,
+                    file.activity.id || activityId || 'unknown',
+                    file.name,
+                    file.sizeInBytes,
+                    undefined, // IP not available in server action
+                    undefined, // User agent not available in server action
+                    isPro // Skip limit increment for Pro users
+                )
+            }
+        } catch (downloadError) {
+            console.error('Error recording download:', downloadError)
+            // Don't fail the download if tracking fails
+        }
 
         return {
             success: true,

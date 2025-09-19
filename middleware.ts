@@ -32,7 +32,40 @@ const PUBLIC_ROUTES = createRouteMatcher([
     '/api/onboarding(.*)',
 ]);
 
+
+// Rate limiting
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+const rateLimit = {
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 100,
+  check: (identifier: string) => {
+    const now = Date.now();
+    const current = rateLimitMap.get(identifier) || { count: 0, resetTime: now + rateLimit.windowMs };
+    
+    if (current.resetTime < now) {
+      current.count = 0;
+      current.resetTime = now + rateLimit.windowMs;
+    }
+    
+    if (current.count >= rateLimit.maxRequests) {
+      return { success: false };
+    }
+    
+    current.count++;
+    rateLimitMap.set(identifier, current);
+    return { success: true };
+  }
+};
+
 export default clerkMiddleware(async (auth, req: NextRequest) => {
+    // Rate limiting check
+    const identifier = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'anonymous';
+    const rateLimitResult = rateLimit.check(identifier);
+    
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
     const path = req.nextUrl.pathname;
 
     // Check if route is public

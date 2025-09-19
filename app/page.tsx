@@ -1,14 +1,9 @@
 "use client"
 
-
 import React from "react";
 import Ballon from "@/components/Balloon";
-import dynamic from "next/dynamic";
+import FomosaasLanding from "@/app/fomosaas-landing";
 
-
-const FomosaasLanding = dynamic(() => import("@/app/fomosaas-landing"), {
-    ssr: false,
-});
 export default function SyntheticV0PageForDeployment() {
     return <FomosaasLanding />
 }

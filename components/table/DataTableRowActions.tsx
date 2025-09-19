@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import {Row} from "@tanstack/react-table";
 import {
     DropdownMenu,
@@ -6,7 +6,9 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ExercisePreviewModal } from "@/components/dialogs/exercise-preview-modal";
+
+// Lazy load the heavy modal component
+const ExercisePreviewModal = lazy(() => import("@/components/dialogs/exercise-preview-modal").then(mod => ({ default: mod.ExercisePreviewModal })));
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>,
@@ -82,11 +84,15 @@ const DataTableRowActions = <TData, >({
                 </DropdownMenuContent>
             </DropdownMenu>
             
-            <ExercisePreviewModal 
-                exercise={row.original}
-                isOpen={showPreview}
-                onClose={() => setShowPreview(false)}
-            />
+            {showPreview && (
+                <Suspense fallback={<div>Loading preview...</div>}>
+                    <ExercisePreviewModal 
+                        exercise={row.original}
+                        isOpen={showPreview}
+                        onClose={() => setShowPreview(false)}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };

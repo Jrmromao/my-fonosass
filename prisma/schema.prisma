@@ -425,6 +425,7 @@ model User {
   updatedAt         DateTime      @updatedAt
   createdActivities Activity[]
   subscriptions     Subscription?
+  downloadHistory   DownloadHistory[]
 }
 
 model Activity {
@@ -442,6 +443,7 @@ model Activity {
   createdBy   User               @relation(fields: [createdById], references: [id])
   files       ActivityFile[]
   categories  ActivityCategory[] @relation("ActivityToActivityCategory")
+  downloadHistory DownloadHistory[]
 }
 
 model ActivityFile {
@@ -541,4 +543,33 @@ enum SubStatus {
   // IMCOMPLETE
   // PAUSED
   // TRIALING
+}
+
+model DownloadHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  activityId String
+  fileName   String
+  fileSize   Int?
+  downloadedAt DateTime @default(now())
+  ipAddress  String?
+  userAgent  String?
+  
+  user       User     @relation(fields: [userId], references: [id])
+  activity   Activity @relation(fields: [activityId], references: [id])
+  
+  @@index([userId, downloadedAt])
+  @@index([activityId])
+  @@map("download_history")
+}
+
+model DownloadLimit {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  downloads Int      @default(0)
+  resetDate DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("download_limits")
 }

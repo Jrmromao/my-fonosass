@@ -285,6 +285,15 @@ async function processWebhook(req: Request): Promise<NextResponse> {
                 }
 
                 await createOrUpdateUser(id, primaryEmail, first_name, last_name);
+                
+                // Send welcome email
+                try {
+                    const { EmailService } = await import('@/services/emailService')
+                    await EmailService.sendWelcomeEmail(primaryEmail, `${first_name || ''} ${last_name || ''}`.trim() || 'Usuário')
+                } catch (emailError) {
+                    console.error('Error sending welcome email:', emailError)
+                    // Don't fail the webhook if email fails
+                }
                 break;
             }
 

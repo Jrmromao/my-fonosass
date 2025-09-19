@@ -9,7 +9,7 @@
 //         console.log("IN POST CREATE USERS")
 //
 //        const clerkUser = await clerkClient.users.createUser({
-//             emailAddress: ["jrmromao@gmail.com"], firstName: "John", lastName: "Doe", skipPasswordChecks: true, password: "securePassword123"});
+//             emailAddress: ["test@example.com"], firstName: "John", lastName: "Doe", skipPasswordChecks: true, password: "securePassword123"});
 //
 //
 //         console.log(clerkUser)
@@ -29,6 +29,12 @@
 
 // // app/api/create-users/route.ts
 // import { NextResponse } from "next/server";
+
+// Generate secure password for test users
+const generateSecurePassword = () => {
+  return Math.random().toString(36).slice(-12) + '@2024!';
+};
+
 //
 // // For v6.5.0, we need to use the Clerk API client directly
 // import { createClerkClient } from "@clerk/clerk-sdk-node";
@@ -49,7 +55,7 @@
 //
 //         // Generate a unique email address to avoid conflicts
 //         const timestamp = new Date().getTime();
-//         const email = `jrmromao+${timestamp}@gmail.com`;
+//         const email = `test+${timestamp}@example.com`;
 //
 //         try {
 //             // Create a user with the Clerk client
@@ -116,7 +122,7 @@ export async function POST(req: Request) {
             // Generate a unique email for testing
             const timestamp = new Date().getTime();
             userData = {
-                email: `ecokeepr@gmail.com`,
+                email: `test-${Date.now()}@example.com`,
                 username: `test${timestamp}`,
                 password: "SecureP@ssword2023!",
                 firstName: "Test",
@@ -128,7 +134,7 @@ export async function POST(req: Request) {
         const payload = JSON.stringify({
             email_addresses: [
                 {
-                    email: "ecokeepr@gmail.com",
+                    email: "test@example.com",
                     primary: true,
                     verification: {
                         strategy: "admin_verification",  // This tells Clerk you're verifying this email as an admin
