@@ -5,6 +5,7 @@ import { ptBR } from '@clerk/localizations'
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import {Providers} from "@/components/Providers";
 import { Analytics } from "@vercel/analytics/next"
+import GoogleAnalytics from "@/components/GoogleAnalytics"
 
 const inter = Inter({subsets: ["latin"]})
 
@@ -23,6 +24,9 @@ export default function RootLayout({
             <html lang="pt-BR">
             <body
                 className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}>
+            {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+                <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+            )}
             <Providers>
                 {children}
                 <Analytics />
