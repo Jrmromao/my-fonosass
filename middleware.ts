@@ -33,40 +33,78 @@ const PUBLIC_ROUTES = createRouteMatcher([
 ]);
 
 
-// Rate limiting
+// Enhanced rate limiting with different limits for different endpoints
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-const rateLimit = {
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 100,
-  check: (identifier: string) => {
-    const now = Date.now();
-    const current = rateLimitMap.get(identifier) || { count: 0, resetTime: now + rateLimit.windowMs };
-    
-    if (current.resetTime < now) {
-      current.count = 0;
-      current.resetTime = now + rateLimit.windowMs;
-    }
-    
-    if (current.count >= rateLimit.maxRequests) {
-      return { success: false };
-    }
-    
-    current.count++;
-    rateLimitMap.set(identifier, current);
-    return { success: true };
+const rateLimits = {
+  // General API rate limit
+  general: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 100,
+  },
+  // Stricter limit for auth endpoints
+  auth: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 20,
+  },
+  // Very strict for user creation
+  userCreation: {
+    windowMs: 60 * 60 * 1000, // 1 hour
+    maxRequests: 5,
   }
 };
 
+const checkRateLimit = (identifier: string, type: keyof typeof rateLimits) => {
+  const limit = rateLimits[type];
+  const now = Date.now();
+  const key = `${identifier}:${type}`;
+  const current = rateLimitMap.get(key) || { count: 0, resetTime: now + limit.windowMs };
+  
+  if (current.resetTime < now) {
+    current.count = 0;
+    current.resetTime = now + limit.windowMs;
+  }
+  
+  if (current.count >= limit.maxRequests) {
+    return { success: false, remaining: 0, resetTime: current.resetTime };
+  }
+  
+  current.count++;
+  rateLimitMap.set(key, current);
+  return { success: true, remaining: limit.maxRequests - current.count, resetTime: current.resetTime };
+};
+
 export default clerkMiddleware(async (auth, req: NextRequest) => {
-    // Rate limiting check
+    const path = req.nextUrl.pathname;
     const identifier = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'anonymous';
-    const rateLimitResult = rateLimit.check(identifier);
+    
+    // Determine rate limit type based on endpoint
+    let rateLimitType: keyof typeof rateLimits = 'general';
+    if (path.includes('/api/create-users') || path.includes('/api/onboarding')) {
+      rateLimitType = 'userCreation';
+    } else if (path.includes('/sign-in') || path.includes('/sign-up') || path.includes('/api/auth')) {
+      rateLimitType = 'auth';
+    }
+    
+    // Rate limiting check
+    const rateLimitResult = checkRateLimit(identifier, rateLimitType);
     
     if (!rateLimitResult.success) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      const resetTime = new Date(rateLimitResult.resetTime).toISOString();
+      return NextResponse.json({ 
+        error: 'Too many requests', 
+        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+        resetTime 
+      }, { 
+        status: 429,
+        headers: {
+          'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          'X-RateLimit-Limit': rateLimits[rateLimitType].maxRequests.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': resetTime
+        }
+      });
     }
-    const path = req.nextUrl.pathname;
 
     // Check if route is public
     if (PUBLIC_ROUTES(req)) {

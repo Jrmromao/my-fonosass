@@ -374,10 +374,17 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     }
 
     const animate = (timestamp: number): void => {
-      const delta = lastTime ? (timestamp - lastTime) / 16.66 : 12; // normalize to ~60fps
+      const delta = lastTime ? (timestamp - lastTime) / 16.66 : 12;
       lastTime = timestamp;
 
-      // Skip frames when browser tab is inactive or frame rate is very low
+      // Reduce frame rate on mobile for better performance
+      const isMobile = window.innerWidth < 768;
+      if (isMobile && timestamp % 32 < 16.66) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      // Skip frames when browser tab is inactive
       if (delta > 100) {
         animationRef.current = requestAnimationFrame(animate);
         return;
@@ -396,24 +403,20 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
 
-      // Cache anchor points to avoid recalculation
       const leftAnchorX = width * 0.25;
       const rightAnchorX = width * 0.75;
       const anchorY = height;
 
-      // Check if we have active fragments or dragging balloons
       const hasActiveFragments = fragmentsRef.current.length > 0;
       const hasDraggingBalloons = draggingBalloonId !== null;
 
-      // Only sort balloons if necessary (when dragging or hovering)
       const sortedBalloons = hasDraggingBalloons
         ? [...balloonsRef.current].sort((a, b) => a.zIndex - b.zIndex)
         : balloonsRef.current;
 
-      // Limit how many balloons update their float animation each frame
-      // This staggers the animation calculations to improve performance
-      const updateCount = Math.min(sortedBalloons.length, 8); // Only update 8 balloons per frame
-      const updateOffset = Math.floor(timestamp / 100) % sortedBalloons.length; // Cycle through all balloons
+      // Reduce animation updates on mobile
+      const updateCount = isMobile ? 4 : 8;
+      const updateOffset = Math.floor(timestamp / 100) % sortedBalloons.length;
 
       // Update and draw visible balloons
       sortedBalloons.forEach((balloon, index) => {
@@ -736,7 +739,9 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
   // Generate fragments for a popped balloon
   const popBalloon = (balloonId: number): void => {
     const balloon = balloonsRef.current.find((b) => b.id === balloonId);
-    const fragmentCount = window.navigator.hardwareConcurrency > 4 ? 20 : 10;
+    // Reduce fragments on mobile for better performance
+    const isMobile = window.innerWidth < 768;
+    const fragmentCount = isMobile ? 8 : (window.navigator.hardwareConcurrency > 4 ? 20 : 10);
 
     if (!balloon || balloon.popped) return;
 
@@ -982,7 +987,21 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
   // @ts-ignore
   return (
-    <div className="flex items-center justify-center h-96 w-full bg-gradient-to-b from-blue-300 to-teal-300 overflow-hidden">
+    <div className="flex flex-col items-center justify-center h-96 w-full bg-gradient-to-b from-blue-300 to-teal-300 overflow-hidden">
+      {/* Clear instructions above balloons */}
+      <div className="text-center text-white mb-4 px-4">
+        <h2 className="text-xl font-bold mb-2">Interactive Phoneme Explorer</h2>
+        <p className="text-sm opacity-90">Double-click any balloon to explore speech exercises</p>
+      </div>
+
+      {/* Professional loading state */}
+      {balloonsRef.current.length === 0 && (
+        <div className="flex flex-col items-center justify-center text-white">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-2"></div>
+          <p className="text-sm">Loading Interactive Phonemes...</p>
+        </div>
+      )}
+
       {/* Audio element for pop sound */}
       <audio ref={audioRef} preload="auto" className="hidden">
         {/* Pop sound would go here */}
@@ -992,12 +1011,43 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         <canvas
           ref={canvasRef}
           className="w-full h-full cursor-pointer"
-          // onClick={handleCanvasClick}
           onMouseMove={throttledMouseMove}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          aria-label="Interactive phoneme balloons - double-click to explore exercises"
+          role="application"
         />
+        
+        {/* Mobile-friendly instruction */}
+        <div className="absolute bottom-4 left-4 bg-white/95 rounded-lg px-3 py-2 text-xs text-gray-700 shadow-lg md:hidden">
+          👆 Tap balloons twice to explore
+        </div>
+        
+        {/* Desktop instruction */}
+        <div className="absolute bottom-4 left-4 bg-white/95 rounded-lg px-3 py-2 text-xs text-gray-700 shadow-lg hidden md:block">
+          🖱️ Double-click balloons to explore
+        </div>
+      </div>
+
+      {/* Fallback phoneme grid for accessibility */}
+      <div className="sr-only">
+        <h3>Available Phonemes:</h3>
+        <div className="grid grid-cols-4 gap-2">
+          {phonemes.slice(0, 20).map((phoneme, index) => (
+            <button
+              key={phoneme}
+              onClick={() => {
+                setActivePhoneme(phoneme);
+                handleAppleClick(phoneme);
+                setDialogOpen(true);
+              }}
+              className="p-2 bg-white rounded text-gray-800"
+            >
+              /{phoneme}/
+            </button>
+          ))}
+        </div>
       </div>
 
       <PhonemeDialog

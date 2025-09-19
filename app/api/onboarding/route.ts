@@ -3,10 +3,12 @@ import { NextResponse } from 'next/server';
 import { clerkClient } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { prisma } from '@/app/db';
+import { sanitizeInput, sanitizeHtml } from '@/lib/security/validation';
 
 // Generate secure password for test users
 const generateSecurePassword = () => {
-  return Math.random().toString(36).slice(-12) + '@2024!';
+  const crypto = require('crypto');
+  return crypto.randomBytes(16).toString('hex');
 };
 
 // Validation schema
@@ -26,7 +28,20 @@ export async function POST(request: Request) {
     try {
         // Parse and validate the request body
         const body = await request.json();
-        const validatedData = onboardingSchema.parse(body);
+        
+        // Sanitize input data
+        const sanitizedBody = {
+            email: sanitizeInput(body.email || ''),
+            fullName: sanitizeInput(body.fullName || ''),
+            displayName: sanitizeInput(body.displayName || ''),
+            password: body.password || '', // Don't sanitize password as it needs special chars
+            jobTitle: sanitizeInput(body.jobTitle || ''),
+            department: sanitizeInput(body.department || ''),
+            bio: sanitizeHtml(body.bio || ''),
+            role: body.role || 'USER'
+        };
+        
+        const validatedData = onboardingSchema.parse(sanitizedBody);
 
         // Get clerk client
         const clerk = await clerkClient();
@@ -43,9 +58,9 @@ export async function POST(request: Request) {
         // Create a new user in Clerk
         const clerkUser = await clerk.users.createUser({
             emailAddress: [validatedData.email],
-            password: generateSecurePassword(),
-            firstName: "firstName",
-            lastName: "lastName",
+            password: validatedData.password, // Use user-provided password
+            firstName: validatedData.displayName,
+            lastName: lastName,
             publicMetadata: {
                 onboarded: true,
                 role: validatedData.role,

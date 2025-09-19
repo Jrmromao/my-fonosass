@@ -32,7 +32,8 @@
 
 // Generate secure password for test users
 const generateSecurePassword = () => {
-  return Math.random().toString(36).slice(-12) + '@2024!';
+  const crypto = require('crypto');
+  return crypto.randomBytes(16).toString('hex');
 };
 
 //
@@ -102,9 +103,16 @@ const generateSecurePassword = () => {
 
 // app/api/create-users/route.ts
 import { NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server';
 
 export async function POST(req: Request) {
     try {
+        // Check authentication
+        const { userId } = await auth();
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         console.log("Starting user creation with minimal fields");
 
         // Make sure the CLERK_SECRET_KEY is set
@@ -124,7 +132,7 @@ export async function POST(req: Request) {
             userData = {
                 email: `test-${Date.now()}@example.com`,
                 username: `test${timestamp}`,
-                password: "SecureP@ssword2023!",
+                password: generateSecurePassword(),
                 firstName: "Test",
                 lastName: "User"
             };

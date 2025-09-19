@@ -69,21 +69,19 @@ function ActivitiesContent() {
 
     // Use React Query to fetch and cache activities
     // Include mainTab in the queryKey to refetch data when the tab changes
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, error } = useQuery({
         queryKey: ["activities", debouncedSearch, mainTab], // ADD mainTab here
         queryFn: async () => {
-            console.log("Fetching activities for tab:", mainTab); // Log to see when refetch happens
-            // You *could* pass mainTab and potentially selectedPhoneme/selectedType
-            // to your getActivities action here for server-side filtering,
-            // if your backend action supports it. For now, we just refetch all
-            // based on search term and rely on client-side filtering.
+            console.log("🔍 Fetching activities for tab:", mainTab, "search:", debouncedSearch);
             const result = await getActivities({
                 searchTerm: debouncedSearch,
                 limit: 50,
-                // Example of passing tab/filter to backend if supported:
-                // filterCategory: mainTab,
-                // filterValue: mainTab === 'phonemes' ? selectedPhoneme : selectedType,
             });
+            
+            console.log("📊 RAW Activities result:", JSON.stringify(result, null, 2));
+            console.log("📊 Result success:", result?.success);
+            console.log("📊 Result activities:", result?.activities);
+            console.log("📊 Activities count:", result?.activities?.length || 0);
 
             if (result.success && result.activities) {
                 // Process all activities fetched to extract available filters
@@ -119,6 +117,11 @@ function ActivitiesContent() {
     });
 
     const activities = data || [];
+    
+    console.log("🎯 Raw data from query:", data);
+    console.log("🎯 Final activities for render:", activities.length);
+    console.log("🔍 Query error:", error);
+    console.log("⏳ Query loading:", isLoading);
 
     // --- Corrected Client-side filtering logic ---
     const filteredActivities = useMemo(() => {

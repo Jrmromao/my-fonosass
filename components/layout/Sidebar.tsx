@@ -4,10 +4,10 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Home, Menu, Calendar, Settings, X, Users, Gamepad, BarChart2, FileText, User } from "lucide-react"
+import { Menu, X, BarChart2, FileText, User } from "lucide-react"
 import { useClerk, UserButton, useUser } from "@clerk/nextjs"
 import { useUserRole } from "@/hooks/useUserRole"
-import { APP_NAME } from "@/utils/constants";
+import { APP_NAME } from "@/utils/constants"
 
 interface SidebarProps {
     className?: string
