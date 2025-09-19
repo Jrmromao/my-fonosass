@@ -9,7 +9,6 @@ import {auth} from "@clerk/nextjs/server";
 import ActivityType = $Enums.ActivityType;
 import PDFService from "@/services/PDFService";
 
-
 const s3Service = S3Service.getInstance();
 const pdfService = PDFService.getInstance();
 

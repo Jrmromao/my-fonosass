@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {Row} from "@tanstack/react-table";
 import {
     DropdownMenu,
@@ -6,6 +6,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ExercisePreviewModal } from "@/components/dialogs/exercise-preview-modal";
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>,
@@ -26,6 +27,8 @@ const DataTableRowActions = <TData, >({
                                           className = "",
                                           role
                                       }: DataTableRowActionsProps<TData>) => {
+    const [showPreview, setShowPreview] = useState(false);
+
     const handleDisable = () => {
 
     };
@@ -37,33 +40,53 @@ const DataTableRowActions = <TData, >({
     return (
         <div className={className}>
             <DropdownMenu>
-                <DropdownMenuTrigger>
-                    <span className="cusor-pointer sr-only sm:not-sr-only">...</span>
+                <DropdownMenuTrigger asChild>
+                    <button 
+                        type="button"
+                        className="inline-flex items-center justify-center w-8 h-8 cursor-pointer hover:bg-gray-100 rounded border-0 bg-transparent"
+                        aria-label="Actions"
+                    >
+                        <span className="text-gray-600">⋯</span>
+                    </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuCheckboxItem 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowPreview(true);
+                        }}
+                        className="cursor-pointer"
+                    >
+                        <span className="text-gray-700">Visualizar</span>
+                    </DropdownMenuCheckboxItem>
                     {onDelete && (
-                        <DropdownMenuCheckboxItem onClick={() => handleDelete()}>
-                            <div className={"cursor-pointer text-[#344054]"}> Delete</div>
+                        <DropdownMenuCheckboxItem onClick={() => handleDelete()} className="cursor-pointer">
+                            <span className="text-gray-700">Delete</span>
                         </DropdownMenuCheckboxItem>
                     )}
                     {onDisable && (
-                        <DropdownMenuCheckboxItem onClick={() => handleDisable()}>
-                            <div className={"cursor-pointer text-[#344054]"}> Delete</div>
+                        <DropdownMenuCheckboxItem onClick={() => handleDisable()} className="cursor-pointer">
+                            <span className="text-gray-700">Disable</span>
                         </DropdownMenuCheckboxItem>
                     )}
                     {onView && (
-                        <DropdownMenuCheckboxItem onClick={() => onView(row.original)}>
-                            <div className={"cursor-pointer text-[#344054]"}>View</div>
+                        <DropdownMenuCheckboxItem onClick={() => onView(row.original)} className="cursor-pointer">
+                            <span className="text-gray-700">View</span>
                         </DropdownMenuCheckboxItem>
                     )}
-
                     {onUpdate && (
-                        <DropdownMenuCheckboxItem onClick={() => onUpdate(row.original)}>
-                            <div className={"cursor-pointer text-[#344054]"}>Update</div>
+                        <DropdownMenuCheckboxItem onClick={() => onUpdate(row.original)} className="cursor-pointer">
+                            <span className="text-gray-700">Update</span>
                         </DropdownMenuCheckboxItem>
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
+            
+            <ExercisePreviewModal 
+                exercise={row.original}
+                isOpen={showPreview}
+                onClose={() => setShowPreview(false)}
+            />
         </div>
     );
 };

@@ -363,14 +363,22 @@ export const activitiesColumns = ({
         {
             id: "actions",
             cell: ({row}) => {
-                // Pass the role to DataTableRowActions if it needs it
+                const activity = row.original;
                 return (
-                    <DataTableRowActions
-                        row={row}
-                        onDelete={onDelete}
-                        onView={onView}
-                        role={role} // Pass role here
-                    />
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => alert(`Test: ${activity.name}`)}
+                            className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                        >
+                            Test
+                        </button>
+                        <DataTableRowActions
+                            row={row}
+                            onDelete={onDelete}
+                            onView={onView}
+                            role={role}
+                        />
+                    </div>
                 );
             },
         },

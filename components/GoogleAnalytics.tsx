@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 
 interface GoogleAnalyticsProps {
   GA_MEASUREMENT_ID: string;
@@ -16,7 +16,7 @@ declare global {
   }
 }
 
-export default function GoogleAnalytics({
+function GoogleAnalyticsInner({
   GA_MEASUREMENT_ID,
 }: GoogleAnalyticsProps): JSX.Element {
   const pathname = usePathname();
@@ -48,5 +48,15 @@ export default function GoogleAnalytics({
         `}
       </Script>
     </>
+  );
+}
+
+export default function GoogleAnalytics({
+  GA_MEASUREMENT_ID,
+}: GoogleAnalyticsProps): JSX.Element {
+  return (
+    <Suspense fallback={null}>
+      <GoogleAnalyticsInner GA_MEASUREMENT_ID={GA_MEASUREMENT_ID} />
+    </Suspense>
   );
 }

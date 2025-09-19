@@ -41,7 +41,7 @@ export function Sidebar({ className }: SidebarProps) {
         //     iconPlaceholder: "👥", // Placeholder for custom icon
         // },
         {
-            title: "Atividades",
+            title: "Exercícios",
             icon: FileText,
             href: "/dashboard/games",
             iconPlaceholder: "🎮", // Placeholder for custom icon
@@ -92,7 +92,7 @@ export function Sidebar({ className }: SidebarProps) {
     )
 
     return (
-        <>
+        <div suppressHydrationWarning={true}>
             <MobileMenuButton />
 
             {/* Mobile overlay */}
@@ -109,7 +109,9 @@ export function Sidebar({ className }: SidebarProps) {
                 isCollapsed ? "w-20" : "w-64",
                 isMobileMenuOpen ? "translate-x-0 shadow-xl" : "-translate-x-full md:translate-x-0",
                 className
-            )}>
+            )}
+            suppressHydrationWarning={true}
+            >
                 {/* Logo area */}
                 <div className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-teal-500">
@@ -170,13 +172,13 @@ export function Sidebar({ className }: SidebarProps) {
                                                 isCollapsed ? "h-6 w-6" : "h-5 w-5"
                                             )} />
                                             {/* Icon placeholder - replace with actual custom icon */}
-                                            <span className="text-xs opacity-60">
+                                            <span className="text-xs opacity-60" suppressHydrationWarning={true}>
                                                 {item.iconPlaceholder}
                                             </span>
                                         </div>
 
                                         {!isCollapsed && (
-                                            <span className="ml-3 text-sm font-medium">
+                                            <span className="ml-3 text-sm font-medium" suppressHydrationWarning={true}>
                                                 {item.title}
                                             </span>
                                         )}
@@ -202,10 +204,10 @@ export function Sidebar({ className }: SidebarProps) {
                                 <UserButton />
                                 {!isCollapsed && (
                                     <div className="ml-3 overflow-hidden">
-                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" suppressHydrationWarning={true}>
                                             {user.firstName || "User"}
                                         </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate" suppressHydrationWarning={true}>
                                             {user.primaryEmailAddress?.emailAddress || "user@example.com"}
                                         </p>
                                     </div>
@@ -231,6 +233,6 @@ export function Sidebar({ className }: SidebarProps) {
                 isCollapsed ? "md:ml-20" : "md:ml-64"
             )}>
             </div>
-        </>
+        </div>
     )
 }

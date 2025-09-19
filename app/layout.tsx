@@ -23,7 +23,8 @@ export default function RootLayout({
         <ClerkProvider localization={ptBR}>
             <html lang="pt-BR">
             <body
-                className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}>
+                className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
+                suppressHydrationWarning={true}>
             {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
                 <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
             )}

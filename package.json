@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
@@ -12,8 +13,12 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:all": "jest --testPathIgnorePatterns=''",
+    "test:integration": "playwright test",
+    "test:integration:ui": "playwright test --ui",
+    "test:week1": "playwright test week1-features.test.ts",
     "type-check": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:seed": "tsx scripts/seed-exercises.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.879.0",
@@ -75,6 +80,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.5.3",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@types/jest": "^29.5.14",
@@ -92,6 +98,7 @@
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.0",
     "ts-jest": "^29.2.5",
+    "tsx": "^4.20.5",
     "whatwg-fetch": "^3.6.20"
   },
   "lint-staged": {
