@@ -6,6 +6,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import {Providers} from "@/components/Providers";
 import { Analytics } from "@vercel/analytics/next"
 import GoogleAnalytics from "@/components/GoogleAnalytics"
+import ConsentManager from "@/components/legal/ConsentManager"
 
 const inter = Inter({subsets: ["latin"]})
 
@@ -32,6 +33,10 @@ export default function RootLayout({
                 {children}
                 <Analytics />
             </Providers>
+            <ConsentManager onConsentChange={(preferences) => {
+                // Handle consent preferences
+                console.log('Consent preferences:', preferences);
+            }} />
             <SpeedInsights />
             </body>
             </html>

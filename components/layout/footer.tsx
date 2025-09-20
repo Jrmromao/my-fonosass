@@ -154,15 +154,21 @@ export default function Footer() {
             <p className="text-xs leading-5 text-gray-500">
               &copy; 2024 FonoSaaS. Todos os direitos reservados.
             </p>
-            <div className="flex space-x-6 text-sm font-medium leading-6 text-gray-600">
-              <Link href="#" className="hover:text-indigo-600 transition-colors">
+            <div className="flex flex-wrap gap-4 text-sm font-medium leading-6 text-gray-600">
+              <Link href="/privacidade" className="hover:text-indigo-600 transition-colors">
                 Política de Privacidade
               </Link>
-              <Link href="#" className="hover:text-indigo-600 transition-colors">
+              <Link href="/termos" className="hover:text-indigo-600 transition-colors">
                 Termos de Uso
               </Link>
-              <Link href="#" className="hover:text-indigo-600 transition-colors">
+              <Link href="/cookies" className="hover:text-indigo-600 transition-colors">
                 Cookies
+              </Link>
+              <Link href="/lgpd" className="hover:text-indigo-600 transition-colors">
+                LGPD
+              </Link>
+              <Link href="/dpo" className="hover:text-indigo-600 transition-colors">
+                DPO
               </Link>
             </div>
           </div>
