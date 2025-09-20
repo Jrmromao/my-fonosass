@@ -317,7 +317,7 @@ export function UserProfile() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-700">Função</label>
-                    <p className="text-sm text-gray-900">{data.role}</p>
+                    <p className="text-sm text-gray-900">{data.user.role}</p>
                   </div>
                 </div>
                 
