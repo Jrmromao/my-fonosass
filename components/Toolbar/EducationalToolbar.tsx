@@ -1,25 +1,24 @@
 "use client"; // Ensure this is a client component
 
-import React, {useState, useEffect, useTransition, useCallback} from "react";
-import {
-    Cat,
-    Palette,
-    Car,
-    Briefcase,
-    Shirt,
-    MessageSquare,
-    Triangle,
-    User,
-    Hash,
-    Smile,
-    X
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import PhonemeDialog from "@/components/dialogs/phonemeDialog";
-import {ActivityWithFiles, Option} from "@/types/activity";
-import {getFileDownloadUrl} from "@/lib/actions/file-download.action";
-import {getActivitiesByPhoneme, getActivitiesByType} from "@/lib/actions/activity.action";
-import {ActivityType} from "@prisma/client";
+import { getActivitiesByType } from "@/lib/actions/activity.action";
+import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
+import { ActivityWithFiles } from "@/types/activity";
+import { ActivityType } from "@prisma/client";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+    Briefcase,
+    Car,
+    Cat,
+    Hash,
+    MessageSquare,
+    Palette,
+    Shirt,
+    Smile,
+    Triangle,
+    User
+} from "lucide-react";
+import React, { useCallback, useEffect, useState, useTransition } from "react";
 
 // Define TypeScript interfaces
 interface Type {
@@ -272,6 +271,31 @@ const EducationalToolbar: React.FC = () => {
     const ToolbarButton: React.FC<ToolbarButtonProps> = ({ category, index, onClick }) => {
         const isActive = activeTab === index;
         const isHovered = hoveredTab === index;
+        const [randomValues, setRandomValues] = useState<Array<{
+            left: number;
+            top: number;
+            opacity: number;
+            scale: number;
+            x: number;
+            y: number;
+            duration: number;
+            delay: number;
+        }>>([]);
+
+        useEffect(() => {
+            setRandomValues(
+                Array.from({ length: 4 }, () => ({
+                    left: 50 + (Math.random() * 40 - 20),
+                    top: 50 + (Math.random() * 40 - 20),
+                    opacity: Math.random() * 0.5 + 0.3,
+                    scale: Math.random() * 1.5 + 0.5,
+                    x: Math.random() * 40 - 20,
+                    y: Math.random() * 40 - 20,
+                    duration: Math.random() * 0.8 + 0.5,
+                    delay: Math.random() * 0.5 + 0.5,
+                }))
+            );
+        }, []);
 
         return (
             <motion.div
@@ -350,28 +374,28 @@ const EducationalToolbar: React.FC = () => {
                                 exit={{ opacity: 0 }}
                                 className="absolute inset-0 overflow-hidden pointer-events-none"
                             >
-                                {[...Array(4)].map((_, i) => (
+                                {randomValues.map((random, i) => (
                                     <motion.div
                                         key={i}
                                         className="absolute rounded-full w-2 h-2"
                                         style={{
-                                            left: `${50 + (Math.random() * 40 - 20)}%`,
-                                            top: `${50 + (Math.random() * 40 - 20)}%`,
+                                            left: `${random.left}%`,
+                                            top: `${random.top}%`,
                                             backgroundColor: "white",
-                                            opacity: Math.random() * 0.5 + 0.3,
+                                            opacity: random.opacity,
                                         }}
                                         initial={{ scale: 0, x: 0, y: 0 }}
                                         animate={{
-                                            scale: Math.random() * 1.5 + 0.5,
-                                            x: Math.random() * 40 - 20,
-                                            y: Math.random() * 40 - 20,
+                                            scale: random.scale,
+                                            x: random.x,
+                                            y: random.y,
                                             opacity: 0,
                                         }}
                                         transition={{
-                                            duration: Math.random() * 0.8 + 0.5,
+                                            duration: random.duration,
                                             repeat: Infinity,
                                             repeatType: "loop",
-                                            repeatDelay: Math.random() * 0.5 + 0.5,
+                                            repeatDelay: random.delay,
                                             ease: "easeOut",
                                         }}
                                     />

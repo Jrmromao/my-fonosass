@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button"
 import { useUserRole } from "@/hooks/useUserRole"
 import { cn } from "@/lib/utils"
 import { APP_NAME } from "@/utils/constants"
-import { useClerk, UserButton, useUser } from "@clerk/nextjs"
+import { useClerk, useUser } from "@clerk/nextjs"
 import { BarChart2, FileText, Menu, Shield, X } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import Footer from "./Footer"
 
 interface SidebarProps {
     className?: string
@@ -193,31 +194,7 @@ export function Sidebar({ className }: SidebarProps) {
                             !isCollapsed && "justify-between",
                             isCollapsed && "flex-col gap-3 items-center"
                         )}>
-                            <div className={cn(
-                                "flex items-center",
-                                isCollapsed && "flex-col gap-2"
-                            )}>
-                                <UserButton 
-                                    appearance={{
-                                        elements: {
-                                            avatarBox: "w-10 h-10"
-                                        }
-                                    }}
-                                    userProfileMode="navigation"
-                                    userProfileUrl="/dashboard/profile"
-                                />
-                                {!isCollapsed && (
-                                    <div className="ml-3 overflow-hidden">
-                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" suppressHydrationWarning={true}>
-                                            {user.firstName || "User"}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate" suppressHydrationWarning={true}>
-                                            {user.primaryEmailAddress?.emailAddress || "user@example.com"}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
+                            <Footer isCollapsed={isCollapsed} />
                         </div>
                     </div>
                 )}

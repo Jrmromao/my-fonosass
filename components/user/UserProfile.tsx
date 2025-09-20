@@ -1,9 +1,12 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Download, Edit3, Shield, Trash2 } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CreditCard, Download, Edit3, Lock, Shield, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -46,12 +49,21 @@ interface UserProfileData {
 
 export function UserProfile() {
   const { t } = useTranslation()
+  const searchParams = useSearchParams()
   const [data, setData] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile')
 
   useEffect(() => {
     fetchProfile()
   }, [])
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   const fetchProfile = async () => {
     try {
@@ -87,8 +99,33 @@ export function UserProfile() {
 
   return (
     <div className="space-y-6">
-      {/* Profile Header */}
-      <Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Meu Perfil</h1>
+          <p className="text-gray-600">Gerencie sua conta e acompanhe seu histórico de downloads</p>
+        </div>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="profile" className="flex items-center gap-2 px-4 py-2 text-sm">
+            <Edit3 className="h-4 w-4" />
+            Perfil
+          </TabsTrigger>
+          <TabsTrigger value="data" className="flex items-center gap-2 px-4 py-2 text-sm">
+            <Shield className="h-4 w-4" />
+            Meus Dados
+          </TabsTrigger>
+          <TabsTrigger value="subscription" className="flex items-center gap-2 px-4 py-2 text-sm">
+            <CreditCard className="h-4 w-4" />
+            Assinatura
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2 px-4 py-2 text-sm">
+            <Lock className="h-4 w-4" />
+            Segurança
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile" className="space-y-6">
+          {/* Profile Header */}
+          <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -256,6 +293,106 @@ export function UserProfile() {
           </div>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Meus Dados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Nome Completo</label>
+                    <p className="text-sm text-gray-900">{data.user.fullName}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Email</label>
+                    <p className="text-sm text-gray-900">{data.user.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">ID do Usuário</label>
+                    <p className="text-sm text-gray-900 font-mono">{data.user.id}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Função</label>
+                    <p className="text-sm text-gray-900">{data.role}</p>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Ações de Dados</h4>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/data-rights">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Gerenciar Dados
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar Dados
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="subscription" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Assinatura</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Plano Atual</p>
+                    <p className="text-sm text-gray-500">{data.subscription.tier}</p>
+                  </div>
+                  <Badge variant={data.subscription.tier === 'PRO' ? 'default' : 'secondary'}>
+                    {data.subscription.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
+                  </Badge>
+                </div>
+                {data.subscription.tier === 'FREE' && (
+                  <Button onClick={async () => {
+                    try {
+                      const response = await fetch('/api/stripe/create-checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                      })
+                      
+                      const result = await response.json()
+                      
+                      if (result.url) {
+                        window.location.href = result.url
+                      }
+                    } catch (error) {
+                      console.error('Error creating checkout:', error)
+                    }
+                  }}>
+                    Upgrade Pro
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Segurança</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500">Configurações de segurança serão implementadas aqui.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

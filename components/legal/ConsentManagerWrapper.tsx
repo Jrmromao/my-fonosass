@@ -1,13 +1,8 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-
-const EnhancedConsentManager = dynamic(() => import('./EnhancedConsentManager'), {
-  ssr: false,
-  loading: () => null
-});
+import EnhancedConsentManager from './EnhancedConsentManager';
 
 export default function ConsentManagerWrapper() {
   const [isClient, setIsClient] = useState(false);
