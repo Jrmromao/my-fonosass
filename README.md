@@ -14,6 +14,7 @@
 - **[Referência Rápida](./docs/knowledge-base/cursor-quick-reference.md)** - Para trabalho diário
 - **[Guias de Desenvolvimento](./docs/knowledge-base/development-guidelines.md)** - Padrões de código
 - **[Erros e Soluções](./docs/knowledge-base/mistakes-and-solutions.md)** - Lições aprendidas
+- **[Configuração Cursor](./.cursor/README.md)** - Configuração do Cursor AI
 
 ---
 

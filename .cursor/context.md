@@ -66,3 +66,10 @@
 - Look at similar code in the project
 - Ask for clarification rather than guessing
 - Prioritize security and LGPD compliance
+
+## 🧠 Session Learning Integration
+- **Session Data**: `.cursor/sessions/` - Personal development history
+- **Learning Context**: `.cursor/sessions/context/` - AI learning data
+- **Quick Commands**: Use `bank!` to save session, `session:*` commands for management
+- **AI Learning**: Cursor AI learns from past sessions to avoid repeating mistakes
+- **Personalized Assistance**: AI provides context-aware suggestions based on development history

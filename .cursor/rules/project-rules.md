@@ -91,4 +91,38 @@ yarn build              # Build for production
 - Ask for clarification rather than guessing
 - Prioritize security and LGPD compliance
 
+## 🤖 CURSOR AI ENHANCEMENT RULES
+
+### When AI Suggests Code:
+1. **Always validate** against our knowledge base
+2. **Check security implications** before accepting
+3. **Verify LGPD compliance** for any data handling
+4. **Test with our commands** before committing
+5. **Follow our established patterns** exactly
+
+### AI Code Review Checklist:
+- [ ] TypeScript strict mode compliant
+- [ ] No `any` types used
+- [ ] Input validation with Zod
+- [ ] Portuguese language support
+- [ ] LGPD compliance maintained
+- [ ] Security best practices followed
+- [ ] Brazilian market requirements met
+- [ ] Tests included for new features
+
+### AI Prompting Best Practices:
+- Always mention "FonoSaaS" and "LGPD compliance"
+- Reference specific knowledge base sections
+- Ask for Brazilian market considerations
+- Request security review for sensitive features
+- Specify TypeScript strict mode requirements
+
+### Code Generation Guidelines:
+- Use our established component patterns
+- Include proper error handling
+- Add comprehensive TypeScript types
+- Implement Brazilian formatting (dates, currency, phone)
+- Include LGPD compliance considerations
+- Follow our security validation patterns
+
 Remember: This is a Brazilian healthcare SaaS application with strict LGPD compliance requirements. Always prioritize security, data protection, and user experience!
