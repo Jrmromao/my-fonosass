@@ -1,25 +1,23 @@
 "use client"
 
-import { Upload, X, FileIcon, File, AlertCircle } from "lucide-react"
-import { useState, useCallback } from "react"
+import { ALLOWED_FILE_TYPES, BrowserFile, MAX_FILE_SIZE, validateFile } from "@/lib/security/fileValidation"
+import { AlertCircle, FileIcon, Upload, X } from "lucide-react"
+import { useCallback, useState } from "react"
 import { useDropzone } from "react-dropzone"
 
 interface DropzoneProps {
     onFilesAdded?: (files: File[]) => void
     maxFiles?: number
     maxSize?: number // in bytes
-    accept?: Record<string, string[]>
+    accept?: Record<string, readonly string[]>
     className?: string
 }
 
 export function Dropzone({
                              onFilesAdded,
                              maxFiles = 1,
-                             maxSize = 10 * 1024 * 1024, // 10MB default
-                             accept = {
-                                 'application/pdf': ['.pdf'],
-                                 'image/*': ['.png', '.jpg', '.jpeg'],
-                             },
+                             maxSize = MAX_FILE_SIZE, // Use secure default
+                             accept = ALLOWED_FILE_TYPES, // Use secure allowed types
                              className
                          }: DropzoneProps) {
     const [files, setFiles] = useState<File[]>([])
@@ -40,7 +38,19 @@ export function Dropzone({
             return
         }
 
-        const newFiles = [...files, ...acceptedFiles]
+        // Additional security validation for accepted files
+        const validFiles: File[] = []
+        for (const file of acceptedFiles) {
+            const validation = validateFile(file as BrowserFile)
+            if (validation.valid) {
+                validFiles.push(file)
+            } else {
+                setError(validation.error || "Arquivo inválido")
+                return
+            }
+        }
+
+        const newFiles = [...files, ...validFiles]
         setFiles(newFiles)
         setError(null)
         onFilesAdded?.(newFiles)

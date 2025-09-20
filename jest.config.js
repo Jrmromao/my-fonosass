@@ -11,8 +11,14 @@ module.exports = {
             useESM: true,
             tsconfig: 'tsconfig.json',
         }],
+        '^.+\\.(js|jsx)$': ['babel-jest', {
+            presets: ['@babel/preset-env', '@babel/preset-react'],
+        }],
     },
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+    transformIgnorePatterns: [
+        'node_modules/(?!(.*\\.mjs$|@clerk|json2csv))',
+    ],
+    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'mjs'],
     testPathIgnorePatterns: ['/node_modules/', '/.next/', '/dist/', '/__tests__/setup/'],
     testMatch: [
         '<rootDir>/__tests__/unit/**/*.test.{js,jsx,ts,tsx}',

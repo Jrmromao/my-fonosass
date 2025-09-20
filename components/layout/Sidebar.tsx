@@ -1,13 +1,13 @@
 'use client'
-import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { useUserRole } from "@/hooks/useUserRole"
+import { cn } from "@/lib/utils"
+import { APP_NAME } from "@/utils/constants"
+import { useClerk, UserButton, useUser } from "@clerk/nextjs"
+import { BarChart2, FileText, Menu, Shield, X } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Menu, X, BarChart2, FileText, User } from "lucide-react"
-import { useClerk, UserButton, useUser } from "@clerk/nextjs"
-import { useUserRole } from "@/hooks/useUserRole"
-import { APP_NAME } from "@/utils/constants"
+import { useEffect, useState } from "react"
 
 interface SidebarProps {
     className?: string
@@ -33,6 +33,11 @@ export function Sidebar({ className }: SidebarProps) {
             title: "Exercícios",
             icon: FileText,
             href: "/dashboard/games",
+        },
+        {
+            title: "Meus Dados",
+            icon: Shield,
+            href: "/data-rights",
         },
         // {
         //     title: "Pacientes",

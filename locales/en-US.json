@@ -1,0 +1,119 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "download": "Download",
+    "upload": "Upload",
+    "export": "Export",
+    "import": "Import"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "exercises": "Exercises",
+    "myData": "My Data",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "dataRights": {
+    "title": "Data Subject Rights Portal",
+    "description": "Manage your personal data in compliance with LGPD (Lei Geral de Proteção de Dados)",
+    "export": {
+      "title": "Data Export",
+      "description": "Download a copy of all your personal data stored in our system",
+      "jsonButton": "Export as JSON",
+      "csvButton": "Export as CSV",
+      "pdfButton": "Export as PDF",
+      "recentRequests": "Recent Export Requests",
+      "requestedOn": "Requested on",
+      "downloadButton": "Download"
+    },
+    "rectification": {
+      "title": "Data Rectification",
+      "description": "Request corrections to your personal data",
+      "requestButton": "Request Data Correction",
+      "fieldLabel": "Field to Correct",
+      "currentValueLabel": "Current Value (if known)",
+      "correctedValueLabel": "Corrected Value",
+      "reasonLabel": "Reason for Correction",
+      "fieldOptions": {
+        "fullName": "Full Name",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "other": "Other"
+      },
+      "placeholders": {
+        "selectField": "Select field",
+        "currentValue": "Enter current value",
+        "correctedValue": "Enter corrected value",
+        "reason": "Please explain why this correction is needed"
+      },
+      "recentRequests": "Recent Correction Requests"
+    },
+    "deletion": {
+      "title": "Data Deletion",
+      "description": "Permanently delete all your personal data from our system",
+      "warning": "Warning",
+      "warningText": "This action cannot be undone. All your data, including your account, will be permanently deleted and cannot be recovered.",
+      "requestButton": "Request Data Deletion",
+      "confirmWarning": "Are you absolutely sure you want to delete all your data? This action is irreversible.",
+      "confirmText": "Yes, Delete All My Data",
+      "confirmButton": "Yes, Delete All My Data"
+    },
+    "status": {
+      "pending": "PENDING",
+      "completed": "COMPLETED",
+      "failed": "FAILED",
+      "expired": "EXPIRED",
+      "approved": "APPROVED",
+      "rejected": "REJECTED"
+    },
+    "messages": {
+      "exportSubmitted": "Export Request Submitted",
+      "exportSubmittedDesc": "Your data export request has been submitted. You will receive an email when ready.",
+      "deletionInitiated": "Data Deletion Initiated",
+      "deletionInitiatedDesc": "Your account and all associated data will be permanently deleted.",
+      "correctionSubmitted": "Correction Request Submitted",
+      "correctionSubmittedDesc": "Your data correction request has been submitted for review.",
+      "validationError": "Validation Error",
+      "validationErrorDesc": "Please fill in all required fields.",
+      "error": "Error",
+      "errorDesc": "An error occurred. Please try again."
+    }
+  },
+  "userProfile": {
+    "title": "My Profile",
+    "subtitle": "Manage your account and track your download history",
+    "totalDownloads": "Total Downloads",
+    "uniqueExercises": "Unique Exercises",
+    "remainingDownloads": "Remaining Downloads",
+    "unlimited": "Unlimited",
+    "thisMonth": "This month",
+    "downloadHistory": "Download History",
+    "noDownloads": "No downloads yet",
+    "dataRights": {
+      "title": "Data Protection Rights (LGPD)",
+      "description": "Manage your personal data in accordance with the General Data Protection Law (LGPD). You have the right to access, correct, export and delete your data.",
+      "exportButton": "Export Data",
+      "correctButton": "Correct Data",
+      "deleteButton": "Delete Data",
+      "accessPortalButton": "Access Data Portal"
+    }
+  }
+}

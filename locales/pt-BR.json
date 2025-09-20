@@ -1,0 +1,119 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Visualizar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "refresh": "Atualizar",
+    "download": "Baixar",
+    "upload": "Enviar",
+    "export": "Exportar",
+    "import": "Importar"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "exercises": "Exercícios",
+    "myData": "Meus Dados",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "logout": "Sair"
+  },
+  "dataRights": {
+    "title": "Portal de Direitos de Proteção de Dados",
+    "description": "Gerencie seus dados pessoais em conformidade com a LGPD (Lei Geral de Proteção de Dados)",
+    "export": {
+      "title": "Exportação de Dados",
+      "description": "Baixe uma cópia de todos os seus dados pessoais armazenados em nosso sistema",
+      "jsonButton": "Exportar como JSON",
+      "csvButton": "Exportar como CSV",
+      "pdfButton": "Exportar como PDF",
+      "recentRequests": "Solicitações de Exportação Recentes",
+      "requestedOn": "Solicitado em",
+      "downloadButton": "Baixar"
+    },
+    "rectification": {
+      "title": "Retificação de Dados",
+      "description": "Solicite correções aos seus dados pessoais",
+      "requestButton": "Solicitar Correção de Dados",
+      "fieldLabel": "Campo para Corrigir",
+      "currentValueLabel": "Valor Atual (se conhecido)",
+      "correctedValueLabel": "Valor Corrigido",
+      "reasonLabel": "Motivo da Correção",
+      "fieldOptions": {
+        "fullName": "Nome Completo",
+        "email": "Endereço de Email",
+        "phone": "Número de Telefone",
+        "other": "Outro"
+      },
+      "placeholders": {
+        "selectField": "Selecione o campo",
+        "currentValue": "Digite o valor atual",
+        "correctedValue": "Digite o valor corrigido",
+        "reason": "Por favor, explique por que esta correção é necessária"
+      },
+      "recentRequests": "Solicitações de Correção Recentes"
+    },
+    "deletion": {
+      "title": "Exclusão de Dados",
+      "description": "Exclua permanentemente todos os seus dados pessoais do nosso sistema",
+      "warning": "Atenção",
+      "warningText": "Esta ação não pode ser desfeita. Todos os seus dados, incluindo sua conta, serão permanentemente excluídos e não poderão ser recuperados.",
+      "requestButton": "Solicitar Exclusão de Dados",
+      "confirmWarning": "Tem certeza absoluta de que deseja excluir todos os seus dados? Esta ação é irreversível.",
+      "confirmText": "Sim, Excluir Todos os Meus Dados",
+      "confirmButton": "Sim, Excluir Todos os Meus Dados"
+    },
+    "status": {
+      "pending": "PENDENTE",
+      "completed": "CONCLUÍDO",
+      "failed": "FALHOU",
+      "expired": "EXPIRADO",
+      "approved": "APROVADO",
+      "rejected": "REJEITADO"
+    },
+    "messages": {
+      "exportSubmitted": "Solicitação de Exportação Enviada",
+      "exportSubmittedDesc": "Sua solicitação de exportação de dados foi enviada. Você receberá um email quando estiver pronta.",
+      "deletionInitiated": "Exclusão de Dados Iniciada",
+      "deletionInitiatedDesc": "Sua conta e todos os dados associados serão permanentemente excluídos.",
+      "correctionSubmitted": "Solicitação de Correção Enviada",
+      "correctionSubmittedDesc": "Sua solicitação de correção de dados foi enviada para análise.",
+      "validationError": "Erro de Validação",
+      "validationErrorDesc": "Por favor, preencha todos os campos obrigatórios.",
+      "error": "Erro",
+      "errorDesc": "Ocorreu um erro. Tente novamente."
+    }
+  },
+  "userProfile": {
+    "title": "Meu Perfil",
+    "subtitle": "Gerencie sua conta e acompanhe seu histórico de downloads",
+    "totalDownloads": "Total de Downloads",
+    "uniqueExercises": "Exercícios Únicos",
+    "remainingDownloads": "Downloads Restantes",
+    "unlimited": "Ilimitado",
+    "thisMonth": "Este mês",
+    "downloadHistory": "Histórico de Downloads",
+    "noDownloads": "Nenhum download realizado ainda",
+    "dataRights": {
+      "title": "Direitos de Proteção de Dados (LGPD)",
+      "description": "Gerencie seus dados pessoais conforme a Lei Geral de Proteção de Dados (LGPD). Você tem o direito de acessar, corrigir, exportar e excluir seus dados.",
+      "exportButton": "Exportar Dados",
+      "correctButton": "Corrigir Dados",
+      "deleteButton": "Excluir Dados",
+      "accessPortalButton": "Acessar Portal de Dados"
+    }
+  }
+}

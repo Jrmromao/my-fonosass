@@ -20,3 +20,85 @@ process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL = '/sign-in';
 process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL = '/sign-up';
 process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = '/dashboard';
 process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = '/dashboard';
+
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/',
+}));
+
+// Mock react-i18next
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => key,
+    i18n: {
+      language: 'pt-BR',
+      changeLanguage: jest.fn(),
+    },
+  }),
+}));
+
+// Mock Clerk
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: jest.fn(),
+}));
+
+// Mock Prisma
+jest.mock('@/app/db', () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  },
+}));
+
+// Mock DownloadLimitService
+jest.mock('@/services/downloadLimitService', () => ({
+  DownloadLimitService: {
+    getUserStats: jest.fn(),
+    checkDownloadLimit: jest.fn(),
+  },
+}));
+
+// Mock json2csv
+jest.mock('json2csv', () => ({
+  parse: jest.fn((data) => 'mocked,csv,data'),
+}));
+
+// Mock NextResponse
+jest.mock('next/server', () => ({
+  NextResponse: {
+    json: jest.fn((data, init) => {
+      const response = new Response(JSON.stringify(data), {
+        status: init?.status || 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...init?.headers,
+        },
+      });
+      return response;
+    }),
+  },
+}));
+
+// Mock window.location for tests
+Object.defineProperty(window, 'location', {
+  value: {
+    href: 'http://localhost:3000',
+    origin: 'http://localhost:3000',
+    pathname: '/',
+    search: '',
+    hash: '',
+  },
+  writable: true,
+});

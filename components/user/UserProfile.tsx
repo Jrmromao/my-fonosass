@@ -1,8 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Download, Edit3, Shield, Trash2 } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface UserProfileData {
   user: {
@@ -42,6 +45,7 @@ interface UserProfileData {
 }
 
 export function UserProfile() {
+  const { t } = useTranslation()
   const [data, setData] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -204,6 +208,52 @@ export function UserProfile() {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Data Subject Rights */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-blue-800">
+            <Shield className="h-5 w-5" />
+            {t('userProfile.dataRights.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-blue-700 mb-4">
+            {t('userProfile.dataRights.description')}
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Link href="/data-rights">
+              <Button variant="outline" className="w-full justify-start gap-2 border-blue-300 text-blue-700 hover:bg-blue-100">
+                <Download className="h-4 w-4" />
+                {t('userProfile.dataRights.exportButton')}
+              </Button>
+            </Link>
+            
+            <Link href="/data-rights">
+              <Button variant="outline" className="w-full justify-start gap-2 border-blue-300 text-blue-700 hover:bg-blue-100">
+                <Edit3 className="h-4 w-4" />
+                {t('userProfile.dataRights.correctButton')}
+              </Button>
+            </Link>
+            
+            <Link href="/data-rights">
+              <Button variant="outline" className="w-full justify-start gap-2 border-red-300 text-red-700 hover:bg-red-100">
+                <Trash2 className="h-4 w-4" />
+                {t('userProfile.dataRights.deleteButton')}
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-blue-200">
+            <Link href="/data-rights">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                {t('userProfile.dataRights.accessPortalButton')}
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

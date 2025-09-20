@@ -1,13 +1,13 @@
 "use server";
 
+import { prisma } from "@/app/db";
+import PDFService from "@/services/PDFService";
+import S3Service from "@/services/S3Service";
+import { auth } from "@clerk/nextjs/server";
+import { $Enums, ActivityDifficulty, AgeRange } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { prisma } from "@/app/db";
-import {$Enums, ActivityDifficulty, AgeRange} from "@prisma/client";
-import S3Service from "@/services/S3Service";
-import {auth} from "@clerk/nextjs/server";
 import ActivityType = $Enums.ActivityType;
-import PDFService from "@/services/PDFService";
 
 const s3Service = S3Service.getInstance();
 const pdfService = PDFService.getInstance();
@@ -41,9 +41,11 @@ type ActivityInput = {
  * Create a new activity
  */
 
+import { fileUploadRateLimiter, validateFile, validateFileContentAsync } from "@/lib/security/fileValidation";
+import { sanitizeHtml, sanitizeInput } from "@/lib/security/inputValidation";
+import { Buffer } from "buffer";
 import fs from "fs/promises";
 import path from "path";
-import { Buffer } from "buffer";
 
 // Define ActivityType for type safety
 
@@ -58,13 +60,22 @@ export async function createActivity(formData: FormData) {
 
         console.log(formData);
 
-        // Extract data from FormData
-        const name = formData.get("name") as string;
-        const description = formData.get("description") as string;
+        // Extract and sanitize data from FormData
+        const name = sanitizeInput(formData.get("name") as string, 100);
+        const description = sanitizeHtml(formData.get("description") as string);
         const type = (formData.get("type") as string) || "OTHER";
         const difficulty = (formData.get("difficulty") as string) || "BEGINNER";
         const ageRange = (formData.get("ageRange") as string) || "ADULT";
-        const phoneme = formData.get("phoneme") as string;
+        const phoneme = sanitizeInput(formData.get("phoneme") as string, 50);
+
+        // Validate required fields
+        if (!name || name.length < 3) {
+            return { success: false, error: "Nome deve ter pelo menos 3 caracteres" };
+        }
+
+        if (!description || description.length < 10) {
+            return { success: false, error: "Descrição deve ter pelo menos 10 caracteres" };
+        }
 
         // Create activity in database
         const activity = await prisma.activity.create({
@@ -89,7 +100,7 @@ export async function createActivity(formData: FormData) {
             .filter(([key]) => key.startsWith("file-"))
             .map(([_, file]) => file);
 
-        // Process files
+        // Process files with security validation
         if (fileEntries.length > 0) {
             const user = await prisma.user.findUnique({
                 where: { clerkUserId: userId },
@@ -97,6 +108,12 @@ export async function createActivity(formData: FormData) {
             });
 
             if (user) {
+                // Check rate limiting
+                const rateLimitCheck = fileUploadRateLimiter.canUpload(userId);
+                if (!rateLimitCheck.allowed) {
+                    return { success: false, error: rateLimitCheck.error };
+                }
+
                 // Load the app logo
                 let logoBuffer: Buffer;
                 try {
@@ -109,17 +126,33 @@ export async function createActivity(formData: FormData) {
 
                 for (const file of fileEntries) {
                     if (!(file instanceof File)) continue;
+
+                    // Validate file security
+                    const fileValidation = validateFile(file as any);
+                    if (!fileValidation.valid) {
+                        console.error("File validation failed:", fileValidation.error);
+                        return { success: false, error: fileValidation.error };
+                    }
+
+                    // Validate file content
+                    const contentValidation = await validateFileContentAsync(file as any);
+                    if (!contentValidation.valid) {
+                        console.error("File content validation failed:", contentValidation.error);
+                        return { success: false, error: contentValidation.error };
+                    }
+
                     let s3Result: any;
 
                     try {
                         const buffer = Buffer.from(await file.arrayBuffer());
+                        const safeFilename = fileValidation.sanitizedFilename || file.name;
 
                         if (file.type === "application/pdf") {
                             s3Result = await pdfService.watermarkAndUploadPDF(
                                 buffer,
                                 logoBuffer, // Pass the logo Buffer
                                 "Fomosaas", // Keep original text watermark
-                                `${activity.id}/${file.name}`,
+                                `${activity.id}/${safeFilename}`,
                                 {
                                     logoScale: 0.5, // 10% of original logo size
                                     tileSpacing: 150, // 150px between logos
@@ -129,7 +162,7 @@ export async function createActivity(formData: FormData) {
                             );
                         } else {
                             s3Result = await s3Service.uploadFile(
-                                `${activity.id}/${file.name}`,
+                                `${activity.id}/${safeFilename}`,
                                 buffer,
                                 file.type
                             );
@@ -138,8 +171,8 @@ export async function createActivity(formData: FormData) {
                         await prisma.activityFile.create({
                             data: {
                                 activityId: activity.id,
-                                name: file.name,
-                                s3Key: `${activity.id}/${file.name}`,
+                                name: safeFilename,
+                                s3Key: `${activity.id}/${safeFilename}`,
                                 s3Url: s3Result.Location || "",
                                 fileType: file.type,
                                 sizeInBytes: buffer.length,
@@ -148,6 +181,7 @@ export async function createActivity(formData: FormData) {
                         });
                     } catch (fileError) {
                         console.error("Error processing file:", fileError);
+                        return { success: false, error: "Erro ao processar arquivo. Tente novamente." };
                     }
                 }
             }
