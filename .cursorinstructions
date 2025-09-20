@@ -1,0 +1,76 @@
+# FonoSaaS Cursor Instructions
+
+## 🧠 KNOWLEDGE BASE LOCATION
+The complete knowledge base is located in `docs/knowledge-base/` directory.
+
+**START HERE**: Read `docs/knowledge-base/index.md` first, then `docs/knowledge-base/SUMMARY.md`
+
+## 🚨 CRITICAL RULES
+- NEVER hardcode credentials or personal data
+- NEVER remove LGPD compliance features
+- NEVER use `any` type in TypeScript
+- NEVER call server actions from client components
+- NEVER upgrade to Tailwind CSS v4
+- ALWAYS use environment variables for sensitive data
+- ALWAYS validate inputs with Zod schemas
+- ALWAYS maintain Portuguese language support
+
+## 🏗️ PROJECT CONTEXT
+- Brazilian healthcare SaaS for fonoaudiologists
+- Domain: almanaquedafala.com.br
+- LGPD compliance is MANDATORY
+- Production ready with 31 pages
+- Performance optimized (102kB bundle)
+
+## 📚 BEFORE ANY CHANGES
+1. Read the knowledge base documentation
+2. Check similar implementations
+3. Follow established patterns
+4. Test with `yarn build`
+5. Ensure LGPD compliance
+
+## 🛠️ TECH STACK
+- Next.js 15.5.3 (App Router)
+- TypeScript (strict mode)
+- Tailwind CSS v3 (NOT v4)
+- Prisma + PostgreSQL
+- Clerk authentication
+- Stripe payments
+- AWS S3 storage
+
+## 🔒 SECURITY
+- Input validation with Zod
+- Authentication on all API routes
+- Rate limiting (tiered)
+- Security headers
+- CSRF protection
+- LGPD compliance
+
+## 📁 KEY FILES
+- `app/layout.tsx` - Root layout
+- `components/legal/ConsentManager.tsx` - Cookie consent
+- `middleware.ts` - Authentication
+- `next.config.ts` - Security headers
+- `lib/security/validation.ts` - Input validation
+
+## 🧪 TESTING
+```bash
+yarn test               # All tests
+yarn test:security      # Security tests
+yarn lint               # ESLint
+yarn type-check         # TypeScript
+yarn build              # Production build
+```
+
+## 🇧🇷 BRAZILIAN REQUIREMENTS
+- Portuguese language
+- Brazilian date format (DD/MM/YYYY)
+- Brazilian currency (R$)
+- LGPD compliance
+- CFFa regulations
+
+## 🆘 WHEN IN DOUBT
+- Check knowledge base first
+- Look at similar code
+- Ask for clarification
+- Prioritize security and LGPD compliance

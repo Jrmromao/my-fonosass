@@ -1,0 +1,68 @@
+# FonoSaaS Context for Cursor
+
+## Project Overview
+- **Name**: FonoSaaS (Almanaque da Fala)
+- **Domain**: almanaquedafala.com.br
+- **Purpose**: Brazilian healthcare SaaS for fonoaudiologists
+- **Status**: Production Ready
+- **Compliance**: LGPD Compliant
+
+## Critical Knowledge Base
+- **Main Entry**: `docs/knowledge-base/index.md`
+- **Quick Reference**: `docs/knowledge-base/cursor-quick-reference.md`
+- **Complete Summary**: `docs/knowledge-base/SUMMARY.md`
+- **Development Guidelines**: `docs/knowledge-base/development-guidelines.md`
+- **Mistakes & Solutions**: `docs/knowledge-base/mistakes-and-solutions.md`
+
+## Tech Stack
+- Next.js 15.5.3 (App Router)
+- TypeScript (strict mode)
+- Tailwind CSS v3 (NOT v4)
+- Prisma + PostgreSQL
+- Clerk authentication
+- Stripe payments
+- AWS S3 storage
+
+## Critical Rules
+- NEVER hardcode credentials or personal data
+- NEVER remove LGPD compliance features
+- NEVER use `any` type in TypeScript
+- NEVER call server actions from client components
+- NEVER upgrade to Tailwind CSS v4
+- ALWAYS use environment variables for sensitive data
+- ALWAYS validate inputs with Zod schemas
+- ALWAYS maintain Portuguese language support
+
+## Key Files
+- `app/layout.tsx` - Root layout with ConsentManager
+- `components/legal/ConsentManager.tsx` - Cookie consent management
+- `middleware.ts` - Authentication and rate limiting
+- `next.config.ts` - Security headers and configuration
+- `lib/security/validation.ts` - Input validation utilities
+
+## Testing Commands
+- `yarn test` - Run all tests
+- `yarn test:security` - Run security tests
+- `yarn lint` - Run ESLint
+- `yarn type-check` - TypeScript checking
+- `yarn build` - Production build
+
+## Brazilian Requirements
+- Portuguese language (Brazil)
+- Brazilian date format (DD/MM/YYYY)
+- Brazilian currency (R$)
+- LGPD compliance (mandatory)
+- CFFa regulations
+
+## Before Making Changes
+1. Read the knowledge base documentation
+2. Check similar implementations in the codebase
+3. Follow established patterns
+4. Test with `yarn build`
+5. Ensure LGPD compliance is maintained
+
+## When in Doubt
+- Check the knowledge base first
+- Look at similar code in the project
+- Ask for clarification rather than guessing
+- Prioritize security and LGPD compliance
