@@ -71,12 +71,58 @@ yarn type-check         # TypeScript checking
 yarn build              # Build for production
 ```
 
+## 📦 PACKAGE MANAGER RULES
+- **ALWAYS use `yarn`** - Never use `npm` commands
+- Install packages: `yarn add <package>`
+- Remove packages: `yarn remove <package>`
+- Run scripts: `yarn <script-name>`
+- Update packages: `yarn upgrade`
+
+## 🗄️ PRISMA SCHEMA CHANGES (CRITICAL)
+**EVERY schema change requires assessment and proper handling:**
+
+### When Migration IS Needed:
+- New models, fields, or relationships
+- Field type changes
+- Index changes
+- Enum changes
+- Constraint changes
+
+**Commands:**
+```bash
+npx prisma migrate dev --name <descriptive-name>
+npx prisma generate
+```
+
+### When Migration NOT Needed:
+- Adding comments only
+- Reordering fields (without type changes)
+- Schema documentation changes
+
+**Commands:**
+```bash
+npx prisma generate
+```
+
+### 🚨 FORBIDDEN PRISMA COMMANDS:
+- ❌ **NEVER use**: `npx prisma db push` - Bypasses migration history
+- ❌ **NEVER use**: `prisma db push` - Can cause data loss
+- ❌ **NEVER use**: `yarn prisma db push` - Use npx for Prisma commands
+
+### Always Verify After Changes:
+1. Database schema updated correctly
+2. Prisma client regenerated
+3. TypeScript compilation successful (`yarn build`)
+4. Database operations work as expected
+
 ## 🚫 COMMON ANTI-PATTERNS TO AVOID
 - Server actions in client components
 - Hardcoded values
 - Missing input validation
 - Using `any` type in TypeScript
 - Upgrading to Tailwind CSS v4
+- **Using `prisma db push`** - Always use proper migrations
+- **Using `npm` commands** - Always use yarn
 
 ## 📚 BEFORE MAKING CHANGES
 1. Read the knowledge base documentation
@@ -116,6 +162,8 @@ yarn build              # Build for production
 - Ask for Brazilian market considerations
 - Request security review for sensitive features
 - Specify TypeScript strict mode requirements
+- **For Prisma changes**: Always assess migration need and provide proper commands
+- **Always specify yarn**: Never suggest npm commands
 
 ### Code Generation Guidelines:
 - Use our established component patterns

@@ -47,6 +47,58 @@
 - `yarn type-check` - TypeScript checking
 - `yarn build` - Production build
 
+## Package Manager
+- **ALWAYS use `yarn`** - Never use `npm` commands
+- All package management operations must use yarn
+- Install dependencies: `yarn add <package>`
+- Remove dependencies: `yarn remove <package>`
+- Run scripts: `yarn <script-name>`
+
+## Prisma Schema Changes Workflow
+**CRITICAL**: Every time we make changes to `prisma/schema.prisma`:
+
+1. **Assess Migration Need**: Check if changes require a database migration
+   - New models, fields, or relationships = Migration needed
+   - Field type changes = Migration needed
+   - Index changes = Migration needed
+   - Enum changes = Migration needed
+
+2. **If Migration Needed**:
+   ```bash
+   npx prisma migrate dev --name <descriptive-name>
+   npx prisma generate
+   ```
+
+3. **If No Migration Needed** (schema-only changes):
+   ```bash
+   npx prisma generate
+   ```
+
+4. **Always Verify**:
+   - Check that the database schema is updated correctly
+   - Verify Prisma client is regenerated
+   - Test the changes work as expected
+   - Run `yarn build` to ensure no TypeScript errors
+
+## 🚨 PRISMA COMMAND RULES
+- ✅ **ALWAYS use**: `npx prisma migrate dev` for schema changes
+- ✅ **ALWAYS use**: `npx prisma generate` after changes
+- ❌ **NEVER use**: `npx prisma db push` - This bypasses migration history and can cause data loss
+- ❌ **NEVER use**: `prisma db push` - Always use proper migrations
+
+**Examples of Changes Requiring Migration**:
+- Adding new models
+- Adding/removing fields
+- Changing field types
+- Adding/removing indexes
+- Adding/removing relationships
+- Changing enum values
+
+**Examples of Changes NOT Requiring Migration**:
+- Adding comments to schema
+- Reordering fields (without changing types)
+- Adding/removing comments only
+
 ## Brazilian Requirements
 - Portuguese language (Brazil)
 - Brazilian date format (DD/MM/YYYY)

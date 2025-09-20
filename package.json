@@ -27,6 +27,7 @@
     "type-check": "tsc --noEmit",
     "prepare": "husky",
     "db:seed": "tsx scripts/seed-exercises.ts",
+    "db:diagnose": "node scripts/db-diagnose.js",
     "security:test": "bash scripts/security-test.sh",
     "security:audit": "npm audit --audit-level=moderate",
     "security:fix": "node scripts/fix-critical-security.js",
