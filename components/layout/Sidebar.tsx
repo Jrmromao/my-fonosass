@@ -8,7 +8,7 @@ import { BarChart2, FileText, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Footer from './Footer';
+import Footer from './footer';
 
 interface SidebarProps {
   className?: string;

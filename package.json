@@ -28,6 +28,8 @@
     "test:download-limits:coverage": "jest --testPathPattern=download --coverage --coverageThreshold='{\"global\":{\"branches\":85,\"functions\":85,\"lines\":85,\"statements\":85}}'",
     "test:email": "jest --testPathPattern=email",
     "test:email:coverage": "jest --testPathPattern=email --coverage --coverageThreshold='{\"global\":{\"branches\":85,\"functions\":85,\"lines\":85,\"statements\":85}}'",
+    "test:blog": "jest --testPathPattern=__tests__/unit/blog",
+    "test:blog:run": "node __tests__/unit/blog/run-blog-tests.js",
     "test:week2": "jest --testPathPattern='(download|email)'",
     "test:week2:coverage": "jest --testPathPattern='(download|email)' --coverage",
     "test:integration:download-limits": "playwright test download-limits.test.ts",
