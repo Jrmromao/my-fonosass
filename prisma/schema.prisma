@@ -175,6 +175,52 @@ model DataRetentionLog {
   @@map("data_retention_logs")
 }
 
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Analytics
+  viewCount   Int      @default(0)
+  likeCount   Int      @default(0)
+  
+  // Relations
+  views       BlogView[]
+  likes       BlogLike[]
+  
+  @@map("blog_posts")
+}
+
+model BlogView {
+  id        String    @id @default(cuid())
+  postId    String
+  post      BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  viewedAt  DateTime  @default(now())
+  
+  @@index([postId])
+  @@index([viewedAt])
+  @@map("blog_views")
+}
+
+model BlogLike {
+  id        String    @id @default(cuid())
+  postId    String
+  post      BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  ipAddress String?
+  userAgent String?
+  likedAt   DateTime  @default(now())
+  
+  @@unique([postId, ipAddress])
+  @@index([postId])
+  @@index([likedAt])
+  @@map("blog_likes")
+}
+
 enum UserRole {
   ADMIN
   USER

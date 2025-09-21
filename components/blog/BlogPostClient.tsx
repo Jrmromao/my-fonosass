@@ -9,6 +9,7 @@ import { marked } from 'marked';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import LikeButton from './LikeButton';
+import PopularPosts from './PopularPosts';
 import ShareButton from './ShareButton';
 
 interface BlogPostClientProps {
@@ -22,9 +23,10 @@ export default function BlogPostClient({
 }: BlogPostClientProps) {
   const [activeHeading, setActiveHeading] = useState<string>('');
   const [readingProgress, setReadingProgress] = useState(0);
+  const [viewCount, setViewCount] = useState(0);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
 
-  // Static values for better UX - use useMemo to ensure they don't change on re-renders
-  const viewCount = useMemo(() => Math.floor(Math.random() * 1000) + 500, []); // Static view count
   const wordCount = useMemo(
     () => post.content.split(/\s+/).length,
     [post.content]
@@ -35,6 +37,57 @@ export default function BlogPostClient({
     breaks: true,
     gfm: true,
   });
+
+  // Track view and load analytics
+  useEffect(() => {
+    const trackView = async () => {
+      try {
+        const response = await fetch(`/api/blog/${post.slug}/view`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ipAddress: null, // Will be detected server-side
+            userAgent: navigator.userAgent,
+            referer: document.referrer,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setViewCount(data.viewCount);
+        }
+      } catch (error) {
+        console.error('Error tracking view:', error);
+      }
+    };
+
+    const loadAnalytics = async () => {
+      try {
+        const response = await fetch(`/api/blog/${post.slug}/view`);
+        if (response.ok) {
+          const data = await response.json();
+          setViewCount(data.viewCount);
+        }
+
+        const likeResponse = await fetch(`/api/blog/${post.slug}/like`);
+        if (likeResponse.ok) {
+          const likeData = await likeResponse.json();
+          setLikeCount(likeData.likeCount);
+          setIsLiked(likeData.isLiked);
+        }
+      } catch (error) {
+        console.error('Error loading analytics:', error);
+      }
+    };
+
+    // Load existing analytics first, then track new view
+    loadAnalytics().then(() => {
+      // Small delay to avoid race conditions
+      setTimeout(trackView, 100);
+    });
+  }, [post.slug]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -400,7 +453,11 @@ export default function BlogPostClient({
                     <div className="flex items-center gap-6">
                       <LikeButton
                         articleId={post.slug}
-                        initialLikes={Math.floor(Math.random() * 100)}
+                        initialLikes={likeCount}
+                        onLikeChange={(likes, isLiked) => {
+                          setLikeCount(likes);
+                          setIsLiked(isLiked);
+                        }}
                       />
                       <ShareButton
                         url={`/blog/${post.slug}`}
@@ -486,6 +543,9 @@ export default function BlogPostClient({
                   </div>
                 </div>
 
+                {/* Popular Posts */}
+                <PopularPosts limit={5} sortBy="engagement" />
+
                 {/* Simple Related Posts */}
                 {relatedPosts.length > 0 && (
                   <div className="bg-gray-50 rounded-lg p-4">
@@ -530,7 +590,11 @@ export default function BlogPostClient({
               <div className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
                 <LikeButton
                   articleId={post.slug}
-                  initialLikes={Math.floor(Math.random() * 100)}
+                  initialLikes={likeCount}
+                  onLikeChange={(likes, isLiked) => {
+                    setLikeCount(likes);
+                    setIsLiked(isLiked);
+                  }}
                 />
                 <ShareButton
                   url={`/blog/${post.slug}`}

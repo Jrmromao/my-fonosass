@@ -2,7 +2,7 @@ import { getAllPosts } from '@/lib/blog';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const baseUrl = 'https://almanaquedafala.com.br';
+  const baseUrl = 'https://www.almanaquedafala.com.br';
 
   // Get all blog posts
   const blogPosts = getAllPosts();
