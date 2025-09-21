@@ -1,4 +1,3 @@
-
 // Re-export everything from testing library
 export * from '@testing-library/react';
 
@@ -9,13 +8,13 @@ export { render } from './test-utils-render';
 export const mockUser = {
   id: 'user_123',
   email: 'test@example.com',
-  firstName: 'Test',
-  lastName: 'User',
+  fullName: 'Test User',
   role: 'USER' as const,
-  subscription: {
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  subscriptions: {
     tier: 'FREE' as const,
-    status: 'active' as const,
-    subscriptionId: null,
+    status: 'ACTIVE' as const,
     currentPeriodEnd: null,
   },
 };
@@ -23,10 +22,9 @@ export const mockUser = {
 export const mockAdminUser = {
   ...mockUser,
   role: 'ADMIN' as const,
-  subscription: {
+  subscriptions: {
     tier: 'PRO' as const,
-    status: 'active' as const,
-    subscriptionId: 'sub_123',
+    status: 'ACTIVE' as const,
     currentPeriodEnd: new Date('2025-12-31'),
   },
 };
@@ -91,18 +89,23 @@ export const createMockUser = (overrides: Partial<typeof mockUser> = {}) => ({
   ...overrides,
 });
 
-export const createMockActivity = (overrides: Partial<typeof mockActivity> = {}) => ({
+export const createMockActivity = (
+  overrides: Partial<typeof mockActivity> = {}
+) => ({
   ...mockActivity,
   ...overrides,
 });
 
-export const createMockPatient = (overrides: Partial<typeof mockPatient> = {}) => ({
+export const createMockPatient = (
+  overrides: Partial<typeof mockPatient> = {}
+) => ({
   ...mockPatient,
   ...overrides,
 });
 
 // Wait for async operations
-export const waitFor = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const waitFor = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 // Mock file upload
 export const createMockFile = (name: string, type: string, size: number) => {
@@ -132,7 +135,7 @@ export const mockLocalStorage = () => {
       delete store[key];
     }),
     clear: jest.fn(() => {
-      Object.keys(store).forEach(key => delete store[key]);
+      Object.keys(store).forEach((key) => delete store[key]);
     }),
   };
 };
@@ -149,7 +152,7 @@ export const mockSessionStorage = () => {
       delete store[key];
     }),
     clear: jest.fn(() => {
-      Object.keys(store).forEach(key => delete store[key]);
+      Object.keys(store).forEach((key) => delete store[key]);
     }),
   };
 };
@@ -182,7 +185,7 @@ export const mockResizeObserver = () => {
 export const mockMatchMedia = (matches: boolean = false) => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: jest.fn().mockImplementation(query => ({
+    value: jest.fn().mockImplementation((query) => ({
       matches,
       media: query,
       onchange: null,
@@ -209,9 +212,7 @@ export const mockFetch = (response: any, status = 200) => {
 
 // Mock fetch error
 export const mockFetchError = (message: string, status = 500) => {
-  global.fetch = jest.fn(() =>
-    Promise.reject(new Error(message))
-  ) as jest.Mock;
+  global.fetch = jest.fn(() => Promise.reject(new Error(message))) as jest.Mock;
 };
 
 // Cleanup function

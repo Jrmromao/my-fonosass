@@ -1,10 +1,11 @@
-import { NextRequest } from 'next/server';
 import { createHash, randomBytes } from 'crypto';
+import { NextRequest } from 'next/server';
 
 // CSRF token generation and validation
 export class CSRFProtection {
   private static readonly TOKEN_LENGTH = 32;
-  private static readonly SECRET_KEY = process.env.CSRF_SECRET_KEY || 'default-secret-key-change-in-production';
+  private static readonly SECRET_KEY =
+    process.env.CSRF_SECRET_KEY || 'default-secret-key-change-in-production';
 
   static generateToken(): string {
     const randomValue = randomBytes(this.TOKEN_LENGTH);
@@ -13,29 +14,38 @@ export class CSRFProtection {
     const signature = createHash('sha256')
       .update(data + this.SECRET_KEY)
       .digest('hex');
-    
+
     return Buffer.from(`${data}:${signature}`).toString('base64');
   }
 
   static validateToken(token: string): boolean {
     try {
       const decoded = Buffer.from(token, 'base64').toString('utf-8');
-      const [data, signature] = decoded.split(':');
-      const [randomValue, timestamp] = data.split(':');
-      
+      const parts = decoded.split(':');
+
+      if (parts.length !== 3) {
+        return false;
+      }
+
+      const [randomValue, timestamp, signature] = parts;
+
       // Check if token is not older than 1 hour
       const tokenAge = Date.now() - parseInt(timestamp);
       if (tokenAge > 60 * 60 * 1000) {
         return false;
       }
-      
+
+      // Reconstruct the data part for signature verification
+      const data = `${randomValue}:${timestamp}`;
+
       // Verify signature
       const expectedSignature = createHash('sha256')
         .update(data + this.SECRET_KEY)
         .digest('hex');
-      
+
       return signature === expectedSignature;
-    } catch {
+    } catch (error) {
+      console.error('CSRF token validation error:', error);
       return false;
     }
   }
@@ -64,6 +74,6 @@ export const validateCSRF = (request: NextRequest): boolean => {
   if (!token) {
     return false;
   }
-  
+
   return CSRFProtection.validateToken(token);
 };

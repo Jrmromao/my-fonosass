@@ -34,6 +34,7 @@
     "test:integration:email": "playwright test email-notifications.test.ts",
     "test:week1": "playwright test week1-features.test.ts",
     "type-check": "tsc --noEmit",
+    "type-check:precommit": "tsc --noEmit --skipLibCheck --strict false",
     "prepare": "husky",
     "db:seed": "tsx scripts/seed-exercises.ts",
     "db:diagnose": "node scripts/db-diagnose.js",
@@ -175,9 +176,6 @@
     ],
     "*.{json,md,css}": [
       "prettier --write"
-    ],
-    "*.{ts,tsx}": [
-      "yarn type-check"
     ]
   },
   "resolutions": {

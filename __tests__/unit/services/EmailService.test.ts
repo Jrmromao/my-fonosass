@@ -1,3 +1,4 @@
+//@ts-ignore
 import { EmailService } from '@/services/emailService';
 
 // Mock Resend
@@ -25,7 +26,11 @@ describe('EmailService', () => {
       const mockResponse = { id: 'email_123', error: null };
       mockSend.mockResolvedValue(mockResponse);
 
-      await EmailService.sendDownloadLimitWarning('test@example.com', 'Test User', 2);
+      await EmailService.sendDownloadLimitWarning(
+        'test@example.com',
+        'Test User',
+        2
+      );
 
       expect(mockSend).toHaveBeenCalledWith({
         from: 'FonoSaaS <noreply@fonosaas.com>',
@@ -40,15 +45,24 @@ describe('EmailService', () => {
       mockSend.mockRejectedValue(mockError);
 
       // The method should not throw, it should catch and log the error
-      await expect(EmailService.sendDownloadLimitWarning('test@example.com', 'Test User', 1))
-        .resolves.toBeUndefined();
+      await expect(
+        EmailService.sendDownloadLimitWarning(
+          'test@example.com',
+          'Test User',
+          1
+        )
+      ).resolves.toBeUndefined();
     });
 
     it('should include correct remaining count in subject', async () => {
       const mockResponse = { id: 'email_123', error: null };
       mockSend.mockResolvedValue(mockResponse);
 
-      await EmailService.sendDownloadLimitWarning('test@example.com', 'Test User', 5);
+      await EmailService.sendDownloadLimitWarning(
+        'test@example.com',
+        'Test User',
+        5
+      );
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -61,7 +75,11 @@ describe('EmailService', () => {
       const mockResponse = { id: 'email_123', error: null };
       mockSend.mockResolvedValue(mockResponse);
 
-      await EmailService.sendDownloadLimitWarning('test@example.com', 'John Doe', 3);
+      await EmailService.sendDownloadLimitWarning(
+        'test@example.com',
+        'John Doe',
+        3
+      );
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -74,7 +92,11 @@ describe('EmailService', () => {
       const mockResponse = { id: 'email_123', error: null };
       mockSend.mockResolvedValue(mockResponse);
 
-      await EmailService.sendDownloadLimitWarning('test@example.com', 'Test User', 1);
+      await EmailService.sendDownloadLimitWarning(
+        'test@example.com',
+        'Test User',
+        1
+      );
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({

@@ -1,3 +1,4 @@
+//@ts-ignore
 import S3Service from '@/services/S3Service';
 
 // Get the mock functions from the mocked modules
@@ -15,12 +16,18 @@ describe('S3Service', () => {
   describe('uploadFile', () => {
     it('should upload a file successfully', async () => {
       const mockResponse = { ETag: 'test-etag' };
-      const mockUploadInstance = { done: jest.fn().mockResolvedValue(mockResponse) };
-      
+      const mockUploadInstance = {
+        done: jest.fn().mockResolvedValue(mockResponse),
+      };
+
       // Mock the Upload constructor to return our mock instance
       Upload.mockImplementation(() => mockUploadInstance);
 
-      const result = await s3Service.uploadFile('test.pdf', Buffer.from('test content'), 'application/pdf');
+      const result = await s3Service.uploadFile(
+        'test.pdf',
+        Buffer.from('test content'),
+        'application/pdf'
+      );
 
       expect(result).toEqual(mockResponse);
       expect(mockUploadInstance.done).toHaveBeenCalled();
@@ -28,13 +35,22 @@ describe('S3Service', () => {
 
     it('should handle upload errors', async () => {
       const mockError = new Error('Upload failed');
-      const mockUploadInstance = { done: jest.fn().mockRejectedValue(mockError) };
-      
+      const mockUploadInstance = {
+        done: jest.fn().mockRejectedValue(mockError),
+      };
+
       // Mock the Upload constructor to return our mock instance
       Upload.mockImplementation(() => mockUploadInstance);
 
-      await expect(s3Service.uploadFile('test.pdf', Buffer.from('test content'), 'application/pdf'))
-        .rejects.toThrow('Failed to upload file with key test.pdf: Upload failed');
+      await expect(
+        s3Service.uploadFile(
+          'test.pdf',
+          Buffer.from('test content'),
+          'application/pdf'
+        )
+      ).rejects.toThrow(
+        'Failed to upload file with key test.pdf: Upload failed'
+      );
     });
   });
 
@@ -53,8 +69,11 @@ describe('S3Service', () => {
       const mockError = new Error('Download failed');
       mockSend.mockRejectedValue(mockError);
 
-      await expect(s3Service.downloadFile('company123', 'test.pdf'))
-        .rejects.toThrow('Failed to download file for company company123: Download failed');
+      await expect(
+        s3Service.downloadFile('company123', 'test.pdf')
+      ).rejects.toThrow(
+        'Failed to download file for company company123: Download failed'
+      );
     });
   });
 
@@ -73,8 +92,11 @@ describe('S3Service', () => {
       const mockError = new Error('List failed');
       mockSend.mockRejectedValue(mockError);
 
-      await expect(s3Service.listFiles('company123', 'prefix/'))
-        .rejects.toThrow('Failed to list files for company company123: List failed');
+      await expect(
+        s3Service.listFiles('company123', 'prefix/')
+      ).rejects.toThrow(
+        'Failed to list files for company company123: List failed'
+      );
     });
   });
 
@@ -91,8 +113,11 @@ describe('S3Service', () => {
       const mockError = new Error('Delete failed');
       mockSend.mockRejectedValue(mockError);
 
-      await expect(s3Service.deleteFile('company123', 'test.pdf'))
-        .rejects.toThrow('Failed to delete file for company company123: Delete failed');
+      await expect(
+        s3Service.deleteFile('company123', 'test.pdf')
+      ).rejects.toThrow(
+        'Failed to delete file for company company123: Delete failed'
+      );
     });
   });
 

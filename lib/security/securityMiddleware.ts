@@ -2,25 +2,32 @@ import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthenticationError, ErrorTracker } from '../monitoring/errorTracker';
 import { PerformanceMonitor } from '../monitoring/performanceMonitor';
+import { validateCSRF } from './csrf';
 import { InputValidator } from './inputValidator';
 import { rateLimiters } from './rateLimiter';
 
 export interface SecurityConfig {
   requireAuth?: boolean;
-  rateLimitType?: 'general' | 'auth' | 'userCreation' | 'fileUpload' | 'payment';
+  rateLimitType?:
+    | 'general'
+    | 'auth'
+    | 'userCreation'
+    | 'fileUpload'
+    | 'payment';
   validateInput?: boolean;
   allowedMethods?: string[];
   maxBodySize?: number;
   enablePerformanceMonitoring?: boolean;
+  requireCSRF?: boolean;
 }
 
 export class SecurityMiddleware {
   static async apply(
     request: NextRequest,
     config: SecurityConfig = {}
-  ): Promise<{ 
-    success: boolean; 
-    response?: NextResponse; 
+  ): Promise<{
+    success: boolean;
+    response?: NextResponse;
     userId?: string;
     startTime?: number;
   }> {
@@ -29,13 +36,16 @@ export class SecurityMiddleware {
 
     try {
       // 1. Method validation
-      if (config.allowedMethods && !config.allowedMethods.includes(request.method)) {
+      if (
+        config.allowedMethods &&
+        !config.allowedMethods.includes(request.method)
+      ) {
         return {
           success: false,
           response: new NextResponse(
             JSON.stringify({ error: 'Method not allowed' }),
             { status: 405, headers: { 'Content-Type': 'application/json' } }
-          )
+          ),
         };
       }
 
@@ -48,7 +58,7 @@ export class SecurityMiddleware {
             response: new NextResponse(
               JSON.stringify({ error: 'Request body too large' }),
               { status: 413, headers: { 'Content-Type': 'application/json' } }
-            )
+            ),
           };
         }
       }
@@ -65,7 +75,9 @@ export class SecurityMiddleware {
               JSON.stringify({
                 error: 'Too many requests',
                 message: 'Rate limit exceeded. Please try again later.',
-                retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+                retryAfter: Math.ceil(
+                  (rateLimitResult.resetTime - Date.now()) / 1000
+                ),
               }),
               {
                 status: 429,
@@ -73,16 +85,42 @@ export class SecurityMiddleware {
                   'Content-Type': 'application/json',
                   'X-RateLimit-Limit': limiter['config'].maxRequests.toString(),
                   'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-                  'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-                  'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
-                }
+                  'X-RateLimit-Reset': new Date(
+                    rateLimitResult.resetTime
+                  ).toISOString(),
+                  'Retry-After': Math.ceil(
+                    (rateLimitResult.resetTime - Date.now()) / 1000
+                  ).toString(),
+                },
               }
-            )
+            ),
           };
         }
       }
 
-      // 4. Authentication
+      // 4. CSRF Protection (for state-changing operations)
+      if (
+        config.requireCSRF &&
+        ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)
+      ) {
+        if (!validateCSRF(request)) {
+          return {
+            success: false,
+            response: new NextResponse(
+              JSON.stringify({
+                error: 'CSRF token validation failed',
+                message: 'Invalid or missing CSRF token',
+              }),
+              {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' },
+              }
+            ),
+          };
+        }
+      }
+
+      // 5. Authentication
       let userId: string | undefined;
       if (config.requireAuth) {
         try {
@@ -96,7 +134,7 @@ export class SecurityMiddleware {
             category: 'auth',
             severity: 'high',
             url: request.url,
-            method: request.method
+            method: request.method,
           });
 
           return {
@@ -104,24 +142,24 @@ export class SecurityMiddleware {
             response: new NextResponse(
               JSON.stringify({ error: 'Authentication required' }),
               { status: 401, headers: { 'Content-Type': 'application/json' } }
-            )
+            ),
           };
         }
       }
 
-      // 5. Input validation
+      // 6. Input validation
       if (config.validateInput && request.method !== 'GET') {
         try {
           const body = await request.json();
           const sanitizedBody = InputValidator.sanitizeObject(body);
-          
+
           // Replace the request body with sanitized version
           const sanitizedRequest = new Request(request.url, {
             method: request.method,
             headers: request.headers,
-            body: JSON.stringify(sanitizedBody)
+            body: JSON.stringify(sanitizedBody),
           });
-          
+
           // Update the request object
           Object.assign(request, sanitizedRequest);
         } catch (error) {
@@ -130,7 +168,7 @@ export class SecurityMiddleware {
             severity: 'medium',
             url: request.url,
             method: request.method,
-            userId
+            userId,
           });
 
           return {
@@ -138,7 +176,7 @@ export class SecurityMiddleware {
             response: new NextResponse(
               JSON.stringify({ error: 'Invalid request body' }),
               { status: 400, headers: { 'Content-Type': 'application/json' } }
-            )
+            ),
           };
         }
       }
@@ -151,20 +189,19 @@ export class SecurityMiddleware {
           severity: 'high',
           url: request.url,
           method: request.method,
-          metadata: { missingHeaders: securityHeaders.missing }
+          metadata: { missingHeaders: securityHeaders.missing },
         });
       }
 
       return {
         success: true,
         userId,
-        startTime
+        startTime,
       };
-
     } catch (error) {
       ErrorTracker.logAPIError(error as Error, request, {
         category: 'security',
-        severity: 'high'
+        severity: 'high',
       });
 
       return {
@@ -172,23 +209,19 @@ export class SecurityMiddleware {
         response: new NextResponse(
           JSON.stringify({ error: 'Security validation failed' }),
           { status: 500, headers: { 'Content-Type': 'application/json' } }
-        )
+        ),
       };
     }
   }
 
-  static validateSecurityHeaders(request: NextRequest): { 
-    valid: boolean; 
-    missing: string[] 
+  static validateSecurityHeaders(request: NextRequest): {
+    valid: boolean;
+    missing: string[];
   } {
-    const requiredHeaders = [
-      'user-agent',
-      'accept',
-      'accept-language'
-    ];
+    const requiredHeaders = ['user-agent', 'accept', 'accept-language'];
 
     const missing: string[] = [];
-    
+
     for (const header of requiredHeaders) {
       if (!request.headers.get(header)) {
         missing.push(header);
@@ -200,7 +233,7 @@ export class SecurityMiddleware {
       'x-forwarded-host',
       'x-originating-ip',
       'x-remote-ip',
-      'x-remote-addr'
+      'x-remote-addr',
     ];
 
     for (const header of suspiciousHeaders) {
@@ -211,14 +244,14 @@ export class SecurityMiddleware {
           severity: 'medium',
           url: request.url,
           method: request.method,
-          metadata: { suspiciousHeader: header }
+          metadata: { suspiciousHeader: header },
         });
       }
     }
 
     return {
       valid: missing.length === 0,
-      missing
+      missing,
     };
   }
 
@@ -228,18 +261,18 @@ export class SecurityMiddleware {
     additionalHeaders: Record<string, string> = {}
   ): NextResponse {
     const response = NextResponse.json(data, { status });
-    
+
     // Add security headers
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('X-XSS-Protection', '1; mode=block');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
+
     // Add additional headers
     for (const [key, value] of Object.entries(additionalHeaders)) {
       response.headers.set(key, value);
     }
-    
+
     return response;
   }
 
@@ -257,34 +290,35 @@ export class SecurityMiddleware {
 }
 
 // Convenience function for API routes
-export function withSecurity(
-  config: SecurityConfig = {}
-) {
-  return function<T extends any[]>(
+export function withSecurity(config: SecurityConfig = {}) {
+  return function <T extends any[]>(
     handler: (req: NextRequest, ...args: T) => Promise<NextResponse>
   ) {
-    return async function(req: NextRequest, ...args: T): Promise<NextResponse> {
+    return async function (
+      req: NextRequest,
+      ...args: T
+    ): Promise<NextResponse> {
       const securityResult = await SecurityMiddleware.apply(req, config);
-      
+
       if (!securityResult.success) {
         return securityResult.response!;
       }
 
       try {
         const response = await handler(req, ...args);
-        
+
         // Add performance monitoring headers
         if (securityResult.startTime) {
           const responseTime = Date.now() - securityResult.startTime;
           response.headers.set('X-Response-Time', `${responseTime}ms`);
         }
-        
+
         return response;
       } catch (error) {
         ErrorTracker.logAPIError(error as Error, req, {
           userId: securityResult.userId,
           category: 'api',
-          severity: 'high'
+          severity: 'high',
         });
 
         return SecurityMiddleware.createErrorResponse(

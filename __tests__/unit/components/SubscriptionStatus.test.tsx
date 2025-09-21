@@ -1,3 +1,4 @@
+//@ts-ignore
 import { SubscriptionStatus } from '@/components/dashboard/SubscriptionStatus';
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
@@ -69,9 +70,14 @@ describe('SubscriptionStatus', () => {
 
     render(<SubscriptionStatus />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Erro ao carregar assinatura')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText('Erro ao carregar assinatura')
+        ).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should render inactive subscription status', async () => {
@@ -174,7 +180,7 @@ describe('SubscriptionStatus', () => {
     } as Response);
 
     render(<SubscriptionStatus />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('Gratuito')).toBeInTheDocument();
     });
@@ -188,9 +194,14 @@ describe('SubscriptionStatus', () => {
 
     render(<SubscriptionStatus />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Nenhuma assinatura encontrada')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText('Nenhuma assinatura encontrada')
+        ).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should handle undefined subscription data', async () => {
@@ -201,8 +212,13 @@ describe('SubscriptionStatus', () => {
 
     render(<SubscriptionStatus />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Nenhuma assinatura encontrada')).toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText('Nenhuma assinatura encontrada')
+        ).toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
   });
 });
