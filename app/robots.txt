@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://almanaquedafala.com.br/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /consent-dashboard/
+Disallow: /dpo/
+Disallow: /data-rights/
+Disallow: /test-consent/
+Disallow: /test-exercises/

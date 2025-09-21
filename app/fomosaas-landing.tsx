@@ -1,7 +1,6 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 import {
   ArrowRight,
   ChevronDown,
@@ -12,16 +11,18 @@ import {
   Star,
   Volume2,
   X,
-} from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 // import Balloon from "@/components/Balloon";
-import EducationalToolbar from "@/components/Toolbar/EducationalToolbar";
-import { SubscriptionPlans } from "@/components/SubscriptionPlans";
-import { APP_NAME } from "@/utils/constants";
-import { useAuth } from "@clerk/nextjs";
-import BalloonOptimizedMinimal from "@/components/Balloon/BalloonOptimizedMinimal";
-import WaitingListAlert from "@/components/WaitingListAlert";
+import BalloonOptimizedMinimal from '@/components/Balloon/BalloonOptimizedMinimal';
+import { SubscriptionPlans } from '@/components/SubscriptionPlans';
+import EducationalToolbar from '@/components/Toolbar/EducationalToolbar';
+import WaitingListAlert from '@/components/WaitingListAlert';
+import LandingFooter from '@/components/layout/LandingFooter';
+import { APP_NAME } from '@/utils/constants';
+import { useAuth } from '@clerk/nextjs';
 
 export default function FomosaasLanding() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,8 +35,8 @@ export default function FomosaasLanding() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -44,15 +45,15 @@ export default function FomosaasLanding() {
       {showWaitingList && (
         <WaitingListAlert onClose={() => setShowWaitingList(false)} />
       )}
-      
+
       {/* Navbar */}
       <header
         className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
           showWaitingList ? 'top-16' : 'top-0'
         } ${
           scrolled
-            ? "bg-white/80 dark:bg-indigo-800/80 backdrop-blur-md shadow-sm"
-            : "bg-transparent"
+            ? 'bg-white/80 dark:bg-indigo-800/80 backdrop-blur-md shadow-sm'
+            : 'bg-transparent'
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,7 +178,9 @@ export default function FomosaasLanding() {
       </header>
 
       {/* Hero Section */}
-      <section className={`${showWaitingList ? 'pt-48 pb-20 md:pt-56 md:pb-32' : 'pt-32 pb-20 md:pt-40 md:pb-32'}`}>
+      <section
+        className={`${showWaitingList ? 'pt-48 pb-20 md:pt-56 md:pb-32' : 'pt-32 pb-20 md:pt-40 md:pb-32'}`}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
@@ -222,20 +225,20 @@ export default function FomosaasLanding() {
         >
           <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
             <BalloonOptimizedMinimal />
-            
+
             {/* Skip button for power users */}
             <div className="absolute top-4 right-4">
-              <Link 
+              <Link
                 href="/dashboard/games"
                 className="bg-white/95 hover:bg-white text-blue-600 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all backdrop-blur-sm"
               >
                 Skip to Exercises →
               </Link>
             </div>
-            
+
             {/* Clear CTA at bottom */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <Link 
+              <Link
                 href="/dashboard/games"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all"
               >
@@ -262,7 +265,7 @@ export default function FomosaasLanding() {
             transition={{
               duration: 4,
               repeat: Number.POSITIVE_INFINITY,
-              repeatType: "reverse",
+              repeatType: 'reverse',
             }}
           />
           <motion.div
@@ -274,7 +277,7 @@ export default function FomosaasLanding() {
             transition={{
               duration: 3.5,
               repeat: Number.POSITIVE_INFINITY,
-              repeatType: "reverse",
+              repeatType: 'reverse',
             }}
           />
           <motion.div
@@ -286,7 +289,7 @@ export default function FomosaasLanding() {
             transition={{
               duration: 5,
               repeat: Number.POSITIVE_INFINITY,
-              repeatType: "reverse",
+              repeatType: 'reverse',
             }}
           />
         </motion.div>
@@ -423,7 +426,7 @@ export default function FomosaasLanding() {
                 <div className="h-48 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 relative">
                   <Image
                     src={
-                      exercise.image || "/placeholder.svg?height=200&width=400"
+                      exercise.image || '/placeholder.svg?height=200&width=400'
                     }
                     alt={exercise.title}
                     width={400}
@@ -508,7 +511,7 @@ export default function FomosaasLanding() {
                     <Image
                       src={
                         testimonial.avatar ||
-                        "/placeholder.svg?height=48&width=48"
+                        '/placeholder.svg?height=48&width=48'
                       }
                       alt={testimonial.name}
                       width={48}
@@ -682,215 +685,7 @@ export default function FomosaasLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-blue-50 dark:bg-blue-950 border-t border-blue-200 dark:border-blue-800">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div>
-              <Link href="/" className="flex items-center space-x-2 mb-6">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">F</span>
-                </div>
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
-                  Fomosaas
-                </span>
-              </Link>
-              <p className="text-blue-700 dark:text-blue-300 mb-6">
-                Plataforma especializada em exercícios de fonoaudiologia para
-                crianças brasileiras.
-              </p>
-              <div className="flex space-x-4">
-                <Link
-                  href="#"
-                  className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </Link>
-                <Link
-                  href="#"
-                  className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                  </svg>
-                </Link>
-                <Link
-                  href="#"
-                  className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </Link>
-                <Link
-                  href="#"
-                  className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 2a10 10 0 110 20 10 10 0 010-20zm0 2a8 8 0 100 16 8 8 0 000-16zm0 9a1 1 0 100-2 1 1 0 000 2zm0-6a1 1 0 00-1 1v3a1 1 0 002 0V8a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-900 dark:text-white mb-4">
-                Plataforma
-              </h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="#recursos"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Recursos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#como-funciona"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Como Funciona
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#planos"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Planos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/blog"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Blog
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-900 dark:text-white mb-4">
-                Suporte
-              </h3>
-              <ul className="space-y-3">
-                {/*<li>*/}
-                {/*    <Link*/}
-                {/*        href="/ajuda"*/}
-                {/*        className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"*/}
-                {/*    >*/}
-                {/*        Central de Ajuda*/}
-                {/*    </Link>*/}
-                {/*</li>*/}
-                <li>
-                  <Link
-                    href="/contato"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Contato
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/comunidade"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Comunidade
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/especialistas"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Fale com Especialistas
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-900 dark:text-white mb-4">
-                Legal
-              </h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="/privacidade"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Política de Privacidade
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/termos"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Termos de Uso
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/cookies"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Política de Cookies
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lgpd"
-                    className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                  >
-                    LGPD
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-600 dark:text-blue-400 text-center">
-              &copy; {new Date().getFullYear()} Fomosaas. Todos os direitos
-              reservados.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }
@@ -910,14 +705,14 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         </h3>
         <ChevronDown
           className={`w-5 h-5 text-blue-500 transition-transform ${
-            isOpen ? "transform rotate-180" : ""
+            isOpen ? 'transform rotate-180' : ''
           }`}
         />
       </button>
       {isOpen && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
+          animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
           className="mt-2 text-blue-700 dark:text-blue-300"
@@ -932,21 +727,21 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 // Data
 const features = [
   {
-    title: "Exercícios Interativos",
+    title: 'Exercícios Interativos',
     description:
-      "Mais de 100 exercícios divertidos e interativos para desenvolver diferentes aspectos da fala.",
+      'Mais de 100 exercícios divertidos e interativos para desenvolver diferentes aspectos da fala.',
     icon: <Mic size={24} />,
   },
   {
-    title: "Jogos Educativos",
+    title: 'Jogos Educativos',
     description:
-      "Jogos coloridos e envolventes que tornam o aprendizado divertido e eficaz para crianças.",
+      'Jogos coloridos e envolventes que tornam o aprendizado divertido e eficaz para crianças.',
     icon: <Play size={24} />,
   },
   {
-    title: "Acompanhamento Profissional",
+    title: 'Acompanhamento Profissional',
     description:
-      "Relatórios detalhados e orientações de especialistas em fonoaudiologia.",
+      'Relatórios detalhados e orientações de especialistas em fonoaudiologia.',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -967,9 +762,9 @@ const features = [
     ),
   },
   {
-    title: "Atividades Personalizadas",
+    title: 'Atividades Personalizadas',
     description:
-      "Exercícios adaptados às necessidades específicas de cada criança e seu desenvolvimento.",
+      'Exercícios adaptados às necessidades específicas de cada criança e seu desenvolvimento.',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -988,62 +783,62 @@ const features = [
     ),
   },
   {
-    title: "Biblioteca de Sons",
+    title: 'Biblioteca de Sons',
     description:
-      "Ampla biblioteca de sons e pronúncias para praticar diferentes fonemas e palavras.",
+      'Ampla biblioteca de sons e pronúncias para praticar diferentes fonemas e palavras.',
     icon: <Volume2 size={24} />,
   },
   {
-    title: "Músicas e Rimas",
+    title: 'Músicas e Rimas',
     description:
-      "Músicas infantis e rimas divertidas que ajudam no desenvolvimento da linguagem.",
+      'Músicas infantis e rimas divertidas que ajudam no desenvolvimento da linguagem.',
     icon: <Music size={24} />,
   },
 ];
 
 const steps = [
   {
-    title: "Cadastre-se",
+    title: 'Cadastre-se',
     description:
-      "Crie uma conta gratuita e preencha um breve questionário sobre as necessidades do seu filho.",
+      'Crie uma conta gratuita e preencha um breve questionário sobre as necessidades do seu filho.',
   },
   {
-    title: "Receba um Plano Personalizado",
+    title: 'Receba um Plano Personalizado',
     description:
-      "Nosso sistema criará um plano de exercícios personalizado com base nas necessidades específicas.",
+      'Nosso sistema criará um plano de exercícios personalizado com base nas necessidades específicas.',
   },
   {
-    title: "Comece a Praticar",
+    title: 'Comece a Praticar',
     description:
-      "Acesse os exercícios interativos e acompanhe o progresso do seu filho de forma divertida.",
+      'Acesse os exercícios interativos e acompanhe o progresso do seu filho de forma divertida.',
   },
 ];
 
 const exercises = [
   {
-    title: "Jogo dos Sons",
+    title: 'Jogo dos Sons',
     description:
-      "Ajuda crianças a identificar e reproduzir diferentes sons e fonemas.",
-    age: "3-6 anos",
-    difficulty: "Iniciante",
+      'Ajuda crianças a identificar e reproduzir diferentes sons e fonemas.',
+    age: '3-6 anos',
+    difficulty: 'Iniciante',
     icon: <Volume2 size={16} />,
-    image: "/placeholder.svg?height=200&width=400",
+    image: '/placeholder.svg?height=200&width=400',
   },
   {
-    title: "Rimas Divertidas",
+    title: 'Rimas Divertidas',
     description:
-      "Exercícios com rimas para desenvolver consciência fonológica.",
-    age: "4-7 anos",
-    difficulty: "Intermediário",
+      'Exercícios com rimas para desenvolver consciência fonológica.',
+    age: '4-7 anos',
+    difficulty: 'Intermediário',
     icon: <Music size={16} />,
-    image: "/placeholder.svg?height=200&width=400",
+    image: '/placeholder.svg?height=200&width=400',
   },
   {
-    title: "Histórias Faladas",
+    title: 'Histórias Faladas',
     description:
-      "Narrativas interativas que incentivam a prática da fala em contextos.",
-    age: "5-9 anos",
-    difficulty: "Avançado",
+      'Narrativas interativas que incentivam a prática da fala em contextos.',
+    age: '5-9 anos',
+    difficulty: 'Avançado',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -1062,108 +857,108 @@ const exercises = [
         <path d="M8 15h5"></path>
       </svg>
     ),
-    image: "/placeholder.svg?height=200&width=400",
+    image: '/placeholder.svg?height=200&width=400',
   },
 ];
 
 const testimonials = [
   {
-    name: "Ana Silva",
-    relation: "Mãe do Pedro, 5 anos",
-    avatar: "/placeholder.svg?height=48&width=48",
+    name: 'Ana Silva',
+    relation: 'Mãe do Pedro, 5 anos',
+    avatar: '/placeholder.svg?height=48&width=48',
     quote:
-      "O Fomosaas transformou a vida do meu filho. Em apenas 3 meses, ele já consegue pronunciar palavras que antes eram um desafio!",
+      'O Fomosaas transformou a vida do meu filho. Em apenas 3 meses, ele já consegue pronunciar palavras que antes eram um desafio!',
   },
   {
-    name: "Carlos Oliveira",
-    relation: "Pai da Júlia, 7 anos",
-    avatar: "/placeholder.svg?height=48&width=48",
+    name: 'Carlos Oliveira',
+    relation: 'Pai da Júlia, 7 anos',
+    avatar: '/placeholder.svg?height=48&width=48',
     quote:
-      "Minha filha adora os jogos e nem percebe que está fazendo terapia. Os resultados são impressionantes!",
+      'Minha filha adora os jogos e nem percebe que está fazendo terapia. Os resultados são impressionantes!',
   },
   {
-    name: "Dra. Mariana Santos",
-    relation: "Fonoaudióloga",
-    avatar: "/placeholder.svg?height=48&width=48",
+    name: 'Dra. Mariana Santos',
+    relation: 'Fonoaudióloga',
+    avatar: '/placeholder.svg?height=48&width=48',
     quote:
-      "Como profissional, recomendo o Fomosaas para complementar as sessões presenciais. A plataforma é baseada em metodologias comprovadas.",
+      'Como profissional, recomendo o Fomosaas para complementar as sessões presenciais. A plataforma é baseada em metodologias comprovadas.',
   },
 ];
 
 const pricingPlans = [
   {
-    name: "Básico",
-    description: "Ideal para começar a jornada de desenvolvimento da fala.",
-    price: "49,90",
-    period: "mês",
+    name: 'Básico',
+    description: 'Ideal para começar a jornada de desenvolvimento da fala.',
+    price: '49,90',
+    period: 'mês',
     features: [
-      "Acesso a 30+ exercícios básicos",
-      "Relatórios mensais de progresso",
-      "Suporte por e-mail",
-      "Acesso para 1 criança",
+      'Acesso a 30+ exercícios básicos',
+      'Relatórios mensais de progresso',
+      'Suporte por e-mail',
+      'Acesso para 1 criança',
     ],
-    ctaText: "Começar Agora",
-    ctaLink: "/cadastro",
+    ctaText: 'Começar Agora',
+    ctaLink: '/cadastro',
     featured: false,
   },
   {
-    name: "Premium",
-    description: "Nossa opção mais popular para famílias.",
-    price: "89,90",
-    period: "mês",
+    name: 'Premium',
+    description: 'Nossa opção mais popular para famílias.',
+    price: '89,90',
+    period: 'mês',
     features: [
-      "Acesso a 100+ exercícios",
-      "Relatórios semanais detalhados",
-      "Suporte prioritário",
-      "Acesso para até 3 crianças",
-      "Consulta mensal com especialista",
+      'Acesso a 100+ exercícios',
+      'Relatórios semanais detalhados',
+      'Suporte prioritário',
+      'Acesso para até 3 crianças',
+      'Consulta mensal com especialista',
     ],
-    ctaText: "Experimente Grátis",
-    ctaLink: "/trial",
+    ctaText: 'Experimente Grátis',
+    ctaLink: '/trial',
     featured: true,
   },
   {
-    name: "Escolas",
-    description: "Para instituições educacionais e clínicas.",
-    price: "249,90",
-    period: "mês",
+    name: 'Escolas',
+    description: 'Para instituições educacionais e clínicas.',
+    price: '249,90',
+    period: 'mês',
     features: [
-      "Acesso ilimitado a todos exercícios",
-      "Painel administrativo para educadores",
-      "Suporte dedicado",
-      "Acesso para até 15 crianças",
-      "Treinamento para educadores",
+      'Acesso ilimitado a todos exercícios',
+      'Painel administrativo para educadores',
+      'Suporte dedicado',
+      'Acesso para até 15 crianças',
+      'Treinamento para educadores',
     ],
-    ctaText: "Fale Conosco",
-    ctaLink: "/contato",
+    ctaText: 'Fale Conosco',
+    ctaLink: '/contato',
     featured: false,
   },
 ];
 
 const faqs = [
   {
-    question: "O que é o Fomosaas?",
+    question: 'O que é o Fomosaas?',
     answer:
-      "Fomosaas é uma plataforma online de exercícios de fonoaudiologia desenvolvida especialmente para crianças brasileiras. Oferecemos jogos interativos e atividades divertidas que ajudam no desenvolvimento da fala e linguagem.",
+      'Fomosaas é uma plataforma online de exercícios de fonoaudiologia desenvolvida especialmente para crianças brasileiras. Oferecemos jogos interativos e atividades divertidas que ajudam no desenvolvimento da fala e linguagem.',
   },
   {
-    question: "A partir de qual idade posso usar o Fomosaas?",
+    question: 'A partir de qual idade posso usar o Fomosaas?',
     answer:
-      "Nossa plataforma possui exercícios para crianças a partir de 3 anos de idade. Temos atividades específicas para diferentes faixas etárias e níveis de desenvolvimento.",
+      'Nossa plataforma possui exercícios para crianças a partir de 3 anos de idade. Temos atividades específicas para diferentes faixas etárias e níveis de desenvolvimento.',
   },
   {
-    question: "O Fomosaas substitui a terapia com um fonoaudiólogo?",
+    question: 'O Fomosaas substitui a terapia com um fonoaudiólogo?',
     answer:
-      "Não. O Fomosaas é uma ferramenta complementar ao tratamento fonoaudiológico. Recomendamos sempre o acompanhamento de um profissional especializado para casos que necessitem de intervenção terapêutica.",
+      'Não. O Fomosaas é uma ferramenta complementar ao tratamento fonoaudiológico. Recomendamos sempre o acompanhamento de um profissional especializado para casos que necessitem de intervenção terapêutica.',
   },
   {
-    question: "Posso cancelar minha assinatura a qualquer momento?",
+    question: 'Posso cancelar minha assinatura a qualquer momento?',
     answer:
-      "Sim, você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanecerá ativo até o final do período já pago.",
+      'Sim, você pode cancelar sua assinatura quando quiser, sem multas ou taxas adicionais. O acesso permanecerá ativo até o final do período já pago.',
   },
   {
-    question: "Como sei se o Fomosaas é adequado para meu filho?",
+    question: 'Como sei se o Fomosaas é adequado para meu filho?',
     answer:
-      "Oferecemos um período de teste gratuito de 7 dias para que você possa experimentar nossa plataforma. Além disso, nosso questionário inicial ajuda a identificar as necessidades específicas da criança.",
+      'Oferecemos um período de teste gratuito de 7 dias para que você possa experimentar nossa plataforma. Além disso, nosso questionário inicial ajuda a identificar as necessidades específicas da criança.',
   },
 ];

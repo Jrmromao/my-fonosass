@@ -1,14 +1,24 @@
+import { getAllPosts } from '@/lib/blog';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   const baseUrl = 'https://almanaquedafala.com.br';
-  
+
+  // Get all blog posts
+  const blogPosts = getAllPosts();
+
   const staticPages = [
     {
       url: baseUrl,
       lastModified: new Date().toISOString(),
       changeFrequency: 'weekly',
       priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
     },
     {
       url: `${baseUrl}/privacidade`,
@@ -36,9 +46,19 @@ export async function GET() {
     },
   ];
 
+  // Add blog posts to sitemap
+  const blogPages = blogPosts.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.date).toISOString(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  }));
+
+  const allPages = [...staticPages, ...blogPages];
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticPages
+${allPages
   .map(
     (page) => `
   <url>
