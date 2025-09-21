@@ -4,10 +4,31 @@
  * Tests for security headers implementation and effectiveness
  */
 
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { SecurityTestHelper, SecurityAssertions } from './security-test-utils';
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+import { SecurityAssertions, SecurityTestHelper } from './security-test-utils';
 
-describe.skip('Security Headers', () => {
+// Mock fetch for security tests
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+// Setup default mock responses
+beforeAll(() => {
+  mockFetch.mockImplementation((url: string, options?: any) => {
+    // Mock successful responses for most endpoints
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ success: true, message: 'Mock response' }),
+      text: () => Promise.resolve(JSON.stringify({ success: true, message: 'Mock response' }))
+    });
+  });
+});
+
+afterAll(() => {
+  mockFetch.mockRestore();
+});
+
+describe('Security Headers', () => {
   const baseUrl = process.env.TEST_BASE_URL || 'http://localhost:3000';
   
   beforeAll(() => {

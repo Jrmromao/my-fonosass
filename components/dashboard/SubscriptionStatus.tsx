@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Crown, Download, Calendar, CreditCard } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Calendar, CreditCard, Crown, Download } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface SubscriptionData {
   tier: 'FREE' | 'PRO'
@@ -15,9 +15,14 @@ interface SubscriptionData {
   isPro: boolean
 }
 
-export function SubscriptionStatus() {
+interface SubscriptionStatusProps {
+  className?: string
+}
+
+export function SubscriptionStatus({ className }: SubscriptionStatusProps) {
   const [data, setData] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchSubscriptionData()
@@ -36,9 +41,12 @@ export function SubscriptionStatus() {
           downloadsRemaining: result.data.remaining,
           isPro: result.data.isPro
         })
+      } else {
+        setError('Nenhuma assinatura encontrada')
       }
     } catch (error) {
       console.error('Error fetching subscription data:', error)
+      setError('Erro ao carregar assinatura')
     } finally {
       setLoading(false)
     }
@@ -63,7 +71,7 @@ export function SubscriptionStatus() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className={className}>
         <CardContent className="p-6">
           <div className="animate-pulse">
             <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
@@ -74,10 +82,20 @@ export function SubscriptionStatus() {
     )
   }
 
+  if (error) {
+    return (
+      <Card className={className}>
+        <CardContent className="p-6">
+          <p className="text-red-600">{error}</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   if (!data) return null
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className={`grid gap-4 md:grid-cols-2 ${className || ''}`}>
       {/* Subscription Status Card */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

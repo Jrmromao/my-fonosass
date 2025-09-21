@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /consent-dashboard/
+Disallow: /data-rights/
+Disallow: /dpo/
+
+# Allow specific public pages
+Allow: /
+Allow: /privacidade
+Allow: /termos
+Allow: /cookies
+Allow: /lgpd
+
+# Sitemap location
+Sitemap: https://almanaquedafala.com.br/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1

@@ -2,16 +2,22 @@
 jest.mock('server-only', () => ({}), { virtual: true })
 
 // Mock Resend properly
-const mockSend = jest.fn()
-jest.mock('resend', () => ({
-  Resend: jest.fn().mockImplementation(() => ({
-    emails: {
-      send: mockSend
-    }
-  }))
-}))
+jest.mock('resend', () => {
+  const mockSend = jest.fn()
+  return {
+    Resend: jest.fn().mockImplementation(() => ({
+      emails: {
+        send: mockSend
+      }
+    })),
+    mockSend // Export mockSend to be accessible in tests
+  }
+})
 
 import { EmailService } from '../emailService'
+
+// Get the mockSend function from the mocked module
+const { mockSend } = require('resend')
 
 describe('EmailService', () => {
   beforeEach(() => {
