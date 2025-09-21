@@ -6,23 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
-import { ConsentPreferences, ConsentService } from '@/lib/services/consentService';
+import { ConsentPreferences } from '@/lib/services/consentService';
 import { useUser } from '@clerk/nextjs';
 import {
-    Activity,
-    AlertCircle,
-    BarChart3,
-    Bot,
-    Brain,
-    CheckCircle,
-    Database,
-    Eye,
-    EyeOff,
-    Mail,
-    Settings,
-    Share2,
-    Shield,
-    Target
+  Activity,
+  AlertCircle,
+  BarChart3,
+  Bot,
+  Brain,
+  CheckCircle,
+  Database,
+  Eye,
+  EyeOff,
+  Mail,
+  Settings,
+  Share2,
+  Shield,
+  Target
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -32,6 +32,7 @@ interface EnhancedConsentManagerProps {
   showAuditTrail?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
+  onOpen?: () => void;
 }
 
 export default function EnhancedConsentManager({ 
@@ -39,7 +40,8 @@ export default function EnhancedConsentManager({
   initialPreferences,
   showAuditTrail = false,
   isOpen = false,
-  onClose
+  onClose,
+  onOpen
 }: EnhancedConsentManagerProps) {
   const { user } = useUser();
   const [preferences, setPreferences] = useState<ConsentPreferences>({
@@ -70,15 +72,16 @@ export default function EnhancedConsentManager({
     if (!user?.id) return;
     
     try {
-      const consentRecords = await ConsentService.getUserConsentStatus(user.id);
-      const auditData = await ConsentService.getConsentAuditTrail(user.id);
+      const response = await fetch('/api/consent/status');
+      const data = await response.json();
       
-      setAuditTrail(auditData);
-      
-      // Update preferences based on current consent records
-      const updatedPreferences: ConsentPreferences = { ...preferences };
-      
-      consentRecords.forEach(record => {
+      if (data.success) {
+        setAuditTrail(data.data);
+        
+        // Update preferences based on current consent records
+        const updatedPreferences: ConsentPreferences = { ...preferences };
+        
+        data.data.forEach((record: any) => {
         switch (record.consentType) {
           case 'DATA_PROCESSING':
             updatedPreferences.dataProcessing = record.granted;
@@ -111,9 +114,13 @@ export default function EnhancedConsentManager({
             updatedPreferences.automatedDecisionMaking = record.granted;
             break;
         }
-      });
-      
-      setPreferences(updatedPreferences);
+        });
+        
+        setPreferences(updatedPreferences);
+      } else {
+        console.error('Error loading consent status:', data.message);
+        setAuditTrail([]);
+      }
     } catch (error) {
       console.error('Error loading consent status:', error);
       toast({
@@ -140,12 +147,16 @@ export default function EnhancedConsentManager({
     if (user?.id) {
       setIsLoading(true);
       try {
-        await ConsentService.recordConsent({
-          userId: user.id,
-          preferences: newPreferences,
-          ipAddress: undefined, // Will be captured server-side
-          userAgent: navigator.userAgent
+        const response = await fetch('/api/consent/record', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ preferences: newPreferences })
         });
+        
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to record consent');
+        }
         
         toast({
           title: "Preferências salvas",
@@ -169,13 +180,19 @@ export default function EnhancedConsentManager({
     
     setIsLoading(true);
     try {
-      await ConsentService.withdrawConsent(
-        user.id, 
-        consentType as any,
-        'Usuário retirou consentimento via painel',
-        undefined,
-        navigator.userAgent
-      );
+      const response = await fetch('/api/consent/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          consentType, 
+          reason: 'Usuário retirou consentimento via painel' 
+        })
+      });
+      
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to withdraw consent');
+      }
       
       await loadConsentStatus();
       
@@ -332,22 +349,26 @@ export default function EnhancedConsentManager({
     }
   ];
 
-  if (!isOpen) {
-    return (
+  return (
+    <>
+      {/* Always show the button */}
       <Button
         variant="outline"
         size="sm"
-        onClick={() => onClose?.()}
+        onClick={() => {
+          console.log('Consent manager button clicked, calling onOpen');
+          onOpen?.();
+        }}
         className="fixed bottom-4 right-4 z-50"
+        data-consent-manager
       >
         <Settings className="h-4 w-4 mr-2" />
         Gerenciar Consentimento
       </Button>
-    );
-  }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      {/* Show modal when isOpen is true */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -523,6 +544,8 @@ export default function EnhancedConsentManager({
           </div>
         </CardContent>
       </Card>
-    </div>
+        </div>
+      )}
+    </>
   );
 }

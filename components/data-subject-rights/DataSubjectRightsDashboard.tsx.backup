@@ -38,6 +38,7 @@ export default function DataSubjectRightsDashboard() {
   const [exportRequests, setExportRequests] = useState<ExportRequest[]>([])
   const [correctionRequests, setCorrectionRequests] = useState<CorrectionRequest[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showCorrectionForm, setShowCorrectionForm] = useState(false)
   const [correctionData, setCorrectionData] = useState({
     field: '',
@@ -100,6 +101,42 @@ export default function DataSubjectRightsDashboard() {
       toast({
         title: 'Erro',
         description: 'Falha ao enviar solicitação de exportação. Tente novamente.',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDataDeletion = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/user-data/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          confirmDeletion: true, 
+          reason: 'Usuário solicitou exclusão completa de dados' 
+        })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        toast({
+          title: 'Exclusão de Dados Iniciada',
+          description: 'Sua conta e todos os dados associados serão permanentemente excluídos.',
+        })
+        // Redirect to home page after deletion
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 3000)
+      } else {
+        throw new Error(data.message || 'Failed to delete data')
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Falha ao excluir dados. Tente novamente.',
         variant: 'destructive'
       })
     } finally {

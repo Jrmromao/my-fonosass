@@ -1,5 +1,6 @@
 import { ConsentService } from '@/lib/services/consentService'
 import { auth } from '@clerk/nextjs/server'
+import { ConsentMethod } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -14,20 +15,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { consentType, reason } = body
+    const { preferences } = body
 
-    await ConsentService.withdrawConsent(
+    await ConsentService.recordConsent({
       userId,
-      consentType,
-      reason || 'Usuário retirou consentimento via painel'
-    )
+      preferences,
+      ipAddress: undefined, // Will be captured server-side
+      userAgent: undefined, // Will be captured server-side
+      consentMethod: ConsentMethod.GRANULAR
+    })
     
     return NextResponse.json({
       success: true,
-      message: 'Consent withdrawn successfully'
+      message: 'Consent recorded successfully'
     })
   } catch (error) {
-    console.error('Error withdrawing consent:', error)
+    console.error('Error recording consent:', error)
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }

@@ -1,11 +1,11 @@
 'use client'
 
+import DataSubjectRightsDashboard from '@/components/data-subject-rights/DataSubjectRightsDashboard'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CreditCard, Download, Edit3, Lock, Shield, Trash2 } from 'lucide-react'
-import Link from 'next/link'
+import { AlertTriangle, CheckCircle, CreditCard, Edit3, Lock, Shield, Smartphone } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -53,6 +53,12 @@ export function UserProfile() {
   const [data, setData] = useState<UserProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'profile')
+  const [mfaEnabled, setMfaEnabled] = useState(false)
+  const [mfaLoading, setMfaLoading] = useState(false)
+  const [showMfaSetup, setShowMfaSetup] = useState(false)
+  const [mfaSecret, setMfaSecret] = useState('')
+  const [mfaQrCode, setMfaQrCode] = useState('')
+  const [mfaVerificationCode, setMfaVerificationCode] = useState('')
 
   useEffect(() => {
     fetchProfile()
@@ -72,11 +78,84 @@ export function UserProfile() {
       
       if (result.success) {
         setData(result.data)
+        setMfaEnabled(result.data.mfaEnabled || false)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const setupMFA = async () => {
+    setMfaLoading(true)
+    try {
+      const response = await fetch('/api/user/mfa/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const result = await response.json()
+      
+      if (result.success) {
+        setMfaSecret(result.data.secret)
+        setMfaQrCode(result.data.qrCode)
+        setShowMfaSetup(true)
+      }
+    } catch (error) {
+      console.error('Error setting up MFA:', error)
+    } finally {
+      setMfaLoading(false)
+    }
+  }
+
+  const verifyMFA = async () => {
+    if (!mfaVerificationCode) return
+    
+    setMfaLoading(true)
+    try {
+      const response = await fetch('/api/user/mfa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          code: mfaVerificationCode,
+          secret: mfaSecret 
+        })
+      })
+      const result = await response.json()
+      
+      if (result.success) {
+        setMfaEnabled(true)
+        setShowMfaSetup(false)
+        setMfaVerificationCode('')
+        setMfaSecret('')
+        setMfaQrCode('')
+        // Refresh profile data
+        fetchProfile()
+      }
+    } catch (error) {
+      console.error('Error verifying MFA:', error)
+    } finally {
+      setMfaLoading(false)
+    }
+  }
+
+  const disableMFA = async () => {
+    setMfaLoading(true)
+    try {
+      const response = await fetch('/api/user/mfa/disable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const result = await response.json()
+      
+      if (result.success) {
+        setMfaEnabled(false)
+        fetchProfile()
+      }
+    } catch (error) {
+      console.error('Error disabling MFA:', error)
+    } finally {
+      setMfaLoading(false)
     }
   }
 
@@ -111,7 +190,7 @@ export function UserProfile() {
           </TabsTrigger>
           <TabsTrigger value="data" className="flex items-center gap-2 px-4 py-2 text-sm">
             <Shield className="h-4 w-4" />
-            Meus Dados
+            Dados LGPD
           </TabsTrigger>
           <TabsTrigger value="subscription" className="flex items-center gap-2 px-4 py-2 text-sm">
             <CreditCard className="h-4 w-4" />
@@ -248,97 +327,10 @@ export function UserProfile() {
         </CardContent>
       </Card>
 
-      {/* Data Subject Rights */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-800">
-            <Shield className="h-5 w-5" />
-            {t('userProfile.dataRights.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-blue-700 mb-4">
-            {t('userProfile.dataRights.description')}
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Link href="/data-rights">
-              <Button variant="outline" className="w-full justify-start gap-2 border-blue-300 text-blue-700 hover:bg-blue-100">
-                <Download className="h-4 w-4" />
-                {t('userProfile.dataRights.exportButton')}
-              </Button>
-            </Link>
-            
-            <Link href="/data-rights">
-              <Button variant="outline" className="w-full justify-start gap-2 border-blue-300 text-blue-700 hover:bg-blue-100">
-                <Edit3 className="h-4 w-4" />
-                {t('userProfile.dataRights.correctButton')}
-              </Button>
-            </Link>
-            
-            <Link href="/data-rights">
-              <Button variant="outline" className="w-full justify-start gap-2 border-red-300 text-red-700 hover:bg-red-100">
-                <Trash2 className="h-4 w-4" />
-                {t('userProfile.dataRights.deleteButton')}
-              </Button>
-            </Link>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-blue-200">
-            <Link href="/data-rights">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                {t('userProfile.dataRights.accessPortalButton')}
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
         </TabsContent>
 
         <TabsContent value="data" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Meus Dados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Nome Completo</label>
-                    <p className="text-sm text-gray-900">{data.user.fullName}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Email</label>
-                    <p className="text-sm text-gray-900">{data.user.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">ID do Usuário</label>
-                    <p className="text-sm text-gray-900 font-mono">{data.user.id}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Função</label>
-                    <p className="text-sm text-gray-900">{data.user.role}</p>
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Ações de Dados</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href="/data-rights">
-                        <Shield className="h-4 w-4 mr-2" />
-                        Gerenciar Dados
-                      </Link>
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Exportar Dados
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <DataSubjectRightsDashboard />
         </TabsContent>
 
         <TabsContent value="subscription" className="space-y-6">
@@ -383,12 +375,143 @@ export function UserProfile() {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
+          {/* MFA Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Segurança</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Autenticação de Dois Fatores (2FA)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!mfaEnabled ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                    <div>
+                      <p className="font-medium text-yellow-800">2FA não ativado</p>
+                      <p className="text-sm text-yellow-700">Proteja sua conta com autenticação de dois fatores</p>
+                    </div>
+                  </div>
+                  
+                  {!showMfaSetup ? (
+                    <Button 
+                      onClick={setupMFA}
+                      disabled={mfaLoading}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Smartphone className="h-4 w-4 mr-2" />
+                      {mfaLoading ? 'Configurando...' : 'Ativar 2FA'}
+                    </Button>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 className="font-medium text-blue-800 mb-2">Configure seu aplicativo autenticador</h4>
+                        <p className="text-sm text-blue-700 mb-4">
+                          Escaneie o QR code com seu aplicativo autenticador (Google Authenticator, Authy, etc.)
+                        </p>
+                        
+                        {mfaQrCode && (
+                          <div className="flex justify-center mb-4">
+                            <img src={mfaQrCode} alt="QR Code" className="w-48 h-48 border rounded" />
+                          </div>
+                        )}
+                        
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-gray-700">Ou digite manualmente:</p>
+                          <code className="block p-2 bg-gray-100 rounded text-sm font-mono break-all">
+                            {mfaSecret}
+                          </code>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Código de verificação</label>
+                        <input
+                          type="text"
+                          value={mfaVerificationCode}
+                          onChange={(e) => setMfaVerificationCode(e.target.value)}
+                          placeholder="Digite o código de 6 dígitos"
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          maxLength={6}
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={verifyMFA}
+                          disabled={mfaLoading || mfaVerificationCode.length !== 6}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          {mfaLoading ? 'Verificando...' : 'Verificar e Ativar'}
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setShowMfaSetup(false)
+                            setMfaSecret('')
+                            setMfaQrCode('')
+                            setMfaVerificationCode('')
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-medium text-green-800">2FA ativado</p>
+                      <p className="text-sm text-green-700">Sua conta está protegida com autenticação de dois fatores</p>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    onClick={disableMFA}
+                    disabled={mfaLoading}
+                    variant="destructive"
+                    className="w-full sm:w-auto"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    {mfaLoading ? 'Desativando...' : 'Desativar 2FA'}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Security Tips */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Dicas de Segurança
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-500">Configurações de segurança serão implementadas aqui.</p>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p>Use senhas únicas e complexas para sua conta</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p>Nunca compartilhe seus códigos de autenticação</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p>Faça logout em dispositivos públicos</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                  <p>Mantenha seu aplicativo autenticador atualizado</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

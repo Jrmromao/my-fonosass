@@ -2,7 +2,7 @@ import { ConsentService } from '@/lib/services/consentService'
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth()
     
@@ -13,21 +13,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
-    const { consentType, reason } = body
-
-    await ConsentService.withdrawConsent(
-      userId,
-      consentType,
-      reason || 'Usuário retirou consentimento via painel'
-    )
+    const consentStatus = await ConsentService.getUserConsentStatus(userId)
     
     return NextResponse.json({
       success: true,
-      message: 'Consent withdrawn successfully'
+      data: consentStatus
     })
   } catch (error) {
-    console.error('Error withdrawing consent:', error)
+    console.error('Error fetching consent status:', error)
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }

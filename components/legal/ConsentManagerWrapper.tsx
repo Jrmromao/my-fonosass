@@ -34,7 +34,14 @@ export default function ConsentManagerWrapper() {
         localStorage.setItem('consent-preferences', JSON.stringify(preferences));
       }}
       isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
+      onClose={() => {
+        console.log('Closing consent manager');
+        setIsOpen(false);
+      }}
+      onOpen={() => {
+        console.log('Opening consent manager, current isOpen:', isOpen);
+        setIsOpen(true);
+      }}
       showAuditTrail={!!user?.id}
     />
   );
