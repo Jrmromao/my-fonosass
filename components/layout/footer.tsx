@@ -8,7 +8,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const formatUsername = (user: any): string => {
   if (!user) return "Usuário";

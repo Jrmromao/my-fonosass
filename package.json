@@ -46,7 +46,17 @@
     "session:mistake": "node scripts/session-commands.js mistake",
     "session:solution": "node scripts/session-commands.js solution",
     "session:next": "node scripts/session-commands.js next",
-    "bank!": "yarn session:bank"
+    "bank!": "yarn session:bank",
+    "load:test": "node scripts/load-test.js",
+    "load:stress": "node scripts/load-test.js stress",
+    "monitor:status": "curl -s http://localhost:3000/api/admin/monitoring | jq",
+    "backup:create": "tsx -e \"import { BackupManager } from './lib/backup/backupManager'; BackupManager.createBackup('full').then(console.log).catch(console.error)\"",
+    "backup:list": "tsx -e \"import { BackupManager } from './lib/backup/backupManager'; console.log(BackupManager.getBackupList())\"",
+    "health:check": "curl -s http://localhost:3000/api/health || echo 'Health check failed'",
+    "cache:stats": "curl -s http://localhost:3000/api/cache/stats | jq",
+    "cache:clear": "curl -X DELETE http://localhost:3000/api/cache/stats?type=all",
+    "cache:clear:memory": "curl -X DELETE http://localhost:3000/api/cache/stats?type=memory",
+    "cache:clear:queries": "curl -X DELETE http://localhost:3000/api/cache/stats?type=queries"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.879.0",

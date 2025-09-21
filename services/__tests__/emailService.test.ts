@@ -1,3 +1,6 @@
+// Mock server-only module
+jest.mock('server-only', () => ({}), { virtual: true })
+
 // Mock Resend properly
 const mockSend = jest.fn()
 jest.mock('resend', () => ({

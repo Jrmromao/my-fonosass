@@ -1,12 +1,14 @@
-import { DownloadLimitService } from '../downloadLimitService'
-import { prisma } from '@/app/db'
+// Mock server-only module
+jest.mock('server-only', () => ({}), { virtual: true })
 
 // Mock email service
+const mockEmailService = {
+  sendDownloadLimitWarning: jest.fn(),
+  sendDownloadLimitReached: jest.fn(),
+}
+
 jest.mock('../emailService', () => ({
-  EmailService: {
-    sendDownloadLimitWarning: jest.fn(),
-    sendDownloadLimitReached: jest.fn(),
-  }
+  EmailService: mockEmailService
 }))
 
 // Mock Prisma
@@ -32,6 +34,9 @@ jest.mock('@/app/db', () => ({
     },
   },
 }))
+
+import { prisma } from '@/app/db'
+import { DownloadLimitService } from '../downloadLimitService'
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>
 
@@ -166,15 +171,6 @@ describe('DownloadLimitService', () => {
     })
 
     it('should send warning email when 1 download remaining', async () => {
-      const mockEmailService = {
-        sendDownloadLimitWarning: jest.fn()
-      }
-
-      // Mock dynamic import
-      jest.doMock('../emailService', () => ({
-        EmailService: mockEmailService
-      }))
-
       mockPrisma.downloadHistory.create.mockResolvedValue({} as any)
       mockPrisma.downloadLimit.upsert.mockResolvedValue({
         downloads: 4 // 5 - 4 = 1 remaining
@@ -194,14 +190,6 @@ describe('DownloadLimitService', () => {
     })
 
     it('should send limit reached email when 0 downloads remaining', async () => {
-      const mockEmailService = {
-        sendDownloadLimitReached: jest.fn()
-      }
-
-      jest.doMock('../emailService', () => ({
-        EmailService: mockEmailService
-      }))
-
       mockPrisma.downloadHistory.create.mockResolvedValue({} as any)
       mockPrisma.downloadLimit.upsert.mockResolvedValue({
         downloads: 5 // 5 - 5 = 0 remaining
@@ -235,7 +223,10 @@ describe('DownloadLimitService', () => {
     it('should return true for active subscription', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user1',
-        subscriptionStatus: 'ACTIVE'
+        subscriptions: {
+          status: 'ACTIVE',
+          tier: 'PRO'
+        }
       } as any)
 
       const result = await DownloadLimitService.hasProAccess('user1')
@@ -246,7 +237,10 @@ describe('DownloadLimitService', () => {
     it('should return false for inactive subscription', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user1',
-        subscriptionStatus: 'INACTIVE'
+        subscriptions: {
+          status: 'INACTIVE',
+          tier: 'PRO'
+        }
       } as any)
 
       const result = await DownloadLimitService.hasProAccess('user1')

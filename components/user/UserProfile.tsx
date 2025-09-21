@@ -174,7 +174,33 @@ export function UserProfile() {
     )
   }
 
-  if (!data) return <div>No data available</div>
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Erro ao carregar perfil</h2>
+          <p className="text-gray-600 mb-4">Não foi possível carregar os dados do usuário.</p>
+          <Button onClick={fetchProfile} variant="outline">
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data.user) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Dados do usuário não encontrados</h2>
+          <p className="text-gray-600 mb-4">Os dados do usuário não estão disponíveis.</p>
+          <Button onClick={fetchProfile} variant="outline">
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -208,12 +234,12 @@ export function UserProfile() {
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {data.user.fullName.split(' ').map(n => n[0]).join('').toUpperCase()}
+              {data.user?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
             </div>
             
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">{data.user.fullName}</h1>
-              <p className="text-gray-600">{data.user.email}</p>
+              <h1 className="text-2xl font-bold">{data.user?.fullName || 'Usuário'}</h1>
+              <p className="text-gray-600">{data.user?.email || 'N/A'}</p>
               <div className="flex items-center gap-2 mt-2">
                 <span className={`px-2 py-1 rounded text-xs ${data.subscription.tier === 'PRO' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
                   {data.subscription.tier}

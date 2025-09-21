@@ -51,24 +51,33 @@ jest.mock('@clerk/nextjs/server', () => ({
   auth: jest.fn(),
 }));
 
-// Mock Prisma
+// Mock Prisma - basic setup, individual tests can override specific methods
 jest.mock('@/app/db', () => ({
   prisma: {
     user: {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    downloadLimit: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      upsert: jest.fn(),
+    },
+    downloadHistory: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+      groupBy: jest.fn(),
+    },
+    activity: {
+      findUnique: jest.fn(),
+    },
     $transaction: jest.fn(),
   },
 }));
 
-// Mock DownloadLimitService
-jest.mock('@/services/downloadLimitService', () => ({
-  DownloadLimitService: {
-    getUserStats: jest.fn(),
-    checkDownloadLimit: jest.fn(),
-  },
-}));
+// DownloadLimitService mocking is handled in individual test files
 
 // Mock json2csv
 jest.mock('json2csv', () => ({
