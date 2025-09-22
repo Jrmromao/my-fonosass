@@ -4,20 +4,23 @@ interface StructuredDataProps {
   type?: 'website' | 'organization' | 'medicalBusiness';
 }
 
-export default function StructuredData({ type = 'website' }: StructuredDataProps) {
+export default function StructuredData({
+  type = 'website',
+}: StructuredDataProps) {
   const getStructuredData = () => {
     const baseData = {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'FonoSaaS',
-      alternateName: 'Almanaque da Fala',
+      name: 'Almanaque da Fala',
+      alternateName: 'FonoSaaS',
       url: 'https://almanaquedafala.com.br',
       logo: 'https://almanaquedafala.com.br/logo.png',
-      description: 'Plataforma SaaS completa para fonoaudiólogos brasileiros. Gerencie pacientes, agendamentos, prontuários e exercícios terapêuticos.',
+      description:
+        'Plataforma SaaS completa para fonoaudiólogos brasileiros. Gerencie pacientes, agendamentos, prontuários e exercícios terapêuticos.',
       foundingDate: '2024',
       areaServed: {
         '@type': 'Country',
-        name: 'Brasil'
+        name: 'Brasil',
       },
       knowsLanguage: 'pt-BR',
       serviceType: 'Software as a Service (SaaS)',
@@ -28,9 +31,9 @@ export default function StructuredData({ type = 'website' }: StructuredDataProps
         category: 'Healthcare Software',
         eligibleRegion: {
           '@type': 'Country',
-          name: 'Brasil'
-        }
-      }
+          name: 'Brasil',
+        },
+      },
     };
 
     if (type === 'medicalBusiness') {
@@ -41,8 +44,8 @@ export default function StructuredData({ type = 'website' }: StructuredDataProps
         serviceType: 'Healthcare Software Platform',
         audience: {
           '@type': 'ProfessionalAudience',
-          audienceType: 'Speech-Language Pathologists'
-        }
+          audienceType: 'Speech-Language Pathologists',
+        },
       };
     }
 
@@ -50,8 +53,8 @@ export default function StructuredData({ type = 'website' }: StructuredDataProps
       return {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: 'FonoSaaS',
-        alternateName: 'Almanaque da Fala',
+        name: 'Almanaque da Fala',
+        alternateName: 'FonoSaaS',
         url: 'https://almanaquedafala.com.br',
         description: 'Plataforma SaaS completa para fonoaudiólogos brasileiros',
         inLanguage: 'pt-BR',
@@ -60,15 +63,16 @@ export default function StructuredData({ type = 'website' }: StructuredDataProps
           '@type': 'SearchAction',
           target: {
             '@type': 'EntryPoint',
-            urlTemplate: 'https://almanaquedafala.com.br/dashboard?q={search_term_string}'
+            urlTemplate:
+              'https://almanaquedafala.com.br/dashboard?q={search_term_string}',
           },
-          'query-input': 'required name=search_term_string'
+          'query-input': 'required name=search_term_string',
         },
         publisher: {
           '@type': 'Organization',
-          name: 'FonoSaaS',
-          url: 'https://almanaquedafala.com.br'
-        }
+          name: 'Almanaque da Fala',
+          url: 'https://almanaquedafala.com.br',
+        },
       };
     }
 

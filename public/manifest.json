@@ -1,6 +1,6 @@
 {
-  "name": "FonoSaaS - Almanaque da Fala",
-  "short_name": "FonoSaaS",
+  "name": "Almanaque da Fala",
+  "short_name": "Almanaque da Fala",
   "description": "Plataforma SaaS completa para fonoaudiólogos brasileiros",
   "start_url": "/",
   "display": "standalone",

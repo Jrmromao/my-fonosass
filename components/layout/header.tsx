@@ -1,96 +1,102 @@
-"use client"
+'use client';
 
-import {Button} from "@/components/ui/button"
-import {Menu} from 'lucide-react'
-import {navigationItems} from "@/lib/constants/content"
-import {useState} from "react"
-import {SignedIn, SignedOut, SignInButton, UserButton} from "@clerk/nextjs"
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
+import { navigationItems } from '@/lib/constants/content';
+import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { Menu } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-      <header className="px-4 lg:px-6 h-20 flex items-center fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-indigo-100">
-        <nav className="flex items-center justify-between w-full max-w-7xl mx-auto">
-          <a className="flex items-center gap-2 text-2xl font-bold text-indigo-600" href="#">
-            <div className="size-10 bg-indigo-600 text-white flex items-center justify-center rounded-lg rotate-3 hover:rotate-6 transition-transform">
-              {/* Icon placeholder - replace with actual icon */}
-              <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-                <span className="font-black text-sm">FS</span>
-              </div>
+    <header className="px-4 lg:px-6 h-20 flex items-center fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-indigo-100">
+      <nav className="flex items-center justify-between w-full max-w-7xl mx-auto">
+        <a
+          className="flex items-center gap-2 text-2xl font-bold text-indigo-600"
+          href="#"
+        >
+          <div className="size-10 bg-indigo-600 text-white flex items-center justify-center rounded-lg rotate-3 hover:rotate-6 transition-transform">
+            {/* Icon placeholder - replace with actual icon */}
+            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+              <span className="font-black text-sm">AF</span>
             </div>
-            <span className="hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-            FonoSaaS
+          </div>
+          <span className="hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            Almanaque da Fala
           </span>
-          </a>
+        </a>
 
-          <div className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex absolute md:relative top-20 md:top-0 left-0 right-0 bg-white md:bg-transparent flex-col md:flex-row gap-6 p-6 md:p-0 border-b md:border-0`}>
-            {navigationItems.map((item) => (
-                <a
-                    key={item}
-                    className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
-                    href={`#${item.toLowerCase()}`}
-                >
-                  {item}
-                </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <SignedOut>
-              <SignInButton mode="modal" forceRedirectUrl="/dashboard">
-                <Button className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 transition-all duration-300">
-                  Get Started
-                </Button>
-              </SignInButton>
-            </SignedOut>
-
-            <SignedIn>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox: "size-10 rounded-full hover:ring-2 hover:ring-indigo-600 transition-all"
-                        }
-                      }}
-                      signInUrl="/sign-in"
-                  />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem className="cursor-pointer">
-                    Dashboard
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer text-red-600">
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SignedIn>
-
-            <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+        <div
+          className={`${isMenuOpen ? 'flex' : 'hidden'} md:flex absolute md:relative top-20 md:top-0 left-0 right-0 bg-white md:bg-transparent flex-col md:flex-row gap-6 p-6 md:p-0 border-b md:border-0`}
+        >
+          {navigationItems.map((item) => (
+            <a
+              key={item}
+              className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+              href={item === 'FAQ' ? '/faq' : `#${item.toLowerCase()}`}
             >
-              <Menu className="size-5" />
-            </Button>
-          </div>
-        </nav>
-      </header>
-  )
+              {item}
+            </a>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-4">
+          <SignedOut>
+            <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+              <Button className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 transition-all duration-300">
+                Get Started
+              </Button>
+            </SignInButton>
+          </SignedOut>
+
+          <SignedIn>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox:
+                        'size-10 rounded-full hover:ring-2 hover:ring-indigo-600 transition-all',
+                    },
+                  }}
+                  signInUrl="/sign-in"
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="cursor-pointer">
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer text-red-600">
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SignedIn>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <Menu className="size-5" />
+          </Button>
+        </div>
+      </nav>
+    </header>
+  );
 }
 
 //

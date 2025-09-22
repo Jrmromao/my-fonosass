@@ -106,14 +106,14 @@ export default function FomosaasLanding({
             <BalloonOptimizedMinimal />
 
             {/* Skip button for power users */}
-            <div className="absolute top-4 right-4">
+            {/* <div className="absolute top-4 right-4">
               <Link
                 href="/dashboard/games"
                 className="bg-white/95 hover:bg-white text-blue-600 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all backdrop-blur-sm"
               >
                 Skip to Exercises →
               </Link>
-            </div>
+            </div> */}
 
             {/* Clear CTA at bottom */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
