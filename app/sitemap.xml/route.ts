@@ -1,6 +1,7 @@
 import { getAllPosts } from '@/lib/blog';
 import { NextResponse } from 'next/server';
 
+// Sitemap route handler for production deployment
 export async function GET() {
   const baseUrl = 'https://www.almanaquedafala.com.br';
 
