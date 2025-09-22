@@ -5,10 +5,10 @@ import SharedNavbar from '@/components/layout/SharedNavbar';
 import { BlogPost } from '@/lib/blog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import { marked } from 'marked';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import BackToBlogButton from './BackToBlogButton';
 import ConversionCTA from './ConversionCTA';
 import ExitIntentPopup from './ExitIntentPopup';
 import LikeButton from './LikeButton';
@@ -143,12 +143,7 @@ export default function BlogPostClient({
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Artigo não encontrado
           </h1>
-          <Link
-            href="/blog"
-            className="text-pink-600 hover:text-pink-700 font-medium"
-          >
-            ← Voltar ao blog
-          </Link>
+          <BackToBlogButton variant="minimal" size="lg" />
         </div>
       </div>
     );
@@ -237,20 +232,14 @@ export default function BlogPostClient({
         {/* Shared Navbar */}
         <SharedNavbar />
 
-        {/* Back Button */}
-        <div className="bg-white border-b border-gray-100 pt-8">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar ao blog
-            </Link>
+        {/* Minimal Back Button */}
+        <div className="bg-white border-b border-gray-100 pt-16">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <BackToBlogButton variant="minimal" size="sm" />
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
             {/* Main Content */}
             <article
@@ -518,39 +507,54 @@ export default function BlogPostClient({
             <aside className="lg:col-span-1 order-first lg:order-last">
               <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
                 {/* Simple Reading Stats */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">
+                <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                      <svg
+                        className="w-3 h-3 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        />
+                      </svg>
+                    </div>
                     Estatísticas
                   </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Tempo de leitura</span>
-                      <span className="font-medium">
+                      <span className="font-medium text-gray-900">
                         {post.readingTime} min
                       </span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Palavras</span>
-                      <span className="font-medium">
+                      <span className="font-medium text-gray-900">
                         {wordCount.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Visualizações</span>
-                      <span className="font-medium">
+                      <span className="font-medium text-gray-900">
                         {viewCount.toLocaleString()}
                       </span>
                     </div>
-                    <div className="pt-2 border-t border-gray-200">
-                      <div className="flex justify-between text-xs mb-1">
+                    <div className="pt-3 border-t border-gray-200">
+                      <div className="flex justify-between text-xs mb-2">
                         <span className="text-gray-600">Progresso</span>
-                        <span className="font-medium">
+                        <span className="font-medium text-gray-900">
                           {Math.round(readingProgress)}%
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-pink-500 h-2 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-pink-500 to-yellow-400 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${readingProgress}%` }}
                         />
                       </div>
@@ -565,8 +569,23 @@ export default function BlogPostClient({
 
                 {/* Simple Related Posts */}
                 {relatedPosts.length > 0 && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">
+                  <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                        <svg
+                          className="w-3 h-3 text-gray-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                          />
+                        </svg>
+                      </div>
                       Artigos Relacionados
                     </h3>
                     <div className="space-y-3">
@@ -574,12 +593,12 @@ export default function BlogPostClient({
                         <Link
                           key={relatedPost.slug}
                           href={`/blog/${relatedPost.slug}`}
-                          className="block group hover:bg-gray-100 p-2 rounded transition-colors"
+                          className="block group hover:bg-gray-50 p-2 rounded-md transition-colors duration-200"
                         >
-                          <h4 className="text-sm font-medium text-gray-900 group-hover:text-pink-600 mb-1 line-clamp-2">
+                          <h4 className="text-sm font-medium text-gray-900 group-hover:text-pink-600 mb-1 line-clamp-2 leading-tight">
                             {relatedPost.title}
                           </h4>
-                          <p className="text-xs text-gray-600 line-clamp-2">
+                          <p className="text-xs text-gray-500 line-clamp-2">
                             {relatedPost.excerpt}
                           </p>
                         </Link>
@@ -594,15 +613,7 @@ export default function BlogPostClient({
           {/* Enhanced Article Navigation */}
           <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <Link
-                href="/blog"
-                className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-white border border-gray-200 rounded-lg hover:border-pink-300 hover:bg-pink-50 hover:shadow-sm transition-all duration-200 group"
-              >
-                <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-pink-600 transition-colors" />
-                <span className="text-xs sm:text-sm font-medium text-gray-600 group-hover:text-pink-600 transition-colors">
-                  Voltar ao blog
-                </span>
-              </Link>
+              <BackToBlogButton variant="auth" size="md" />
 
               <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div className="flex items-center gap-1">
