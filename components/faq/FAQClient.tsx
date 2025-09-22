@@ -191,83 +191,130 @@ export default function FAQClient() {
       : faqData.filter((item) => item.category === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12">
+    <div className="py-16">
       <FAQStructuredData
         faqs={faqData.map((item) => ({
           question: item.question,
           answer: item.answer,
         }))}
       />
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+      <div className="container mx-auto px-4 max-w-6xl">
+        {/* Enhanced Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 text-indigo-600 text-sm font-medium mb-6">
+            <span className="w-2 h-2 bg-indigo-600 rounded-full mr-2"></span>
+            Suporte & Ajuda
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-6 leading-relaxed">
             Perguntas Frequentes
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Encontre respostas para as principais dúvidas sobre o FonoSaaS. Se
-            não encontrar o que procura, entre em contato conosco!
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Encontre respostas para as principais dúvidas sobre o{' '}
+            <strong>Almanaque da Fala</strong> e descubra como nossa plataforma
+            pode revolucionar sua prática fonoaudiológica
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={cn(
-                'px-4 py-2 rounded-full text-sm font-medium transition-colors',
-                selectedCategory === 'all'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-              )}
-            >
-              Todas as Categorias
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={cn(
-                  'px-4 py-2 rounded-full text-sm font-medium transition-colors',
-                  selectedCategory === category
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                )}
-              >
-                {category}
-              </button>
-            ))}
+        {/* Statistics Section */}
+        <div className="mb-16">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+              <div className="text-4xl font-bold text-indigo-600 mb-2">
+                500+
+              </div>
+              <div className="text-gray-600 font-medium">
+                Fonoaudiólogos Ativos
+              </div>
+            </div>
+            <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+              <div className="text-4xl font-bold text-purple-600 mb-2">
+                10k+
+              </div>
+              <div className="text-gray-600 font-medium">
+                Exercícios Disponíveis
+              </div>
+            </div>
+            <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+              <div className="text-4xl font-bold text-green-600 mb-2">
+                99.9%
+              </div>
+              <div className="text-gray-600 font-medium">Uptime Garantido</div>
+            </div>
           </div>
         </div>
 
-        {/* FAQ Items */}
-        <div className="space-y-4">
-          {filteredFAQs.map((item) => (
+        {/* Enhanced Category Filter */}
+        <div className="mb-12">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+              Filtrar por Categoria
+            </h3>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className={cn(
+                  'px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 shadow-sm',
+                  selectedCategory === 'all'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:shadow-md hover:scale-105'
+                )}
+              >
+                Todas as Categorias
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={cn(
+                    'px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 shadow-sm',
+                    selectedCategory === category
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 hover:shadow-md hover:scale-105'
+                  )}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced FAQ Items */}
+        <div className="space-y-6">
+          {filteredFAQs.map((item, index) => (
             <div
               key={item.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300"
             >
               <button
                 onClick={() => toggleItem(item.id)}
-                className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                className="w-full px-8 py-6 text-left flex items-center justify-between hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 group"
               >
-                <span className="font-medium text-gray-900 pr-4">
-                  {item.question}
-                </span>
-                {openItems.includes(item.id) ? (
-                  <ChevronUp className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                )}
+                <div className="flex items-start space-x-4 flex-1">
+                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full flex items-center justify-center text-sm font-bold text-indigo-600">
+                    {index + 1}
+                  </div>
+                  <span className="font-semibold text-gray-900 text-lg pr-4 group-hover:text-indigo-600 transition-colors">
+                    {item.question}
+                  </span>
+                </div>
+                <div className="flex-shrink-0">
+                  {openItems.includes(item.id) ? (
+                    <ChevronUp className="h-6 w-6 text-indigo-600 transition-transform duration-200" />
+                  ) : (
+                    <ChevronDown className="h-6 w-6 text-gray-400 group-hover:text-indigo-600 transition-all duration-200" />
+                  )}
+                </div>
               </button>
 
               {openItems.includes(item.id) && (
-                <div className="px-6 pb-4">
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-gray-700 leading-relaxed">
-                      {item.answer}
-                    </p>
+                <div className="px-8 pb-6">
+                  <div className="pt-4 border-t border-gray-100">
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6">
+                      <p className="text-gray-700 leading-relaxed text-base">
+                        {item.answer}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -275,27 +322,44 @@ export default function FAQClient() {
           ))}
         </div>
 
-        {/* Contact CTA */}
-        <div className="mt-12 text-center bg-indigo-50 rounded-lg p-8">
-          <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-            Ainda tem dúvidas?
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Nossa equipe de suporte está pronta para ajudar você!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="/dashboard"
-              className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              Começar Teste Grátis
-            </a>
-            <a
-              href="mailto:suporte@almanaquedafala.com.br"
-              className="inline-flex items-center px-6 py-3 bg-white text-indigo-600 font-medium rounded-lg border border-indigo-200 hover:bg-indigo-50 transition-colors"
-            >
-              Entrar em Contato
-            </a>
+        {/* Enhanced Contact CTA */}
+        <div className="mt-16">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-12 text-center text-white relative overflow-hidden">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative z-10">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 text-white text-sm font-medium mb-6">
+                <span className="w-2 h-2 bg-white rounded-full mr-2"></span>
+                Suporte Especializado
+              </div>
+              <h3 className="text-4xl font-bold mb-6">Ainda tem dúvidas?</h3>
+              <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Nossa equipe de especialistas em fonoaudiologia está pronta para
+                ajudar você a maximizar o potencial do{' '}
+                <strong>Almanaque da Fala</strong>
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                <a
+                  href="/dashboard"
+                  className="inline-flex items-center px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <span className="mr-2">🚀</span>
+                  Começar Teste Grátis
+                </a>
+                <a
+                  href="mailto:suporte@almanaquedafala.com.br"
+                  className="inline-flex items-center px-8 py-4 bg-white/20 text-white font-semibold rounded-xl border border-white/30 hover:bg-white/30 transition-all duration-200 backdrop-blur-sm"
+                >
+                  <span className="mr-2">💬</span>
+                  Entrar em Contato
+                </a>
+              </div>
+              <div className="mt-8 text-indigo-200 text-sm">
+                <p>
+                  Resposta em até 24 horas • Suporte em português •
+                  Especialistas certificados
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

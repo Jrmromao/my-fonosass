@@ -26,7 +26,7 @@ export function Sidebar({ className }: SidebarProps) {
 
   const sidebarItems = [
     {
-      title: 'Dashboard',
+      title: 'Painel',
       icon: BarChart2,
       href: '/dashboard',
     },

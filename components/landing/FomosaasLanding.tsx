@@ -111,7 +111,7 @@ export default function FomosaasLanding({
                 href="/dashboard/games"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all"
               >
-                View All Exercises
+                Ver Todos os Exercícios
               </Link>
             </div>
           </div>

@@ -1,4 +1,6 @@
 import FAQClient from '@/components/faq/FAQClient';
+import LandingFooter from '@/components/layout/LandingFooter';
+import SharedNavbar from '@/components/layout/SharedNavbar';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -22,5 +24,13 @@ export const metadata: Metadata = {
 };
 
 export default function FAQPage() {
-  return <FAQClient />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-900 dark:via-indigo-800 dark:to-purple-900">
+      <SharedNavbar />
+      <main className="pt-20">
+        <FAQClient />
+      </main>
+      <LandingFooter />
+    </div>
+  );
 }

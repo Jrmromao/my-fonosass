@@ -68,6 +68,12 @@ export default function SharedNavbar({
               Blog & Recursos
             </Link>
             <Link
+              href="/faq"
+              className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
+            >
+              FAQ
+            </Link>
+            <Link
               href="/#assinatura"
               className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
             >
@@ -130,6 +136,13 @@ export default function SharedNavbar({
               onClick={() => setIsMenuOpen(false)}
             >
               Blog & Recursos
+            </Link>
+            <Link
+              href="/faq"
+              className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              FAQ
             </Link>
             <Link
               href="/#como-funciona"

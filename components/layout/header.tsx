@@ -52,7 +52,7 @@ export default function Header() {
           <SignedOut>
             <SignInButton mode="modal" forceRedirectUrl="/dashboard">
               <Button className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 transition-all duration-300">
-                Get Started
+                Começar Agora
               </Button>
             </SignInButton>
           </SignedOut>
@@ -72,14 +72,14 @@ export default function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem className="cursor-pointer">
-                  Dashboard
+                  Painel
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">
-                  Settings
+                  Configurações
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-red-600">
-                  Sign Out
+                  Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
