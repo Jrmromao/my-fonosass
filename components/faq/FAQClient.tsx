@@ -15,164 +15,154 @@ interface FAQItem {
 const faqData: FAQItem[] = [
   // Sobre a Plataforma
   {
-    id: 'what-is-almanaque',
-    question: 'O que é o Almanaque da Fala?',
+    id: 'what-is-fonosass',
+    question: 'O que é o FonoSaaS?',
     answer:
-      'O Almanaque da Fala é uma plataforma SaaS completa desenvolvida especificamente para fonoaudiólogos brasileiros. Nossa solução oferece gestão de pacientes, agendamentos, prontuários digitais, exercícios terapêuticos e muito mais, tudo em conformidade com a LGPD e regulamentações do CFFa.',
+      'O FonoSaaS é uma plataforma especializada em exercícios de fala para fonoaudiólogos brasileiros. Oferecemos uma biblioteca completa de exercícios terapêuticos organizados por fonemas, com materiais prontos para impressão e uso em consultas.',
     category: 'Sobre a Plataforma',
   },
   {
     id: 'who-is-for',
-    question: 'Para quem é destinado o Almanaque da Fala?',
+    question: 'Para quem é destinado o FonoSaaS?',
     answer:
-      'O Almanaque da Fala é destinado a fonoaudiólogos, clínicas de fonoaudiologia, consultórios particulares e profissionais da área de terapia da fala que buscam digitalizar e otimizar seus processos de trabalho.',
+      'O FonoSaaS é destinado a fonoaudiólogos, terapeutas da fala e profissionais que trabalham com reabilitação de fala e linguagem, especialmente aqueles que atendem crianças com dificuldades de articulação.',
     category: 'Sobre a Plataforma',
   },
   {
     id: 'main-features',
     question: 'Quais são as principais funcionalidades?',
     answer:
-      'Nossa plataforma inclui: gestão completa de pacientes, agendamento de consultas, prontuários digitais LGPD-compliant, biblioteca de exercícios terapêuticos, relatórios personalizados, sistema de backup automático, integração com sistemas de pagamento e muito mais.',
+      'Nossa plataforma oferece: biblioteca com 50+ exercícios de fala organizados por fonemas (/p/, /k/, /t/, /r/, /f/, /s/, /v/, /l/, /m/, /n/), filtros por dificuldade e faixa etária, visualização gratuita dos exercícios, download em PDF para assinantes, e interface responsiva para uso em qualquer dispositivo.',
     category: 'Sobre a Plataforma',
+  },
+
+  // Exercícios e Fonemas
+  {
+    id: 'exercise-types',
+    question: 'Que tipos de exercícios estão disponíveis?',
+    answer:
+      'Oferecemos exercícios variados incluindo: jogos de articulação, atividades de consciência fonológica, exercícios de respiração, atividades lúdicas para diferentes fonemas, materiais visuais para apoio terapêutico e exercícios progressivos por nível de dificuldade.',
+    category: 'Exercícios e Fonemas',
+  },
+  {
+    id: 'phoneme-coverage',
+    question: 'Quais fonemas estão cobertos?',
+    answer:
+      'Cobrimos os principais fonemas problemáticos: /p/, /k/, /t/, /r/, /f/, /s/, /v/, /l/, /m/, /n/. Cada fonema possui exercícios específicos para diferentes posições na palavra (inicial, medial, final) e níveis de dificuldade.',
+    category: 'Exercícios e Fonemas',
+  },
+  {
+    id: 'age-groups',
+    question: 'Para quais faixas etárias são os exercícios?',
+    answer:
+      'Nossos exercícios são desenvolvidos para crianças de 3 a 12 anos, com adaptações específicas para cada faixa etária. Incluímos atividades mais lúdicas para crianças menores e exercícios mais complexos para crianças maiores.',
+    category: 'Exercícios e Fonemas',
+  },
+  {
+    id: 'exercise-preview',
+    question: 'Posso ver os exercícios antes de assinar?',
+    answer:
+      'Sim! Todos os usuários podem visualizar gratuitamente o conteúdo dos exercícios. Apenas o download em PDF requer assinatura. Isso permite que você conheça a qualidade dos materiais antes de se comprometer.',
+    category: 'Exercícios e Fonemas',
   },
 
   // Preços e Planos
   {
     id: 'pricing-plans',
-    question: 'Quais são os planos disponíveis?',
+    question: 'Qual é o valor da assinatura profissional?',
     answer:
-      'Oferecemos planos flexíveis para diferentes necessidades: Plano Básico para profissionais individuais, Plano Profissional para clínicas pequenas e Plano Empresarial para grandes clínicas. Todos os planos incluem suporte técnico e atualizações automáticas.',
+      'Oferecemos o plano Profissional por R$ 39,90/mês que inclui: acesso a todos os exercícios de fonemas, biblioteca completa de recursos, material para imprimir, materiais de referência estendidos e suporte por email prioritário. Também oferecemos desconto de 16% para pagamento anual.',
     category: 'Preços e Planos',
   },
   {
     id: 'free-trial',
     question: 'Há período de teste gratuito?',
     answer:
-      'Sim! Oferecemos 14 dias de teste gratuito para todos os novos usuários, sem necessidade de cartão de crédito. Você pode explorar todas as funcionalidades antes de decidir pelo plano ideal.',
+      'Sim! Oferecemos teste gratuito para que você possa experimentar a plataforma antes de se comprometer. Durante o período de teste, você terá acesso a uma seleção de exercícios para conhecer a qualidade dos materiais.',
     category: 'Preços e Planos',
   },
   {
-    id: 'payment-methods',
-    question: 'Quais formas de pagamento são aceitas?',
+    id: 'waiting-list',
+    question: 'Como posso me cadastrar na lista de espera?',
     answer:
-      'Aceitamos cartões de crédito (Visa, Mastercard, Elo), PIX, boleto bancário e transferência bancária. Também oferecemos desconto para pagamentos anuais.',
+      'O Almanaque da Fala está em construção! Você pode se cadastrar na nossa lista de espera através do site para ser o primeiro a saber quando lançarmos. Basta clicar em "Cadastrar" na página inicial.',
     category: 'Preços e Planos',
   },
   {
     id: 'cancel-subscription',
     question: 'Posso cancelar minha assinatura a qualquer momento?',
     answer:
-      'Sim, você pode cancelar sua assinatura a qualquer momento através do painel de controle. Não há taxas de cancelamento e você continuará tendo acesso até o final do período pago.',
+      'Sim, você pode cancelar sua assinatura a qualquer momento. Não há taxas ocultas ou de cancelamento, e você continuará tendo acesso até o final do período pago.',
     category: 'Preços e Planos',
   },
 
-  // Segurança e LGPD
-  {
-    id: 'lgpd-compliance',
-    question: 'A plataforma é compatível com a LGPD?',
-    answer:
-      'Sim, o Almanaque da Fala foi desenvolvido com total conformidade à LGPD. Implementamos criptografia de dados, controle de acesso, auditoria de logs, backup seguro e todas as medidas necessárias para proteger as informações dos pacientes.',
-    category: 'Segurança e LGPD',
-  },
-  {
-    id: 'data-security',
-    question: 'Como meus dados são protegidos?',
-    answer:
-      'Utilizamos criptografia de ponta a ponta, servidores seguros no Brasil, backup automático diário, monitoramento 24/7 e seguimos as melhores práticas de segurança da informação. Seus dados nunca são compartilhados com terceiros.',
-    category: 'Segurança e LGPD',
-  },
-  {
-    id: 'cffa-compliance',
-    question: 'A plataforma atende às exigências do CFFa?',
-    answer:
-      'Sim, o Almanaque da Fala foi desenvolvido seguindo todas as diretrizes do Conselho Federal de Fonoaudiologia, incluindo formato de prontuários, tempo de retenção de dados e procedimentos de segurança.',
-    category: 'Segurança e LGPD',
-  },
-
-  // Funcionalidades Técnicas
+  // Uso e Funcionalidades
   {
     id: 'device-compatibility',
     question: 'Em quais dispositivos posso usar a plataforma?',
     answer:
-      'O Almanaque da Fala funciona em qualquer dispositivo com navegador web: computadores, tablets e smartphones. Não é necessário instalar software adicional - tudo funciona na nuvem.',
-    category: 'Funcionalidades Técnicas',
+      'O Almanaque da Fala funciona em qualquer dispositivo com navegador web: computadores, tablets e smartphones. A interface é totalmente responsiva e otimizada para uso em diferentes tamanhos de tela.',
+    category: 'Uso e Funcionalidades',
   },
   {
-    id: 'internet-requirement',
-    question: 'Preciso de internet para usar a plataforma?',
+    id: 'how-it-works',
+    question: 'Como funciona o processo de uso da plataforma?',
     answer:
-      'Sim, a plataforma é baseada na nuvem e requer conexão com a internet. No entanto, algumas funcionalidades podem ser usadas offline e sincronizadas quando a conexão for restabelecida.',
-    category: 'Funcionalidades Técnicas',
+      'O processo é simples: 1) Cadastre-se gratuitamente e preencha um questionário sobre as necessidades da criança, 2) Receba um plano personalizado de exercícios, 3) Comece a praticar com os exercícios interativos e acompanhe o progresso de forma divertida.',
+    category: 'Uso e Funcionalidades',
   },
   {
-    id: 'data-backup',
-    question: 'Como funciona o backup dos dados?',
+    id: 'personalized-plan',
+    question: 'Como é criado o plano personalizado?',
     answer:
-      'Realizamos backup automático diário de todos os dados em servidores seguros. Além disso, você pode exportar seus dados a qualquer momento em formatos padrão (PDF, Excel, CSV).',
-    category: 'Funcionalidades Técnicas',
+      'Nosso sistema analisa as informações fornecidas no questionário inicial e cria um plano de exercícios personalizado baseado nas necessidades específicas da criança, incluindo os fonemas que precisam ser trabalhados e o nível de dificuldade apropriado.',
+    category: 'Uso e Funcionalidades',
   },
   {
-    id: 'integration-options',
-    question: 'A plataforma se integra com outros sistemas?',
+    id: 'progress-tracking',
+    question: 'Posso acompanhar o progresso da criança?',
     answer:
-      'Sim, oferecemos integração com sistemas de pagamento, calendários (Google Calendar, Outlook), sistemas de gestão financeira e outras ferramentas comuns usadas em clínicas.',
-    category: 'Funcionalidades Técnicas',
+      'Sim! A plataforma oferece ferramentas para acompanhar o desenvolvimento da fala da criança ao longo do tempo, permitindo que você veja as melhorias e ajuste os exercícios conforme necessário.',
+    category: 'Uso e Funcionalidades',
   },
 
-  // Suporte e Treinamento
+  // Suporte e Atualizações
+  {
+    id: 'therapist-replacement',
+    question: 'O Almanaque da Fala substitui a terapia com um fonoaudiólogo?',
+    answer:
+      'Não, o Almanaque da Fala é uma ferramenta complementar que pode ser usada junto com a terapia tradicional. Recomendamos sempre o acompanhamento de um fonoaudiólogo profissional para casos que requerem avaliação e tratamento especializado.',
+    category: 'Suporte e Atualizações',
+  },
+  {
+    id: 'age-appropriate',
+    question: 'A partir de qual idade posso usar o Almanaque da Fala?',
+    answer:
+      'Nossos exercícios são desenvolvidos para crianças a partir de 3 anos de idade, quando já começam a desenvolver habilidades de fala mais complexas. Cada exercício é claramente marcado com a faixa etária recomendada.',
+    category: 'Suporte e Atualizações',
+  },
+  {
+    id: 'suitable-for-child',
+    question: 'Como sei se o Almanaque da Fala é adequado para meu filho?',
+    answer:
+      'O questionário inicial que você preenche ao se cadastrar nos ajuda a identificar se a plataforma é adequada para as necessidades específicas do seu filho. Além disso, oferecemos teste gratuito para que você possa experimentar antes de se comprometer.',
+    category: 'Suporte e Atualizações',
+  },
   {
     id: 'support-available',
     question: 'Que tipo de suporte está disponível?',
     answer:
-      'Oferecemos suporte técnico por email, chat online e telefone durante horário comercial. Também disponibilizamos vídeo-aulas, documentação completa e webinars de treinamento.',
-    category: 'Suporte e Treinamento',
-  },
-  {
-    id: 'training-included',
-    question: 'Há treinamento incluído?',
-    answer:
-      'Sim! Incluímos treinamento completo para você e sua equipe: vídeo-aulas, documentação detalhada, sessões de treinamento online e suporte durante o período de adaptação.',
-    category: 'Suporte e Treinamento',
-  },
-  {
-    id: 'response-time',
-    question: 'Qual o tempo de resposta do suporte?',
-    answer:
-      'Nosso compromisso é responder em até 4 horas durante horário comercial (segunda a sexta, 8h às 18h). Para questões urgentes, oferecemos suporte prioritário.',
-    category: 'Suporte e Treinamento',
-  },
-
-  // Migração e Implementação
-  {
-    id: 'data-migration',
-    question: 'Posso migrar dados de outros sistemas?',
-    answer:
-      'Sim, nossa equipe de suporte pode ajudar na migração de dados de planilhas, sistemas antigos ou outras plataformas. Oferecemos este serviço sem custo adicional para planos anuais.',
-    category: 'Migração e Implementação',
-  },
-  {
-    id: 'implementation-time',
-    question: 'Quanto tempo leva para implementar a plataforma?',
-    answer:
-      'A implementação básica pode ser feita em 1-2 dias úteis. Para migrações complexas ou personalizações específicas, o prazo pode variar de 1-2 semanas.',
-    category: 'Migração e Implementação',
-  },
-  {
-    id: 'customization',
-    question: 'A plataforma pode ser personalizada?',
-    answer:
-      'Sim, oferecemos opções de personalização para atender necessidades específicas do seu consultório ou clínica, incluindo campos customizados, relatórios personalizados e integrações específicas.',
-    category: 'Migração e Implementação',
+      'Oferecemos suporte por email para dúvidas técnicas e pedagógicas. Para fonoaudiólogos profissionais, oferecemos suporte prioritário e recursos especializados. Também disponibilizamos artigos especializados e dicas práticas no nosso blog.',
+    category: 'Suporte e Atualizações',
   },
 ];
 
 const categories = [
   'Sobre a Plataforma',
+  'Exercícios e Fonemas',
   'Preços e Planos',
-  'Segurança e LGPD',
-  'Funcionalidades Técnicas',
-  'Suporte e Treinamento',
-  'Migração e Implementação',
+  'Uso e Funcionalidades',
+  'Suporte e Atualizações',
 ];
 
 export default function FAQClient() {
@@ -210,8 +200,8 @@ export default function FAQClient() {
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Encontre respostas para as principais dúvidas sobre o{' '}
-            <strong>Almanaque da Fala</strong> e descubra como nossa plataforma
-            pode revolucionar sua prática fonoaudiológica
+            <strong>Almanaque da Fala</strong> e descubra como nossos exercícios
+            interativos podem ajudar no desenvolvimento da fala do seu filho
           </p>
         </div>
 
@@ -219,26 +209,20 @@ export default function FAQClient() {
         <div className="mb-16">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-              <div className="text-4xl font-bold text-indigo-600 mb-2">
-                500+
-              </div>
+              <div className="text-4xl font-bold text-indigo-600 mb-2">50+</div>
               <div className="text-gray-600 font-medium">
-                Fonoaudiólogos Ativos
+                Exercícios Interativos
               </div>
             </div>
             <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-              <div className="text-4xl font-bold text-purple-600 mb-2">
-                10k+
-              </div>
+              <div className="text-4xl font-bold text-purple-600 mb-2">10</div>
               <div className="text-gray-600 font-medium">
-                Exercícios Disponíveis
+                Categorias Temáticas
               </div>
             </div>
             <div className="text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-              <div className="text-4xl font-bold text-green-600 mb-2">
-                99.9%
-              </div>
-              <div className="text-gray-600 font-medium">Uptime Garantido</div>
+              <div className="text-4xl font-bold text-green-600 mb-2">3-9</div>
+              <div className="text-gray-600 font-medium">Anos de Idade</div>
             </div>
           </div>
         </div>
@@ -333,8 +317,8 @@ export default function FAQClient() {
               </div>
               <h3 className="text-4xl font-bold mb-6">Ainda tem dúvidas?</h3>
               <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto leading-relaxed">
-                Nossa equipe de especialistas em fonoaudiologia está pronta para
-                ajudar você a maximizar o potencial do{' '}
+                Nossa equipe de especialistas está pronta para ajudar você a
+                começar a jornada de desenvolvimento da fala do seu filho com o{' '}
                 <strong>Almanaque da Fala</strong>
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -343,14 +327,14 @@ export default function FAQClient() {
                   className="inline-flex items-center px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <span className="mr-2">🚀</span>
-                  Começar Teste Grátis
+                  Experimente Grátis
                 </a>
                 <a
-                  href="mailto:suporte@almanaquedafala.com.br"
+                  href="mailto:contato@almanaquedafala.com.br"
                   className="inline-flex items-center px-8 py-4 bg-white/20 text-white font-semibold rounded-xl border border-white/30 hover:bg-white/30 transition-all duration-200 backdrop-blur-sm"
                 >
                   <span className="mr-2">💬</span>
-                  Entrar em Contato
+                  Fale com um Especialista
                 </a>
               </div>
               <div className="mt-8 text-indigo-200 text-sm">

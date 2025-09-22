@@ -60,30 +60,30 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
         <SharedNavbar />
 
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-pink-50 to-yellow-50 pt-24 pb-20">
+        <section className="bg-gradient-to-br from-pink-50 to-yellow-50 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-4xl mx-auto">
-              <div className="mb-8">
-                <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 text-pink-600">
+              <div className="mb-6 sm:mb-8">
+                <span className="inline-block px-3 py-1.5 mb-4 sm:mb-6 text-xs sm:text-sm font-medium rounded-full bg-pink-100 text-pink-600">
                   Blog & Recursos
                 </span>
-                <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 lg:mb-8 leading-tight">
                   Conhecimento que transforma vidas
                 </h1>
-                <p className="text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed max-w-3xl mx-auto">
+                <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-6 sm:mb-8 lg:mb-10 leading-relaxed max-w-3xl mx-auto px-2">
                   Artigos especializados, dicas práticas e recursos para
                   fonoaudiólogos brasileiros. Aprenda com especialistas e
                   transforme sua prática clínica.
                 </p>
               </div>
-              <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-2">
                 {allTags.slice(0, 6).map((tag) => (
                   <button
                     key={tag}
                     onClick={() =>
                       setSelectedTag(selectedTag === tag ? null : tag)
                     }
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                    className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${
                       selectedTag === tag
                         ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25'
                         : 'bg-white text-gray-600 hover:bg-pink-50 hover:text-pink-600 hover:shadow-md'
@@ -98,13 +98,13 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
         </section>
 
         {/* Main Content */}
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Featured Article */}
           {filteredArticles.find((article) => article.featured) && (
-            <section className="mb-20">
-              <div className="flex items-center gap-3 mb-10">
+            <section className="mb-12 sm:mb-16 lg:mb-20">
+              <div className="flex items-center gap-3 mb-6 sm:mb-8 lg:mb-10">
                 <div className="w-3 h-3 bg-pink-500 rounded-full"></div>
-                <span className="text-sm font-bold text-pink-600 uppercase tracking-wider">
+                <span className="text-xs sm:text-sm font-bold text-pink-600 uppercase tracking-wider">
                   • Destaque
                 </span>
               </div>
@@ -113,19 +113,21 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                   (article) => article.featured
                 );
                 return featured ? (
-                  <article className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group border border-gray-100">
-                    <div className="p-10 md:p-16">
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center shadow-lg">
-                          <User className="w-6 h-6 text-white" />
+                  <article className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group border border-gray-100">
+                    <div className="p-6 sm:p-8 md:p-10 lg:p-16">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center shadow-lg">
+                          <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-600">
-                          <span className="font-bold text-gray-900 text-base">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-sm text-gray-600">
+                          <span className="font-bold text-gray-900 text-sm sm:text-base">
                             {featured.author}
                           </span>
-                          <span className="text-gray-400">•</span>
-                          <time className="flex items-center gap-2 text-gray-500">
-                            <Calendar className="w-4 h-4" />
+                          <span className="hidden sm:inline text-gray-400">
+                            •
+                          </span>
+                          <time className="flex items-center gap-2 text-gray-500 text-xs sm:text-sm">
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                             {format(
                               new Date(featured.date),
                               "dd 'de' MMMM 'de' yyyy",
@@ -134,26 +136,26 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                           </time>
                         </div>
                       </div>
-                      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight group-hover:text-pink-600 transition-colors">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight group-hover:text-pink-600 transition-colors">
                         <Link href={`/blog/${featured.slug}`}>
                           {featured.title}
                         </Link>
                       </h2>
-                      <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-4xl">
+                      <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed max-w-4xl">
                         {featured.excerpt}
                       </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-8 text-sm text-gray-500">
-                          <span className="flex items-center gap-2 text-base">
-                            <Clock className="w-5 h-5" />
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-sm text-gray-500">
+                          <span className="flex items-center gap-2 text-sm sm:text-base">
+                            <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                             {featured.readingTime} min de leitura
                           </span>
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             {featured.tags &&
                               featured.tags.slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="px-4 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium hover:bg-pink-200 transition-colors cursor-pointer"
+                                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-pink-100 text-pink-700 rounded-full text-xs sm:text-sm font-medium hover:bg-pink-200 transition-colors cursor-pointer"
                                   onClick={() => setSelectedTag(tag)}
                                 >
                                   {tag}
@@ -161,7 +163,7 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                               ))}
                           </div>
                         </div>
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-4 sm:gap-6">
                           <ShareButton
                             url={`/blog/${featured.slug}`}
                             title={featured.title}
@@ -169,16 +171,17 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                           />
                           <Link
                             href={`/blog/${featured.slug}`}
-                            className="inline-flex items-center gap-3 text-pink-600 hover:text-pink-700 font-bold text-lg group-hover:gap-4 transition-all"
+                            className="inline-flex items-center gap-2 sm:gap-3 text-pink-600 hover:text-pink-700 font-bold text-sm sm:text-base lg:text-lg group-hover:gap-3 sm:group-hover:gap-4 transition-all"
                           >
-                            Ler artigo <ArrowRight className="w-5 h-5" />
+                            Ler artigo{' '}
+                            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                           </Link>
                         </div>
                       </div>
                     </div>
 
                     {/* Conversion CTA for featured article */}
-                    <div className="px-10 md:px-16 pb-10">
+                    <div className="px-6 sm:px-8 md:px-10 lg:px-16 pb-6 sm:pb-8 lg:pb-10">
                       <ConversionCTA variant="article" />
                     </div>
                   </article>
@@ -189,10 +192,10 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
 
           {/* Articles List */}
           <section>
-            <div className="flex items-center justify-between mb-12">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 sm:mb-12">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                <h2 className="text-lg font-bold text-gray-700 uppercase tracking-wider">
+                <h2 className="text-base sm:text-lg font-bold text-gray-700 uppercase tracking-wider">
                   {selectedTag
                     ? `Artigos sobre ${selectedTag}`
                     : 'Todos os artigos'}
@@ -201,31 +204,33 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
               {selectedTag && (
                 <button
                   onClick={() => setSelectedTag(null)}
-                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-all"
+                  className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full hover:bg-gray-100 transition-all self-start sm:self-auto"
                 >
-                  <Tag className="w-4 h-4" />
+                  <Tag className="w-3 h-3 sm:w-4 sm:h-4" />
                   Limpar filtro
                 </button>
               )}
             </div>
 
-            <div className="grid gap-12">
+            <div className="grid gap-8 sm:gap-12">
               {filteredArticles
                 .filter((article) => !article.featured)
                 .map((article, index) => (
                   <article key={article.slug} className="group">
-                    <div className="bg-white rounded-2xl p-8 hover:shadow-lg transition-all duration-300 border border-gray-100">
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center shadow-md">
-                          <User className="w-5 h-5 text-white" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 hover:shadow-lg transition-all duration-300 border border-gray-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center shadow-md">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-gray-500">
-                          <span className="font-bold text-gray-900">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-500">
+                          <span className="font-bold text-gray-900 text-sm sm:text-base">
                             {article.author}
                           </span>
-                          <span className="text-gray-400">•</span>
-                          <time className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
+                          <span className="hidden sm:inline text-gray-400">
+                            •
+                          </span>
+                          <time className="flex items-center gap-2 text-xs sm:text-sm">
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                             {format(new Date(article.date), "dd 'de' MMMM", {
                               locale: ptBR,
                             })}
@@ -233,29 +238,29 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                         </div>
                       </div>
 
-                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 group-hover:text-pink-600 transition-colors leading-tight">
+                      <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 group-hover:text-pink-600 transition-colors leading-tight">
                         <Link href={`/blog/${article.slug}`}>
                           {article.title}
                         </Link>
                       </h3>
 
-                      <p className="text-lg text-gray-600 mb-6 leading-relaxed line-clamp-3">
+                      <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed line-clamp-3">
                         {article.excerpt}
                       </p>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-6 text-sm text-gray-500">
-                          <span className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                          <span className="flex items-center gap-2 text-xs sm:text-sm">
+                            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                             {article.readingTime} min
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                             {article.tags &&
                               article.tags.slice(0, 2).map((tag) => (
                                 <button
                                   key={tag}
                                   onClick={() => setSelectedTag(tag)}
-                                  className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-pink-100 hover:text-pink-600 transition-colors"
+                                  className="px-2 py-1 sm:px-3 sm:py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-pink-100 hover:text-pink-600 transition-colors"
                                 >
                                   {tag}
                                 </button>
@@ -263,7 +268,7 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3 sm:gap-4">
                           <LikeButton
                             articleId={article.slug}
                             initialLikes={Math.floor(Math.random() * 50)} // Random likes for demo
@@ -275,16 +280,17 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                           />
                           <Link
                             href={`/blog/${article.slug}`}
-                            className="text-pink-600 hover:text-pink-700 font-semibold text-sm flex items-center gap-1 group-hover:gap-2 transition-all"
+                            className="text-pink-600 hover:text-pink-700 font-semibold text-xs sm:text-sm flex items-center gap-1 group-hover:gap-2 transition-all"
                           >
-                            Ler mais <ArrowRight className="w-4 h-4" />
+                            Ler mais{' '}
+                            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Link>
                         </div>
                       </div>
                     </div>
 
                     {/* Conversion CTA after each article */}
-                    <div className="mt-6">
+                    <div className="mt-4 sm:mt-6">
                       <ConversionCTA variant="article" />
                     </div>
 
@@ -292,7 +298,7 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                       filteredArticles.filter((article) => !article.featured)
                         .length -
                         1 && (
-                      <div className="mt-12 border-b border-gray-200"></div>
+                      <div className="mt-8 sm:mt-12 border-b border-gray-200"></div>
                     )}
                   </article>
                 ))}
@@ -324,28 +330,28 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
           </section>
 
           {/* Newsletter Signup */}
-          <section className="mt-20">
-            <div className="bg-gradient-to-br from-pink-50 to-yellow-50 rounded-3xl p-8 md:p-12 text-center">
+          <section className="mt-12 sm:mt-16 lg:mt-20">
+            <div className="bg-gradient-to-br from-pink-50 to-yellow-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 text-center">
               <div className="max-w-2xl mx-auto">
-                <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                   Fique por dentro das novidades
                 </h3>
-                <p className="text-lg text-gray-600 mb-8">
+                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 px-2">
                   Receba artigos exclusivos, dicas práticas e recursos para
                   fonoaudiólogos diretamente na sua caixa de entrada. Sem spam,
                   apenas conteúdo de qualidade.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-lg mx-auto">
                   <input
                     type="email"
                     placeholder="Digite seu email"
-                    className="flex-1 px-6 py-4 border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 focus:border-transparent text-center sm:text-left placeholder-gray-400"
+                    className="flex-1 px-4 py-3 sm:px-6 sm:py-4 border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 focus:border-transparent text-center sm:text-left placeholder-gray-400 text-sm sm:text-base"
                   />
-                  <button className="px-8 py-4 bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/25 transition-all">
+                  <button className="px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/25 transition-all text-sm sm:text-base">
                     Inscrever-se
                   </button>
                 </div>
-                <p className="text-sm text-gray-500 mt-4">
+                <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4">
                   Cancele a qualquer momento. Respeitamos sua privacidade.
                 </p>
               </div>

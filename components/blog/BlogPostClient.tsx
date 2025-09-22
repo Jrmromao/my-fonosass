@@ -250,8 +250,8 @@ export default function BlogPostClient({
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid lg:grid-cols-4 gap-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
             {/* Main Content */}
             <article
               className="lg:col-span-3"
@@ -259,15 +259,15 @@ export default function BlogPostClient({
               itemType="https://schema.org/Article"
             >
               {/* Enhanced Breadcrumb Navigation */}
-              <nav className="mb-8" aria-label="Breadcrumb">
-                <ol className="flex items-center space-x-2 text-sm">
+              <nav className="mb-6 sm:mb-8" aria-label="Breadcrumb">
+                <ol className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm overflow-x-auto">
                   <li>
                     <Link
                       href="/"
-                      className="text-gray-500 hover:text-pink-600 transition-colors duration-200 flex items-center gap-1"
+                      className="text-gray-500 hover:text-pink-600 transition-colors duration-200 flex items-center gap-1 whitespace-nowrap"
                     >
                       <svg
-                        className="w-4 h-4"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -279,12 +279,12 @@ export default function BlogPostClient({
                           d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                         />
                       </svg>
-                      Home
+                      <span className="hidden sm:inline">Home</span>
                     </Link>
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-4 h-4 text-gray-300 mx-2"
+                      className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300 mx-1 sm:mx-2"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -296,14 +296,14 @@ export default function BlogPostClient({
                     </svg>
                     <Link
                       href="/blog"
-                      className="text-gray-500 hover:text-pink-600 transition-colors duration-200"
+                      className="text-gray-500 hover:text-pink-600 transition-colors duration-200 whitespace-nowrap"
                     >
                       Blog
                     </Link>
                   </li>
                   <li className="flex items-center">
                     <svg
-                      className="w-4 h-4 text-gray-300 mx-2"
+                      className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300 mx-1 sm:mx-2"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -314,7 +314,7 @@ export default function BlogPostClient({
                       />
                     </svg>
                     <span
-                      className="text-gray-900 font-medium truncate max-w-xs"
+                      className="text-gray-900 font-medium truncate max-w-32 sm:max-w-xs"
                       aria-current="page"
                     >
                       {post.title}
@@ -324,28 +324,28 @@ export default function BlogPostClient({
               </nav>
 
               {/* Enhanced Article Header */}
-              <header className="mb-12">
-                <div className="bg-gradient-to-br from-pink-50 via-white to-yellow-50 rounded-3xl p-8 border border-pink-100 shadow-sm">
+              <header className="mb-8 sm:mb-12">
+                <div className="bg-gradient-to-br from-pink-50 via-white to-yellow-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-pink-100 shadow-sm">
                   <h1
-                    className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight tracking-tight"
+                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight tracking-tight"
                     itemProp="headline"
                   >
                     {post.title}
                   </h1>
 
                   <p
-                    className="text-xl text-gray-600 mb-8 leading-relaxed max-w-4xl"
+                    className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed max-w-4xl"
                     itemProp="description"
                   >
                     {post.excerpt}
                   </p>
 
                   {/* Enhanced Author Info */}
-                  <div className="flex flex-wrap items-center gap-6 text-sm mb-6">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-4 sm:gap-6 text-xs sm:text-sm mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center">
                         <svg
-                          className="w-6 h-6 text-white"
+                          className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -360,7 +360,7 @@ export default function BlogPostClient({
                       </div>
                       <div>
                         <div
-                          className="font-semibold text-gray-900"
+                          className="font-semibold text-gray-900 text-sm sm:text-base"
                           itemProp="author"
                           itemScope
                           itemType="https://schema.org/Person"
@@ -375,7 +375,7 @@ export default function BlogPostClient({
 
                     <div className="flex items-center gap-2 text-gray-600">
                       <svg
-                        className="w-4 h-4"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -387,7 +387,11 @@ export default function BlogPostClient({
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <time itemProp="datePublished" dateTime={post.date}>
+                      <time
+                        itemProp="datePublished"
+                        dateTime={post.date}
+                        className="text-xs sm:text-sm"
+                      >
                         {format(new Date(post.date), "dd 'de' MMMM 'de' yyyy", {
                           locale: ptBR,
                         })}
@@ -396,7 +400,7 @@ export default function BlogPostClient({
 
                     <div className="flex items-center gap-2 text-gray-600">
                       <svg
-                        className="w-4 h-4"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -411,6 +415,7 @@ export default function BlogPostClient({
                       <span
                         itemProp="timeRequired"
                         content={`PT${post.readingTime}M`}
+                        className="text-xs sm:text-sm"
                       >
                         {post.readingTime} min de leitura
                       </span>
@@ -418,7 +423,7 @@ export default function BlogPostClient({
 
                     <div className="flex items-center gap-2 text-gray-600">
                       <svg
-                        className="w-4 h-4"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -430,18 +435,20 @@ export default function BlogPostClient({
                           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                       </svg>
-                      <span>{wordCount.toLocaleString()} palavras</span>
+                      <span className="text-xs sm:text-sm">
+                        {wordCount.toLocaleString()} palavras
+                      </span>
                     </div>
                   </div>
 
                   {/* Enhanced Tags */}
-                  <div className="flex flex-wrap items-center gap-3 mb-8">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
                     {post.tags &&
                       post.tags.map((tag) => (
                         <Link
                           key={tag}
                           href={`/blog?tag=${encodeURIComponent(tag)}`}
-                          className="px-4 py-2 bg-gradient-to-r from-pink-100 to-yellow-100 text-pink-700 rounded-full text-sm font-medium hover:from-pink-200 hover:to-yellow-200 hover:scale-105 transition-all duration-200 border border-pink-200 shadow-sm"
+                          className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-pink-100 to-yellow-100 text-pink-700 rounded-full text-xs sm:text-sm font-medium hover:from-pink-200 hover:to-yellow-200 hover:scale-105 transition-all duration-200 border border-pink-200 shadow-sm"
                           aria-label={`Filtrar artigos por tag: ${tag}`}
                         >
                           #{tag}
@@ -450,8 +457,8 @@ export default function BlogPostClient({
                   </div>
 
                   {/* Enhanced Social Actions */}
-                  <div className="flex items-center justify-between p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 p-4 sm:p-6 bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-sm">
+                    <div className="flex items-center gap-4 sm:gap-6">
                       <LikeButton
                         articleId={post.slug}
                         initialLikes={likeCount}
@@ -466,7 +473,7 @@ export default function BlogPostClient({
                         description={post.excerpt}
                       />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                       <span className="font-medium">
                         {viewCount.toLocaleString()} visualizações
@@ -508,8 +515,8 @@ export default function BlogPostClient({
             </article>
 
             {/* Sidebar */}
-            <aside className="lg:col-span-1">
-              <div className="sticky top-24 space-y-6">
+            <aside className="lg:col-span-1 order-first lg:order-last">
+              <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
                 {/* Simple Reading Stats */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-gray-900 mb-3">
@@ -551,8 +558,10 @@ export default function BlogPostClient({
                   </div>
                 </div>
 
-                {/* Popular Posts */}
-                <PopularPosts limit={5} sortBy="engagement" />
+                {/* Popular Posts - Hidden on mobile to save space */}
+                <div className="hidden lg:block">
+                  <PopularPosts limit={5} sortBy="engagement" />
+                </div>
 
                 {/* Simple Related Posts */}
                 {relatedPosts.length > 0 && (
@@ -583,19 +592,19 @@ export default function BlogPostClient({
           </div>
 
           {/* Enhanced Article Navigation */}
-          <div className="mt-16 pt-8 border-t border-gray-200">
+          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <Link
                 href="/blog"
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg hover:border-pink-300 hover:bg-pink-50 hover:shadow-sm transition-all duration-200 group"
+                className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-white border border-gray-200 rounded-lg hover:border-pink-300 hover:bg-pink-50 hover:shadow-sm transition-all duration-200 group"
               >
                 <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-pink-600 transition-colors" />
-                <span className="text-sm font-medium text-gray-600 group-hover:text-pink-600 transition-colors">
+                <span className="text-xs sm:text-sm font-medium text-gray-600 group-hover:text-pink-600 transition-colors">
                   Voltar ao blog
                 </span>
               </Link>
 
-              <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div className="flex items-center gap-1">
                   <LikeButton
                     articleId={post.slug}
@@ -603,7 +612,7 @@ export default function BlogPostClient({
                     onLikeChange={handleLikeChange}
                   />
                 </div>
-                <div className="w-px h-5 bg-gray-200"></div>
+                <div className="w-px h-4 sm:h-5 bg-gray-200"></div>
                 <div className="flex items-center gap-1">
                   <ShareButton
                     url={`/blog/${post.slug}`}
