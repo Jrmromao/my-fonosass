@@ -35,7 +35,8 @@ export default function LikeButton({
     };
 
     loadLikeStatus();
-  }, [articleId, onLikeChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [articleId]); // onLikeChange intentionally excluded to prevent infinite loop
 
   const handleLike = async () => {
     if (isLoading) return;
@@ -70,17 +71,24 @@ export default function LikeButton({
   return (
     <button
       onClick={handleLike}
-      className={`flex items-center gap-1 text-sm transition-colors ${
+      disabled={isLoading}
+      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm transition-all duration-200 ${
         isLiked
-          ? 'text-pink-500 hover:text-pink-600'
-          : 'text-gray-400 hover:text-pink-500'
-      }`}
+          ? 'text-pink-600 bg-pink-50 hover:bg-pink-100'
+          : 'text-gray-500 hover:text-pink-500 hover:bg-pink-50'
+      } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       aria-label={isLiked ? 'Descurtir artigo' : 'Curtir artigo'}
     >
       <Heart
-        className={`w-4 h-4 transition-all ${isLiked ? 'fill-current' : ''}`}
+        className={`w-4 h-4 transition-all duration-200 ${
+          isLiked ? 'fill-current scale-110' : 'hover:scale-105'
+        }`}
       />
-      {likes > 0 && <span className="text-xs font-medium">{likes}</span>}
+      {likes > 0 && (
+        <span className="text-xs font-medium min-w-[1rem] text-center">
+          {likes}
+        </span>
+      )}
     </button>
   );
 }

@@ -8,6 +8,9 @@ import { ArrowRight, BookOpen, Calendar, Clock, Tag, User } from 'lucide-react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useState } from 'react';
+import SharedNavbar from '../layout/SharedNavbar';
+import ConversionCTA from './ConversionCTA';
+import ExitIntentPopup from './ExitIntentPopup';
 import LikeButton from './LikeButton';
 import ShareButton from './ShareButton';
 
@@ -31,7 +34,9 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
   return (
     <>
       <Head>
-        <title>Blog - Dicas e Recursos para Fonoaudiólogos | FonoSaaS</title>
+        <title>
+          Blog - Dicas e Recursos para Fonoaudiólogos | Almanaque da Fala
+        </title>
         <meta
           name="description"
           content="Artigos especializados, dicas práticas e recursos para fonoaudiólogos brasileiros. Aprenda sobre gestão de consultório, exercícios terapêuticos e mais."
@@ -51,70 +56,37 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
         <meta property="og:type" content="website" />
       </Head>
       <div className="min-h-screen bg-white">
-        {/* Modern Header */}
-        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Link href="/" className="flex items-center space-x-3 group">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <BookOpen className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900 group-hover:text-pink-600 transition-colors">
-                  FonoSaaS Blog
-                </span>
-              </Link>
-
-              <nav className="hidden md:flex items-center space-x-8">
-                <Link
-                  href="/"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                >
-                  Início
-                </Link>
-                <Link href="/blog" className="text-gray-900 font-medium">
-                  Blog
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                >
-                  Dashboard
-                </Link>
-              </nav>
-
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-full text-sm font-medium hover:shadow-lg hover:shadow-pink-500/25 transition-all"
-              >
-                Acessar Dashboard
-              </Link>
-            </div>
-          </div>
-        </header>
+        {/* Shared Navbar */}
+        <SharedNavbar />
 
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-pink-50 to-yellow-50 py-16">
+        <section className="bg-gradient-to-br from-pink-50 to-yellow-50 pt-24 pb-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Conhecimento que transforma vidas
-              </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Artigos especializados, dicas práticas e recursos para
-                fonoaudiólogos brasileiros. Aprenda com especialistas e
-                transforme sua prática clínica.
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
+            <div className="text-center max-w-4xl mx-auto">
+              <div className="mb-8">
+                <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 text-pink-600">
+                  Blog & Recursos
+                </span>
+                <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight">
+                  Conhecimento que transforma vidas
+                </h1>
+                <p className="text-xl md:text-2xl text-gray-600 mb-10 leading-relaxed max-w-3xl mx-auto">
+                  Artigos especializados, dicas práticas e recursos para
+                  fonoaudiólogos brasileiros. Aprenda com especialistas e
+                  transforme sua prática clínica.
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-3">
                 {allTags.slice(0, 6).map((tag) => (
                   <button
                     key={tag}
                     onClick={() =>
                       setSelectedTag(selectedTag === tag ? null : tag)
                     }
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
                       selectedTag === tag
-                        ? 'bg-pink-500 text-white shadow-lg'
-                        : 'bg-white text-gray-600 hover:bg-pink-50 hover:text-pink-600'
+                        ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/25'
+                        : 'bg-white text-gray-600 hover:bg-pink-50 hover:text-pink-600 hover:shadow-md'
                     }`}
                   >
                     {tag}
@@ -129,11 +101,11 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Featured Article */}
           {filteredArticles.find((article) => article.featured) && (
-            <section className="mb-16">
-              <div className="flex items-center gap-2 mb-8">
-                <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
-                <span className="text-sm font-semibold text-pink-600 uppercase tracking-wide">
-                  Destaque
+            <section className="mb-20">
+              <div className="flex items-center gap-3 mb-10">
+                <div className="w-3 h-3 bg-pink-500 rounded-full"></div>
+                <span className="text-sm font-bold text-pink-600 uppercase tracking-wider">
+                  • Destaque
                 </span>
               </div>
               {(() => {
@@ -141,18 +113,18 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                   (article) => article.featured
                 );
                 return featured ? (
-                  <article className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group">
-                    <div className="p-8 md:p-12">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-white" />
+                  <article className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group border border-gray-100">
+                    <div className="p-10 md:p-16">
+                      <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center shadow-lg">
+                          <User className="w-6 h-6 text-white" />
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span className="font-semibold text-gray-900">
+                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                          <span className="font-bold text-gray-900 text-base">
                             {featured.author}
                           </span>
-                          <span>•</span>
-                          <time className="flex items-center gap-1">
+                          <span className="text-gray-400">•</span>
+                          <time className="flex items-center gap-2 text-gray-500">
                             <Calendar className="w-4 h-4" />
                             {format(
                               new Date(featured.date),
@@ -162,33 +134,34 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                           </time>
                         </div>
                       </div>
-                      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight group-hover:text-pink-600 transition-colors">
+                      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight group-hover:text-pink-600 transition-colors">
                         <Link href={`/blog/${featured.slug}`}>
                           {featured.title}
                         </Link>
                       </h2>
-                      <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                      <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-4xl">
                         {featured.excerpt}
                       </p>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-6 text-sm text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
+                        <div className="flex items-center gap-8 text-sm text-gray-500">
+                          <span className="flex items-center gap-2 text-base">
+                            <Clock className="w-5 h-5" />
                             {featured.readingTime} min de leitura
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             {featured.tags &&
                               featured.tags.slice(0, 3).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium"
+                                  className="px-4 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium hover:bg-pink-200 transition-colors cursor-pointer"
+                                  onClick={() => setSelectedTag(tag)}
                                 >
                                   {tag}
                                 </span>
                               ))}
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                           <ShareButton
                             url={`/blog/${featured.slug}`}
                             title={featured.title}
@@ -196,12 +169,17 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                           />
                           <Link
                             href={`/blog/${featured.slug}`}
-                            className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-semibold group-hover:gap-3 transition-all"
+                            className="inline-flex items-center gap-3 text-pink-600 hover:text-pink-700 font-bold text-lg group-hover:gap-4 transition-all"
                           >
-                            Ler artigo <ArrowRight className="w-4 h-4" />
+                            Ler artigo <ArrowRight className="w-5 h-5" />
                           </Link>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Conversion CTA for featured article */}
+                    <div className="px-10 md:px-16 pb-10">
+                      <ConversionCTA variant="article" />
                     </div>
                   </article>
                 ) : null;
@@ -211,10 +189,10 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
 
           {/* Articles List */}
           <section>
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+            <div className="flex items-center justify-between mb-12">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                <h2 className="text-lg font-bold text-gray-700 uppercase tracking-wider">
                   {selectedTag
                     ? `Artigos sobre ${selectedTag}`
                     : 'Todos os artigos'}
@@ -223,7 +201,7 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
               {selectedTag && (
                 <button
                   onClick={() => setSelectedTag(null)}
-                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                  className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-all"
                 >
                   <Tag className="w-4 h-4" />
                   Limpar filtro
@@ -231,87 +209,90 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
               )}
             </div>
 
-            <div className="grid gap-8">
+            <div className="grid gap-12">
               {filteredArticles
                 .filter((article) => !article.featured)
                 .map((article, index) => (
                   <article key={article.slug} className="group">
-                    <div className="flex items-start gap-6">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-white" />
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <span className="font-semibold text-gray-900">
-                              {article.author}
-                            </span>
-                            <span>•</span>
-                            <time className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {format(new Date(article.date), "dd 'de' MMMM", {
-                                locale: ptBR,
-                              })}
-                            </time>
-                          </div>
+                    <div className="bg-white rounded-2xl p-8 hover:shadow-lg transition-all duration-300 border border-gray-100">
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center shadow-md">
+                          <User className="w-5 h-5 text-white" />
                         </div>
-
-                        <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors leading-tight">
-                          <Link href={`/blog/${article.slug}`}>
-                            {article.title}
-                          </Link>
-                        </h3>
-
-                        <p className="text-gray-600 mb-4 leading-relaxed line-clamp-2">
-                          {article.excerpt}
-                        </p>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              {article.readingTime} min
-                            </span>
-                            <div className="flex items-center gap-2">
-                              {article.tags &&
-                                article.tags.slice(0, 2).map((tag) => (
-                                  <button
-                                    key={tag}
-                                    onClick={() => setSelectedTag(tag)}
-                                    className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-pink-100 hover:text-pink-600 transition-colors"
-                                  >
-                                    {tag}
-                                  </button>
-                                ))}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <LikeButton
-                              articleId={article.slug}
-                              initialLikes={Math.floor(Math.random() * 50)} // Random likes for demo
-                            />
-                            <ShareButton
-                              url={`/blog/${article.slug}`}
-                              title={article.title}
-                              description={article.excerpt}
-                            />
-                            <Link
-                              href={`/blog/${article.slug}`}
-                              className="text-pink-600 hover:text-pink-700 font-medium text-sm"
-                            >
-                              Ler mais
-                            </Link>
-                          </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <span className="font-bold text-gray-900">
+                            {article.author}
+                          </span>
+                          <span className="text-gray-400">•</span>
+                          <time className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            {format(new Date(article.date), "dd 'de' MMMM", {
+                              locale: ptBR,
+                            })}
+                          </time>
                         </div>
                       </div>
+
+                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 group-hover:text-pink-600 transition-colors leading-tight">
+                        <Link href={`/blog/${article.slug}`}>
+                          {article.title}
+                        </Link>
+                      </h3>
+
+                      <p className="text-lg text-gray-600 mb-6 leading-relaxed line-clamp-3">
+                        {article.excerpt}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-6 text-sm text-gray-500">
+                          <span className="flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            {article.readingTime} min
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {article.tags &&
+                              article.tags.slice(0, 2).map((tag) => (
+                                <button
+                                  key={tag}
+                                  onClick={() => setSelectedTag(tag)}
+                                  className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-pink-100 hover:text-pink-600 transition-colors"
+                                >
+                                  {tag}
+                                </button>
+                              ))}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <LikeButton
+                            articleId={article.slug}
+                            initialLikes={Math.floor(Math.random() * 50)} // Random likes for demo
+                          />
+                          <ShareButton
+                            url={`/blog/${article.slug}`}
+                            title={article.title}
+                            description={article.excerpt}
+                          />
+                          <Link
+                            href={`/blog/${article.slug}`}
+                            className="text-pink-600 hover:text-pink-700 font-semibold text-sm flex items-center gap-1 group-hover:gap-2 transition-all"
+                          >
+                            Ler mais <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Conversion CTA after each article */}
+                    <div className="mt-6">
+                      <ConversionCTA variant="article" />
                     </div>
 
                     {index <
                       filteredArticles.filter((article) => !article.featured)
                         .length -
                         1 && (
-                      <div className="mt-8 border-b border-gray-100"></div>
+                      <div className="mt-12 border-b border-gray-200"></div>
                     )}
                   </article>
                 ))}
@@ -374,6 +355,9 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
 
         {/* Footer */}
         <LandingFooter />
+
+        {/* Exit Intent Popup */}
+        <ExitIntentPopup />
       </div>
     </>
   );

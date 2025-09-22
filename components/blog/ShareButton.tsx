@@ -110,10 +110,13 @@ export default function ShareButton({
         onClick={
           canUseNativeShare ? handleNativeShare : () => setIsOpen(!isOpen)
         }
-        className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+        className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200"
         aria-label="Compartilhar artigo"
       >
         <Share2 className="w-4 h-4" />
+        <span className="text-xs font-medium hidden sm:inline">
+          Compartilhar
+        </span>
       </button>
 
       {isOpen && (
@@ -125,9 +128,11 @@ export default function ShareButton({
           />
 
           {/* Dropdown */}
-          <div className="absolute right-0 top-8 z-20 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-            <div className="px-3 py-2 border-b border-gray-100">
-              <p className="text-sm font-medium text-gray-900">Compartilhar</p>
+          <div className="absolute right-0 top-10 z-20 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
+            <div className="px-4 py-2 border-b border-gray-100">
+              <p className="text-sm font-semibold text-gray-900">
+                Compartilhar artigo
+              </p>
             </div>
 
             <div className="py-1">
@@ -135,7 +140,7 @@ export default function ShareButton({
                 <>
                   <button
                     onClick={handleNativeShare}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                   >
                     <Smartphone className="w-4 h-4" />
                     Compartilhar nativo
@@ -148,7 +153,7 @@ export default function ShareButton({
                 <button
                   key={option.name}
                   onClick={() => handleShare(option.url)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 ${option.color} transition-colors`}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 ${option.color} transition-colors`}
                 >
                   <option.icon className="w-4 h-4" />
                   {option.name}
@@ -159,12 +164,14 @@ export default function ShareButton({
 
               <button
                 onClick={copyToClipboard}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
               >
                 {copied ? (
                   <>
                     <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-green-600">Link copiado!</span>
+                    <span className="text-green-600 font-medium">
+                      Link copiado!
+                    </span>
                   </>
                 ) : (
                   <>

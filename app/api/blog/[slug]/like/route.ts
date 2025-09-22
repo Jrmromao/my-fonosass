@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const { ipAddress, userAgent } = await request.json();
 
     // Find or create blog post
@@ -96,10 +96,10 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const ipAddress =
       request.headers.get('x-forwarded-for') ||
       request.headers.get('x-real-ip') ||
@@ -108,6 +108,7 @@ export async function GET(
     const blogPost = await prisma.blogPost.findUnique({
       where: { slug },
       select: {
+        id: true,
         likeCount: true,
       },
     });

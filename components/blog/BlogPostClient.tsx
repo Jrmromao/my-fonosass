@@ -1,13 +1,16 @@
 'use client';
 
 import LandingFooter from '@/components/layout/LandingFooter';
+import SharedNavbar from '@/components/layout/SharedNavbar';
 import { BlogPost } from '@/lib/blog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import { marked } from 'marked';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import ConversionCTA from './ConversionCTA';
+import ExitIntentPopup from './ExitIntentPopup';
 import LikeButton from './LikeButton';
 import PopularPosts from './PopularPosts';
 import ShareButton from './ShareButton';
@@ -31,6 +34,12 @@ export default function BlogPostClient({
     () => post.content.split(/\s+/).length,
     [post.content]
   );
+
+  // Memoize the like change callback to prevent infinite loops
+  const handleLikeChange = useCallback((likes: number, isLiked: boolean) => {
+    setLikeCount(likes);
+    setIsLiked(isLiked);
+  }, []);
 
   // Configure marked options
   marked.setOptions({
@@ -168,8 +177,8 @@ export default function BlogPostClient({
             },
             publisher: {
               '@type': 'Organization',
-              name: 'FonoSaaS',
-              url: 'https://fonosaas.com',
+              name: 'Almanaque da Fala',
+              url: 'https://almanaquedafala.com.br',
             },
             datePublished: post.date,
             dateModified: post.date,
@@ -179,7 +188,7 @@ export default function BlogPostClient({
             articleSection: 'Fonoaudiologia',
             mainEntityOfPage: {
               '@type': 'WebPage',
-              '@id': `https://fonosaas.com/blog/${post.slug}`,
+              '@id': `https://almanaquedafala.com.br/blog/${post.slug}`,
             },
           }),
         }}
@@ -206,48 +215,40 @@ export default function BlogPostClient({
                   '@type': 'ListItem',
                   position: 1,
                   name: 'Home',
-                  item: 'https://fonosaas.com',
+                  item: 'https://almanaquedafala.com.br',
                 },
                 {
                   '@type': 'ListItem',
                   position: 2,
                   name: 'Blog',
-                  item: 'https://fonosaas.com/blog',
+                  item: 'https://almanaquedafala.com.br/blog',
                 },
                 {
                   '@type': 'ListItem',
                   position: 3,
                   name: post.title,
-                  item: `https://fonosaas.com/blog/${post.slug}`,
+                  item: `https://almanaquedafala.com.br/blog/${post.slug}`,
                 },
               ],
             }),
           }}
         />
 
-        {/* Header */}
-        <header className="sticky top-1 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Link
-                href="/blog"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Voltar ao blog
-              </Link>
+        {/* Shared Navbar */}
+        <SharedNavbar />
 
-              <div className="flex items-center gap-4">
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-full text-sm font-medium hover:shadow-lg hover:shadow-pink-500/25 transition-all"
-                >
-                  Dashboard
-                </Link>
-              </div>
-            </div>
+        {/* Back Button */}
+        <div className="bg-white border-b border-gray-100 pt-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar ao blog
+            </Link>
           </div>
-        </header>
+        </div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid lg:grid-cols-4 gap-8">
@@ -497,6 +498,13 @@ export default function BlogPostClient({
                 dangerouslySetInnerHTML={{ __html: marked(post.content) }}
                 itemProp="articleBody"
               />
+
+              {/* Conversion CTA after article content */}
+              <ConversionCTA
+                variant="topic"
+                topic={post.tags?.[0] || 'fonoaudiologia'}
+                className="mt-8"
+              />
             </article>
 
             {/* Sidebar */}
@@ -576,31 +584,33 @@ export default function BlogPostClient({
 
           {/* Enhanced Article Navigation */}
           <div className="mt-16 pt-8 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <Link
                 href="/blog"
-                className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 rounded-xl hover:border-pink-200 hover:shadow-lg transition-all duration-200 group"
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-lg hover:border-pink-300 hover:bg-pink-50 hover:shadow-sm transition-all duration-200 group"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-600 group-hover:text-pink-600 transition-colors" />
-                <span className="font-medium text-gray-700 group-hover:text-pink-600 transition-colors">
+                <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-pink-600 transition-colors" />
+                <span className="text-sm font-medium text-gray-600 group-hover:text-pink-600 transition-colors">
                   Voltar ao blog
                 </span>
               </Link>
 
-              <div className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl shadow-sm">
-                <LikeButton
-                  articleId={post.slug}
-                  initialLikes={likeCount}
-                  onLikeChange={(likes, isLiked) => {
-                    setLikeCount(likes);
-                    setIsLiked(isLiked);
-                  }}
-                />
-                <ShareButton
-                  url={`/blog/${post.slug}`}
-                  title={post.title}
-                  description={post.excerpt}
-                />
+              <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div className="flex items-center gap-1">
+                  <LikeButton
+                    articleId={post.slug}
+                    initialLikes={likeCount}
+                    onLikeChange={handleLikeChange}
+                  />
+                </div>
+                <div className="w-px h-5 bg-gray-200"></div>
+                <div className="flex items-center gap-1">
+                  <ShareButton
+                    url={`/blog/${post.slug}`}
+                    title={post.title}
+                    description={post.excerpt}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -608,6 +618,15 @@ export default function BlogPostClient({
 
         {/* Footer */}
         <LandingFooter />
+
+        {/* Exit Intent Popup */}
+        <ExitIntentPopup
+          currentArticle={{
+            title: post.title,
+            slug: post.slug,
+            tags: post.tags,
+          }}
+        />
       </div>
     </>
   );

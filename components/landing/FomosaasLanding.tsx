@@ -292,53 +292,61 @@ export default function FomosaasLanding({
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {featuredBlogPosts.map((post: any, index: number) => (
-              <motion.div
-                key={post.slug}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white dark:bg-blue-900 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-lg transition-all group"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-white" />
+            {featuredBlogPosts && featuredBlogPosts.length > 0 ? (
+              featuredBlogPosts.map((post: any, index: number) => (
+                <motion.div
+                  key={post.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white dark:bg-blue-900 rounded-2xl p-6 border border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-lg transition-all group"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center">
+                      <BookOpen className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      <time>
+                        {format(new Date(post.date), "dd 'de' MMMM", {
+                          locale: ptBR as any,
+                        })}
+                      </time>
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    <time>
-                      {format(new Date(post.date), "dd 'de' MMMM", {
-                        locale: ptBR as any,
-                      })}
-                    </time>
+                  <h3 className="text-xl font-semibold mb-3 text-blue-900 dark:text-white group-hover:text-pink-600 transition-colors">
+                    <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                  </h3>
+                  <p className="text-blue-700 dark:text-blue-300 mb-4 line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {post.tags?.slice(0, 2).map((tag: string) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      className="text-pink-600 hover:text-pink-700 font-medium text-sm flex items-center gap-1"
+                    >
+                      Ler mais <ArrowRight className="w-3 h-3" />
+                    </Link>
                   </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-blue-900 dark:text-white group-hover:text-pink-600 transition-colors">
-                  <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-                </h3>
-                <p className="text-blue-700 dark:text-blue-300 mb-4 line-clamp-2">
-                  {post.excerpt}
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400">
+                  Nenhum artigo disponível no momento.
                 </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {post.tags?.slice(0, 2).map((tag: string) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    className="text-pink-600 hover:text-pink-700 font-medium text-sm flex items-center gap-1"
-                  >
-                    Ler mais <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
+              </div>
+            )}
           </div>
 
           <div className="mt-12 text-center">
