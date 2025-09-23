@@ -20,6 +20,9 @@ model User {
   consentRecords    ConsentRecord[]
   downloadHistory   DownloadHistory[]
   downloads         Download[]
+
+  @@index([createdAt])
+  @@index([role])
 }
 
 model Activity {
@@ -38,6 +41,12 @@ model Activity {
   files           ActivityFile[]
   downloadHistory DownloadHistory[]
   categories      ActivityCategory[] @relation("ActivityToActivityCategory")
+
+  @@index([isPublic, createdAt])
+  @@index([type, difficulty])
+  @@index([ageRange])
+  @@index([createdById])
+  @@index([name])
 }
 
 model ActivityFile {
@@ -52,6 +61,10 @@ model ActivityFile {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   activity     Activity @relation(fields: [activityId], references: [id])
+
+  @@index([activityId])
+  @@index([fileType])
+  @@index([uploadedById])
 }
 
 model ActivityCategory {
@@ -74,6 +87,10 @@ model Subscription {
   updatedAt          DateTime  @updatedAt
   paymentId          String?
   user               User      @relation(fields: [userId], references: [id])
+
+  @@index([status, currentPeriodEnd])
+  @@index([tier])
+  @@index([createdAt])
 }
 
 model DownloadHistory {
