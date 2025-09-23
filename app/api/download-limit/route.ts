@@ -1,112 +1,63 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { DownloadLimitService } from '@/services/downloadLimitService'
-import { prisma } from '@/app/db'
+import { prisma } from '@/app/db';
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const { userId } = await auth()
-    
+    const { userId } = await auth();
+
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const isPro = await DownloadLimitService.hasProAccess(userId)
-    
-    if (isPro) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          canDownload: true,
-          remaining: -1, // Unlimited
-          isPro: true
-        }
-      })
-    }
-
-    const limit = await DownloadLimitService.checkDownloadLimit(userId)
-    
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...limit,
-        isPro: false
-      }
-    })
-  } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const { userId } = await auth()
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { clerkUserId: userId }
-    })
+      where: { clerkUserId: userId },
+      include: {
+        subscriptions: true,
+      },
+    });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const isPro = await DownloadLimitService.hasProAccess(user.id)
-    
-    // Get request body for download details
-    const body = await request.json()
-    const { activityId, fileName, fileSize } = body
+    // Check if user is pro
+    const isPro =
+      user.subscriptions?.status === 'ACTIVE' &&
+      user.subscriptions?.tier === 'PRO';
+    const limit = isPro ? 999999 : 5;
 
-    // Get client IP and user agent
-    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-    const userAgent = request.headers.get('user-agent') || 'unknown'
+    // Count downloads from the beginning of current month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
 
-    if (isPro) {
-      // Record download for Pro users too (for history tracking)
-      await DownloadLimitService.recordDownload(
-        user.id,
-        activityId,
-        fileName,
-        fileSize,
-        ipAddress,
-        userAgent,
-        true // Skip limit increment for Pro users
-      )
-      
-      return NextResponse.json({
-        success: true,
-        data: { downloaded: true, isPro: true }
-      })
-    }
+    const used = await prisma.download.count({
+      where: {
+        userId: user.id,
+        downloadedAt: {
+          gte: startOfMonth,
+        },
+      },
+    });
 
-    const limit = await DownloadLimitService.checkDownloadLimit(user.id)
-    
-    if (!limit.canDownload) {
-      return NextResponse.json({
-        success: false,
-        error: 'Download limit reached. Upgrade to Pro for unlimited downloads.'
-      }, { status: 403 })
-    }
+    const remaining = isPro ? 999999 : Math.max(0, limit - used);
 
-    await DownloadLimitService.recordDownload(
-      user.id,
-      activityId,
-      fileName,
-      fileSize,
-      ipAddress,
-      userAgent
-    )
-    
     return NextResponse.json({
       success: true,
-      data: { downloaded: true, remaining: limit.remaining - 1 }
-    })
+      data: {
+        isPro,
+        remaining,
+        limit,
+        used,
+      },
+    });
   } catch (error) {
-    console.error('Download error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error fetching download limit:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

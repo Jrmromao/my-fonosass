@@ -1,31 +1,30 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { useSignIn } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Eye, EyeOff } from 'lucide-react'
-import { Alert, AlertDescription } from '../ui/alert'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useSignIn } from '@clerk/nextjs';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Alert, AlertDescription } from '../ui/alert';
 
 const signInSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(1, 'Senha é obrigatória'),
-})
+});
 
-type SignInFormData = z.infer<typeof signInSchema>
+type SignInFormData = z.infer<typeof signInSchema>;
 
 export default function CustomSignInForm() {
-  const { isLoaded, signIn, setActive } = useSignIn()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
+  const { isLoaded, signIn, setActive } = useSignIn();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -33,55 +32,55 @@ export default function CustomSignInForm() {
     formState: { errors },
   } = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
-  })
+  });
 
   const onSubmit = async (data: SignInFormData) => {
-    if (!isLoaded) return
+    if (!isLoaded) return;
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       const result = await signIn.create({
         identifier: data.email,
         password: data.password,
-      })
+      });
 
       if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId })
-        router.push('/dashboard')
+        await setActive({ session: result.createdSessionId });
+        router.push('/dashboard');
       } else {
-        setError('Falha na autenticação. Tente novamente.')
+        setError('Falha na autenticação. Tente novamente.');
       }
     } catch (err: any) {
-      console.error('Sign in error:', err)
+      console.error('Sign in error:', err);
       setError(
-        err.errors?.[0]?.message || 
-        'Erro ao fazer login. Verifique suas credenciais.'
-      )
+        err.errors?.[0]?.message ||
+          'Erro ao fazer login. Verifique suas credenciais.'
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleSignIn = async () => {
-    if (!isLoaded) return
+    if (!isLoaded) return;
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       await signIn.authenticateWithRedirect({
         strategy: 'oauth_google',
         redirectUrl: '/sso-callback',
         redirectUrlComplete: '/dashboard',
-      })
+      });
     } catch (err: any) {
-      console.error('Google sign in error:', err)
-      setError('Erro ao fazer login com Google. Tente novamente.')
-      setIsLoading(false)
+      console.error('Google sign in error:', err);
+      setError('Erro ao fazer login com Google. Tente novamente.');
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full space-y-6">
@@ -109,6 +108,7 @@ export default function CustomSignInForm() {
               id="email"
               type="email"
               placeholder="seu@email.com"
+              autoComplete="email"
               {...register('email')}
               className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-pink-500/20"
             />
@@ -120,7 +120,10 @@ export default function CustomSignInForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="password"
+              className="text-gray-700 dark:text-gray-300"
+            >
               Senha
             </Label>
             <div className="relative">
@@ -128,6 +131,7 @@ export default function CustomSignInForm() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Sua senha"
+                autoComplete="current-password"
                 {...register('password')}
                 className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-pink-500/20 pr-10"
               />
@@ -224,5 +228,5 @@ export default function CustomSignInForm() {
         </div>
       </div>
     </div>
-  )
+  );
 }

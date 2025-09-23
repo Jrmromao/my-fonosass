@@ -19,6 +19,7 @@ model User {
   subscriptions     Subscription?
   consentRecords    ConsentRecord[]
   downloadHistory   DownloadHistory[]
+  downloads         Download[]
 }
 
 model Activity {
@@ -90,6 +91,18 @@ model DownloadHistory {
   @@index([userId, downloadedAt])
   @@index([activityId])
   @@map("download_history")
+}
+
+model Download {
+  id           String   @id @default(cuid())
+  userId       String
+  exerciseId   String
+  downloadedAt DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, downloadedAt])
+  @@index([exerciseId])
+  @@map("downloads")
 }
 
 model DownloadLimit {

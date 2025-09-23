@@ -71,6 +71,12 @@ jest.mock('@/app/db', () => ({
       count: jest.fn(),
       groupBy: jest.fn(),
     },
+    download: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+      deleteMany: jest.fn(),
+    },
     activity: {
       findUnique: jest.fn(),
     },
@@ -98,6 +104,22 @@ jest.mock('next/server', () => ({
       });
       return response;
     }),
+  },
+}));
+
+// Mock Stripe
+jest.mock('@/lib/stripe', () => ({
+  stripe: {
+    checkout: {
+      sessions: {
+        create: jest.fn(),
+      },
+    },
+    billingPortal: {
+      sessions: {
+        create: jest.fn(),
+      },
+    },
   },
 }));
 

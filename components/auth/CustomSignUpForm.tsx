@@ -1,42 +1,54 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { useSignUp } from '@clerk/nextjs'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
-import { Alert, AlertDescription } from '../ui/alert'
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useSignUp } from '@clerk/nextjs';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CheckCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Alert, AlertDescription } from '../ui/alert';
 
-const signUpSchema = z.object({
-  firstName: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  lastName: z.string().min(2, 'Sobrenome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  password: z.string()
-    .min(8, 'Senha deve ter pelo menos 8 caracteres')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Senhas não coincidem',
-  path: ['confirmPassword'],
-})
+const signUpSchema = z
+  .object({
+    firstName: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+    lastName: z.string().min(2, 'Sobrenome deve ter pelo menos 2 caracteres'),
+    email: z.string().email('Email inválido'),
+    password: z
+      .string()
+      .min(8, 'Senha deve ter pelo menos 8 caracteres')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número'
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Senhas não coincidem',
+    path: ['confirmPassword'],
+  });
 
-type SignUpFormData = z.infer<typeof signUpSchema>
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function CustomSignUpForm() {
-  const { isLoaded, signUp, setActive } = useSignUp()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [pendingVerification, setPendingVerification] = useState(false)
-  const [code, setCode] = useState('')
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState('');
 
   const {
     register,
@@ -45,15 +57,15 @@ export default function CustomSignUpForm() {
     watch,
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-  })
+  });
 
-  const password = watch('password')
+  const password = watch('password');
 
   const onSubmit = async (data: SignUpFormData) => {
-    if (!isLoaded) return
+    if (!isLoaded) return;
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       const result = await signUp.create({
@@ -61,66 +73,65 @@ export default function CustomSignUpForm() {
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
-      })
+      });
 
       if (result.status === 'missing_requirements') {
-        setPendingVerification(true)
+        setPendingVerification(true);
       } else if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId })
-        router.push('/dashboard')
+        await setActive({ session: result.createdSessionId });
+        router.push('/dashboard');
       }
     } catch (err: any) {
-      console.error('Sign up error:', err)
+      console.error('Sign up error:', err);
       setError(
-        err.errors?.[0]?.message || 
-        'Erro ao criar conta. Tente novamente.'
-      )
+        err.errors?.[0]?.message || 'Erro ao criar conta. Tente novamente.'
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const onVerify = async () => {
-    if (!isLoaded) return
+    if (!isLoaded) return;
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       const result = await signUp.attemptEmailAddressVerification({
         code,
-      })
+      });
 
       if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId })
-        router.push('/dashboard')
+        await setActive({ session: result.createdSessionId });
+        router.push('/dashboard');
       }
     } catch (err: any) {
-      console.error('Verification error:', err)
-      setError('Código inválido. Tente novamente.')
+      console.error('Verification error:', err);
+      setError('Código inválido. Tente novamente.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleSignUp = async () => {
-    if (!isLoaded) return
+    if (!isLoaded) return;
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
       await signUp.authenticateWithRedirect({
         strategy: 'oauth_google',
         redirectUrl: '/sso-callback',
         redirectUrlComplete: '/dashboard',
-      })
+      });
     } catch (err: any) {
-      console.error('Google sign up error:', err)
-      setError('Erro ao criar conta com Google. Tente novamente.')
-      setIsLoading(false)
+      console.error('Google sign up error:', err);
+      setError('Erro ao criar conta com Google. Tente novamente.');
+      setIsLoading(false);
     }
-  }
+  };
 
   if (pendingVerification) {
     return (
@@ -141,7 +152,10 @@ export default function CustomSignUpForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="code" className="text-indigo-600 dark:text-blue-300">
+            <Label
+              htmlFor="code"
+              className="text-indigo-600 dark:text-blue-300"
+            >
               Código de verificação
             </Label>
             <Input
@@ -177,7 +191,11 @@ export default function CustomSignUpForm() {
             <p className="text-indigo-600/70 dark:text-blue-300/70 text-sm">
               Não recebeu o código?{' '}
               <button
-                onClick={() => signUp?.prepareEmailAddressVerification({ strategy: 'email_code' })}
+                onClick={() =>
+                  signUp?.prepareEmailAddressVerification({
+                    strategy: 'email_code',
+                  })
+                }
                 className="text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 font-medium"
               >
                 Reenviar
@@ -186,7 +204,7 @@ export default function CustomSignUpForm() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -209,7 +227,10 @@ export default function CustomSignUpForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName" className="text-gray-700 dark:text-gray-300">
+              <Label
+                htmlFor="firstName"
+                className="text-gray-700 dark:text-gray-300"
+              >
                 Nome
               </Label>
               <Input
@@ -227,7 +248,10 @@ export default function CustomSignUpForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lastName" className="text-gray-700 dark:text-gray-300">
+              <Label
+                htmlFor="lastName"
+                className="text-gray-700 dark:text-gray-300"
+              >
                 Sobrenome
               </Label>
               <Input
@@ -253,6 +277,7 @@ export default function CustomSignUpForm() {
               id="email"
               type="email"
               placeholder="seu@email.com"
+              autoComplete="email"
               {...register('email')}
               className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-pink-500/20"
             />
@@ -264,7 +289,10 @@ export default function CustomSignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="password"
+              className="text-gray-700 dark:text-gray-300"
+            >
               Senha
             </Label>
             <div className="relative">
@@ -272,6 +300,7 @@ export default function CustomSignUpForm() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Mínimo 8 caracteres"
+                autoComplete="new-password"
                 {...register('password')}
                 className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-pink-500/20 pr-10"
               />
@@ -297,7 +326,10 @@ export default function CustomSignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="confirmPassword"
+              className="text-gray-700 dark:text-gray-300"
+            >
               Confirmar senha
             </Label>
             <div className="relative">
@@ -305,6 +337,7 @@ export default function CustomSignUpForm() {
                 id="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirme sua senha"
+                autoComplete="new-password"
                 {...register('confirmPassword')}
                 className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pink-500 focus:ring-pink-500/20 pr-10"
               />
@@ -401,5 +434,5 @@ export default function CustomSignUpForm() {
         </div>
       </div>
     </div>
-  )
+  );
 }
