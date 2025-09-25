@@ -1,26 +1,26 @@
+import { balloonColors, phonemes } from '@/components/Balloon/constants';
+import {
+  Balloon,
+  BalloonFieldProps,
+  Fragment,
+} from '@/components/Balloon/types';
+import PhonemeDialog from '@/components/dialogs/phonemeDialog';
+import { getActivitiesByPhoneme } from '@/lib/actions/activity.action';
+import { getFileDownloadUrl } from '@/lib/actions/file-download.action';
+import { ActivityWithFiles } from '@/types/activity';
+import { useRouter } from 'next/navigation';
 import React, {
   useCallback,
   useEffect,
   useRef,
   useState,
   useTransition,
-} from "react";
-import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
-import { useRouter } from "next/navigation";
-import {
-  Balloon,
-  BalloonFieldProps,
-  Fragment,
-} from "@/components/Balloon/types";
-import { balloonColors, phonemes } from "@/components/Balloon/constants";
-import { getActivitiesByPhoneme } from "@/lib/actions/activity.action";
-import { ActivityWithFiles } from "@/types/activity";
-import PhonemeDialog from "@/components/dialogs/phonemeDialog";
+} from 'react';
 
 const BalloonField: React.FC<BalloonFieldProps> = ({
   balloonCount = 23, // Fixed at 23 balloons
-  title = "Phoneme Pop!",
-  description = "Pop balloons to learn phonemes",
+  title = 'Phoneme Pop!',
+  description = 'Pop balloons to learn phonemes',
   onBalloonPopped,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -29,9 +29,9 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
   const animationRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [activeColor, setActiveColor] = useState<string>("");
+  const [activeColor, setActiveColor] = useState<string>('');
   const [poppedBalloonId, setPoppedBalloonId] = useState<number | null>(null);
-  const [activePhoneme, setActivePhoneme] = useState<string>("");
+  const [activePhoneme, setActivePhoneme] = useState<string>('');
 
   const [draggingBalloonId, setDraggingBalloonId] = useState<number | null>(
     null
@@ -56,7 +56,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     // Set canvas dimensions with proper pixel ratio for sharpness
@@ -66,11 +66,269 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
 
+    // Initialize balloons inline
+    const initializeBalloonsInline = (): void => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+
+      // Precompute shared values
+      const leftAnchorX = width * 0.25;
+      const rightAnchorX = width * 0.75;
+      const anchorY = height;
+      const virtualHeight = height * 0.8;
+      const leftBalloonCount = 10;
+      const rightBalloonCount = 10;
+      const totalBalloons = leftBalloonCount + rightBalloonCount;
+
+      // Use fewer phonemes if we have more than available
+      const safePhonemes =
+        phonemes.length >= totalBalloons
+          ? phonemes
+          : [...phonemes, ...phonemes].slice(0, totalBalloons);
+
+      const balloons: Balloon[] = [];
+
+      // Create balloons in a single function to avoid code duplication
+      const createBalloonGroup = (
+        count: number,
+        startId: number,
+        anchorX: number,
+        isLeft: boolean
+      ) => {
+        const widthRange: [number, number] = isLeft
+          ? [anchorX - width * 0.2, anchorX + width * 0.15]
+          : [anchorX - width * 0.15, anchorX + width * 0.2];
+
+        // Create all balloons at once but with different heights
+        const heightSections = 4;
+        const sectionHeight = virtualHeight / heightSections;
+
+        for (let i = 0; i < count; i++) {
+          const id = startId + i;
+          const colorIndex = id % balloonColors.length;
+
+          // Distribute balloons evenly in height sections
+          const sectionIndex = Math.floor((i / count) * heightSections);
+          const heightRange: [number, number] = [
+            30 + sectionIndex * sectionHeight,
+            Math.min(
+              height * 0.7,
+              30 + (sectionIndex + 1) * sectionHeight - 50
+            ),
+          ];
+
+          // Use memoized random values for better performance
+          const size = 0.8 + Math.random() * 0.4;
+          const phoneme = safePhonemes[id % safePhonemes.length];
+
+          // Find a valid position with fewer attempts for better performance
+          const position = findValidPosition(
+            balloons,
+            widthRange,
+            heightRange,
+            30
+          ); // Limit to 30 attempts
+
+          // Create the balloon with optimized parameters
+          balloons.push({
+            id,
+            x: position.x,
+            y: position.y,
+            color: balloonColors[colorIndex],
+            size,
+            popped: false,
+            floatPhase: Math.random() * Math.PI * 2,
+            floatSpeed: 0.3 + Math.random() * 0.3, // Slightly reduced for performance
+            floatAmount: 2 + Math.random() * 3, // Slightly reduced for performance
+            rotation: (Math.random() - 0.5) * 0.2,
+            stringLength: Math.sqrt(
+              Math.pow(position.x - anchorX, 2) +
+                Math.pow(position.y - anchorY, 2)
+            ),
+            hovering: false,
+            pressing: false,
+            anchorGroup: isLeft ? 'left' : 'right',
+            phoneme,
+            zIndex: 0,
+            isDragging: false,
+          });
+        }
+      };
+
+      // Create both balloon groups
+      createBalloonGroup(leftBalloonCount, 0, leftAnchorX, true);
+      createBalloonGroup(
+        rightBalloonCount,
+        leftBalloonCount,
+        rightAnchorX,
+        false
+      );
+
+      balloonsRef.current = balloons;
+    };
+
+    // Start animation inline
+    const startAnimationInline = (): void => {
+      let lastTime = 0;
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+
+      const animate = (timestamp: number): void => {
+        const delta = lastTime ? (timestamp - lastTime) / 16.66 : 12;
+        lastTime = timestamp;
+
+        // Reduce frame rate on mobile for better performance
+        const isMobile = window.innerWidth < 768;
+        if (isMobile && timestamp % 32 < 16.66) {
+          animationRef.current = requestAnimationFrame(animate);
+          return;
+        }
+
+        // Skip frames when browser tab is inactive
+        if (delta > 100) {
+          animationRef.current = requestAnimationFrame(animate);
+          return;
+        }
+
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Get canvas dimensions
+        const rect = canvas.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update and draw balloons
+        balloonsRef.current.forEach((balloon) => {
+          if (!balloon.popped) {
+            // Update floating animation
+            balloon.floatPhase += balloon.floatSpeed * delta;
+            balloon.y +=
+              Math.sin(balloon.floatPhase) * balloon.floatAmount * 0.1;
+
+            // Draw balloon
+            const anchorX =
+              balloon.anchorGroup === 'left' ? width * 0.25 : width * 0.75;
+            const anchorY = height;
+            drawBalloon(ctx, balloon, 0, anchorX, anchorY);
+          }
+        });
+
+        // Process fragments in batches for better performance
+        const maxFragmentsPerFrame = 150; // Process at most 150 fragments per frame
+        let processedFragments = 0;
+        let anyActiveFragments = false;
+
+        for (
+          let i = 0;
+          i < fragmentsRef.current.length &&
+          processedFragments < maxFragmentsPerFrame;
+          i++
+        ) {
+          const fragment = fragmentsRef.current[i];
+
+          // Update physics
+          fragment.velocity.x *= 0.98; // air resistance
+          fragment.velocity.y *= 0.98;
+          fragment.velocity.y += 0.2 * delta; // gravity
+
+          fragment.x += fragment.velocity.x * delta;
+          fragment.y += fragment.velocity.y * delta;
+          fragment.rotation += fragment.rotationSpeed * delta;
+
+          // Skip fragments that are off-screen or nearly transparent
+          if (fragment.y > height + 50 || fragment.opacity <= 0.01) {
+            continue;
+          }
+
+          anyActiveFragments = true;
+          processedFragments++;
+
+          // Decrease opacity over time
+          fragment.opacity = Math.max(0, fragment.opacity - 0.005 * delta);
+
+          // Draw fragment
+          ctx.save();
+          ctx.translate(
+            fragment.originX + fragment.x,
+            fragment.originY + fragment.y
+          );
+          ctx.rotate(fragment.rotation);
+          ctx.globalAlpha = fragment.opacity;
+
+          if (fragment.type === 'rubber') {
+            // Draw rubber piece - simplified path for performance
+            ctx.beginPath();
+            ctx.moveTo(-fragment.size / 2, -fragment.size / 4);
+            ctx.quadraticCurveTo(
+              0,
+              -fragment.size / 2,
+              fragment.size / 2,
+              -fragment.size / 4
+            );
+            ctx.quadraticCurveTo(
+              fragment.size / 3,
+              fragment.size / 4,
+              0,
+              fragment.size / 2
+            );
+            ctx.quadraticCurveTo(
+              -fragment.size / 3,
+              fragment.size / 4,
+              -fragment.size / 2,
+              -fragment.size / 4
+            );
+            ctx.fillStyle = fragment.color;
+            ctx.fill();
+          } else {
+            // Draw dust particle - use rectangle for very small particles for performance
+            if (fragment.size < 3) {
+              ctx.fillStyle = fragment.color;
+              ctx.fillRect(
+                -fragment.size / 2,
+                -fragment.size / 2,
+                fragment.size,
+                fragment.size
+              );
+            } else {
+              ctx.beginPath();
+              ctx.arc(0, 0, fragment.size / 2, 0, Math.PI * 2);
+              ctx.fillStyle = fragment.color;
+              ctx.fill();
+            }
+          }
+
+          ctx.restore();
+        }
+
+        // Clean up old fragments periodically, not every frame
+        if (timestamp % 60 < 16.66 && fragmentsRef.current.length > 500) {
+          fragmentsRef.current = fragmentsRef.current.filter(
+            (f) => f.opacity > 0.02
+          );
+        }
+
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
     // Initialize balloons
-    initializeBalloons();
+    initializeBalloonsInline();
 
     // Start animation
-    startAnimation();
+    startAnimationInline();
 
     return () => {
       if (animationRef.current) {
@@ -112,7 +370,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       // Clear the popped balloon reference
       setPoppedBalloonId(null);
     }
-  }, [dialogOpen]);
+  }, [dialogOpen, poppedBalloonId]);
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -120,13 +378,11 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       try {
         // Assume there's an API call to fetch activities based on the activePhoneme
       } catch (error) {
-        console.error("Failed to fetch activities:", error);
+        console.error('Failed to fetch activities:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
-    console.log(activePhoneme);
 
     if (activePhoneme) {
       fetchActivities();
@@ -231,7 +487,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           ),
           hovering: false,
           pressing: false,
-          anchorGroup: isLeft ? "left" : "right",
+          anchorGroup: isLeft ? 'left' : 'right',
           phoneme,
           zIndex: 0,
           isDragging: false,
@@ -262,11 +518,11 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         if (result.success) {
           // Create a temporary link element
-          const link = document.createElement("a");
+          const link = document.createElement('a');
           //@ts-ignore
           link.href = result.url;
           const safeFileName = fileName || `activity-${fileId}.pdf`;
-          link.setAttribute("download", safeFileName);
+          link.setAttribute('download', safeFileName);
 
           // Required for Firefox
           document.body.appendChild(link);
@@ -289,7 +545,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           }, 3000);
         }
       } catch (error) {
-        console.error("Download failed:", error);
+        console.error('Download failed:', error);
         setDownloadError(fileId);
         setTimeout(() => {
           setDownloadError(null);
@@ -337,7 +593,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           id: -1,
           x,
           y,
-          color: "",
+          color: '',
           size: 0.7 + Math.random() * 0.5,
           popped: false,
           floatPhase: 0,
@@ -347,8 +603,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           stringLength: 0,
           hovering: false,
           pressing: false,
-          anchorGroup: "left",
-          phoneme: "",
+          anchorGroup: 'left',
+          phoneme: '',
           zIndex: 0,
           isDragging: false,
         };
@@ -393,7 +649,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const ctx = canvas.getContext("2d", { alpha: false });
+      const ctx = canvas.getContext('2d', { alpha: false });
       if (!ctx) return;
 
       const rect = canvas.getBoundingClientRect();
@@ -445,7 +701,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         // Get appropriate anchor based on balloon's group
         const anchorX =
-          balloon.anchorGroup === "left" ? leftAnchorX : rightAnchorX;
+          balloon.anchorGroup === 'left' ? leftAnchorX : rightAnchorX;
 
         // Draw balloon
         drawBalloon(ctx, balloon, floatY, anchorX, anchorY);
@@ -493,7 +749,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         ctx.rotate(fragment.rotation);
         ctx.globalAlpha = fragment.opacity;
 
-        if (fragment.type === "rubber") {
+        if (fragment.type === 'rubber') {
           // Draw rubber piece - simplified path for performance
           ctx.beginPath();
           ctx.moveTo(-fragment.size / 2, -fragment.size / 4);
@@ -560,10 +816,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     G = Math.min(255, Math.max(0, Math.round(G * (1 + percent / 100))));
     B = Math.min(255, Math.max(0, Math.round(B * (1 + percent / 100))));
 
-    return `#${R.toString(16).padStart(2, "0")}${G.toString(16).padStart(
+    return `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(
       2,
-      "0"
-    )}${B.toString(16).padStart(2, "0")}`;
+      '0'
+    )}${B.toString(16).padStart(2, '0')}`;
   };
 
   const drawBalloon = (
@@ -624,7 +880,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     gradient.addColorStop(1, shadeColor(color, -10));
 
     ctx.fillStyle = gradient;
-    ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
     ctx.shadowBlur = 8;
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 4;
@@ -635,7 +891,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     ctx.lineWidth = 2 * (size / 0.8);
     ctx.stroke();
 
-    ctx.shadowColor = "transparent";
+    ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
@@ -651,7 +907,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       0,
       Math.PI * 2
     );
-    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.fill();
 
     ctx.beginPath();
@@ -664,7 +920,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       0,
       Math.PI * 2
     );
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.fill();
 
     // Smaller tie
@@ -686,9 +942,9 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     ctx.rotate(-rotation);
     const fontSize = Math.max(36 * size, 24);
     ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.strokeStyle = shadeColor(color, -50);
     ctx.lineWidth = fontSize / 10;
     ctx.strokeText(balloon.phoneme, 0, 0);
@@ -708,9 +964,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     ctx.quadraticCurveTo(stringMidX, stringMidY + 15, x, balloonBottom);
     ctx.strokeStyle = shadeColor(color, -40);
     ctx.lineWidth = 1;
-    ctx.setLineDash([5, 3]); // Dashed line
+    // Full line instead of dashed
     ctx.stroke();
-    ctx.setLineDash([]); // Reset dash
     ctx.restore();
   };
 
@@ -729,7 +984,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         setActivities(result.items as unknown as ActivityWithFiles[]);
       } catch (error) {
-        console.error("Error fetching activities:", error);
+        console.error('Error fetching activities:', error);
       } finally {
         setIsLoading(false);
       }
@@ -741,7 +996,11 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     const balloon = balloonsRef.current.find((b) => b.id === balloonId);
     // Reduce fragments on mobile for better performance
     const isMobile = window.innerWidth < 768;
-    const fragmentCount = isMobile ? 8 : (window.navigator.hardwareConcurrency > 4 ? 20 : 10);
+    const fragmentCount = isMobile
+      ? 8
+      : window.navigator.hardwareConcurrency > 4
+        ? 20
+        : 10;
 
     if (!balloon || balloon.popped) return;
 
@@ -785,7 +1044,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       const angle = Math.random() * Math.PI * 2;
       const speed = 3 + Math.random() * 8;
       fragments.push({
-        type: "rubber",
+        type: 'rubber',
         size: 15 * size + Math.random() * 15 * size,
         x: 0,
         y: 0,
@@ -807,7 +1066,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       const angle = Math.random() * Math.PI * 2;
       const speed = 4 + Math.random() * 10;
       fragments.push({
-        type: "rubber",
+        type: 'rubber',
         size: 6 * size + Math.random() * 10 * size,
         x: 0,
         y: 0,
@@ -829,7 +1088,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       const angle = Math.random() * Math.PI * 2;
       const speed = 5 + Math.random() * 12;
       fragments.push({
-        type: "dust",
+        type: 'dust',
         size: 1 * size + Math.random() * 3 * size,
         x: 0,
         y: 0,
@@ -991,7 +1250,9 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       {/* Clear instructions above balloons */}
       <div className="text-center text-white mb-4 px-4">
         <h2 className="text-xl font-bold mb-2">Interactive Phoneme Explorer</h2>
-        <p className="text-sm opacity-90">Double-click any balloon to explore speech exercises</p>
+        <p className="text-sm opacity-90">
+          Double-click any balloon to explore speech exercises
+        </p>
       </div>
 
       {/* Professional loading state */}
@@ -1018,12 +1279,12 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           aria-label="Interactive phoneme balloons - double-click to explore exercises"
           role="application"
         />
-        
+
         {/* Mobile-friendly instruction */}
         <div className="absolute bottom-4 left-4 bg-white/95 rounded-lg px-3 py-2 text-xs text-gray-700 shadow-lg md:hidden">
           👆 Tap balloons twice to explore
         </div>
-        
+
         {/* Desktop instruction */}
         <div className="absolute bottom-4 left-4 bg-white/95 rounded-lg px-3 py-2 text-xs text-gray-700 shadow-lg hidden md:block">
           🖱️ Double-click balloons to explore
@@ -1063,10 +1324,168 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         downloadError={downloadError}
         handleFileDownload={handleFileDownload}
         handleCloseDialog={handleCloseDialog}
-        type={"phoneme"}
+        type={'phoneme'}
       />
     </div>
   );
+};
+
+// Utility functions that were originally in the component
+const findValidPosition = (
+  balloons: Balloon[],
+  widthRange: [number, number],
+  heightRange: [number, number],
+  maxAttempts: number = 50
+): { x: number; y: number } => {
+  let x = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
+  let y = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
+  let isValid = false;
+  let attempts = 0;
+
+  while (!isValid && attempts < maxAttempts) {
+    x = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
+    y = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
+
+    isValid = true;
+    for (const balloon of balloons) {
+      const dx = balloon.x - x;
+      const dy = balloon.y - y;
+      if (dx * dx + dy * dy > 10000) continue;
+
+      const tempBalloon: Balloon = {
+        id: -1,
+        x,
+        y,
+        color: '',
+        size: 0.7 + Math.random() * 0.5,
+        popped: false,
+        floatPhase: 0,
+        floatSpeed: 0,
+        floatAmount: 0,
+        rotation: 0,
+        stringLength: 0,
+        hovering: false,
+        pressing: false,
+        anchorGroup: 'left',
+        phoneme: '',
+        zIndex: 0,
+        isDragging: false,
+      };
+
+      if (checkOverlap(tempBalloon, balloon)) {
+        isValid = false;
+        break;
+      }
+    }
+    attempts++;
+  }
+
+  return { x, y };
+};
+
+const checkOverlap = (balloon1: Balloon, balloon2: Balloon): boolean => {
+  const dx = balloon1.x - balloon2.x;
+  const dy = balloon1.y - balloon2.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  const size1 = 50 * balloon1.size;
+  const size2 = 50 * balloon2.size;
+  const maxOverlap = (size1 + size2) * 0.3;
+
+  return distance < maxOverlap;
+};
+
+const shadeColor = (color: string, percent: number): string => {
+  let R = parseInt(color.substring(1, 3), 16);
+  let G = parseInt(color.substring(3, 5), 16);
+  let B = parseInt(color.substring(5, 7), 16);
+
+  R = Math.min(255, Math.max(0, Math.round(R * (1 + percent / 100))));
+  G = Math.min(255, Math.max(0, Math.round(G * (1 + percent / 100))));
+  B = Math.min(255, Math.max(0, Math.round(B * (1 + percent / 100))));
+
+  return `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(2, '0')}${B.toString(16).padStart(2, '0')}`;
+};
+
+const drawBalloon = (
+  ctx: CanvasRenderingContext2D,
+  balloon: Balloon,
+  floatY: number,
+  anchorX: number,
+  anchorY: number
+): void => {
+  const { x, y, color, size, rotation, hovering, pressing } = balloon;
+
+  const balloonWidth = 100 * size;
+  const balloonHeight = 120 * size;
+
+  let scaleX = 1;
+  let scaleY = 1;
+
+  if (hovering) {
+    scaleX = 1.08;
+    scaleY = 1.08;
+  }
+
+  if (pressing) {
+    scaleX = 1.1;
+    scaleY = 0.98;
+  }
+
+  const balloonY = y + floatY;
+
+  ctx.save();
+  ctx.translate(x, balloonY);
+  ctx.rotate(rotation);
+  ctx.scale(scaleX, scaleY);
+
+  ctx.beginPath();
+  ctx.ellipse(0, 0, balloonWidth / 2, balloonHeight / 2, 0, 0, Math.PI * 2);
+
+  const gradient = ctx.createRadialGradient(
+    -balloonWidth / 4,
+    -balloonHeight / 4,
+    0,
+    0,
+    0,
+    balloonWidth * 0.8
+  );
+  gradient.addColorStop(0, shadeColor(color, 20));
+  gradient.addColorStop(0.6, color);
+  gradient.addColorStop(1, shadeColor(color, -10));
+
+  ctx.fillStyle = gradient;
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 4;
+  ctx.fill();
+
+  ctx.strokeStyle = shadeColor(color, -30);
+  ctx.lineWidth = 2 * (size / 0.8);
+  ctx.stroke();
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+
+  ctx.restore();
+
+  // String drawing
+  ctx.save();
+  const balloonBottom = balloonY + (balloonHeight / 2 + 10) * scaleY;
+  ctx.beginPath();
+  ctx.moveTo(anchorX, anchorY);
+  const stringMidX = (x + anchorX) / 2;
+  const stringMidY =
+    (balloonBottom + anchorY) / 2 + Math.sin(balloon.floatPhase / 2) * 8;
+  ctx.quadraticCurveTo(stringMidX, stringMidY + 15, x, balloonBottom);
+  ctx.strokeStyle = shadeColor(color, -40);
+  ctx.lineWidth = 1;
+  // Full line instead of dashed
+  ctx.stroke();
+  ctx.restore();
 };
 
 export default BalloonField;

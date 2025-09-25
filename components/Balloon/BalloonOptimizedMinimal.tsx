@@ -95,10 +95,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     // Mobile detection and optimization
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (isMobile) {
-      console.log('Mobile device detected - optimizing for touch interaction');
-      console.log(`Viewport: ${window.innerWidth}x${window.innerHeight}`);
-      console.log(`Device pixel ratio: ${window.devicePixelRatio}`);
-
       // Ensure canvas is properly sized for mobile
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
@@ -110,25 +106,11 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     // Initialize balloons
     initializeBalloons();
 
-    // Debug: Log balloon positions after initialization
-    setTimeout(() => {
-      console.log('=== BALLOON POSITIONS ===');
-      balloonsRef.current.forEach((balloon) => {
-        if (balloon.x > 300 && balloon.y < 150) {
-          console.log(
-            `Top-right balloon ${balloon.phoneme}: x=${balloon.x.toFixed(1)}, y=${balloon.y.toFixed(1)}, size=${balloon.size.toFixed(2)}, popped=${balloon.popped}`
-          );
-        }
-      });
-      console.log('=======================');
-    }, 1000);
-
     // Start animation
     startAnimation();
 
     // Handle window resize to reinitialize balloons with new sizes
     const handleResize = () => {
-      console.log('Window resized - reinitializing balloons with new sizes');
       initializeBalloons();
     };
 
@@ -165,6 +147,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
             popped: false,
             // Reset any animation state
             floatPhase: Math.random() * Math.PI * 2,
+            rotationPhase: Math.random() * Math.PI * 2,
+            scalePhase: Math.random() * Math.PI * 2,
+            swayPhase: Math.random() * Math.PI * 2,
+            colorPhase: Math.random() * Math.PI * 2,
             // Put balloon at a slightly different position for visual interest
             x: balloon.x + (Math.random() - 0.5) * 20,
           };
@@ -188,8 +174,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         setIsLoading(false);
       }
     };
-
-    console.log(activePhoneme);
 
     if (activePhoneme) {
       fetchActivities();
@@ -226,7 +210,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
   };
 
   // Initialize balloons with better positioning
-  const initializeBalloons = (): void => {
+  const initializeBalloons = useCallback((): void => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -260,7 +244,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     ) => {
       const widthRange: [number, number] = isLeft
         ? [anchorX - width * 0.2, anchorX + width * 0.15]
-        : [anchorX - width * 0.15, anchorX + width * 0.2];
+        : [anchorX - width * 0.15, anchorX + width * 0.2]; // Restore original right-side range
 
       // Create all balloons at once but with different heights
       const heightSections = 4;
@@ -314,9 +298,20 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           size,
           popped: false,
           floatPhase: Math.random() * Math.PI * 2,
-          floatSpeed: 0.3 + Math.random() * 0.3, // Slightly reduced for performance
-          floatAmount: 2 + Math.random() * 3, // Slightly reduced for performance
-          rotation: (Math.random() - 0.5) * 0.2,
+          floatSpeed: 0.2 + Math.random() * 0.2, // Reduced for performance
+          floatAmount: 2 + Math.random() * 2, // Reduced for performance
+          rotation: (Math.random() - 0.5) * 0.1, // Reduced rotation
+          // Simplified animation properties for performance
+          rotationPhase: 0, // Disabled
+          rotationSpeed: 0, // Disabled
+          scalePhase: 0, // Disabled
+          scaleSpeed: 0, // Disabled
+          scaleAmount: 0, // Disabled
+          swayPhase: Math.random() * Math.PI * 2,
+          swaySpeed: 0.1 + Math.random() * 0.1, // Reduced for performance
+          swayAmount: 1 + Math.random() * 1.5, // Reduced for performance
+          colorPhase: 0, // Disabled
+          colorSpeed: 0, // Disabled
           stringLength: Math.sqrt(
             Math.pow(position.x - anchorX, 2) +
               Math.pow(position.y - anchorY, 2)
@@ -340,18 +335,36 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       false
     );
 
-    balloonsRef.current = balloons;
-
-    // Debug: Log balloon positions, especially for top-right area
-    console.log(`[BALLOON INIT] Created ${balloons.length} balloons`);
+    // Only ensure balloons are not completely off-screen (minimal bounds checking)
     balloons.forEach((balloon) => {
-      if (balloon.x > 300 && balloon.y < 150) {
-        console.log(
-          `[BALLOON INIT] Balloon ${balloon.phoneme} (ID: ${balloon.id}) at (${balloon.x.toFixed(1)}, ${balloon.y.toFixed(1)}) - size: ${balloon.size.toFixed(2)}`
-        );
+      // Only adjust if balloon is completely outside canvas
+      if (balloon.x < 0) {
+        balloon.x = 0;
+      } else if (balloon.x > width) {
+        balloon.x = width;
+      }
+      if (balloon.y < 0) {
+        balloon.y = 0;
+      } else if (balloon.y > height) {
+        balloon.y = height;
       }
     });
-  };
+
+    balloonsRef.current = balloons;
+
+    // Debug: Log balloon distribution
+    const leftBalloons = balloons.filter((b) => b.anchorGroup === 'left');
+    const rightBalloons = balloons.filter((b) => b.anchorGroup === 'right');
+    const topRightBalloons = balloons.filter(
+      (b) => b.x > width * 0.7 && b.y < height * 0.3
+    );
+
+    if (topRightBalloons.length > 5) {
+      console.warn(
+        `[BALLOON INIT] WARNING: Too many balloons in top-right area!`
+      );
+    }
+  }, [balloonCount]);
 
   // Add this function before the popBalloon function
   const handleFileDownload = useCallback(
@@ -454,6 +467,17 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           phoneme: '',
           zIndex: 0,
           isDragging: false,
+          // Animation properties
+          rotationPhase: 0,
+          rotationSpeed: 0,
+          scalePhase: 0,
+          scaleSpeed: 0,
+          scaleAmount: 0,
+          swayPhase: 0,
+          swaySpeed: 0,
+          swayAmount: 0,
+          colorPhase: 0,
+          colorSpeed: 0,
         };
 
         if (checkOverlap(tempBalloon, balloon)) {
@@ -470,7 +494,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     return { x, y };
   };
 
-  const startAnimation = (): void => {
+  const startAnimation = useCallback((): void => {
     let lastTime = 0;
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
@@ -482,6 +506,12 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
       // Skip frames when browser tab is inactive or frame rate is very low
       if (delta > 100) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      // Frame rate limiting for performance - only animate every 2nd frame
+      if (Math.floor(timestamp / 16.66) % 2 !== 0) {
         animationRef.current = requestAnimationFrame(animate);
         return;
       }
@@ -514,8 +544,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         : balloonsRef.current;
 
       // Performance optimization: Only update some balloons each frame
-      const updateCount = Math.min(sortedBalloons.length, 8); // Only update 8 balloons per frame
-      const updateOffset = Math.floor(timestamp / 100) % sortedBalloons.length; // Cycle through all balloons
+      const updateCount = Math.min(sortedBalloons.length, 4); // Reduced from 8 to 4 balloons per frame
+      const updateOffset = Math.floor(timestamp / 200) % sortedBalloons.length; // Reduced frequency
 
       // Update and draw visible balloons
       sortedBalloons.forEach((balloon, index) => {
@@ -527,10 +557,16 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           balloon.id === draggingBalloonId ||
           (index + updateOffset) % sortedBalloons.length < updateCount
         ) {
+          // Update only essential animation phases for performance
           balloon.floatPhase += 0.02 * balloon.floatSpeed * delta;
+          balloon.swayPhase += 0.02 * balloon.swaySpeed * delta;
+          // Remove expensive animations: rotation, scale, color
         }
 
         const floatY = Math.sin(balloon.floatPhase) * balloon.floatAmount;
+        const swayX = Math.sin(balloon.swayPhase) * balloon.swayAmount;
+        const scaleMultiplier = 1; // Disabled for performance
+        const rotationOffset = 0; // Disabled for performance
 
         // Skip drawing balloons that are far off-screen
         if (
@@ -546,12 +582,21 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         const anchorX =
           balloon.anchorGroup === 'left' ? leftAnchorX : rightAnchorX;
 
-        // Draw balloon
-        drawBalloon(ctx, balloon, floatY, anchorX, anchorY);
+        // Draw balloon with enhanced animations
+        drawBalloon(
+          ctx,
+          balloon,
+          floatY,
+          anchorX,
+          anchorY,
+          swayX,
+          scaleMultiplier,
+          rotationOffset
+        );
       });
 
       // Process fragments in batches for better performance
-      const maxFragmentsPerFrame = 150; // Process at most 150 fragments per frame
+      const maxFragmentsPerFrame = 75; // Reduced from 150 to 75 fragments per frame
       let processedFragments = 0;
       let anyActiveFragments = false;
 
@@ -647,7 +692,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       animationRef.current = requestAnimationFrame(animate);
     };
     animationRef.current = requestAnimationFrame(animate);
-  };
+  }, []);
 
   // Utility to shade color
   const shadeColor = (color: string, percent: number): string => {
@@ -667,7 +712,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     balloon: Balloon,
     floatY: number,
     anchorX: number,
-    anchorY: number
+    anchorY: number,
+    swayX: number = 0,
+    scaleMultiplier: number = 1,
+    rotationOffset: number = 0
   ): void => {
     const { x, y, color, size, rotation, hovering, pressing } = balloon;
 
@@ -695,18 +743,23 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       scaleY = 0.98;
     }
 
+    // Apply animation effects
+    const balloonX = x + swayX;
     const balloonY = y + floatY;
+    const finalScaleX = scaleX * scaleMultiplier;
+    const finalScaleY = scaleY * scaleMultiplier;
+    const finalRotation = rotation + rotationOffset;
 
     ctx.save();
-    ctx.translate(x, balloonY);
-    ctx.rotate(rotation);
-    ctx.scale(scaleX, scaleY);
+    ctx.translate(balloonX, balloonY);
+    ctx.rotate(finalRotation);
+    ctx.scale(finalScaleX, finalScaleY);
 
     // More rounded balloon shape
     ctx.beginPath();
     ctx.ellipse(0, 0, balloonWidth / 2, balloonHeight / 2, 0, 0, Math.PI * 2);
 
-    // Performance optimization: Cache gradients
+    // Simplified gradient for performance
     const gradientKey = `${color}-${balloonWidth}-${balloonHeight}`;
     let gradient = gradientCache.current.get(gradientKey);
 
@@ -799,20 +852,63 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
     ctx.restore();
 
-    // Updated string - dashed and thinner
+    // Tape-like string with realistic appearance
     ctx.save();
-    const balloonBottom = balloonY + (balloonHeight / 2 + tieSize) * scaleY;
-    ctx.beginPath();
-    ctx.moveTo(anchorX, anchorY);
-    const stringMidX = (x + anchorX) / 2;
+    const balloonBottom =
+      balloonY + (balloonHeight / 2 + tieSize) * finalScaleY;
+    const stringMidX = (balloonX + anchorX) / 2;
     const stringMidY =
       (balloonBottom + anchorY) / 2 + Math.sin(balloon.floatPhase / 2) * 8;
-    ctx.quadraticCurveTo(stringMidX, stringMidY + 15, x, balloonBottom);
-    ctx.strokeStyle = shadeColor(color, -40);
-    ctx.lineWidth = 1;
-    ctx.setLineDash([5, 3]); // Dashed line
+
+    // Create tape path
+    ctx.beginPath();
+    ctx.moveTo(anchorX, anchorY);
+    ctx.quadraticCurveTo(stringMidX, stringMidY + 15, balloonX, balloonBottom);
+
+    // Tape width and styling
+    const tapeWidth = 3 + size; // Wider like tape
+    ctx.lineWidth = tapeWidth;
+
+    // Tape shadow (darker outline)
+    ctx.strokeStyle = shadeColor(color, -60);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.stroke();
-    ctx.setLineDash([]); // Reset dash
+
+    // Main tape body
+    ctx.lineWidth = tapeWidth - 1;
+    ctx.strokeStyle = shadeColor(color, -20);
+    ctx.stroke();
+
+    // Tape highlight (top edge)
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = shadeColor(color, 30);
+    ctx.globalAlpha = 0.6;
+    ctx.stroke();
+
+    // Add tape texture lines for realism
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = shadeColor(color, -10);
+
+    // Draw subtle texture lines along the tape
+    const textureSteps = 8;
+    for (let i = 1; i < textureSteps; i++) {
+      const t = i / textureSteps;
+      const textureX = anchorX + (balloonX - anchorX) * t;
+      const textureY = anchorY + (balloonBottom - anchorY) * t;
+
+      // Add slight curve to texture lines
+      const textureOffset = Math.sin(t * Math.PI) * 2;
+
+      ctx.beginPath();
+      ctx.moveTo(textureX - textureOffset, textureY - tapeWidth / 2);
+      ctx.lineTo(textureX + textureOffset, textureY + tapeWidth / 2);
+      ctx.stroke();
+    }
+
+    // Reset alpha
+    ctx.globalAlpha = 1;
     ctx.restore();
   };
 
@@ -964,6 +1060,13 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
   // Find the topmost balloon in a stack of overlapping balloons
   const findTopmostBalloon = (x: number, y: number): Balloon | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    const canvasWidth = rect.width;
+    const canvasHeight = rect.height;
+
     const hoveringBalloons = balloonsRef.current.filter((balloon) => {
       if (balloon.popped) return false;
 
@@ -978,32 +1081,25 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
       let baseHitRadius;
       if (isLargeScreen) {
-        baseHitRadius = 70; // Larger hit radius for large screens
+        baseHitRadius = 80; // Increased hit radius for large screens
       } else if (isMediumScreen) {
-        baseHitRadius = isMobile ? 80 : 60; // Medium hit radius for tablets
+        baseHitRadius = isMobile ? 90 : 70; // Increased hit radius for tablets
       } else {
-        baseHitRadius = isMobile ? 80 : 50; // Mobile-optimized hit radius
+        baseHitRadius = isMobile ? 90 : 60; // Increased hit radius for mobile
       }
-      const hitRadius = baseHitRadius * balloon.size;
 
-      // Enhanced debug logging for problematic area (top-right corner)
-      if (x > 300 && y < 150) {
-        const floatingY =
-          balloon.y + Math.sin(balloon.floatPhase) * balloon.floatAmount;
-        console.log(
-          `[HIT DETECTION] Balloon ${balloon.phoneme}: baseX=${balloon.x.toFixed(1)}, baseY=${balloon.y.toFixed(1)}, floatY=${floatingY.toFixed(1)}, clickX=${x.toFixed(1)}, clickY=${y.toFixed(1)}, distance=${distance.toFixed(1)}, hitRadius=${hitRadius.toFixed(1)}, size=${balloon.size.toFixed(2)}`
-        );
-      }
+      // Extra generous hit radius for balloons near edges
+      const isNearEdge =
+        balloon.x > canvasWidth * 0.8 ||
+        balloon.x < canvasWidth * 0.2 ||
+        balloon.y < canvasHeight * 0.2 ||
+        balloon.y > canvasHeight * 0.8;
+      const hitRadius = (baseHitRadius + (isNearEdge ? 20 : 0)) * balloon.size;
 
       return distance < hitRadius;
     });
 
     if (hoveringBalloons.length === 0) {
-      if (x > 300 && y < 150) {
-        console.log(
-          `[HIT DETECTION] No balloons found at (${x.toFixed(1)}, ${y.toFixed(1)})`
-        );
-      }
       return null;
     }
 
@@ -1014,12 +1110,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         ? current
         : top
     );
-
-    if (x > 300 && y < 150) {
-      console.log(
-        `[HIT DETECTION] Selected balloon: ${selected.phoneme} (ID: ${selected.id}) from ${hoveringBalloons.length} candidates`
-      );
-    }
 
     return selected;
   };
@@ -1067,31 +1157,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       }
     }
 
-    // Enhanced mobile debugging for problematic area
-    if (clickX > 300 && clickY < 150) {
-      const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      console.log(
-        `[${isMobile ? 'MOBILE' : 'DESKTOP'}] Click in top-right area: (${clickX.toFixed(1)}, ${clickY.toFixed(1)})`
-      );
-      console.log(
-        `Canvas: ${canvas.width}x${canvas.height}, Rect: ${rect.width}x${rect.height}`
-      );
-      console.log(
-        `Scale factors: X=${(canvas.width / rect.width).toFixed(2)}, Y=${(canvas.height / rect.height).toFixed(2)}`
-      );
-      if ('touches' in e) {
-        console.log(`Touch event: ${e.touches.length} touches`);
-      }
-    }
-
     const topmostBalloon = findTopmostBalloon(clickX, clickY);
-
-    // Debug logging for clicks in problematic area
-    if (clickX > 300 && clickY < 150) {
-      console.log(
-        `[CLICK HANDLER] Click at (${clickX.toFixed(1)}, ${clickY.toFixed(1)}) - Found balloon: ${topmostBalloon ? topmostBalloon.phoneme : 'NONE'}`
-      );
-    }
 
     if (topmostBalloon) {
       const currentTime = Date.now();
@@ -1177,6 +1243,13 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         });
       } else {
         const hoveringBalloonIds = new Set<number>();
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const canvasWidth = rect.width;
+        const canvasHeight = rect.height;
+
         balloonsRef.current.forEach((balloon) => {
           if (balloon.popped) return;
           const dx = balloon.x - mouseX;
@@ -1193,13 +1266,21 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
           let baseHitRadius;
           if (isLargeScreen) {
-            baseHitRadius = 70; // Larger hit radius for large screens
+            baseHitRadius = 80; // Increased hit radius for large screens
           } else if (isMediumScreen) {
-            baseHitRadius = isMobile ? 80 : 60; // Medium hit radius for tablets
+            baseHitRadius = isMobile ? 90 : 70; // Increased hit radius for tablets
           } else {
-            baseHitRadius = isMobile ? 80 : 50; // Mobile-optimized hit radius
+            baseHitRadius = isMobile ? 90 : 60; // Increased hit radius for mobile
           }
-          const hitRadius = baseHitRadius * balloon.size;
+
+          // Extra generous hit radius for balloons near edges
+          const isNearEdge =
+            balloon.x > canvasWidth * 0.8 ||
+            balloon.x < canvasWidth * 0.2 ||
+            balloon.y < canvasHeight * 0.2 ||
+            balloon.y > canvasHeight * 0.8;
+          const hitRadius =
+            (baseHitRadius + (isNearEdge ? 20 : 0)) * balloon.size;
           if (distance < hitRadius) {
             hoveringBalloonIds.add(balloon.id);
           }

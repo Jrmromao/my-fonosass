@@ -11,7 +11,7 @@ export default function ConsentManagerWrapper() {
 
   useEffect(() => {
     setIsClient(true);
-    
+
     // Check if user has already set consent preferences
     if (user?.id) {
       const hasConsentPreferences = localStorage.getItem('consent-preferences');
@@ -27,19 +27,19 @@ export default function ConsentManagerWrapper() {
   }
 
   return (
-    <EnhancedConsentManager 
+    <EnhancedConsentManager
       onConsentChange={(preferences) => {
         // Handle consent preferences
-        console.log('Enhanced consent preferences:', preferences);
-        localStorage.setItem('consent-preferences', JSON.stringify(preferences));
+        localStorage.setItem(
+          'consent-preferences',
+          JSON.stringify(preferences)
+        );
       }}
       isOpen={isOpen}
       onClose={() => {
-        console.log('Closing consent manager');
         setIsOpen(false);
       }}
       onOpen={() => {
-        console.log('Opening consent manager, current isOpen:', isOpen);
         setIsOpen(true);
       }}
       showAuditTrail={!!user?.id}

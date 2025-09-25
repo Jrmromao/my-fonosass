@@ -52,64 +52,45 @@ export const GET = withCaching(
         return SecurityMiddleware.createErrorResponse('User not found', 404);
       }
 
-      // Cache additional user stats in memory
-      const statsKey = `user:stats:${userId}`;
-      let stats = CacheManager.get(statsKey);
-
-      if (!stats) {
-        stats = {
-          downloadCount: await prisma.downloadHistory.count({
-            where: { userId: user.id },
-          }),
-          lastActivity:
-            (
-              await prisma.downloadHistory.findFirst({
-                where: { userId: user.id },
-                orderBy: { downloadedAt: 'desc' },
-                select: { downloadedAt: true },
-              })
-            )?.downloadedAt || null,
-        };
-
-        // Cache stats for 5 minutes
-        CacheManager.set(statsKey, stats, 300);
-      }
-
-      // Get download history for recent downloads
-      const recentDownloads = await prisma.downloadHistory.findMany({
+      // Get user stats
+      const stats = await prisma.downloadHistory.aggregate({
         where: { userId: user.id },
-        orderBy: { downloadedAt: 'desc' },
-        take: 10,
-        include: {
-          activity: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-              phoneme: true,
-              difficulty: true,
-            },
-          },
-        },
+        _count: { id: true },
       });
 
-      // Get unique activities count
-      const uniqueActivities = await prisma.downloadHistory.groupBy({
-        by: ['activityId'],
+      // Get unique activities downloaded
+      const uniqueActivities = await prisma.downloadHistory.findMany({
         where: { userId: user.id },
+        select: { activityId: true },
+        distinct: ['activityId'],
       });
 
-      // Get recent downloads count (last 7 days)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // Get recent downloads count (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const recentDownloadsCount = await prisma.downloadHistory.count({
         where: {
           userId: user.id,
           downloadedAt: {
-            gte: sevenDaysAgo,
+            gte: thirtyDaysAgo,
           },
         },
+      });
+
+      // Get recent downloads
+      const recentDownloads = await prisma.downloadHistory.findMany({
+        where: { userId: user.id },
+        include: {
+          activity: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { downloadedAt: 'desc' },
+        take: 5,
       });
 
       // Get subscription data
@@ -150,7 +131,7 @@ export const GET = withCaching(
             isPro,
           },
           stats: {
-            totalDownloads: (stats as any).downloadCount,
+            totalDownloads: stats._count.id,
             uniqueActivities: uniqueActivities.length,
             recentDownloads: recentDownloadsCount,
           },
@@ -163,6 +144,7 @@ export const GET = withCaching(
         },
       });
     } catch (error) {
+      console.error('Error fetching user profile:', error);
       return SecurityMiddleware.createErrorResponse(
         'Failed to fetch user profile',
         500
@@ -228,23 +210,38 @@ export const PUT = async (request: NextRequest) => {
     const updatedUser = await prisma.user.update({
       where: { clerkUserId: userId },
       data: {
-        fullName,
-        email,
-        updatedAt: new Date(),
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        updatedAt: true,
       },
     });
 
-    // Invalidate related caches
-    QueryCache.invalidate(`user:profile:${userId}`);
-    CacheManager.delete(`user:stats:${updatedUser.id}`);
-    CacheManager.delete(`user:profile:${userId}`);
+    // Invalidate caches after successful update
+    await QueryCache.invalidate(`user:profile:${userId}`);
+    await CacheManager.delete(`user:stats:${userId}`);
+    await CacheManager.delete(`user:profile:${userId}`);
 
     return SecurityMiddleware.createSecureResponse({
       success: true,
+      data: {
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          fullName: updatedUser.fullName,
+          role: updatedUser.role,
+          updatedAt: updatedUser.updatedAt.toISOString(),
+        },
+      },
       message: 'Profile updated successfully',
-      data: updatedUser,
     });
   } catch (error) {
+    console.error('Error updating user profile:', error);
     return SecurityMiddleware.createErrorResponse(
       'Failed to update profile',
       500

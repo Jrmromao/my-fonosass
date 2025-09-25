@@ -253,9 +253,6 @@ const EducationalToolbar: React.FC = () => {
             limit: 5, // Limit to 5 activities for now
           });
 
-          console.log('\n\n\n');
-          console.log(result);
-
           setActivities(result.items as unknown as ActivityWithFiles[]);
         } catch (error) {
           console.error('Error fetching activities:', error);

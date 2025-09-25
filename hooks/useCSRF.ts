@@ -25,7 +25,10 @@ export function useCSRF() {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch CSRF token: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch CSRF token: ${response.status} - ${errorText}`
+        );
       }
 
       const data: CSRFResponse = await response.json();

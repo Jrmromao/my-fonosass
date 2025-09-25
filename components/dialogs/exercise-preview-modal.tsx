@@ -1,21 +1,28 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { FileText, Download, Lock, Star } from 'lucide-react'
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { FileText, Download, Lock, Star } from 'lucide-react';
 
 interface ExercisePreviewModalProps {
-  exercise: any
-  isOpen: boolean
-  onClose: () => void
+  exercise: any;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePreviewModalProps) {
-  console.log('Modal render:', { exercise, isOpen });
-  
+export function ExercisePreviewModal({
+  exercise,
+  isOpen,
+  onClose,
+}: ExercisePreviewModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -25,7 +32,7 @@ export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePrev
             {exercise.name}
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Exercise Info */}
           <div className="flex gap-2 flex-wrap">
@@ -44,8 +51,12 @@ export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePrev
           {/* Description */}
           <Card>
             <CardContent className="p-6">
-              <h3 className="font-semibold mb-3 text-gray-900">Descrição do Exercício</h3>
-              <p className="text-gray-700 leading-relaxed">{exercise.description}</p>
+              <h3 className="font-semibold mb-3 text-gray-900">
+                Descrição do Exercício
+              </h3>
+              <p className="text-gray-700 leading-relaxed">
+                {exercise.description}
+              </p>
             </CardContent>
           </Card>
 
@@ -54,14 +65,21 @@ export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePrev
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Star className="h-5 w-5 text-yellow-500" />
-                <h3 className="font-semibold text-gray-900">Preview do Conteúdo</h3>
+                <h3 className="font-semibold text-gray-900">
+                  Preview do Conteúdo
+                </h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-gray-900 mb-2">Objetivos do Exercício:</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    Objetivos do Exercício:
+                  </h4>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• Desenvolver a articulação do fonema /{exercise.phoneme || 'target'}/</li>
+                    <li>
+                      • Desenvolver a articulação do fonema /
+                      {exercise.phoneme || 'target'}/
+                    </li>
                     <li>• Melhorar a precisão da fala</li>
                     {exercise.difficulty === 'BEGINNER' && (
                       <li>• Introduzir conceitos básicos de articulação</li>
@@ -89,7 +107,9 @@ export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePrev
                 </div>
 
                 <div className="bg-white p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-gray-900 mb-2">Materiais Inclusos:</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    Materiais Inclusos:
+                  </h4>
                   <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-blue-500" />
@@ -143,69 +163,84 @@ export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePrev
               <div className="flex items-center gap-3 mb-4">
                 <Lock className="h-6 w-6 text-purple-600" />
                 <div>
-                  <h3 className="font-semibold text-purple-900">Conteúdo Completo Disponível</h3>
-                  <p className="text-sm text-purple-700">5 downloads grátis por mês • Upgrade para downloads ilimitados</p>
+                  <h3 className="font-semibold text-purple-900">
+                    Conteúdo Completo Disponível
+                  </h3>
+                  <p className="text-sm text-purple-700">
+                    5 downloads grátis por mês • Upgrade para downloads
+                    ilimitados
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
-                <Button 
+                <Button
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                   onClick={async () => {
                     try {
                       // Check download limit first
-                      const response = await fetch('/api/download-limit')
-                      const data = await response.json()
-                      
+                      const response = await fetch('/api/download-limit');
+                      const data = await response.json();
+
                       if (data.success && data.data.canDownload) {
                         // Record download with exercise details
-                        const downloadResponse = await fetch('/api/download-limit', { 
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            activityId: exercise.id,
-                            fileName: `${exercise.name}_materials.pdf`,
-                            fileSize: 1024000 // Mock file size
-                          })
-                        })
-                        
-                        const downloadData = await downloadResponse.json()
-                        
+                        const downloadResponse = await fetch(
+                          '/api/download-limit',
+                          {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              activityId: exercise.id,
+                              fileName: `${exercise.name}_materials.pdf`,
+                              fileSize: 1024000, // Mock file size
+                            }),
+                          }
+                        );
+
+                        const downloadData = await downloadResponse.json();
+
                         if (downloadData.success) {
-                          alert(`Download iniciado! Restam ${downloadData.data.remaining} downloads gratuitos.`)
+                          alert(
+                            `Download iniciado! Restam ${downloadData.data.remaining} downloads gratuitos.`
+                          );
                         } else {
-                          alert(downloadData.error || 'Erro no download')
+                          alert(downloadData.error || 'Erro no download');
                         }
                       } else {
-                        alert('Limite de downloads atingido! Faça upgrade para Pro.')
+                        alert(
+                          'Limite de downloads atingido! Faça upgrade para Pro.'
+                        );
                       }
                     } catch (error) {
-                      alert('Erro ao processar download. Tente novamente.')
+                      alert('Erro ao processar download. Tente novamente.');
                     }
                   }}
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download Grátis
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="border-purple-300 text-purple-700 hover:bg-purple-50"
                   onClick={async () => {
                     try {
-                      const response = await fetch('/api/stripe/create-checkout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                      })
-                      
-                      const data = await response.json()
-                      
+                      const response = await fetch(
+                        '/api/stripe/create-checkout',
+                        {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                        }
+                      );
+
+                      const data = await response.json();
+
                       if (data.url) {
-                        window.location.href = data.url
+                        window.location.href = data.url;
                       } else {
-                        alert('Erro ao processar pagamento. Tente novamente.')
+                        alert('Erro ao processar pagamento. Tente novamente.');
                       }
                     } catch (error) {
-                      alert('Erro ao processar pagamento. Tente novamente.')
+                      alert('Erro ao processar pagamento. Tente novamente.');
                     }
                   }}
                 >
@@ -220,5 +255,5 @@ export function ExercisePreviewModal({ exercise, isOpen, onClose }: ExercisePrev
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

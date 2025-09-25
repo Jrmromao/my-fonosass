@@ -105,7 +105,6 @@ export async function PUT(request: Request) {
     };
 
     // Log the changes for audit purposes
-    console.log('User data updated:', changeLog);
 
     return NextResponse.json({
       success: true,
@@ -182,7 +181,6 @@ export async function POST(request: Request) {
     };
 
     // Log the correction request
-    console.log('Data correction request submitted:', correctionRequest);
 
     // TODO: In a production environment, you would:
     // 1. Store the correction request in a database

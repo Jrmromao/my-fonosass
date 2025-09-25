@@ -6,12 +6,14 @@ import EnhancedConsentManager from './EnhancedConsentManager';
 
 export default function ConsentManagerTest() {
   const [isOpen, setIsOpen] = useState(false);
-  const [preferences, setPreferences] = useState<ConsentPreferences | null>(null);
+  const [preferences, setPreferences] = useState<ConsentPreferences | null>(
+    null
+  );
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Consent Manager Test</h2>
-      
+
       <div className="space-y-4">
         <button
           onClick={() => setIsOpen(true)}
@@ -19,11 +21,13 @@ export default function ConsentManagerTest() {
         >
           Open Consent Manager
         </button>
-        
+
         {preferences && (
           <div className="p-4 bg-gray-100 rounded">
             <h3 className="font-semibold">Current Preferences:</h3>
-            <pre className="text-sm">{JSON.stringify(preferences, null, 2)}</pre>
+            <pre className="text-sm">
+              {JSON.stringify(preferences, null, 2)}
+            </pre>
           </div>
         )}
       </div>
@@ -33,7 +37,6 @@ export default function ConsentManagerTest() {
         onOpen={() => setIsOpen(true)}
         onClose={() => setIsOpen(false)}
         onConsentChange={(newPreferences) => {
-          console.log('Consent changed:', newPreferences);
           setPreferences(newPreferences);
         }}
         showAuditTrail={false}

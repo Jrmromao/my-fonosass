@@ -24,7 +24,7 @@ import {
   Shield,
   Target,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface EnhancedConsentManagerProps {
   onConsentChange?: (preferences: ConsentPreferences) => void;
@@ -62,13 +62,7 @@ export default function EnhancedConsentManager({
   const [auditTrail, setAuditTrail] = useState<any[]>([]);
   const [showDetails, setShowDetails] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    if (user?.id && showAuditTrail) {
-      loadConsentStatus();
-    }
-  }, [user?.id, showAuditTrail]);
-
-  const loadConsentStatus = async () => {
+  const loadConsentStatus = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -129,55 +123,61 @@ export default function EnhancedConsentManager({
         variant: 'destructive',
       });
     }
-  };
+  }, [user?.id, preferences]);
 
-  const handlePreferenceChange = async (
-    key: keyof ConsentPreferences,
-    value: boolean
-  ) => {
-    if (key === 'dataProcessing' || key === 'cookiesEssential') {
-      return; // These cannot be disabled
+  useEffect(() => {
+    if (user?.id && showAuditTrail) {
+      loadConsentStatus();
     }
+  }, [user?.id, showAuditTrail, loadConsentStatus]);
 
-    const newPreferences = { ...preferences, [key]: value };
-    setPreferences(newPreferences);
-
-    if (onConsentChange) {
-      onConsentChange(newPreferences);
-    }
-
-    // Save to database if user is authenticated
-    if (user?.id) {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/consent/record', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ preferences: newPreferences }),
-        });
-
-        const data = await response.json();
-        if (!data.success) {
-          throw new Error(data.message || 'Failed to record consent');
-        }
-
-        toast({
-          title: 'Preferências salvas',
-          description:
-            'Suas preferências de consentimento foram atualizadas com sucesso.',
-        });
-      } catch (error) {
-        console.error('Error saving consent:', error);
-        toast({
-          title: 'Erro',
-          description: 'Não foi possível salvar suas preferências.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
+  const handlePreferenceChange = useCallback(
+    async (key: keyof ConsentPreferences, value: boolean) => {
+      if (key === 'dataProcessing' || key === 'cookiesEssential') {
+        return; // These cannot be disabled
       }
-    }
-  };
+
+      const newPreferences = { ...preferences, [key]: value };
+      setPreferences(newPreferences);
+
+      if (onConsentChange) {
+        onConsentChange(newPreferences);
+      }
+
+      // Save to database if user is authenticated
+      if (user?.id) {
+        setIsLoading(true);
+        try {
+          const response = await fetch('/api/consent/record', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preferences: newPreferences }),
+          });
+
+          const data = await response.json();
+          if (!data.success) {
+            throw new Error(data.message || 'Failed to record consent');
+          }
+
+          toast({
+            title: 'Preferências salvas',
+            description:
+              'Suas preferências de consentimento foram atualizadas com sucesso.',
+          });
+        } catch (error) {
+          console.error('Error saving consent:', error);
+          toast({
+            title: 'Erro',
+            description: 'Não foi possível salvar suas preferências.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    },
+    [user?.id, preferences, onConsentChange]
+  );
 
   const handleWithdrawConsent = async (consentType: string) => {
     if (!user?.id) return;

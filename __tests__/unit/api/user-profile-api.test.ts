@@ -22,6 +22,7 @@ jest.mock('@/app/db', () => ({
       update: jest.fn(),
     },
     downloadHistory: {
+      aggregate: jest.fn(),
       count: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -128,7 +129,25 @@ describe('/api/user/profile', () => {
   describe('GET /api/user/profile', () => {
     it('should return user profile successfully', async () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      // Mock QueryCache.get to return the user data
+      mockQueryCache.get.mockResolvedValue(mockUser);
+
+      // Mock the additional database queries
+      mockPrisma.downloadHistory.aggregate.mockResolvedValue({
+        _count: { id: 5 },
+      });
+      mockPrisma.downloadHistory.findMany.mockResolvedValueOnce([
+        { activityId: 'activity_1' },
+        { activityId: 'activity_2' },
+      ]);
+      mockPrisma.downloadHistory.count.mockResolvedValue(3);
+      mockPrisma.downloadHistory.findMany.mockResolvedValueOnce(
+        mockDownloadHistory
+      );
+      mockPrisma.downloadLimit.findUnique.mockResolvedValue({
+        downloads: 2,
+      });
 
       const request = new NextRequest('http://localhost:3000/api/user/profile');
       const response = await GET(request);
@@ -155,7 +174,7 @@ describe('/api/user/profile', () => {
       });
       expect(data.data.stats).toEqual({
         totalDownloads: 5,
-        uniqueActivities: 1,
+        uniqueActivities: 2,
         recentDownloads: expect.any(Number),
       });
       expect(data.data.recentDownloads).toHaveLength(1);
@@ -201,7 +220,25 @@ describe('/api/user/profile', () => {
       };
 
       mockAuth.mockResolvedValue({ userId: 'user_123' });
-      mockPrisma.user.findUnique.mockResolvedValue(proUser);
+
+      // Mock QueryCache.get to return the pro user data
+      mockQueryCache.get.mockResolvedValue(proUser);
+
+      // Mock the additional database queries
+      mockPrisma.downloadHistory.aggregate.mockResolvedValue({
+        _count: { id: 10 },
+      });
+      mockPrisma.downloadHistory.findMany.mockResolvedValueOnce([
+        { activityId: 'activity_1' },
+        { activityId: 'activity_2' },
+      ]);
+      mockPrisma.downloadHistory.count.mockResolvedValue(5);
+      mockPrisma.downloadHistory.findMany.mockResolvedValueOnce(
+        mockDownloadHistory
+      );
+      mockPrisma.downloadLimit.findUnique.mockResolvedValue({
+        downloads: 0,
+      });
 
       const request = new NextRequest('http://localhost:3000/api/user/profile');
       const response = await GET(request);
@@ -249,7 +286,13 @@ describe('/api/user/profile', () => {
         data: {
           fullName: 'Updated Name',
           email: 'updated@example.com',
-          updatedAt: expect.any(Date),
+        },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+          updatedAt: true,
         },
       });
     });

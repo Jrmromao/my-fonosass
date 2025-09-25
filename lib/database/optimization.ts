@@ -20,16 +20,8 @@ export const createOptimizedPrismaClient = () => {
       },
     },
     // Connection pooling optimization
-    __internal: {
-      engine: {
-        // Optimize for AWS RDS
-        binaryTargets: ['native'],
-        // Reduce connection overhead
-        connectTimeout: 10000,
-        // Optimize query execution
-        queryEngine: 'binary',
-      },
-    },
+    // Note: __internal is not available in current Prisma version
+    // Using standard configuration instead
   });
 };
 

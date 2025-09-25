@@ -1,5 +1,4 @@
 import { GET, PUT } from '@/app/api/user/profile/route';
-import { mockUser } from '../../utils/test-utils';
 
 // Mock NextRequest directly in the test file
 class MockNextRequest {
@@ -66,6 +65,7 @@ jest.mock('@/app/db', () => ({
       update: jest.fn(),
     },
     downloadHistory: {
+      aggregate: jest.fn(),
       count: jest.fn(),
       findFirst: jest.fn(),
       findMany: jest.fn(),
@@ -112,6 +112,34 @@ describe('/api/user/profile', () => {
   const mockPrisma = require('@/app/db').prisma;
   const { QueryCache } = require('@/lib/performance/cacheManager');
   const { CacheManager } = require('@/lib/performance/cacheManager');
+  const mockQueryCache = QueryCache;
+  const mockCacheManager = CacheManager;
+
+  const mockUser = {
+    id: 'user_123',
+    email: 'test@example.com',
+    fullName: 'Test User',
+    role: 'USER',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    subscriptions: {
+      status: 'ACTIVE',
+      tier: 'FREE',
+      currentPeriodEnd: null,
+    },
+  };
+
+  const mockDownloadHistory = [
+    {
+      id: 'download_1',
+      fileName: 'activity1.pdf',
+      downloadedAt: new Date('2024-01-15'),
+      activity: {
+        id: 'activity_1',
+        name: 'Test Activity',
+      },
+    },
+  ];
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -131,7 +159,24 @@ describe('/api/user/profile', () => {
   describe('GET /api/user/profile', () => {
     it('should return user profile successfully', async () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
-      mockPrisma.user.findUnique.mockResolvedValue(mockUser);
+
+      // Mock QueryCache.get to return the user data
+      mockQueryCache.get.mockResolvedValue(mockUser);
+
+      // Mock the additional database queries
+      mockPrisma.downloadHistory.aggregate.mockResolvedValue({
+        _count: { id: 5 },
+      });
+      mockPrisma.downloadHistory.findMany.mockResolvedValueOnce([
+        { activityId: 'activity_1' },
+      ]);
+      mockPrisma.downloadHistory.count.mockResolvedValue(3);
+      mockPrisma.downloadHistory.findMany.mockResolvedValueOnce(
+        mockDownloadHistory
+      );
+      mockPrisma.downloadLimit.findUnique.mockResolvedValue({
+        downloads: 0,
+      });
 
       const request = new NextRequest('http://localhost:3000/api/user/profile');
       const response = await GET(request);
@@ -160,24 +205,6 @@ describe('/api/user/profile', () => {
           },
           stats: expect.any(Object),
           recentDownloads: expect.any(Array),
-        },
-      });
-      expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
-        where: { clerkUserId: 'user_123' },
-        select: {
-          id: true,
-          email: true,
-          fullName: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true,
-          subscriptions: {
-            select: {
-              status: true,
-              tier: true,
-              currentPeriodEnd: true,
-            },
-          },
         },
       });
     });
@@ -258,9 +285,13 @@ describe('/api/user/profile', () => {
         success: true,
         message: 'Profile updated successfully',
         data: {
-          ...mockUser,
-          fullName: 'Updated Name',
-          email: 'updated@example.com',
+          user: {
+            id: 'user_123',
+            email: 'updated@example.com',
+            fullName: 'Updated Name',
+            role: 'USER',
+            updatedAt: '2024-01-01T00:00:00.000Z',
+          },
         },
       });
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
@@ -268,7 +299,13 @@ describe('/api/user/profile', () => {
         data: {
           fullName: 'Updated Name',
           email: 'updated@example.com',
-          updatedAt: expect.any(Date),
+        },
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          role: true,
+          updatedAt: true,
         },
       });
     });

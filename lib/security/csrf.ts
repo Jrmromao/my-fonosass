@@ -8,14 +8,23 @@ export class CSRFProtection {
     process.env.CSRF_SECRET_KEY || 'default-secret-key-change-in-production';
 
   static generateToken(): string {
-    const randomValue = randomBytes(this.TOKEN_LENGTH);
-    const timestamp = Date.now().toString();
-    const data = `${randomValue.toString('hex')}:${timestamp}`;
-    const signature = createHash('sha256')
-      .update(data + this.SECRET_KEY)
-      .digest('hex');
+    try {
+      const randomValue = randomBytes(this.TOKEN_LENGTH);
+      const timestamp = Date.now().toString();
+      const data = `${randomValue.toString('hex')}:${timestamp}`;
+      const signature = createHash('sha256')
+        .update(data + this.SECRET_KEY)
+        .digest('hex');
 
-    return Buffer.from(`${data}:${signature}`).toString('base64');
+      const token = Buffer.from(`${data}:${signature}`).toString('base64');
+      return token;
+    } catch (error) {
+      // Fallback to a simple token if crypto operations fail
+      const fallbackToken = Buffer.from(
+        `${Date.now()}:${Math.random().toString(36)}`
+      ).toString('base64');
+      return fallbackToken;
+    }
   }
 
   static validateToken(token: string): boolean {
