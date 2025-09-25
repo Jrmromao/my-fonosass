@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { NextRequest, NextResponse } from 'next/server';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
       size: 50,
       font: boldFont,
       color: rgb(0.95, 0.95, 0.95),
-      rotate: { type: 'degrees', angle: -45 },
     });
 
     yPosition -= 120;
@@ -315,7 +314,7 @@ export async function POST(request: NextRequest) {
 
     const pdfBytes = await pdfDoc.save();
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(pdfBytes as any, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="exercicio-${metadata.phoneme}-${Date.now()}.pdf"`,

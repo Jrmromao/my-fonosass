@@ -105,6 +105,17 @@ export const useBalloonAnimation = (
           phoneme,
           zIndex: 0,
           isDragging: false,
+          // Animation properties
+          rotationPhase: 0,
+          rotationSpeed: 0,
+          scalePhase: 0,
+          scaleSpeed: 0,
+          scaleAmount: 0,
+          swayPhase: Math.random() * Math.PI * 2,
+          swaySpeed: 0.1 + Math.random() * 0.1,
+          swayAmount: 1 + Math.random() * 1.5,
+          colorPhase: 0,
+          colorSpeed: 0,
         });
       }
     };

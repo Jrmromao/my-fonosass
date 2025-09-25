@@ -86,6 +86,17 @@ export const findValidPosition = (
         phoneme: '',
         zIndex: 0,
         isDragging: false,
+        // Animation properties
+        rotationPhase: 0,
+        rotationSpeed: 0,
+        scalePhase: 0,
+        scaleSpeed: 0,
+        scaleAmount: 0,
+        swayPhase: 0,
+        swaySpeed: 0,
+        swayAmount: 0,
+        colorPhase: 0,
+        colorSpeed: 0,
       };
 
       if (checkOverlap(tempBalloon, balloon)) {
