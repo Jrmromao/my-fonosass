@@ -97,7 +97,7 @@ export default function ExerciseGenerator() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            🤖 Gerador de Exercícios IA
+            🤖 Gerador de Exercícios IA - Almanaque da Fala
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

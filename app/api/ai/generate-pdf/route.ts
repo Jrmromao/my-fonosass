@@ -10,64 +10,115 @@ export async function POST(request: NextRequest) {
     }
 
     const { exercise, metadata } = await request.json();
+    const isChild = metadata.age <= 12;
 
     // Create PDF
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]); // A4 size
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
     const { width, height } = page.getSize();
     let yPosition = height - 80;
 
-    // Header with logo area
+    // Premium gradient header
+    const headerHeight = 80;
     page.drawRectangle({
       x: 0,
-      y: height - 60,
+      y: height - headerHeight,
       width: width,
-      height: 60,
-      color: rgb(0.4, 0.2, 0.8), // Purple header
+      height: headerHeight,
+      color: rgb(0.3, 0.1, 0.7), // Deep purple
     });
 
-    // Title
-    page.drawText('FonoSaaS - Exercício Terapêutico', {
+    // Header accent line
+    page.drawRectangle({
+      x: 0,
+      y: height - headerHeight,
+      width: width,
+      height: 4,
+      color: rgb(0.9, 0.3, 0.6), // Pink accent
+    });
+
+    // Premium title with larger font
+    page.drawText('Almanaque da Fala', {
       x: 50,
-      y: height - 40,
-      size: 18,
+      y: height - 35,
+      size: 24,
       font: boldFont,
       color: rgb(1, 1, 1),
     });
 
-    yPosition -= 100;
-
-    // Exercise title
-    page.drawText(exercise.titulo || 'Exercício Personalizado', {
+    page.drawText('Exercicio Terapeutico Personalizado', {
       x: 50,
-      y: yPosition,
-      size: 16,
+      y: height - 55,
+      size: 12,
+      font: italicFont,
+      color: rgb(0.9, 0.9, 0.9),
+    });
+
+    // Watermark - diagonal text across page
+    page.drawText('ALMANAQUEDAFALA.COM.BR', {
+      x: width / 2 - 120,
+      y: height / 2,
+      size: 50,
+      font: boldFont,
+      color: rgb(0.95, 0.95, 0.95),
+      rotate: { type: 'degrees', angle: -45 },
+    });
+
+    yPosition -= 120;
+
+    // Premium exercise title with background
+    const titleBg = exercise.titulo || 'Exercicio Personalizado';
+    page.drawRectangle({
+      x: 40,
+      y: yPosition - 25,
+      width: width - 80,
+      height: 35,
+      color: isChild ? rgb(1, 0.95, 0.8) : rgb(0.95, 0.95, 1), // Warm yellow for kids, light blue for adults
+    });
+
+    page.drawText(titleBg, {
+      x: 50,
+      y: yPosition - 10,
+      size: 18,
       font: boldFont,
       color: rgb(0.2, 0.2, 0.2),
     });
 
-    yPosition -= 40;
+    yPosition -= 60;
 
-    // Metadata box
+    // Premium metadata box with rounded corners effect
     page.drawRectangle({
       x: 50,
-      y: yPosition - 60,
+      y: yPosition - 70,
       width: width - 100,
-      height: 60,
-      color: rgb(0.95, 0.95, 0.95),
+      height: 70,
+      color: rgb(0.98, 0.98, 0.98),
     });
 
+    page.drawRectangle({
+      x: 50,
+      y: yPosition - 70,
+      width: width - 100,
+      height: 3,
+      color: rgb(0.3, 0.1, 0.7),
+    });
+
+    // Child-friendly or professional metadata
+    const ageLabel = isChild
+      ? `Crianca de ${metadata.age} anos`
+      : `${metadata.age} anos`;
     page.drawText(
-      `Fonema: ${metadata.phoneme} | Idade: ${metadata.age} anos | Nível: ${metadata.difficulty}`,
+      `Fonema: ${metadata.phoneme} | Idade: ${ageLabel} | Nivel: ${metadata.difficulty}`,
       {
         x: 60,
         y: yPosition - 25,
-        size: 10,
-        font: font,
-        color: rgb(0.4, 0.4, 0.4),
+        size: 11,
+        font: boldFont,
+        color: rgb(0.3, 0.3, 0.3),
       }
     );
 
@@ -78,70 +129,78 @@ export async function POST(request: NextRequest) {
         y: yPosition - 45,
         size: 10,
         font: font,
-        color: rgb(0.4, 0.4, 0.4),
+        color: rgb(0.5, 0.5, 0.5),
       }
     );
 
-    yPosition -= 100;
-
-    // Objective section
-    page.drawText('🎯 OBJETIVO', {
-      x: 50,
-      y: yPosition,
-      size: 12,
-      font: boldFont,
-      color: rgb(0.2, 0.2, 0.2),
+    page.drawText('Powered by Inteligencia Artificial', {
+      x: 60,
+      y: yPosition - 60,
+      size: 9,
+      font: italicFont,
+      color: rgb(0.6, 0.6, 0.6),
     });
 
-    yPosition -= 25;
+    yPosition -= 100;
+
+    // Premium section headers with colored backgrounds
+    const drawSectionHeader = (
+      title: string,
+      color: [number, number, number]
+    ) => {
+      page.drawRectangle({
+        x: 45,
+        y: yPosition - 20,
+        width: 150,
+        height: 25,
+        color: rgb(color[0], color[1], color[2]),
+      });
+
+      page.drawText(title, {
+        x: 50,
+        y: yPosition - 10,
+        size: 12,
+        font: boldFont,
+        color: rgb(1, 1, 1),
+      });
+      yPosition -= 35;
+    };
+
+    // Objective section
+    drawSectionHeader('OBJETIVO', [0.2, 0.6, 0.8]);
     const objectiveLines = wrapText(exercise.objetivo || '', 70);
     for (const line of objectiveLines) {
       page.drawText(line, {
         x: 50,
         y: yPosition,
-        size: 10,
+        size: 11,
         font: font,
-        color: rgb(0.3, 0.3, 0.3),
+        color: rgb(0.2, 0.2, 0.2),
       });
-      yPosition -= 15;
+      yPosition -= 16;
     }
-
-    yPosition -= 20;
+    yPosition -= 15;
 
     // Instructions section
-    page.drawText('📋 INSTRUÇÕES', {
-      x: 50,
-      y: yPosition,
-      size: 12,
-      font: boldFont,
-      color: rgb(0.2, 0.2, 0.2),
-    });
-
-    yPosition -= 25;
+    drawSectionHeader('INSTRUCOES', [0.8, 0.4, 0.2]);
     const instructions = exercise.instrucoes || [];
     instructions.forEach((instruction: string, index: number) => {
-      page.drawText(`${index + 1}. ${instruction}`, {
-        x: 50,
-        y: yPosition,
-        size: 10,
-        font: font,
-        color: rgb(0.3, 0.3, 0.3),
+      const wrappedInstruction = wrapText(`${index + 1}. ${instruction}`, 65);
+      wrappedInstruction.forEach((line, lineIndex) => {
+        page.drawText(line, {
+          x: lineIndex === 0 ? 50 : 65,
+          y: yPosition,
+          size: 10,
+          font: font,
+          color: rgb(0.2, 0.2, 0.2),
+        });
+        yPosition -= 15;
       });
-      yPosition -= 20;
+      yPosition -= 5;
     });
-
-    yPosition -= 20;
 
     // Materials section
-    page.drawText('🧰 MATERIAIS', {
-      x: 50,
-      y: yPosition,
-      size: 12,
-      font: boldFont,
-      color: rgb(0.2, 0.2, 0.2),
-    });
-
-    yPosition -= 25;
+    drawSectionHeader('MATERIAIS', [0.2, 0.7, 0.4]);
     const materials = exercise.materiais || [];
     materials.forEach((material: string) => {
       page.drawText(`• ${material}`, {
@@ -149,19 +208,51 @@ export async function POST(request: NextRequest) {
         y: yPosition,
         size: 10,
         font: font,
-        color: rgb(0.3, 0.3, 0.3),
+        color: rgb(0.2, 0.2, 0.2),
       });
-      yPosition -= 15;
+      yPosition -= 16;
     });
+    yPosition -= 15;
 
-    yPosition -= 20;
+    // Child-specific sections
+    if (isChild && exercise.brincadeira) {
+      drawSectionHeader('BRINCADEIRA', [0.9, 0.5, 0.1]);
+      const brincadeiraLines = wrapText(exercise.brincadeira, 70);
+      for (const line of brincadeiraLines) {
+        page.drawText(line, {
+          x: 50,
+          y: yPosition,
+          size: 10,
+          font: font,
+          color: rgb(0.2, 0.2, 0.2),
+        });
+        yPosition -= 15;
+      }
+      yPosition -= 15;
+    }
+
+    if (isChild && exercise.recompensa) {
+      drawSectionHeader('RECOMPENSA', [0.8, 0.2, 0.6]);
+      const recompensaLines = wrapText(exercise.recompensa, 70);
+      for (const line of recompensaLines) {
+        page.drawText(line, {
+          x: 50,
+          y: yPosition,
+          size: 10,
+          font: font,
+          color: rgb(0.2, 0.2, 0.2),
+        });
+        yPosition -= 15;
+      }
+      yPosition -= 15;
+    }
 
     // Time and observations
     if (exercise.tempo) {
-      page.drawText(`⏱️ DURAÇÃO: ${exercise.tempo}`, {
+      page.drawText(`DURACAO: ${exercise.tempo}`, {
         x: 50,
         y: yPosition,
-        size: 10,
+        size: 11,
         font: boldFont,
         color: rgb(0.2, 0.2, 0.2),
       });
@@ -169,15 +260,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (exercise.observacoes) {
-      page.drawText('💡 OBSERVAÇÕES', {
-        x: 50,
-        y: yPosition,
-        size: 12,
-        font: boldFont,
-        color: rgb(0.2, 0.2, 0.2),
-      });
-      yPosition -= 20;
-
+      drawSectionHeader('OBSERVACOES', [0.5, 0.5, 0.5]);
       const observationLines = wrapText(exercise.observacoes, 70);
       for (const line of observationLines) {
         page.drawText(line, {
@@ -191,14 +274,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Footer
-    page.drawText('Gerado por FonoSaaS - Plataforma para Fonoaudiólogos', {
-      x: 50,
-      y: 50,
-      size: 8,
-      font: font,
-      color: rgb(0.6, 0.6, 0.6),
+    // Premium footer with border
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width: width,
+      height: 60,
+      color: rgb(0.98, 0.98, 0.98),
     });
+
+    page.drawRectangle({
+      x: 0,
+      y: 56,
+      width: width,
+      height: 4,
+      color: rgb(0.3, 0.1, 0.7),
+    });
+
+    page.drawText(
+      'Gerado por Almanaque da Fala - Plataforma Premium para Fonoaudiologos',
+      {
+        x: 50,
+        y: 35,
+        size: 10,
+        font: boldFont,
+        color: rgb(0.4, 0.4, 0.4),
+      }
+    );
+
+    page.drawText(
+      'www.almanaquedafala.com.br | Exercicios personalizados com IA',
+      {
+        x: 50,
+        y: 20,
+        size: 8,
+        font: italicFont,
+        color: rgb(0.6, 0.6, 0.6),
+      }
+    );
 
     const pdfBytes = await pdfDoc.save();
 
