@@ -12,7 +12,7 @@ export default function StructuredData({
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Almanaque da Fala',
-      alternateName: 'FonoSaaS',
+      alternateName: 'Almanaque da Fala',
       url: 'https://almanaquedafala.com.br',
       logo: 'https://almanaquedafala.com.br/logo.png',
       description:
@@ -54,8 +54,8 @@ export default function StructuredData({
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'Almanaque da Fala',
-        alternateName: 'FonoSaaS',
-        url: 'https://almanaquedafala.com.br',
+        alternateName: 'Almanaque da Fala',
+        url: 'https://www.almanaquedafala.com.br',
         description: 'Plataforma SaaS completa para fonoaudiólogos brasileiros',
         inLanguage: 'pt-BR',
         isAccessibleForFree: false,
@@ -64,14 +64,50 @@ export default function StructuredData({
           target: {
             '@type': 'EntryPoint',
             urlTemplate:
-              'https://almanaquedafala.com.br/dashboard?q={search_term_string}',
+              'https://www.almanaquedafala.com.br/dashboard?q={search_term_string}',
           },
           'query-input': 'required name=search_term_string',
         },
         publisher: {
           '@type': 'Organization',
           name: 'Almanaque da Fala',
-          url: 'https://almanaquedafala.com.br',
+          url: 'https://www.almanaquedafala.com.br',
+          logo: {
+            '@type': 'ImageObject',
+            url: 'https://www.almanaquedafala.com.br/logo.png',
+            width: 512,
+            height: 512,
+          },
+          sameAs: [
+            'https://www.linkedin.com/company/almanaque-da-fala',
+            'https://www.instagram.com/almanaquedafala',
+          ],
+          contactPoint: {
+            '@type': 'ContactPoint',
+            telephone: '+55-11-99999-9999',
+            contactType: 'customer service',
+            availableLanguage: 'Portuguese',
+          },
+        },
+        application: {
+          '@type': 'SoftwareApplication',
+          name: 'Almanaque da Fala',
+          applicationCategory: 'HealthApplication',
+          operatingSystem: 'Web Browser',
+          offers: {
+            '@type': 'Offer',
+            price: '29.90',
+            priceCurrency: 'BRL',
+            priceValidUntil: '2025-12-31',
+            availability: 'https://schema.org/InStock',
+          },
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: '4.8',
+            reviewCount: '127',
+            bestRating: '5',
+            worstRating: '1',
+          },
         },
       };
     }

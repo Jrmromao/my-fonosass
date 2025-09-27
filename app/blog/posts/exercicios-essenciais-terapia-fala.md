@@ -6,7 +6,7 @@ author: "Dr. Ana Silva"
 tags: ["exercícios", "terapia", "fala", "fonoaudiologia"]
 featured: true
 seo:
-  title: "10 Exercícios Essenciais para Terapia da Fala | FonoSaaS"
+  title: "10 Exercícios Essenciais para Terapia da Fala | Almanaque da Fala"
   description: "Descubra os exercícios mais eficazes para diferentes distúrbios da comunicação. Guia completo para fonoaudiólogos."
   keywords: ["exercícios fonoaudiológicos", "terapia da fala", "distúrbios comunicação", "fonoaudiologia"]
 ---

@@ -74,7 +74,7 @@ describe('PDFService', () => {
     it('should watermark and upload PDF successfully', async () => {
       const inputPDF = new Uint8Array([1, 2, 3, 4]);
       const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'FonoSaaS';
+      const watermarkText = 'Almanaque da Fala';
       const key = 'test.pdf';
 
       const mockS3Response = { ETag: 'test-etag', Location: 'test-location' };
@@ -98,7 +98,7 @@ describe('PDFService', () => {
     it('should handle watermark errors', async () => {
       const inputPDF = new Uint8Array([1, 2, 3, 4]);
       const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'FonoSaaS';
+      const watermarkText = 'Almanaque da Fala';
       const key = 'test.pdf';
 
       // Mock PDFDocument.load to throw an error
@@ -120,7 +120,7 @@ describe('PDFService', () => {
     it('should handle S3 upload errors', async () => {
       const inputPDF = new Uint8Array([1, 2, 3, 4]);
       const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'FonoSaaS';
+      const watermarkText = 'Almanaque da Fala';
       const key = 'test.pdf';
 
       // Reset PDFDocument.load to success for this test
@@ -201,7 +201,7 @@ describe('PDFService', () => {
     it('should use custom options', async () => {
       const inputPDF = new Uint8Array([1, 2, 3, 4]);
       const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'FonoSaaS';
+      const watermarkText = 'Almanaque da Fala';
       const key = 'test.pdf';
       const options = {
         logoScale: 0.2,

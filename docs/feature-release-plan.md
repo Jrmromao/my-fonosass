@@ -1,4 +1,4 @@
-# 🚀 FonoSaaS Feature & Release Plan
+# 🚀 Almanaque da Fala Feature & Release Plan
 **Speech Therapy Exercises Marketplace**
 
 ## 📋 **MVP Definition**

@@ -1,4 +1,4 @@
-# 🏥 FonoSaaS - Almanaque da Fala
+# 🏥 Almanaque da Fala
 
 **Solução completa para fonoaudiólogos brasileiros**
 
@@ -41,7 +41,7 @@
 
 ## 🏗️ **Visão Geral do Projeto**
 
-- **Nome**: FonoSaaS (Almanaque da Fala)
+- **Nome**: Almanaque da Fala
 - **Domínio**: almanaquedafala.com.br
 - **Propósito**: SaaS para fonoaudiólogos brasileiros
 - **Status**: Pronto para Produção ✅

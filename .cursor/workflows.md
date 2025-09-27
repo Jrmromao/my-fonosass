@@ -1,4 +1,4 @@
-# FonoSaaS Cursor Workflows
+# Almanaque da Fala Cursor Workflows
 
 ## 🚀 Development Workflows
 
@@ -114,19 +114,19 @@
 ## 🧠 AI Assistant Prompts
 
 ### For New Features
-"Create a new feature for FonoSaaS following our established patterns. Check the knowledge base first, maintain LGPD compliance, use TypeScript strict mode, and ensure Portuguese language support."
+"Create a new feature for Almanaque da Fala following our established patterns. Check the knowledge base first, maintain LGPD compliance, use TypeScript strict mode, and ensure Portuguese language support."
 
 ### For Bug Fixes
-"Fix this bug in FonoSaaS. First check our mistakes-and-solutions.md, maintain security standards, and ensure no LGPD compliance issues."
+"Fix this bug in Almanaque da Fala. First check our mistakes-and-solutions.md, maintain security standards, and ensure no LGPD compliance issues."
 
 ### For Code Review
-"Review this code for FonoSaaS. Check for security issues, LGPD compliance, TypeScript best practices, and Brazilian market requirements."
+"Review this code for Almanaque da Fala. Check for security issues, LGPD compliance, TypeScript best practices, and Brazilian market requirements."
 
 ### For Prisma Schema Changes
-"Help me with this Prisma schema change for FonoSaaS. First assess if a migration is needed, then provide the correct npx prisma commands. Remember to use npx for Prisma commands, NEVER suggest 'prisma db push', and ensure LGPD compliance for any data handling changes."
+"Help me with this Prisma schema change for Almanaque da Fala. First assess if a migration is needed, then provide the correct npx prisma commands. Remember to use npx for Prisma commands, NEVER suggest 'prisma db push', and ensure LGPD compliance for any data handling changes."
 
 ### For Database Issues
-"Help me resolve this database issue in FonoSaaS. Follow our database issue resolution workflow: NEVER suggest database reset or data loss. Always preserve data, create proper migration files, and use prisma migrate resolve for existing tables. Check for drift between schema and database first."
+"Help me resolve this database issue in Almanaque da Fala. Follow our database issue resolution workflow: NEVER suggest database reset or data loss. Always preserve data, create proper migration files, and use prisma migrate resolve for existing tables. Check for drift between schema and database first."
 
 ## 🔍 Code Analysis Patterns
 

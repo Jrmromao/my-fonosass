@@ -1,4 +1,4 @@
-# FonoSaaS n8n Integration Strategy
+# Almanaque da Fala n8n Integration Strategy
 
 ## 🎯 Priority Implementation Plan
 
@@ -171,7 +171,7 @@ services:
 3. Add email node (Resend integration)
 4. Test with Clerk webhook
 
-### 3. Connect to FonoSaaS
+### 3. Connect to Almanaque da Fala
 - Add webhook URLs to Clerk/Stripe
 - Create n8n credentials for APIs
 - Test workflows in development
@@ -179,7 +179,7 @@ services:
 ## 🔐 Security Considerations
 
 ### Authentication:
-- Use API keys for FonoSaaS integration
+- Use API keys for Almanaque da Fala integration
 - Implement webhook signature validation
 - Secure n8n with basic auth + HTTPS
 
@@ -215,4 +215,4 @@ services:
 5. **Week 4**: Implement compliance automation
 6. **Week 5**: Add system monitoring and alerts
 
-This strategy will transform FonoSaaS from manual operations to a fully automated, scalable SaaS platform.
+This strategy will transform Almanaque da Fala from manual operations to a fully automated, scalable SaaS platform.

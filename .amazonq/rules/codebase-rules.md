@@ -1,6 +1,6 @@
 # Codebase Architecture & Patterns
 
-## Project: FonoSaaS - Speech Therapy Platform
+## Project: Almanaque da Fala - Speech Therapy Platform
 
 ### Architecture Patterns
 

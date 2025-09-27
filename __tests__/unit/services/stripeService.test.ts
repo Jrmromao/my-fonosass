@@ -87,7 +87,7 @@ describe('StripeService', () => {
             price_data: {
               currency: 'brl',
               product_data: {
-                name: 'FonoSaaS Pro',
+                name: 'Almanaque da Fala Pro',
                 description: 'Downloads ilimitados + Recursos premium',
               },
               unit_amount: 3990,

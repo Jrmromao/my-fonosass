@@ -1,6 +1,6 @@
 # 🚀 Cache Manager Usage Examples
 
-This document shows how to use the comprehensive caching system in FonoSaaS.
+This document shows how to use the comprehensive caching system in Almanaque da Fala.
 
 ## 📋 Available Caching Layers
 

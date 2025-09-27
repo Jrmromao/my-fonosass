@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# FonoSaaS Session Banking Script
+# Almanaque da Fala Session Banking Script
 # Usage: ./scripts/bank.sh or "bank!" (if aliased)
 
 echo "🏦 Banking current session..."

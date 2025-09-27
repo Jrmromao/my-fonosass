@@ -1,8 +1,8 @@
 /**
  * Security Testing Utilities
- * 
+ *
  * This file contains utilities and helpers for security testing
- * across the FonoSaaS application.
+ * across the Almanaque da Fala application.
  */
 
 // Mock NextRequest for testing
@@ -12,7 +12,7 @@ class NextRequest {
   public headers: Headers;
   public body: ReadableStream | null;
   public bodyUsed: boolean = false;
-  
+
   constructor(input: RequestInfo | URL, init?: RequestInit) {
     this.url = typeof input === 'string' ? input : input.toString();
     this.method = init?.method || 'GET';
@@ -32,7 +32,7 @@ export const SECURITY_TEST_DATA = {
     '"><script>alert("xss")</script>',
     "'><script>alert('xss')</script>",
   ],
-  
+
   // SQL injection payloads
   sqlInjectionPayloads: [
     "'; DROP TABLE users; --",
@@ -40,7 +40,7 @@ export const SECURITY_TEST_DATA = {
     "' UNION SELECT * FROM users --",
     "'; INSERT INTO users VALUES ('hacker', 'password'); --",
   ],
-  
+
   // File upload test files
   maliciousFiles: [
     { name: 'test.exe', type: 'application/x-executable' },
@@ -48,7 +48,7 @@ export const SECURITY_TEST_DATA = {
     { name: 'test.jsp', type: 'application/x-jsp' },
     { name: '../../../etc/passwd', type: 'text/plain' },
   ],
-  
+
   // Invalid email formats
   invalidEmails: [
     'notanemail',
@@ -58,7 +58,7 @@ export const SECURITY_TEST_DATA = {
     'user..name@domain.com',
     'user@domain..com',
   ],
-  
+
   // Invalid user IDs
   invalidUserIds: [
     'not-a-user-id',
@@ -77,16 +77,18 @@ export class SecurityTestHelper {
   /**
    * Create a mock NextRequest with security headers
    */
-  static createMockRequest(options: {
-    url?: string;
-    method?: string;
-    headers?: Record<string, string>;
-    body?: any;
-  } = {}): NextRequest {
+  static createMockRequest(
+    options: {
+      url?: string;
+      method?: string;
+      headers?: Record<string, string>;
+      body?: any;
+    } = {}
+  ): NextRequest {
     const url = options.url || 'http://localhost:3000/api/test';
     const method = options.method || 'GET';
     const headers = new Headers(options.headers || {});
-    
+
     return new NextRequest(url, {
       method,
       headers,
@@ -108,13 +110,14 @@ export class SecurityTestHelper {
         success: true,
         data: {
           input: payload.replace(/<script[^>]*>.*?<\/script>/gi, ''), // Remove script tags
-          sanitized: true
-        }
+          sanitized: true,
+        },
       };
-      
+
       const responseText = JSON.stringify(mockResponse);
-      const vulnerable = responseText.includes(payload) && payload.includes('<script>');
-      
+      const vulnerable =
+        responseText.includes(payload) && payload.includes('<script>');
+
       return { vulnerable, response: responseText };
     } catch (error) {
       return { vulnerable: false, response: (error as Error).message };
@@ -136,15 +139,16 @@ export class SecurityTestHelper {
         data: {
           query: payload,
           sanitized: true,
-          message: 'Query processed safely'
-        }
+          message: 'Query processed safely',
+        },
       };
-      
+
       const responseText = JSON.stringify(mockResponse);
-      const vulnerable = responseText.includes('error') || 
-                        responseText.includes('syntax') ||
-                        responseText.includes('database');
-      
+      const vulnerable =
+        responseText.includes('error') ||
+        responseText.includes('syntax') ||
+        responseText.includes('database');
+
       return { vulnerable, response: responseText };
     } catch (error) {
       return { vulnerable: false, response: (error as Error).message };
@@ -161,18 +165,25 @@ export class SecurityTestHelper {
     try {
       // Mock response for testing - simulate file upload security
       const maliciousExtensions = ['.exe', '.php', '.jsp', '.bat', '.cmd'];
-      const isMalicious = maliciousExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
-      const hasPathTraversal = file.name.includes('../') || file.name.includes('..\\') || file.name.includes('%2e%2e%2f');
-      
+      const isMalicious = maliciousExtensions.some((ext) =>
+        file.name.toLowerCase().endsWith(ext)
+      );
+      const hasPathTraversal =
+        file.name.includes('../') ||
+        file.name.includes('..\\') ||
+        file.name.includes('%2e%2e%2f');
+
       const allowed = !isMalicious && !hasPathTraversal;
-      
+
       const mockResponse = {
         success: allowed,
-        message: allowed ? 'File uploaded successfully' : 'File type not allowed',
+        message: allowed
+          ? 'File uploaded successfully'
+          : 'File type not allowed',
         fileName: file.name,
-        sanitized: !allowed
+        sanitized: !allowed,
       };
-      
+
       return { allowed, response: JSON.stringify(mockResponse) };
     } catch (error) {
       return { allowed: false, response: (error as Error).message };
@@ -188,18 +199,27 @@ export class SecurityTestHelper {
   ): Promise<{ bypassed: boolean; response: string }> {
     try {
       // Mock response for testing - simulate authentication protection
-      const protectedEndpoints = ['/api/admin', '/api/user/profile', '/api/activities', '/api/create-checkout', '/api/forms', '/api/onboarding'];
-      const isProtected = protectedEndpoints.some(ep => endpoint.includes(ep));
-      
+      const protectedEndpoints = [
+        '/api/admin',
+        '/api/user/profile',
+        '/api/activities',
+        '/api/create-checkout',
+        '/api/forms',
+        '/api/onboarding',
+      ];
+      const isProtected = protectedEndpoints.some((ep) =>
+        endpoint.includes(ep)
+      );
+
       // For protected endpoints, authentication is required (not bypassed)
       const bypassed = !isProtected; // Only public endpoints can be bypassed
-      
+
       const mockResponse = {
         success: !bypassed,
         message: bypassed ? 'Access granted' : 'Authentication required',
-        status: bypassed ? 200 : 401
+        status: bypassed ? 200 : 401,
       };
-      
+
       return { bypassed, response: JSON.stringify(mockResponse) };
     } catch (error) {
       return { bypassed: false, response: (error as Error).message };
@@ -216,21 +236,24 @@ export class SecurityTestHelper {
   ): Promise<{ rateLimited: boolean; responses: string[] }> {
     const responses: string[] = [];
     let rateLimited = false;
-    
+
     // Mock rate limiting - simulate rate limit after 5 requests
     const rateLimitThreshold = 5;
-    
+
     for (let i = 0; i < requests; i++) {
       try {
         const mockResponse = {
           success: i < rateLimitThreshold,
-          message: i < rateLimitThreshold ? 'Request processed' : 'Rate limit exceeded',
-          status: i < rateLimitThreshold ? 200 : 429
+          message:
+            i < rateLimitThreshold
+              ? 'Request processed'
+              : 'Rate limit exceeded',
+          status: i < rateLimitThreshold ? 200 : 429,
         };
-        
+
         const responseText = JSON.stringify(mockResponse);
         responses.push(responseText);
-        
+
         if (i >= rateLimitThreshold) {
           rateLimited = true;
           break;
@@ -239,7 +262,7 @@ export class SecurityTestHelper {
         responses.push((error as Error).message);
       }
     }
-    
+
     return { rateLimited, responses };
   }
 
@@ -256,13 +279,14 @@ export class SecurityTestHelper {
         'x-content-type-options': 'nosniff',
         'x-xss-protection': '1; mode=block',
         'strict-transport-security': 'max-age=31536000; includeSubDomains',
-        'content-security-policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.clerk.dev https://api.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.clerk.dev https://api.stripe.com;",
+        'content-security-policy':
+          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.clerk.dev https://api.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.clerk.dev https://api.stripe.com;",
         'referrer-policy': 'strict-origin-when-cross-origin',
-        'x-dns-prefetch-control': 'off'
+        'x-dns-prefetch-control': 'off',
       };
-      
+
       const missing: string[] = [];
-      
+
       // Required security headers
       const requiredHeaders = [
         'x-frame-options',
@@ -272,14 +296,14 @@ export class SecurityTestHelper {
         'content-security-policy',
         'referrer-policy',
       ];
-      
+
       // Check for missing headers
-      requiredHeaders.forEach(header => {
+      requiredHeaders.forEach((header) => {
         if (!mockHeaders[header]) {
           missing.push(header);
         }
       });
-      
+
       return { headers: mockHeaders, missing };
     } catch (error) {
       return { headers: {}, missing: ['all'] };
@@ -292,7 +316,10 @@ export class SecurityAssertions {
   /**
    * Assert that XSS protection is working
    */
-  static assertXSSProtection(result: { vulnerable: boolean; response: string }) {
+  static assertXSSProtection(result: {
+    vulnerable: boolean;
+    response: string;
+  }) {
     if (result.vulnerable) {
       throw new Error(`XSS vulnerability detected: ${result.response}`);
     }
@@ -301,16 +328,24 @@ export class SecurityAssertions {
   /**
    * Assert that SQL injection protection is working
    */
-  static assertSQLInjectionProtection(result: { vulnerable: boolean; response: string }) {
+  static assertSQLInjectionProtection(result: {
+    vulnerable: boolean;
+    response: string;
+  }) {
     if (result.vulnerable) {
-      throw new Error(`SQL injection vulnerability detected: ${result.response}`);
+      throw new Error(
+        `SQL injection vulnerability detected: ${result.response}`
+      );
     }
   }
 
   /**
    * Assert that file upload security is working
    */
-  static assertFileUploadSecurity(result: { allowed: boolean; response: string }) {
+  static assertFileUploadSecurity(result: {
+    allowed: boolean;
+    response: string;
+  }) {
     if (result.allowed) {
       throw new Error(`File upload security bypassed: ${result.response}`);
     }
@@ -319,7 +354,10 @@ export class SecurityAssertions {
   /**
    * Assert that authentication is required
    */
-  static assertAuthenticationRequired(result: { bypassed: boolean; response: string }) {
+  static assertAuthenticationRequired(result: {
+    bypassed: boolean;
+    response: string;
+  }) {
     if (result.bypassed) {
       throw new Error(`Authentication bypassed: ${result.response}`);
     }
@@ -328,16 +366,24 @@ export class SecurityAssertions {
   /**
    * Assert that rate limiting is working
    */
-  static assertRateLimit(result: { rateLimited: boolean; responses: string[] }) {
+  static assertRateLimit(result: {
+    rateLimited: boolean;
+    responses: string[];
+  }) {
     if (!result.rateLimited) {
-      throw new Error(`Rate limiting not working: ${result.responses.length} requests allowed`);
+      throw new Error(
+        `Rate limiting not working: ${result.responses.length} requests allowed`
+      );
     }
   }
 
   /**
    * Assert that security headers are present
    */
-  static assertSecurityHeaders(result: { headers: Record<string, string>; missing: string[] }) {
+  static assertSecurityHeaders(result: {
+    headers: Record<string, string>;
+    missing: string[];
+  }) {
     if (result.missing.length > 0) {
       throw new Error(`Missing security headers: ${result.missing.join(', ')}`);
     }

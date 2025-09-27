@@ -41,18 +41,19 @@ export const metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://almanaquedafala.com.br'),
+  metadataBase: new URL('https://www.almanaquedafala.com.br'),
   alternates: {
     canonical: '/',
     languages: {
       'pt-BR': '/',
+      pt: '/', // Fallback for Portuguese
     },
   },
   openGraph: {
     title: 'Almanaque da Fala - Solução Completa para Fonoaudiólogos',
     description:
       'Plataforma SaaS completa para fonoaudiólogos brasileiros. Gerencie pacientes, agendamentos, prontuários e exercícios terapêuticos.',
-    url: 'https://almanaquedafala.com.br',
+    url: 'https://www.almanaquedafala.com.br',
     siteName: 'Almanaque da Fala',
     locale: 'pt_BR',
     type: 'website',

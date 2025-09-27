@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * FonoSaaS Database Diagnostic Script
- * 
+ * Almanaque da Fala Database Diagnostic Script
+ *
  * This script safely diagnoses database issues without losing data.
  * NEVER suggests database reset or data loss.
- * 
+ *
  * Usage: node scripts/db-diagnose.js
  */
 
@@ -13,16 +13,16 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔍 FonoSaaS Database Diagnostic Tool');
+console.log('🔍 Almanaque da Fala Database Diagnostic Tool');
 console.log('=====================================\n');
 
 function runCommand(command, description) {
   console.log(`📋 ${description}`);
   try {
-    const result = execSync(command, { 
-      encoding: 'utf8', 
+    const result = execSync(command, {
+      encoding: 'utf8',
       cwd: process.cwd(),
-      stdio: 'pipe'
+      stdio: 'pipe',
     });
     console.log('✅ Success');
     if (result.trim()) {
@@ -60,13 +60,14 @@ console.log('4️⃣ Checking Migration Files');
 console.log('----------------------------');
 const migrationsDir = path.join(process.cwd(), 'prisma', 'migrations');
 if (checkFileExists('prisma/migrations')) {
-  const migrations = fs.readdirSync(migrationsDir)
-    .filter(item => fs.statSync(path.join(migrationsDir, item)).isDirectory())
-    .filter(item => item !== '.DS_Store')
+  const migrations = fs
+    .readdirSync(migrationsDir)
+    .filter((item) => fs.statSync(path.join(migrationsDir, item)).isDirectory())
+    .filter((item) => item !== '.DS_Store')
     .sort();
-  
+
   console.log(`Found ${migrations.length} migration directories:`);
-  migrations.forEach(migration => {
+  migrations.forEach((migration) => {
     const migrationFile = path.join(migrationsDir, migration, 'migration.sql');
     if (fs.existsSync(migrationFile)) {
       console.log(`  ✅ ${migration}`);
@@ -107,7 +108,9 @@ console.log('');
 console.log('📋 Next Steps:');
 console.log('1. If drift detected: Create migration file manually');
 console.log('2. If tables exist but no migrations: Use prisma migrate resolve');
-console.log('3. If migrations exist but tables missing: Use prisma migrate deploy');
+console.log(
+  '3. If migrations exist but tables missing: Use prisma migrate deploy'
+);
 console.log('4. Always test database operations after resolution');
 console.log('');
 console.log('🔗 See: .cursor/workflows.md for detailed resolution steps');

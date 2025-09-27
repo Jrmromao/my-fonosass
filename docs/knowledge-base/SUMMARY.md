@@ -1,4 +1,4 @@
-# 🧠 FonoSaaS Knowledge Base - Summary
+# 🧠 Almanaque da Fala Knowledge Base - Summary
 
 **Complete guide for AI assistants working on this project**
 
@@ -6,7 +6,7 @@
 
 ## 🎯 **What This Knowledge Base Contains**
 
-This knowledge base is designed to help AI assistants (like Cursor) understand the FonoSaaS project completely, avoid past mistakes, and maintain consistency. It contains:
+This knowledge base is designed to help AI assistants (like Cursor) understand the Almanaque da Fala project completely, avoid past mistakes, and maintain consistency. It contains:
 
 1. **Project Overview** - What the app does and its purpose
 2. **Development Guidelines** - How to code properly
@@ -40,7 +40,7 @@ This knowledge base is designed to help AI assistants (like Cursor) understand t
 ## 🏗️ **Project Architecture**
 
 ### **What It Is**:
-- **Name**: FonoSaaS (Almanaque da Fala)
+- **Name**: Almanaque da Fala (Almanaque da Fala)
 - **Domain**: almanaquedafala.com.br
 - **Purpose**: SaaS for Brazilian fonoaudiologists
 - **Market**: Brazil (Portuguese language, LGPD compliance)

@@ -16,16 +16,16 @@ const faqData: FAQItem[] = [
   // Sobre a Plataforma
   {
     id: 'what-is-fonosass',
-    question: 'O que é o FonoSaaS?',
+    question: 'O que é o Almanaque da Fala?',
     answer:
-      'O FonoSaaS é uma plataforma especializada em exercícios de fala para fonoaudiólogos brasileiros. Oferecemos uma biblioteca completa de exercícios terapêuticos organizados por fonemas, com materiais prontos para impressão e uso em consultas.',
+      'O Almanaque da Fala é uma plataforma especializada em exercícios de fala para fonoaudiólogos brasileiros. Oferecemos uma biblioteca completa de exercícios terapêuticos organizados por fonemas, com materiais prontos para impressão e uso em consultas.',
     category: 'Sobre a Plataforma',
   },
   {
     id: 'who-is-for',
-    question: 'Para quem é destinado o FonoSaaS?',
+    question: 'Para quem é destinado o Almanaque da Fala?',
     answer:
-      'O FonoSaaS é destinado a fonoaudiólogos, terapeutas da fala e profissionais que trabalham com reabilitação de fala e linguagem, especialmente aqueles que atendem crianças com dificuldades de articulação.',
+      'O Almanaque da Fala é destinado a fonoaudiólogos, terapeutas da fala e profissionais que trabalham com reabilitação de fala e linguagem, especialmente aqueles que atendem crianças com dificuldades de articulação.',
     category: 'Sobre a Plataforma',
   },
   {

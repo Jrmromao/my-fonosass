@@ -1,13 +1,17 @@
-import 'server-only'
-import { Resend } from 'resend'
+import { Resend } from 'resend';
+import 'server-only';
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export class EmailService {
-  static async sendDownloadLimitWarning(userEmail: string, userName: string, remaining: number) {
+  static async sendDownloadLimitWarning(
+    userEmail: string,
+    userName: string,
+    remaining: number
+  ) {
     try {
       await resend.emails.send({
-        from: 'FonoSaaS <noreply@fonosaas.com>',
+        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: userEmail,
         subject: `⚠️ Restam apenas ${remaining} downloads gratuitos`,
         html: `
@@ -26,7 +30,7 @@ export class EmailService {
             <p>Para continuar baixando exercícios ilimitadamente, considere fazer upgrade para o plano Pro:</p>
             
             <div style="background: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #1e40af; margin: 0;">🚀 FonoSaaS Pro</h3>
+              <h3 style="color: #1e40af; margin: 0;">🚀 Almanaque da Fala Pro</h3>
               <ul style="color: #1e40af; margin: 10px 0;">
                 <li>Downloads ilimitados</li>
                 <li>Acesso a todos os exercícios</li>
@@ -49,17 +53,17 @@ export class EmailService {
               Seus downloads são resetados todo mês. Continue aproveitando nossos exercícios!
             </p>
           </div>
-        `
-      })
+        `,
+      });
     } catch (error) {
-      console.error('Error sending download limit warning:', error)
+      console.error('Error sending download limit warning:', error);
     }
   }
 
   static async sendDownloadLimitReached(userEmail: string, userName: string) {
     try {
       await resend.emails.send({
-        from: 'FonoSaaS <noreply@fonosaas.com>',
+        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: userEmail,
         subject: '🚫 Limite de downloads atingido - Upgrade para Pro',
         html: `
@@ -97,24 +101,24 @@ export class EmailService {
               Seus downloads gratuitos serão resetados no próximo mês. Mas com o Pro, você nunca mais se preocupa com limites!
             </p>
           </div>
-        `
-      })
+        `,
+      });
     } catch (error) {
-      console.error('Error sending download limit reached:', error)
+      console.error('Error sending download limit reached:', error);
     }
   }
 
   static async sendWelcomeEmail(userEmail: string, userName: string) {
     try {
       await resend.emails.send({
-        from: 'FonoSaaS <noreply@fonosaas.com>',
+        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: userEmail,
-        subject: '🎉 Bem-vindo ao FonoSaaS!',
+        subject: '🎉 Bem-vindo ao Almanaque da Fala!',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #1f2937;">Bem-vindo, ${userName}! 🎉</h2>
             
-            <p>Estamos muito felizes em ter você na comunidade FonoSaaS!</p>
+            <p>Estamos muito felizes em ter você na comunidade Almanaque da Fala!</p>
             
             <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="color: #0369a1; margin: 0;">🎯 Você tem direito a:</h3>
@@ -139,10 +143,10 @@ export class EmailService {
               Dúvidas? Responda este email que te ajudamos! 😊
             </p>
           </div>
-        `
-      })
+        `,
+      });
     } catch (error) {
-      console.error('Error sending welcome email:', error)
+      console.error('Error sending welcome email:', error);
     }
   }
 }

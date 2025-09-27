@@ -5,10 +5,10 @@ import { BlogPost } from '@/lib/blog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowRight, BookOpen, Calendar, Clock, Tag, User } from 'lucide-react';
-import Head from 'next/head';
 import Link from 'next/link';
 import { useState } from 'react';
 import SharedNavbar from '../layout/SharedNavbar';
+import Breadcrumbs from '../seo/Breadcrumbs';
 import ConversionCTA from './ConversionCTA';
 import ExitIntentPopup from './ExitIntentPopup';
 import LikeButton from './LikeButton';
@@ -33,31 +33,16 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
 
   return (
     <>
-      <Head>
-        <title>
-          Blog - Dicas e Recursos para Fonoaudiólogos | Almanaque da Fala
-        </title>
-        <meta
-          name="description"
-          content="Artigos especializados, dicas práticas e recursos para fonoaudiólogos brasileiros. Aprenda sobre gestão de consultório, exercícios terapêuticos e mais."
-        />
-        <meta
-          name="keywords"
-          content="fonoaudiologia, dicas fonoaudiólogo, exercícios fonoaudiológicos, gestão consultório"
-        />
-        <meta
-          property="og:title"
-          content="Blog - Dicas e Recursos para Fonoaudiólogos"
-        />
-        <meta
-          property="og:description"
-          content="Artigos especializados, dicas práticas e recursos para fonoaudiólogos brasileiros."
-        />
-        <meta property="og:type" content="website" />
-      </Head>
       <div className="min-h-screen bg-white">
         {/* Shared Navbar */}
         <SharedNavbar />
+
+        {/* Breadcrumbs */}
+        <div className="bg-white border-b border-gray-100 pt-16">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <Breadcrumbs items={[{ name: 'Blog', href: '/blog' }]} />
+          </div>
+        </div>
 
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-pink-50 to-yellow-50 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">

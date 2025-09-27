@@ -78,7 +78,7 @@
 
 ## 🏆 **Week 1 = SUCCESS!**
 
-**The FonoSaaS MVP foundation is complete and ready for monetization in Week 2!**
+**The Almanaque da Fala MVP foundation is complete and ready for monetization in Week 2!**
 
 ---
 

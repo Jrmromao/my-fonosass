@@ -130,7 +130,7 @@ export default function Header() {
 //          </div>
 //           <span
 //               className="hidden sm:inline bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-//             FonoSaaS
+//             Almanaque da Fala
 //            </span>
 //            </a>
 //

@@ -1,4 +1,4 @@
-# 🛠️ FonoSaaS Development Guidelines
+# 🛠️ Almanaque da Fala Development Guidelines
 
 **For AI Assistants and Developers**
 

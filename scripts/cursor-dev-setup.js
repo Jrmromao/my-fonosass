@@ -8,12 +8,16 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🚀 Setting up Cursor development environment for FonoSaaS...\n');
+console.log(
+  '🚀 Setting up Cursor development environment for Almanaque da Fala...\n'
+);
 
 // Check if knowledge base exists
 const knowledgeBasePath = path.join(__dirname, '../docs/knowledge-base');
 if (!fs.existsSync(knowledgeBasePath)) {
-  console.error('❌ Knowledge base not found! Please ensure docs/knowledge-base/ exists.');
+  console.error(
+    '❌ Knowledge base not found! Please ensure docs/knowledge-base/ exists.'
+  );
   process.exit(1);
 }
 
@@ -25,11 +29,11 @@ const criticalFiles = [
   '.cursor/templates.md',
   '.cursor/README.md',
   'docs/knowledge-base/index.md',
-  'docs/knowledge-base/SUMMARY.md'
+  'docs/knowledge-base/SUMMARY.md',
 ];
 
 console.log('📋 Checking critical Cursor files...');
-criticalFiles.forEach(file => {
+criticalFiles.forEach((file) => {
   const filePath = path.join(__dirname, '..', file);
   if (fs.existsSync(filePath)) {
     console.log(`✅ ${file}`);
@@ -46,7 +50,9 @@ if (fs.existsSync(tsConfigPath)) {
   if (tsConfig.compilerOptions?.strict) {
     console.log('✅ TypeScript strict mode enabled');
   } else {
-    console.log('⚠️  TypeScript strict mode not enabled - recommended for FonoSaaS');
+    console.log(
+      '⚠️  TypeScript strict mode not enabled - recommended for Almanaque da Fala'
+    );
   }
 } else {
   console.log('❌ tsconfig.json not found');
@@ -57,9 +63,15 @@ console.log('\n📦 Checking package.json scripts...');
 const packageJsonPath = path.join(__dirname, '../package.json');
 if (fs.existsSync(packageJsonPath)) {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  const requiredScripts = ['test', 'test:security', 'lint', 'type-check', 'build'];
-  
-  requiredScripts.forEach(script => {
+  const requiredScripts = [
+    'test',
+    'test:security',
+    'lint',
+    'type-check',
+    'build',
+  ];
+
+  requiredScripts.forEach((script) => {
     if (packageJson.scripts?.[script]) {
       console.log(`✅ ${script}`);
     } else {
@@ -76,23 +88,23 @@ if (!fs.existsSync(vscodeDir)) {
 }
 
 const cursorSettings = {
-  "typescript.preferences.includePackageJsonAutoImports": "on",
-  "typescript.suggest.autoImports": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.organizeImports": "explicit"
+  'typescript.preferences.includePackageJsonAutoImports': 'on',
+  'typescript.suggest.autoImports': true,
+  'typescript.updateImportsOnFileMove.enabled': 'always',
+  'editor.codeActionsOnSave': {
+    'source.fixAll.eslint': 'explicit',
+    'source.organizeImports': 'explicit',
   },
-  "cursor.general.enableAutoComplete": true,
-  "cursor.general.enableCodeActions": true,
-  "cursor.general.enableInlineChat": true,
-  "files.associations": {
-    ".cursor/context.md": "markdown",
-    ".cursor/rules/project-rules.md": "markdown",
-    ".cursor/workflows.md": "markdown",
-    ".cursor/templates.md": "markdown",
-    ".cursor/README.md": "markdown"
-  }
+  'cursor.general.enableAutoComplete': true,
+  'cursor.general.enableCodeActions': true,
+  'cursor.general.enableInlineChat': true,
+  'files.associations': {
+    '.cursor/context.md': 'markdown',
+    '.cursor/rules/project-rules.md': 'markdown',
+    '.cursor/workflows.md': 'markdown',
+    '.cursor/templates.md': 'markdown',
+    '.cursor/README.md': 'markdown',
+  },
 };
 
 fs.writeFileSync(
@@ -103,17 +115,17 @@ console.log('✅ Created .vscode/settings.json for Cursor optimization');
 
 // Create Cursor-specific extensions recommendations
 const extensions = {
-  "recommendations": [
-    "bradlc.vscode-tailwindcss",
-    "esbenp.prettier-vscode",
-    "ms-vscode.vscode-typescript-next",
-    "prisma.prisma",
-    "ms-vscode.vscode-json",
-    "bradlc.vscode-tailwindcss",
-    "formulahendry.auto-rename-tag",
-    "christian-kohler.path-intellisense",
-    "ms-vscode.vscode-eslint"
-  ]
+  recommendations: [
+    'bradlc.vscode-tailwindcss',
+    'esbenp.prettier-vscode',
+    'ms-vscode.vscode-typescript-next',
+    'prisma.prisma',
+    'ms-vscode.vscode-json',
+    'bradlc.vscode-tailwindcss',
+    'formulahendry.auto-rename-tag',
+    'christian-kohler.path-intellisense',
+    'ms-vscode.vscode-eslint',
+  ],
 };
 
 fs.writeFileSync(

@@ -1,6 +1,6 @@
-# 🤖 Cursor AI Development Guide for FonoSaaS
+# 🤖 Cursor AI Development Guide for Almanaque da Fala
 
-**Complete guide to maximize Cursor AI effectiveness for FonoSaaS development**
+**Complete guide to maximize Cursor AI effectiveness for Almanaque da Fala development**
 
 ---
 
@@ -17,7 +17,7 @@ yarn dev:cursor
 
 ### 2. **Essential Cursor Files**
 - `.cursor/context.md` - Project context for AI
-- `.cursor/rules/project-rules.md` - FonoSaaS-specific rules
+- `.cursor/rules/project-rules.md` - Almanaque da Fala-specific rules
 - `.cursor/rules/user-rules.mdc` - General development rules
 - `.cursor/workflows.md` - Development workflows
 - `.cursor/templates.md` - Code templates
@@ -27,31 +27,31 @@ yarn dev:cursor
 
 ## 🧠 **AI Prompting Strategies**
 
-### **Effective Prompts for FonoSaaS**
+### **Effective Prompts for Almanaque da Fala**
 
 #### **For New Features**
 ```
-Create a new [feature name] for FonoSaaS following our established patterns. 
+Create a new [feature name] for Almanaque da Fala following our established patterns. 
 Check the knowledge base first, maintain LGPD compliance, use TypeScript strict mode, 
 and ensure Portuguese language support. Include proper error handling and tests.
 ```
 
 #### **For Bug Fixes**
 ```
-Fix this bug in FonoSaaS. First check our mistakes-and-solutions.md, 
+Fix this bug in Almanaque da Fala. First check our mistakes-and-solutions.md, 
 maintain security standards, ensure no LGPD compliance issues, 
 and follow our established patterns.
 ```
 
 #### **For Code Review**
 ```
-Review this code for FonoSaaS. Check for security issues, LGPD compliance, 
+Review this code for Almanaque da Fala. Check for security issues, LGPD compliance, 
 TypeScript best practices, Brazilian market requirements, and suggest improvements.
 ```
 
 #### **For Refactoring**
 ```
-Refactor this code for FonoSaaS while maintaining LGPD compliance, 
+Refactor this code for Almanaque da Fala while maintaining LGPD compliance, 
 security standards, and following our established patterns. 
 Ensure TypeScript strict mode compliance.
 ```
@@ -78,21 +78,21 @@ Ensure TypeScript strict mode compliance.
 ## 🛠️ **Cursor AI Workflows**
 
 ### **Feature Development Workflow**
-1. **Prompt**: "Create a new feature for FonoSaaS..."
+1. **Prompt**: "Create a new feature for Almanaque da Fala..."
 2. **Review**: Check against knowledge base
 3. **Validate**: Run `yarn cursor:validate`
 4. **Test**: Ensure LGPD compliance
 5. **Commit**: Use `yarn cursor:pre-commit`
 
 ### **Bug Fix Workflow**
-1. **Prompt**: "Fix this bug in FonoSaaS..."
+1. **Prompt**: "Fix this bug in Almanaque da Fala..."
 2. **Check**: Review mistakes-and-solutions.md
 3. **Fix**: Apply minimal changes
 4. **Test**: Run security tests
 5. **Document**: Update knowledge base if needed
 
 ### **Code Review Workflow**
-1. **Prompt**: "Review this code for FonoSaaS..."
+1. **Prompt**: "Review this code for Almanaque da Fala..."
 2. **Checklist**: Use AI code review checklist
 3. **Security**: Verify LGPD compliance
 4. **Standards**: Check TypeScript and patterns
@@ -164,7 +164,7 @@ Ensure TypeScript strict mode compliance.
 
 ### **Test Generation Prompts**
 ```
-Generate comprehensive tests for this FonoSaaS component. 
+Generate comprehensive tests for this Almanaque da Fala component. 
 Include unit tests, integration tests, and security tests. 
 Ensure LGPD compliance testing and Brazilian market requirements.
 ```
@@ -190,7 +190,7 @@ yarn cursor:validate    # Full validation
 
 ### **AI Context Usage**
 - Always reference specific knowledge base sections
-- Mention "FonoSaaS" and "LGPD compliance" in prompts
+- Mention "Almanaque da Fala" and "LGPD compliance" in prompts
 - Ask for Brazilian market considerations
 - Request security review for sensitive features
 
@@ -207,12 +207,12 @@ yarn cursor:validate    # Full validation
 
 ### **Code Optimization**
 1. **Analysis**: "Analyze this code for performance issues"
-2. **Optimization**: "Optimize this code for FonoSaaS"
+2. **Optimization**: "Optimize this code for Almanaque da Fala"
 3. **Validation**: "Validate the optimization"
 4. **Testing**: "Test the optimized code"
 
 ### **Debugging with AI**
-1. **Error Analysis**: "Analyze this error in FonoSaaS"
+1. **Error Analysis**: "Analyze this error in Almanaque da Fala"
 2. **Root Cause**: "Find the root cause of this issue"
 3. **Solution**: "Provide a fix for this issue"
 4. **Prevention**: "How can we prevent this in the future?"
@@ -255,4 +255,4 @@ yarn cursor:validate    # Full validation
 
 ---
 
-**Remember: Cursor AI is most effective when it understands your project context. Always reference the knowledge base, mention FonoSaaS and LGPD compliance, and follow established patterns!**
+**Remember: Cursor AI is most effective when it understands your project context. Always reference the knowledge base, mention Almanaque da Fala and LGPD compliance, and follow established patterns!**

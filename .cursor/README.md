@@ -1,6 +1,6 @@
-# 🤖 FonoSaaS Cursor AI Configuration
+# 🤖 Almanaque da Fala Cursor AI Configuration
 
-**Complete Cursor AI setup for FonoSaaS development**
+**Complete Cursor AI setup for Almanaque da Fala development**
 
 ---
 
@@ -13,7 +13,7 @@
 ├── workflows.md           # Development workflows
 ├── templates.md           # Code templates
 └── rules/
-    ├── project-rules.md   # FonoSaaS-specific rules
+    ├── project-rules.md   # Almanaque da Fala-specific rules
     └── user-rules.mdc     # General development rules
 ```
 
@@ -22,7 +22,7 @@
 ## 🚀 **Quick Start**
 
 1. **Context**: `context.md` - Project overview and critical information
-2. **Rules**: `rules/project-rules.md` - FonoSaaS-specific development rules
+2. **Rules**: `rules/project-rules.md` - Almanaque da Fala-specific development rules
 3. **Workflows**: `workflows.md` - Development workflows and AI prompts
 4. **Templates**: `templates.md` - Code templates for consistency
 
@@ -32,11 +32,11 @@
 
 ### **context.md**
 - Provides project context to AI
-- Contains critical information about FonoSaaS
+- Contains critical information about Almanaque da Fala
 - Includes tech stack and compliance requirements
 
 ### **rules/project-rules.md**
-- FonoSaaS-specific development rules
+- Almanaque da Fala-specific development rules
 - Security and LGPD compliance requirements
 - Technical standards and best practices
 
@@ -75,4 +75,4 @@
 
 ---
 
-**Remember: These files work together to provide Cursor AI with comprehensive context about your FonoSaaS project!**
+**Remember: These files work together to provide Cursor AI with comprehensive context about your Almanaque da Fala project!**

@@ -1,34 +1,29 @@
-"use client";
-import { cn } from "@/lib/utils";
-import { useClerk, useUser } from "@clerk/nextjs";
-import {
-  ChevronUp,
-  HelpCircle,
-  LogOut,
-  User as UserIcon,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+'use client';
+import { cn } from '@/lib/utils';
+import { useClerk, useUser } from '@clerk/nextjs';
+import { ChevronUp, HelpCircle, LogOut, User as UserIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 const formatUsername = (user: any): string => {
-  if (!user) return "Usuário";
+  if (!user) return 'Usuário';
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`;
   }
   if (user.firstName) return user.firstName;
   if (user.emailAddresses?.[0]?.emailAddress) {
     const email = user.emailAddresses[0].emailAddress;
-    const cleanEmail = email.split("+")[0];
-    const localPart = cleanEmail.split("@")[0];
+    const cleanEmail = email.split('+')[0];
+    const localPart = cleanEmail.split('@')[0];
     return localPart
       .split(/[._]/)
       .map(
         (part: string) =>
-          part.charAt(0).toUpperCase() + part.slice(1).toLowerCase(),
+          part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
       )
-      .join(" ");
+      .join(' ');
   }
-  return "Usuário";
+  return 'Usuário';
 };
 
 const getGravatarURL = (email: string | undefined, size: number = 80) => {
@@ -41,7 +36,7 @@ interface MenuItem {
   label: string;
   icon: React.ReactNode;
   action: () => void;
-  variant?: "default" | "danger";
+  variant?: 'default' | 'danger';
 }
 
 interface FooterProps {
@@ -66,8 +61,8 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
         setIsMenuOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Show loading state until both mounted and user data is loaded
@@ -75,8 +70,8 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
     return (
       <div className="relative w-full">
         <div
-          className={cn("flex items-center gap-3 w-full p-2 rounded-lg", {
-            "justify-center": isCollapsed,
+          className={cn('flex items-center gap-3 w-full p-2 rounded-lg', {
+            'justify-center': isCollapsed,
           })}
         >
           <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
@@ -103,27 +98,27 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
   const handleLogout = async () => {
     setIsMenuOpen(false);
     await signOut();
-    router.push("/sign-in");
+    router.push('/sign-in');
     router.refresh();
   };
 
   const menuItems: MenuItem[] = [
     {
-      label: "Meu Perfil",
+      label: 'Meu Perfil',
       icon: <UserIcon className="size-4" />,
-      action: createAction("/dashboard/profile"),
+      action: createAction('/dashboard/profile'),
     },
 
     {
-      label: "Ajuda",
+      label: 'Ajuda',
       icon: <HelpCircle className="size-4" />,
-      action: createAction("/help"),
+      action: createAction('/help'),
     },
     {
-      label: "Sair",
+      label: 'Sair',
       icon: <LogOut className="size-4" />,
       action: handleLogout,
-      variant: "danger",
+      variant: 'danger',
     },
   ];
 
@@ -133,8 +128,8 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
       aria-haspopup="true"
       aria-expanded={isMenuOpen}
       className={cn(
-        "flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800",
-        { "justify-center": isCollapsed },
+        'flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800',
+        { 'justify-center': isCollapsed }
       )}
     >
       <div className="relative flex items-center justify-center size-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg transition-all duration-200 overflow-hidden">
@@ -161,12 +156,12 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
               {username}
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              FonoSaaS
+              Almanaque da Fala
             </p>
           </div>
           <ChevronUp
-            className={cn("size-4 text-gray-500 transition-transform", {
-              "rotate-180": isMenuOpen,
+            className={cn('size-4 text-gray-500 transition-transform', {
+              'rotate-180': isMenuOpen,
             })}
           />
         </>
@@ -178,13 +173,13 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
     <div
       role="menu"
       className={cn(
-        "fixed bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700/50 z-[9999] min-w-[240px] transition-all duration-200 ease-in-out",
-        "transform opacity-0 scale-95 pointer-events-none",
-        isMenuOpen && "transform opacity-100 scale-100 pointer-events-auto",
+        'fixed bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700/50 z-[9999] min-w-[240px] transition-all duration-200 ease-in-out',
+        'transform opacity-0 scale-95 pointer-events-none',
+        isMenuOpen && 'transform opacity-100 scale-100 pointer-events-auto',
         {
-          "left-20 bottom-4": isCollapsed,
-          "left-4 bottom-20": !isCollapsed,
-        },
+          'left-20 bottom-4': isCollapsed,
+          'left-4 bottom-20': !isCollapsed,
+        }
       )}
     >
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
@@ -205,13 +200,13 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
             onClick={item.action}
             role="menuitem"
             className={cn(
-              "flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors duration-200 text-left",
+              'flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors duration-200 text-left',
               {
-                "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800":
-                  item.variant !== "danger",
-                "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20":
-                  item.variant === "danger",
-              },
+                'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800':
+                  item.variant !== 'danger',
+                'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20':
+                  item.variant === 'danger',
+              }
             )}
           >
             {item.icon}

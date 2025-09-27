@@ -1,4 +1,4 @@
-# POLÍTICA DE PRIVACIDADE - FONOSAAS
+# POLÍTICA DE PRIVACIDADE - ALMANAQUE DA FALA
 
 **Última atualização**: 15 de dezembro de 2024  
 **Versão**: 1.0  
@@ -9,15 +9,15 @@
 ## 1. **INFORMAÇÕES GERAIS**
 
 ### 1.1 **Controlador dos Dados**
-- **Razão Social**: FonoSaaS Tecnologia Ltda.
+- **Razão Social**: Almanaque da Fala Tecnologia Ltda.
 - **CNPJ**: 12.345.678/0001-90
 - **Endereço**: Rua das Flores, 123, Sala 456, São Paulo - SP, CEP: 01234-567
-- **E-mail**: privacidade@fonosaas.com.br
+- **E-mail**: privacidade@almanaquedafala.com.br
 - **Telefone**: (11) 99999-9999
 
 ### 1.2 **Encarregado de Dados (DPO)**
 - **Nome**: Dr. Carlos Silva
-- **E-mail**: dpo@fonosaas.com.br
+- **E-mail**: dpo@almanaquedafala.com.br
 - **Telefone**: (11) 88888-8888
 - **Horário de atendimento**: Segunda a sexta, das 9h às 18h
 
@@ -86,7 +86,7 @@ Conforme Art. 18 da LGPD, você possui os seguintes direitos:
 ### 4.1 **Confirmação e Acesso**
 - Confirmar a existência de tratamento
 - Acessar seus dados pessoais
-- **Como exercer**: Solicitar via e-mail dpo@fonosaas.com.br
+- **Como exercer**: Solicitar via e-mail dpo@almanaquedafala.com.br
 
 ### 4.2 **Correção**
 - Corrigir dados incompletos, inexatos ou desatualizados
@@ -94,23 +94,23 @@ Conforme Art. 18 da LGPD, você possui os seguintes direitos:
 
 ### 4.3 **Anonimização, bloqueio ou eliminação**
 - Eliminar dados desnecessários ou excessivos
-- **Como exercer**: Solicitar via e-mail dpo@fonosaas.com.br
+- **Como exercer**: Solicitar via e-mail dpo@almanaquedafala.com.br
 
 ### 4.4 **Portabilidade**
 - Solicitar portabilidade dos dados
-- **Como exercer**: Solicitar via e-mail dpo@fonosaas.com.br
+- **Como exercer**: Solicitar via e-mail dpo@almanaquedafala.com.br
 
 ### 4.5 **Eliminação**
 - Eliminar dados tratados com consentimento
-- **Como exercer**: Solicitar via e-mail dpo@fonosaas.com.br
+- **Como exercer**: Solicitar via e-mail dpo@almanaquedafala.com.br
 
 ### 4.6 **Informações sobre compartilhamento**
 - Obter informações sobre entidades com quem compartilhamos dados
-- **Como exercer**: Solicitar via e-mail dpo@fonosaas.com.br
+- **Como exercer**: Solicitar via e-mail dpo@almanaquedafala.com.br
 
 ### 4.7 **Revogação do consentimento**
 - Revogar consentimento a qualquer momento
-- **Como exercer**: Configurações da conta ou e-mail dpo@fonosaas.com.br
+- **Como exercer**: Configurações da conta ou e-mail dpo@almanaquedafala.com.br
 
 ---
 
@@ -189,14 +189,14 @@ Conforme Art. 18 da LGPD, você possui os seguintes direitos:
 ### 9.2 **Versões anteriores**
 - Histórico de versões disponível
 - Comparação de alterações
-- Acesso via e-mail dpo@fonosaas.com.br
+- Acesso via e-mail dpo@almanaquedafala.com.br
 
 ---
 
 ## 10. **CONTATO E RECLAMAÇÕES**
 
 ### 10.1 **Encarregado de Dados (DPO)**
-- **E-mail**: dpo@fonosaas.com.br
+- **E-mail**: dpo@almanaquedafala.com.br
 - **Telefone**: (11) 88888-8888
 - **Horário**: Segunda a sexta, 9h às 18h
 
@@ -232,6 +232,6 @@ Conforme Art. 18 da LGPD, você possui os seguintes direitos:
 
 **Esta Política de Privacidade foi elaborada em conformidade com a Lei Geral de Proteção de Dados (Lei 13.709/2018) e demais normas aplicáveis.**
 
-**FonoSaaS Tecnologia Ltda.**  
+**Almanaque da Fala Tecnologia Ltda.**  
 **CNPJ**: 12.345.678/0001-90  
 **São Paulo, 15 de dezembro de 2024**

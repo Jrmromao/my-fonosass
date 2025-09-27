@@ -1,4 +1,4 @@
-# 🧪 FonoSaaS Security Testing Guide
+# 🧪 Almanaque da Fala Security Testing Guide
 
 **Created**: December 2024  
 **Purpose**: Comprehensive guide for running and maintaining security tests
@@ -7,7 +7,7 @@
 
 ## 📋 **Overview**
 
-This guide provides instructions for running security tests, interpreting results, and maintaining the security testing framework for the FonoSaaS application.
+This guide provides instructions for running security tests, interpreting results, and maintaining the security testing framework for the Almanaque da Fala application.
 
 ---
 

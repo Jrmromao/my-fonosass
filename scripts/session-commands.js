@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Quick Session Commands for FonoSaaS
+ * Quick Session Commands for Almanaque da Fala
  * Provides easy-to-use commands for session management
  */
 
@@ -17,7 +17,10 @@ class SessionCommands {
 
   // Load current session from file
   loadCurrentSession() {
-    const currentSessionFile = path.join(__dirname, '../.cursor/sessions/current-session.json');
+    const currentSessionFile = path.join(
+      __dirname,
+      '../.cursor/sessions/current-session.json'
+    );
     if (fs.existsSync(currentSessionFile)) {
       try {
         return JSON.parse(fs.readFileSync(currentSessionFile, 'utf8'));
@@ -31,8 +34,14 @@ class SessionCommands {
   // Save current session to file
   saveCurrentSession() {
     if (this.currentSession) {
-      const currentSessionFile = path.join(__dirname, '../.cursor/sessions/current-session.json');
-      fs.writeFileSync(currentSessionFile, JSON.stringify(this.currentSession, null, 2));
+      const currentSessionFile = path.join(
+        __dirname,
+        '../.cursor/sessions/current-session.json'
+      );
+      fs.writeFileSync(
+        currentSessionFile,
+        JSON.stringify(this.currentSession, null, 2)
+      );
     }
   }
 
@@ -45,17 +54,17 @@ class SessionCommands {
 
     console.log('🏦 Banking session...');
     const summary = this.sessionManager.generateSummary(this.currentSession.id);
-    
+
     // Generate learning context for Cursor AI
     this.sessionManager.generateLearningContext();
-    
+
     console.log('✅ Session banked successfully!');
     console.log('🧠 Learning context updated for Cursor AI');
-    
+
     // Reset current session
     this.currentSession = null;
     this.saveCurrentSession();
-    
+
     return summary;
   }
 
@@ -67,16 +76,16 @@ class SessionCommands {
       context: {
         timestamp: new Date().toISOString(),
         workingDirectory: process.cwd(),
-        gitBranch: this.getCurrentGitBranch()
-      }
+        gitBranch: this.getCurrentGitBranch(),
+      },
     });
-    
+
     this.saveCurrentSession();
-    
+
     console.log(`🚀 New session started: ${this.currentSession.id}`);
     console.log(`🎯 Focus: ${focus}`);
     console.log(`📝 Type: ${type}`);
-    
+
     return this.currentSession;
   }
 
@@ -180,31 +189,33 @@ class SessionCommands {
   list() {
     const sessions = this.sessionManager.listSessions();
     console.log('📋 Recent Sessions:');
-    sessions.slice(0, 10).forEach(session => {
-      console.log(`  ${session.id} - ${session.focus} (${new Date(session.startTime).toLocaleDateString('pt-BR')})`);
+    sessions.slice(0, 10).forEach((session) => {
+      console.log(
+        `  ${session.id} - ${session.focus} (${new Date(session.startTime).toLocaleDateString('pt-BR')})`
+      );
     });
   }
 
   // Show learning insights
   insights() {
     const context = this.sessionManager.generateLearningContext();
-    
+
     console.log('🧠 Learning Insights:');
     console.log(`📊 Total Sessions: ${context.totalSessions}`);
     console.log(`📈 Recent Sessions: ${context.recentSessions}`);
-    
+
     console.log('\n❌ Common Mistakes:');
-    context.commonMistakes.slice(0, 5).forEach(({mistake, count}) => {
+    context.commonMistakes.slice(0, 5).forEach(({ mistake, count }) => {
       console.log(`  ${mistake} (${count} times)`);
     });
-    
+
     console.log('\n🔧 Common Solutions:');
-    context.commonSolutions.slice(0, 5).forEach(({solution, count}) => {
+    context.commonSolutions.slice(0, 5).forEach(({ solution, count }) => {
       console.log(`  ${solution} (${count} times)`);
     });
-    
+
     console.log('\n🚧 Frequent Challenges:');
-    context.frequentChallenges.slice(0, 5).forEach(({challenge, count}) => {
+    context.frequentChallenges.slice(0, 5).forEach(({ challenge, count }) => {
       console.log(`  ${challenge} (${count} times)`);
     });
   }
@@ -223,19 +234,26 @@ class SessionCommands {
   createFromGitCommit(commitHash) {
     try {
       const { execSync } = require('child_process');
-      const commitMessage = execSync(`git log --format=%B -n 1 ${commitHash}`, { encoding: 'utf8' }).trim();
-      const commitFiles = execSync(`git diff --name-only ${commitHash}^ ${commitHash}`, { encoding: 'utf8' }).trim().split('\n');
-      
+      const commitMessage = execSync(`git log --format=%B -n 1 ${commitHash}`, {
+        encoding: 'utf8',
+      }).trim();
+      const commitFiles = execSync(
+        `git diff --name-only ${commitHash}^ ${commitHash}`,
+        { encoding: 'utf8' }
+      )
+        .trim()
+        .split('\n');
+
       const session = this.sessionManager.createSession({
         focus: 'git-commit',
         type: 'development',
         context: {
           commitHash,
           commitMessage,
-          filesChanged: commitFiles
-        }
+          filesChanged: commitFiles,
+        },
       });
-      
+
       console.log(`📝 Session created from git commit: ${commitHash}`);
       return session;
     } catch (error) {
@@ -289,7 +307,7 @@ if (require.main === module) {
       break;
     default:
       console.log(`
-🤖 FonoSaaS Session Commands
+🤖 Almanaque da Fala Session Commands
 
 Usage: node session-commands.js <command> [args...]
 

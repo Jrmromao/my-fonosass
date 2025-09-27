@@ -1,4 +1,4 @@
-# 🧠 FonoSaaS Knowledge Base
+# 🧠 Almanaque da Fala Knowledge Base
 
 **Complete guide for AI assistants working on this project**
 
@@ -60,7 +60,7 @@ Complete summary of everything you need to know.
 
 ## 🏗️ **Project Overview**
 
-- **Name**: FonoSaaS (Almanaque da Fala)
+- **Name**: Almanaque da Fala (Almanaque da Fala)
 - **Domain**: almanaquedafala.com.br
 - **Purpose**: SaaS for Brazilian fonoaudiologists
 - **Status**: Production Ready ✅

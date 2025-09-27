@@ -1,4 +1,4 @@
-# 🧠 FonoSaaS Knowledge Base
+# 🧠 Almanaque da Fala Knowledge Base
 
 **Purpose**: Centralized knowledge repository for AI assistants to understand the project's context, preferences, and development history.
 
@@ -24,7 +24,7 @@
 
 ## 🎯 **Project Overview**
 
-### **Application Name**: FonoSaaS (Almanaque da Fala)
+### **Application Name**: Almanaque da Fala (Almanaque da Fala)
 - **Domain**: almanaquedafala.com.br
 - **Target Market**: Brazilian fonoaudiologists
 - **Business Model**: SaaS subscription (R$ 97-497/month)

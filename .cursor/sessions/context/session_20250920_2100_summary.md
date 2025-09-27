@@ -106,7 +106,7 @@ let action: RetentionAction = RetentionAction.RETAIN;
 
 ### **Final Status:**
 ```
-🔍 FonoSaaS Database Diagnostic Tool
+🔍 Almanaque da Fala Database Diagnostic Tool
 =====================================
 
 1️⃣ Checking Prisma Configuration

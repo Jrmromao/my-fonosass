@@ -1,8 +1,8 @@
 # 🧪 Comprehensive Testing Guide
 
-**FonoSaaS - Week 9-10 Testing Implementation**
+**Almanaque da Fala - Week 9-10 Testing Implementation**
 
-This guide covers the comprehensive testing strategy implemented for the FonoSaaS application, targeting 90%+ code coverage with unit, integration, and E2E tests.
+This guide covers the comprehensive testing strategy implemented for the Almanaque da Fala application, targeting 90%+ code coverage with unit, integration, and E2E tests.
 
 ---
 

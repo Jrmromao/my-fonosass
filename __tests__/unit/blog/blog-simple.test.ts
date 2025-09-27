@@ -164,10 +164,10 @@ describe('Blog Functionality - Basic Tests', () => {
   describe('SEO Metadata', () => {
     it('should generate proper meta titles', () => {
       const postTitle = 'Test Blog Post';
-      const siteName = 'FonoSaaS';
+      const siteName = 'Almanaque da Fala';
       const metaTitle = `${postTitle} - ${siteName}`;
 
-      expect(metaTitle).toBe('Test Blog Post - FonoSaaS');
+      expect(metaTitle).toBe('Test Blog Post - Almanaque da Fala');
     });
 
     it('should generate proper meta descriptions', () => {

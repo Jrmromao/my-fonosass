@@ -1,7 +1,7 @@
-# 🚀 FonoSaaS Feature Development Guide
+# 🚀 Almanaque da Fala Feature Development Guide
 
 **Created**: September 2025 
-**Purpose**: Comprehensive guide for creating new features in the FonoSaaS application  
+**Purpose**: Comprehensive guide for creating new features in the Almanaque da Fala application  
 **Status**: Active - Use as reference for all feature development
 
 ---

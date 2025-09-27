@@ -1,4 +1,4 @@
-# 🔒 FonoSaaS Security Documentation
+# 🔒 Almanaque da Fala Security Documentation
 
 **Created**: December 2024  
 **Purpose**: Central hub for all security-related documentation and resources
@@ -7,7 +7,7 @@
 
 ## 📚 **Documentation Overview**
 
-This directory contains comprehensive security documentation for the FonoSaaS application, including vulnerability assessments, remediation plans, and testing frameworks.
+This directory contains comprehensive security documentation for the Almanaque da Fala application, including vulnerability assessments, remediation plans, and testing frameworks.
 
 ---
 

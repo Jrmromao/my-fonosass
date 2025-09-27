@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Load Testing Script for FonoSaaS
+ * Load Testing Script for Almanaque da Fala
  * Tests the application under various load conditions
  */
 
@@ -16,7 +16,7 @@ class LoadTester {
       concurrent: options.concurrent || 10,
       duration: options.duration || 60, // seconds
       rampUp: options.rampUp || 10, // seconds
-      ...options
+      ...options,
     };
     this.results = {
       totalRequests: 0,
@@ -25,7 +25,7 @@ class LoadTester {
       responseTimes: [],
       errors: [],
       startTime: null,
-      endTime: null
+      endTime: null,
     };
   }
 
@@ -35,18 +35,18 @@ class LoadTester {
       baseUrl: this.baseUrl,
       concurrent: this.options.concurrent,
       duration: this.options.duration,
-      rampUp: this.options.rampUp
+      rampUp: this.options.rampUp,
     });
 
     this.results.startTime = performance.now();
-    
+
     // Test scenarios
     const scenarios = [
       { name: 'Home Page', path: '/', method: 'GET' },
       { name: 'API Health', path: '/api/health', method: 'GET' },
       { name: 'User Data', path: '/api/user-data', method: 'GET' },
       { name: 'Download Limits', path: '/api/download-limits', method: 'GET' },
-      { name: 'Activities', path: '/api/activities', method: 'GET' }
+      { name: 'Activities', path: '/api/activities', method: 'GET' },
     ];
 
     // Run each scenario
@@ -62,11 +62,12 @@ class LoadTester {
   async runScenario(scenario) {
     const promises = [];
     const startTime = performance.now();
-    const endTime = startTime + (this.options.duration * 1000);
+    const endTime = startTime + this.options.duration * 1000;
 
     // Ramp up phase
-    const rampUpInterval = (this.options.rampUp * 1000) / this.options.concurrent;
-    
+    const rampUpInterval =
+      (this.options.rampUp * 1000) / this.options.concurrent;
+
     for (let i = 0; i < this.options.concurrent; i++) {
       setTimeout(() => {
         const worker = this.createWorker(scenario, endTime);
@@ -79,47 +80,50 @@ class LoadTester {
   }
 
   createWorker(scenario, endTime) {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
       const workerResults = {
         requests: 0,
         successes: 0,
         failures: 0,
-        responseTimes: []
+        responseTimes: [],
       };
 
-      while (performance.now() < endTime) {
-        try {
-          const startTime = performance.now();
-          await this.makeRequest(scenario);
-          const responseTime = performance.now() - startTime;
+      const runWorker = async () => {
+        while (performance.now() < endTime) {
+          try {
+            const startTime = performance.now();
+            await this.makeRequest(scenario);
+            const responseTime = performance.now() - startTime;
 
-          workerResults.requests++;
-          workerResults.successes++;
-          workerResults.responseTimes.push(responseTime);
+            workerResults.requests++;
+            workerResults.successes++;
+            workerResults.responseTimes.push(responseTime);
 
-          // Update global results
-          this.results.totalRequests++;
-          this.results.successfulRequests++;
-          this.results.responseTimes.push(responseTime);
+            // Update global results
+            this.results.totalRequests++;
+            this.results.successfulRequests++;
+            this.results.responseTimes.push(responseTime);
+          } catch (error) {
+            workerResults.requests++;
+            workerResults.failures++;
 
-        } catch (error) {
-          workerResults.requests++;
-          workerResults.failures++;
-          
-          this.results.totalRequests++;
-          this.results.failedRequests++;
-          this.results.errors.push({
-            scenario: scenario.name,
-            error: error.message,
-            timestamp: new Date().toISOString()
-          });
+            this.results.totalRequests++;
+            this.results.failedRequests++;
+            this.results.errors.push({
+              scenario: scenario.name,
+              error: error.message,
+              timestamp: new Date().toISOString(),
+            });
+          }
+
+          // Small delay between requests
+          await this.sleep(100);
         }
 
-        // Small delay between requests
-        await this.sleep(100);
-      }
+        resolve(workerResults);
+      };
 
-      resolve(workerResults);
+      runWorker();
     });
   }
 
@@ -130,21 +134,21 @@ class LoadTester {
         method: scenario.method,
         headers: {
           'User-Agent': 'LoadTester/1.0',
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
-        timeout: 10000 // 10 seconds
+        timeout: 10000, // 10 seconds
       };
 
       const protocol = url.protocol === 'https:' ? https : http;
-      
+
       const req = protocol.request(url, options, (res) => {
         let data = '';
-        
+
         res.on('data', (chunk) => {
           data += chunk;
         });
-        
+
         res.on('end', () => {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve({ statusCode: res.statusCode, data });
@@ -168,18 +172,30 @@ class LoadTester {
   }
 
   sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   printResults() {
     const duration = (this.results.endTime - this.results.startTime) / 1000;
     const rps = this.results.totalRequests / duration;
-    
+
     const responseTimes = this.results.responseTimes.sort((a, b) => a - b);
-    const avgResponseTime = responseTimes.length > 0 ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0;
-    const p50 = responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.5)] : 0;
-    const p95 = responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.95)] : 0;
-    const p99 = responseTimes.length > 0 ? responseTimes[Math.floor(responseTimes.length * 0.99)] : 0;
+    const avgResponseTime =
+      responseTimes.length > 0
+        ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+        : 0;
+    const p50 =
+      responseTimes.length > 0
+        ? responseTimes[Math.floor(responseTimes.length * 0.5)]
+        : 0;
+    const p95 =
+      responseTimes.length > 0
+        ? responseTimes[Math.floor(responseTimes.length * 0.95)]
+        : 0;
+    const p99 =
+      responseTimes.length > 0
+        ? responseTimes[Math.floor(responseTimes.length * 0.99)]
+        : 0;
 
     console.log('\n📊 Load Test Results');
     console.log('==================');
@@ -187,7 +203,9 @@ class LoadTester {
     console.log(`📈 Total Requests: ${this.results.totalRequests}`);
     console.log(`✅ Successful: ${this.results.successfulRequests}`);
     console.log(`❌ Failed: ${this.results.failedRequests}`);
-    console.log(`📊 Success Rate: ${this.results.totalRequests > 0 ? ((this.results.successfulRequests / this.results.totalRequests) * 100).toFixed(2) : '0.00'}%`);
+    console.log(
+      `📊 Success Rate: ${this.results.totalRequests > 0 ? ((this.results.successfulRequests / this.results.totalRequests) * 100).toFixed(2) : '0.00'}%`
+    );
     console.log(`🚀 Requests/sec: ${rps.toFixed(2)}`);
     console.log(`⏱️  Avg Response Time: ${avgResponseTime.toFixed(2)}ms`);
     console.log(`📊 P50 Response Time: ${p50.toFixed(2)}ms`);
@@ -197,10 +215,10 @@ class LoadTester {
     if (this.results.errors.length > 0) {
       console.log('\n❌ Errors:');
       const errorCounts = {};
-      this.results.errors.forEach(error => {
+      this.results.errors.forEach((error) => {
         errorCounts[error.error] = (errorCounts[error.error] || 0) + 1;
       });
-      
+
       Object.entries(errorCounts).forEach(([error, count]) => {
         console.log(`   ${error}: ${count} times`);
       });
@@ -226,7 +244,8 @@ class LoadTester {
       console.log('🟠 Low throughput - scaling may be needed');
     }
 
-    const successRate = (this.results.successfulRequests / this.results.totalRequests) * 100;
+    const successRate =
+      (this.results.successfulRequests / this.results.totalRequests) * 100;
     if (successRate > 99) {
       console.log('✅ Excellent reliability');
     } else if (successRate > 95) {
@@ -241,18 +260,18 @@ class LoadTester {
 class StressTester extends LoadTester {
   async runStressTest() {
     console.log('💪 Starting stress test...');
-    
+
     const stressScenarios = [
       { name: 'High Concurrency', concurrent: 50, duration: 30 },
       { name: 'Sustained Load', concurrent: 20, duration: 300 },
-      { name: 'Burst Traffic', concurrent: 100, duration: 10 }
+      { name: 'Burst Traffic', concurrent: 100, duration: 10 },
     ];
 
     for (const scenario of stressScenarios) {
       console.log(`\n🔥 Stress Test: ${scenario.name}`);
       this.options.concurrent = scenario.concurrent;
       this.options.duration = scenario.duration;
-      
+
       // Reset results for each scenario
       this.results = {
         totalRequests: 0,
@@ -261,11 +280,11 @@ class StressTester extends LoadTester {
         responseTimes: [],
         errors: [],
         startTime: null,
-        endTime: null
+        endTime: null,
       };
-      
+
       await this.runLoadTest();
-      
+
       // Wait between stress tests
       await this.sleep(5000);
     }
@@ -276,10 +295,10 @@ class StressTester extends LoadTester {
 async function main() {
   const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
   const testType = process.argv[2] || 'load';
-  
-  console.log('🧪 FonoSaaS Load Testing Tool');
+
+  console.log('🧪 Almanaque da Fala Load Testing Tool');
   console.log('=============================');
-  
+
   if (testType === 'stress') {
     const stressTester = new StressTester(baseUrl);
     await stressTester.runStressTest();
@@ -287,7 +306,7 @@ async function main() {
     const loadTester = new LoadTester(baseUrl, {
       concurrent: 10,
       duration: 60,
-      rampUp: 10
+      rampUp: 10,
     });
     await loadTester.runLoadTest();
   }

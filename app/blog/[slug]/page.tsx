@@ -33,6 +33,9 @@ export async function generateMetadata({
     title: post.seo?.title || post.title,
     description: post.seo?.description || post.excerpt,
     keywords: post.seo?.keywords || post.tags,
+    alternates: {
+      canonical: `https://www.almanaquedafala.com.br/blog/${post.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.excerpt,
@@ -40,6 +43,7 @@ export async function generateMetadata({
       publishedTime: post.date,
       authors: [post.author],
       tags: post.tags,
+      url: `https://www.almanaquedafala.com.br/blog/${post.slug}`,
     },
   };
 }

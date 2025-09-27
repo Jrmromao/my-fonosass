@@ -1,4 +1,4 @@
-# 🔌 FonoSaaS API Standards
+# 🔌 Almanaque da Fala API Standards
 
 **Purpose**: Standardized patterns and conventions for API development  
 **Status**: Active - Use for all API route development

@@ -1,4 +1,4 @@
-# FonoSaaS Cursor Rules
+# Almanaque da Fala Cursor Rules
 
 ## 🧠 KNOWLEDGE BASE
 Before making any changes, ALWAYS read the complete knowledge base:
@@ -27,7 +27,7 @@ Before making any changes, ALWAYS read the complete knowledge base:
 - ✅ ALWAYS stay with Tailwind CSS v3
 
 ## 🏗️ PROJECT CONTEXT
-- **Name**: FonoSaaS (Almanaque da Fala)
+- **Name**: Almanaque da Fala (Almanaque da Fala)
 - **Domain**: almanaquedafala.com.br
 - **Purpose**: SaaS for Brazilian fonoaudiologists
 - **Status**: Production Ready
@@ -157,7 +157,7 @@ npx prisma generate
 - [ ] Tests included for new features
 
 ### AI Prompting Best Practices:
-- Always mention "FonoSaaS" and "LGPD compliance"
+- Always mention "Almanaque da Fala" and "LGPD compliance"
 - Reference specific knowledge base sections
 - Ask for Brazilian market considerations
 - Request security review for sensitive features

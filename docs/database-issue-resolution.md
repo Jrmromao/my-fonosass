@@ -2,7 +2,7 @@
 
 ## 🚨 CRITICAL: NEVER RESET DATABASE - ALWAYS PRESERVE DATA
 
-This guide provides step-by-step instructions for resolving database issues in FonoSaaS without losing any data.
+This guide provides step-by-step instructions for resolving database issues in Almanaque da Fala without losing any data.
 
 ## Quick Diagnosis
 

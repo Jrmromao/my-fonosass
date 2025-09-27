@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# FonoSaaS Development Aliases Setup
+# Almanaque da Fala Development Aliases Setup
 # Run this to set up convenient aliases for development
 
-echo "🚀 Setting up FonoSaaS development aliases..."
+echo "🚀 Setting up Almanaque da Fala development aliases..."
 
 # Get the project directory
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -12,7 +12,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 echo ""
 echo "📝 Add these aliases to your shell profile (~/.zshrc, ~/.bashrc, etc.):"
 echo ""
-echo "# FonoSaaS Development Aliases"
+echo "# Almanaque da Fala Development Aliases"
 echo "alias bank!='cd $PROJECT_DIR && yarn bank!'"
 echo "alias session='cd $PROJECT_DIR && yarn session:start'"
 echo "alias session:status='cd $PROJECT_DIR && yarn session:status'"

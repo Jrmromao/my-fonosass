@@ -33,7 +33,7 @@ describe('EmailService', () => {
       );
 
       expect(mockSend).toHaveBeenCalledWith({
-        from: 'FonoSaaS <noreply@fonosaas.com>',
+        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: 'test@example.com',
         subject: '⚠️ Restam apenas 2 downloads gratuitos',
         html: expect.stringContaining('Test User'),

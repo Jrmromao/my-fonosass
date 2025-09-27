@@ -1,7 +1,14 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Cookie, Settings, Shield, BarChart3, Target, AlertCircle } from 'lucide-react';
+import {
+  Cookie,
+  Settings,
+  Shield,
+  BarChart3,
+  Target,
+  AlertCircle,
+} from 'lucide-react';
 
 export default function CookiePolicyPage() {
   return (
@@ -13,7 +20,7 @@ export default function CookiePolicyPage() {
             Política de Cookies
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Almanaque da Fala - FonoSaaS
+            Almanaque da Fala - Almanaque da Fala
           </p>
           <Badge variant="outline" className="mt-2">
             Última atualização: 15 de dezembro de 2024
@@ -24,19 +31,21 @@ export default function CookiePolicyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Cookie className="h-5 w-5 text-orange-600" />
-              O que são Cookies?
+              <Cookie className="h-5 w-5 text-orange-600" />O que são Cookies?
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Cookies são pequenos arquivos de texto armazenados no seu dispositivo quando você visita nosso site. 
-              Eles nos ajudam a melhorar sua experiência, personalizar conteúdo e analisar como você usa nossos serviços.
+              Cookies são pequenos arquivos de texto armazenados no seu
+              dispositivo quando você visita nosso site. Eles nos ajudam a
+              melhorar sua experiência, personalizar conteúdo e analisar como
+              você usa nossos serviços.
             </p>
             <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
               <p className="text-sm text-orange-800 dark:text-orange-200">
-                <strong>Importante:</strong> Você pode controlar e gerenciar cookies através das configurações do seu navegador 
-                ou usando nosso painel de preferências de cookies.
+                <strong>Importante:</strong> Você pode controlar e gerenciar
+                cookies através das configurações do seu navegador ou usando
+                nosso painel de preferências de cookies.
               </p>
             </div>
           </CardContent>
@@ -66,7 +75,9 @@ export default function CookiePolicyPage() {
                   <li>• Carregamento de páginas</li>
                   <li>• Preferências de idioma</li>
                 </ul>
-                <Badge variant="secondary" className="mt-2">Sempre Ativo</Badge>
+                <Badge variant="secondary" className="mt-2">
+                  Sempre Ativo
+                </Badge>
               </div>
 
               <div className="border-l-4 border-blue-500 pl-4">
@@ -83,7 +94,9 @@ export default function CookiePolicyPage() {
                   <li>• Origem do tráfego</li>
                   <li>• Erros encontrados</li>
                 </ul>
-                <Badge variant="outline" className="mt-2">Opcional</Badge>
+                <Badge variant="outline" className="mt-2">
+                  Opcional
+                </Badge>
               </div>
 
               <div className="border-l-4 border-purple-500 pl-4">
@@ -100,7 +113,9 @@ export default function CookiePolicyPage() {
                   <li>• Lembretes de login</li>
                   <li>• Configurações de notificação</li>
                 </ul>
-                <Badge variant="outline" className="mt-2">Opcional</Badge>
+                <Badge variant="outline" className="mt-2">
+                  Opcional
+                </Badge>
               </div>
 
               <div className="border-l-4 border-red-500 pl-4">
@@ -117,7 +132,9 @@ export default function CookiePolicyPage() {
                   <li>• Remarketing</li>
                   <li>• Redes sociais</li>
                 </ul>
-                <Badge variant="outline" className="mt-2">Opcional</Badge>
+                <Badge variant="outline" className="mt-2">
+                  Opcional
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -136,10 +153,18 @@ export default function CookiePolicyPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">Nome</th>
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">Tipo</th>
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">Finalidade</th>
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">Duração</th>
+                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
+                      Nome
+                    </th>
+                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
+                      Tipo
+                    </th>
+                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
+                      Finalidade
+                    </th>
+                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
+                      Duração
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-600 dark:text-gray-300">
@@ -201,52 +226,77 @@ export default function CookiePolicyPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Utilizamos serviços de terceiros que podem definir cookies em seu dispositivo:
+              Utilizamos serviços de terceiros que podem definir cookies em seu
+              dispositivo:
             </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-3">
                 <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Google Analytics</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Google Analytics
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Análise de tráfego e comportamento dos usuários
                   </p>
-                  <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" 
-                     className="text-xs text-blue-600 hover:underline">
+                  <a
+                    href="https://policies.google.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
                     Política de Privacidade do Google
                   </a>
                 </div>
-                
+
                 <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Clerk</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Clerk
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Autenticação e gerenciamento de usuários
                   </p>
-                  <a href="https://clerk.com/privacy" target="_blank" rel="noopener noreferrer" 
-                     className="text-xs text-blue-600 hover:underline">
+                  <a
+                    href="https://clerk.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
                     Política de Privacidade do Clerk
                   </a>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Stripe</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Stripe
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Processamento de pagamentos
                   </p>
-                  <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" 
-                     className="text-xs text-blue-600 hover:underline">
+                  <a
+                    href="https://stripe.com/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
                     Política de Privacidade do Stripe
                   </a>
                 </div>
-                
+
                 <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">AWS</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    AWS
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Armazenamento e infraestrutura
                   </p>
-                  <a href="https://aws.amazon.com/privacy/" target="_blank" rel="noopener noreferrer" 
-                     className="text-xs text-blue-600 hover:underline">
+                  <a
+                    href="https://aws.amazon.com/privacy/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
                     Política de Privacidade da AWS
                   </a>
                 </div>
@@ -265,43 +315,59 @@ export default function CookiePolicyPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Painel de Preferências</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                Painel de Preferências
+              </h4>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Você pode gerenciar suas preferências de cookies usando nosso painel interativo:
+                Você pode gerenciar suas preferências de cookies usando nosso
+                painel interativo:
               </p>
               <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                 <p className="text-sm text-green-800 dark:text-green-200">
-                  <strong>Painel de Cookies:</strong> Clique no botão "Configurar Cookies" no rodapé do site 
-                  para ajustar suas preferências a qualquer momento.
+                  <strong>Painel de Cookies:</strong> Clique no botão
+                  "Configurar Cookies" no rodapé do site para ajustar suas
+                  preferências a qualquer momento.
                 </p>
               </div>
             </div>
 
             <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Configurações do Navegador</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                Configurações do Navegador
+              </h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">Chrome</h5>
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                    Chrome
+                  </h5>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Configurações → Privacidade e segurança → Cookies e outros dados do site
+                    Configurações → Privacidade e segurança → Cookies e outros
+                    dados do site
                   </p>
                 </div>
                 <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">Firefox</h5>
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                    Firefox
+                  </h5>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Opções → Privacidade e Segurança → Cookies e dados do site
                   </p>
                 </div>
                 <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">Safari</h5>
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                    Safari
+                  </h5>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Preferências → Privacidade → Gerenciar dados do site
                   </p>
                 </div>
                 <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">Edge</h5>
+                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                    Edge
+                  </h5>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Configurações → Cookies e permissões do site → Cookies e dados armazenados
+                    Configurações → Cookies e permissões do site → Cookies e
+                    dados armazenados
                   </p>
                 </div>
               </div>
@@ -320,7 +386,9 @@ export default function CookiePolicyPage() {
           <CardContent>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Cookies Essenciais</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                  Cookies Essenciais
+                </h4>
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
@@ -336,9 +404,11 @@ export default function CookiePolicyPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Cookies Opcionais</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+                  Cookies Opcionais
+                </h4>
                 <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
@@ -369,17 +439,23 @@ export default function CookiePolicyPage() {
           <CardContent>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Contato Geral</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  Contato Geral
+                </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <strong>E-mail:</strong> contato@almanaquedafala.com.br<br />
+                  <strong>E-mail:</strong> contato@almanaquedafala.com.br
+                  <br />
                   <strong>Telefone:</strong> (11) 99999-9999
                 </p>
               </div>
-              
+
               <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Encarregado de Dados (DPO)</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                  Encarregado de Dados (DPO)
+                </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <strong>E-mail:</strong> dpo@almanaquedafala.com.br<br />
+                  <strong>E-mail:</strong> dpo@almanaquedafala.com.br
+                  <br />
                   <strong>Telefone:</strong> (11) 88888-8888
                 </p>
               </div>
@@ -390,10 +466,12 @@ export default function CookiePolicyPage() {
         {/* Footer */}
         <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
           <p>
-            Esta Política de Cookies foi elaborada em conformidade com a Lei Geral de Proteção de Dados (Lei 13.709/2018).
+            Esta Política de Cookies foi elaborada em conformidade com a Lei
+            Geral de Proteção de Dados (Lei 13.709/2018).
           </p>
           <p className="mt-2">
-            <strong>Almanaque da Fala Tecnologia Ltda.</strong> | CNPJ: 12.345.678/0001-90 | São Paulo, 15 de dezembro de 2024
+            <strong>Almanaque da Fala Tecnologia Ltda.</strong> | CNPJ:
+            12.345.678/0001-90 | São Paulo, 15 de dezembro de 2024
           </p>
         </div>
       </div>

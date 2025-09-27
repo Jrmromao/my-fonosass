@@ -1,7 +1,7 @@
-# FonoSaaS Context for Cursor
+# Almanaque da Fala Context for Cursor
 
 ## Project Overview
-- **Name**: FonoSaaS (Almanaque da Fala)
+- **Name**: Almanaque da Fala (Almanaque da Fala)
 - **Domain**: almanaquedafala.com.br
 - **Purpose**: Brazilian healthcare SaaS for fonoaudiologists
 - **Status**: Production Ready

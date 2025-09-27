@@ -1,4 +1,4 @@
-# 🎯 Cursor Quick Reference - FonoSaaS
+# 🎯 Cursor Quick Reference - Almanaque da Fala
 
 **Essential information for AI assistants working on this project**
 

@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { marked } from 'marked';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Breadcrumbs from '../seo/Breadcrumbs';
 import BackToBlogButton from './BackToBlogButton';
 import ConversionCTA from './ConversionCTA';
 import ExitIntentPopup from './ExitIntentPopup';
@@ -173,7 +174,7 @@ export default function BlogPostClient({
             publisher: {
               '@type': 'Organization',
               name: 'Almanaque da Fala',
-              url: 'https://almanaquedafala.com.br',
+              url: 'https://www.almanaquedafala.com.br',
             },
             datePublished: post.date,
             dateModified: post.date,
@@ -183,7 +184,7 @@ export default function BlogPostClient({
             articleSection: 'Fonoaudiologia',
             mainEntityOfPage: {
               '@type': 'WebPage',
-              '@id': `https://almanaquedafala.com.br/blog/${post.slug}`,
+              '@id': `https://www.almanaquedafala.com.br/blog/${post.slug}`,
             },
           }),
         }}
@@ -232,10 +233,15 @@ export default function BlogPostClient({
         {/* Shared Navbar */}
         <SharedNavbar />
 
-        {/* Minimal Back Button */}
+        {/* Breadcrumbs */}
         <div className="bg-white border-b border-gray-100 pt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <BackToBlogButton variant="minimal" size="sm" />
+            <Breadcrumbs
+              items={[
+                { name: 'Blog', href: '/blog' },
+                { name: post.title, href: `/blog/${post.slug}` },
+              ]}
+            />
           </div>
         </div>
 
@@ -614,6 +620,30 @@ export default function BlogPostClient({
           <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <BackToBlogButton variant="auth" size="md" />
+
+              {/* Internal Links */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Link
+                  href="/faq"
+                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
+                >
+                  📋 FAQ
+                </Link>
+                <span className="text-gray-300">•</span>
+                <Link
+                  href="/blog"
+                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
+                >
+                  📚 Mais Artigos
+                </Link>
+                <span className="text-gray-300">•</span>
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
+                >
+                  🏥 Dashboard
+                </Link>
+              </div>
 
               <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div className="flex items-center gap-1">

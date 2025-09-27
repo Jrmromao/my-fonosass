@@ -7,7 +7,7 @@
 
 ## 📚 **Documentation Overview**
 
-This directory contains comprehensive performance optimization documentation for the FonoSaaS application, focusing on the critical Balloon component that serves as the main interactive feature.
+This directory contains comprehensive performance optimization documentation for the Almanaque da Fala application, focusing on the critical Balloon component that serves as the main interactive feature.
 
 ---
 

@@ -1,6 +1,6 @@
 # 💰 AWS RDS Cost Optimization Guide
 
-**FonoSaaS Database Cost Optimization Strategy**
+**Almanaque da Fala Database Cost Optimization Strategy**
 
 ---
 

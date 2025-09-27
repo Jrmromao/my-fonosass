@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     'exercícios fonoaudiológicos',
     'gestão consultório',
   ],
+  alternates: {
+    canonical: 'https://www.almanaquedafala.com.br/blog',
+  },
 };
 
 export default function BlogPage() {

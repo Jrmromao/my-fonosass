@@ -1,4 +1,4 @@
-# FonoSaaS Cursor Templates
+# Almanaque da Fala Cursor Templates
 
 ## 🏗️ Component Templates
 

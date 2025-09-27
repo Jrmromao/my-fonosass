@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * FonoSaaS Session Manager for Cursor AI Learning
+ * Almanaque da Fala Session Manager for Cursor AI Learning
  * Manages development sessions, summaries, and learning context
  */
 
@@ -15,12 +15,17 @@ class SessionManager {
     this.historyDir = path.join(this.sessionsDir, 'history');
     this.contextDir = path.join(this.sessionsDir, 'context');
     this.templatesDir = path.join(this.sessionsDir, 'templates');
-    
+
     this.ensureDirectories();
   }
 
   ensureDirectories() {
-    [this.sessionsDir, this.historyDir, this.contextDir, this.templatesDir].forEach(dir => {
+    [
+      this.sessionsDir,
+      this.historyDir,
+      this.contextDir,
+      this.templatesDir,
+    ].forEach((dir) => {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
@@ -56,7 +61,7 @@ class SessionManager {
       nextSteps: [],
       context: this.gatherDevelopmentContext(sessionData.context || {}),
       summary: '',
-      tags: sessionData.tags || []
+      tags: sessionData.tags || [],
     };
 
     this.saveSession(session);
@@ -81,17 +86,23 @@ class SessionManager {
 
   // List all sessions
   listSessions() {
-    const files = fs.readdirSync(this.historyDir).filter(f => f.endsWith('.json'));
-    return files.map(file => {
-      const session = JSON.parse(fs.readFileSync(path.join(this.historyDir, file), 'utf8'));
-      return {
-        id: session.id,
-        startTime: session.startTime,
-        type: session.type,
-        focus: session.focus,
-        summary: session.summary
-      };
-    }).sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+    const files = fs
+      .readdirSync(this.historyDir)
+      .filter((f) => f.endsWith('.json'));
+    return files
+      .map((file) => {
+        const session = JSON.parse(
+          fs.readFileSync(path.join(this.historyDir, file), 'utf8')
+        );
+        return {
+          id: session.id,
+          startTime: session.startTime,
+          type: session.type,
+          focus: session.focus,
+          summary: session.summary,
+        };
+      })
+      .sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
   }
 
   // Generate session summary
@@ -104,24 +115,27 @@ class SessionManager {
 
     // Update context with current development state
     session.context = this.gatherDevelopmentContext(session.context);
-    
+
     // Auto-detect achievements, challenges, and learnings from git and file changes
     this.autoDetectSessionData(session);
-    
+
     const summary = this.createSummaryTemplate(session);
     session.summary = summary;
     session.endTime = new Date().toISOString();
-    session.duration = this.calculateDuration(session.startTime, session.endTime);
-    
+    session.duration = this.calculateDuration(
+      session.startTime,
+      session.endTime
+    );
+
     this.saveSession(session);
-    
+
     // Save summary to context directory for Cursor AI
     const summaryFile = path.join(this.contextDir, `${sessionId}_summary.md`);
     fs.writeFileSync(summaryFile, summary);
-    
+
     console.log(`📋 Summary generated: ${sessionId}`);
     console.log(`📁 Summary saved to: ${summaryFile}`);
-    
+
     return summary;
   }
 
@@ -138,9 +152,9 @@ class SessionManager {
       untrackedFiles: this.getUntrackedFiles(),
       packageJson: this.getPackageInfo(),
       nodeVersion: process.version,
-      platform: process.platform
+      platform: process.platform,
     };
-    
+
     return context;
   }
 
@@ -149,27 +163,33 @@ class SessionManager {
     // Detect file modifications
     const modifiedFiles = this.getModifiedFiles();
     const untrackedFiles = this.getUntrackedFiles();
-    
+
     if (modifiedFiles.length > 0) {
-      session.filesModified = [...new Set([...session.filesModified, ...modifiedFiles])];
+      session.filesModified = [
+        ...new Set([...session.filesModified, ...modifiedFiles]),
+      ];
     }
-    
+
     if (untrackedFiles.length > 0) {
-      session.filesModified = [...new Set([...session.filesModified, ...untrackedFiles])];
+      session.filesModified = [
+        ...new Set([...session.filesModified, ...untrackedFiles]),
+      ];
     }
-    
+
     // Detect git changes
     const gitChanges = this.getGitChanges();
     if (gitChanges.length > 0) {
-      session.codeChanges = [...new Set([...session.codeChanges, ...gitChanges])];
+      session.codeChanges = [
+        ...new Set([...session.codeChanges, ...gitChanges]),
+      ];
     }
-    
+
     // Auto-generate achievements based on activity
     this.autoGenerateAchievements(session);
-    
+
     // Auto-generate learnings based on file types and changes
     this.autoGenerateLearnings(session);
-    
+
     // Auto-generate challenges based on error patterns
     this.autoGenerateChallenges(session);
   }
@@ -177,69 +197,95 @@ class SessionManager {
   // Auto-generate achievements based on development activity
   autoGenerateAchievements(session) {
     const achievements = [];
-    
+
     if (session.filesModified.length > 0) {
-      achievements.push(`Modified ${session.filesModified.length} file(s): ${session.filesModified.slice(0, 3).join(', ')}${session.filesModified.length > 3 ? '...' : ''}`);
+      achievements.push(
+        `Modified ${session.filesModified.length} file(s): ${session.filesModified.slice(0, 3).join(', ')}${session.filesModified.length > 3 ? '...' : ''}`
+      );
     }
-    
+
     if (session.codeChanges.length > 0) {
       achievements.push(`Made ${session.codeChanges.length} git change(s)`);
     }
-    
+
     // Detect specific types of work
-    const hasApiChanges = session.filesModified.some(file => file.includes('/api/'));
-    const hasComponentChanges = session.filesModified.some(file => file.includes('/components/'));
-    const hasTestChanges = session.filesModified.some(file => file.includes('.test.') || file.includes('.spec.'));
-    
+    const hasApiChanges = session.filesModified.some((file) =>
+      file.includes('/api/')
+    );
+    const hasComponentChanges = session.filesModified.some((file) =>
+      file.includes('/components/')
+    );
+    const hasTestChanges = session.filesModified.some(
+      (file) => file.includes('.test.') || file.includes('.spec.')
+    );
+
     if (hasApiChanges) achievements.push('Worked on API endpoints');
     if (hasComponentChanges) achievements.push('Updated React components');
     if (hasTestChanges) achievements.push('Modified test files');
-    
-    session.achievements = [...new Set([...session.achievements, ...achievements])];
+
+    session.achievements = [
+      ...new Set([...session.achievements, ...achievements]),
+    ];
   }
 
   // Auto-generate learnings based on file types and changes
   autoGenerateLearnings(session) {
     const learnings = [];
-    
+
     // Analyze file types to infer learning areas
-    const fileTypes = new Set(session.filesModified.map(file => path.extname(file)));
-    
-    if (fileTypes.has('.tsx')) learnings.push('Worked with React TypeScript components');
+    const fileTypes = new Set(
+      session.filesModified.map((file) => path.extname(file))
+    );
+
+    if (fileTypes.has('.tsx'))
+      learnings.push('Worked with React TypeScript components');
     if (fileTypes.has('.ts')) learnings.push('Developed TypeScript modules');
     if (fileTypes.has('.json')) learnings.push('Updated configuration files');
     if (fileTypes.has('.md')) learnings.push('Updated documentation');
-    
+
     // Analyze directory structure for context
-    const hasApiWork = session.filesModified.some(file => file.includes('/api/'));
-    const hasComponentWork = session.filesModified.some(file => file.includes('/components/'));
-    const hasTestWork = session.filesModified.some(file => file.includes('/tests/') || file.includes('/__tests__/'));
-    
+    const hasApiWork = session.filesModified.some((file) =>
+      file.includes('/api/')
+    );
+    const hasComponentWork = session.filesModified.some((file) =>
+      file.includes('/components/')
+    );
+    const hasTestWork = session.filesModified.some(
+      (file) => file.includes('/tests/') || file.includes('/__tests__/')
+    );
+
     if (hasApiWork) learnings.push('Focused on backend API development');
-    if (hasComponentWork) learnings.push('Focused on frontend component development');
+    if (hasComponentWork)
+      learnings.push('Focused on frontend component development');
     if (hasTestWork) learnings.push('Worked on testing infrastructure');
-    
+
     session.learnings = [...new Set([...session.learnings, ...learnings])];
   }
 
   // Auto-generate challenges based on error patterns
   autoGenerateChallenges(session) {
     const challenges = [];
-    
+
     // Check for common development challenges based on file patterns
-    const hasConfigChanges = session.filesModified.some(file => 
-      file.includes('config') || file.includes('.env') || file.includes('package.json')
+    const hasConfigChanges = session.filesModified.some(
+      (file) =>
+        file.includes('config') ||
+        file.includes('.env') ||
+        file.includes('package.json')
     );
-    
+
     if (hasConfigChanges) {
       challenges.push('Configuration management and environment setup');
     }
-    
-    const hasMultipleFileTypes = new Set(session.filesModified.map(file => path.extname(file))).size > 3;
+
+    const hasMultipleFileTypes =
+      new Set(session.filesModified.map((file) => path.extname(file))).size > 3;
     if (hasMultipleFileTypes) {
-      challenges.push('Multi-technology integration across different file types');
+      challenges.push(
+        'Multi-technology integration across different file types'
+      );
     }
-    
+
     session.challenges = [...new Set([...session.challenges, ...challenges])];
   }
 
@@ -257,8 +303,12 @@ class SessionManager {
   getRecentCommits(count = 5) {
     try {
       const { execSync } = require('child_process');
-      const commits = execSync(`git log --oneline -n ${count}`, { encoding: 'utf8' }).trim().split('\n');
-      return commits.map(commit => commit.trim()).filter(commit => commit);
+      const commits = execSync(`git log --oneline -n ${count}`, {
+        encoding: 'utf8',
+      })
+        .trim()
+        .split('\n');
+      return commits.map((commit) => commit.trim()).filter((commit) => commit);
     } catch (error) {
       return [];
     }
@@ -268,11 +318,14 @@ class SessionManager {
   getModifiedFiles() {
     try {
       const { execSync } = require('child_process');
-      const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
-      return status.split('\n')
-        .filter(line => line.startsWith(' M') || line.startsWith('M '))
-        .map(line => line.substring(3).trim())
-        .filter(file => file);
+      const status = execSync('git status --porcelain', {
+        encoding: 'utf8',
+      }).trim();
+      return status
+        .split('\n')
+        .filter((line) => line.startsWith(' M') || line.startsWith('M '))
+        .map((line) => line.substring(3).trim())
+        .filter((file) => file);
     } catch (error) {
       return [];
     }
@@ -282,11 +335,14 @@ class SessionManager {
   getUntrackedFiles() {
     try {
       const { execSync } = require('child_process');
-      const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
-      return status.split('\n')
-        .filter(line => line.startsWith('??'))
-        .map(line => line.substring(3).trim())
-        .filter(file => file);
+      const status = execSync('git status --porcelain', {
+        encoding: 'utf8',
+      }).trim();
+      return status
+        .split('\n')
+        .filter((line) => line.startsWith('??'))
+        .map((line) => line.substring(3).trim())
+        .filter((file) => file);
     } catch (error) {
       return [];
     }
@@ -296,8 +352,10 @@ class SessionManager {
   getGitChanges() {
     try {
       const { execSync } = require('child_process');
-      const changes = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' }).trim();
-      return changes.split('\n').filter(change => change.trim());
+      const changes = execSync('git diff --name-only HEAD~1', {
+        encoding: 'utf8',
+      }).trim();
+      return changes.split('\n').filter((change) => change.trim());
     } catch (error) {
       return [];
     }
@@ -314,7 +372,7 @@ class SessionManager {
           version: packageData.version,
           scripts: packageData.scripts || {},
           dependencies: Object.keys(packageData.dependencies || {}),
-          devDependencies: Object.keys(packageData.devDependencies || {})
+          devDependencies: Object.keys(packageData.devDependencies || {}),
         };
       }
     } catch (error) {
@@ -335,9 +393,12 @@ class SessionManager {
 
   // Create summary template
   createSummaryTemplate(session) {
-    const hasActivity = session.achievements.length > 0 || session.filesModified.length > 0 || session.codeChanges.length > 0;
+    const hasActivity =
+      session.achievements.length > 0 ||
+      session.filesModified.length > 0 ||
+      session.codeChanges.length > 0;
     const context = session.context || {};
-    
+
     const template = `# 🧠 Session Summary: ${session.id}
 
 **Date**: ${new Date(session.startTime).toLocaleDateString('pt-BR')}
@@ -347,47 +408,51 @@ class SessionManager {
 **Git Branch**: ${context.gitBranch || 'unknown'}
 
 ## 🎯 Goals
-${session.goals.map(goal => `- ${goal}`).join('\n') || '- No specific goals set'}
+${session.goals.map((goal) => `- ${goal}`).join('\n') || '- No specific goals set'}
 
 ## ✅ Achievements
-${session.achievements.map(achievement => `- ${achievement}`).join('\n') || '- No achievements recorded'}
+${session.achievements.map((achievement) => `- ${achievement}`).join('\n') || '- No achievements recorded'}
 
 ## 🚧 Challenges Faced
-${session.challenges.map(challenge => `- ${challenge}`).join('\n') || '- No challenges recorded'}
+${session.challenges.map((challenge) => `- ${challenge}`).join('\n') || '- No challenges recorded'}
 
 ## 📚 Key Learnings
-${session.learnings.map(learning => `- ${learning}`).join('\n') || '- No learnings recorded'}
+${session.learnings.map((learning) => `- ${learning}`).join('\n') || '- No learnings recorded'}
 
 ## ❌ Mistakes Made
-${session.mistakes.map(mistake => `- ${mistake}`).join('\n') || '- No mistakes recorded'}
+${session.mistakes.map((mistake) => `- ${mistake}`).join('\n') || '- No mistakes recorded'}
 
 ## 🔧 Solutions Applied
-${session.solutions.map(solution => `- ${solution}`).join('\n') || '- No solutions recorded'}
+${session.solutions.map((solution) => `- ${solution}`).join('\n') || '- No solutions recorded'}
 
 ## 📝 Code Changes
-${session.codeChanges.map(change => `- ${change}`).join('\n') || '- No code changes recorded'}
+${session.codeChanges.map((change) => `- ${change}`).join('\n') || '- No code changes recorded'}
 
 ## 📁 Files Modified
-${session.filesModified.map(file => `- ${file}`).join('\n') || '- No files modified'}
+${session.filesModified.map((file) => `- ${file}`).join('\n') || '- No files modified'}
 
 ## 🧪 Tests Run
-${session.testsRun.map(test => `- ${test}`).join('\n') || '- No tests run'}
+${session.testsRun.map((test) => `- ${test}`).join('\n') || '- No tests run'}
 
 ## 🏗️ Build Status
 ${session.buildStatus || 'Not checked'}
 
 ## 🚀 Next Steps
-${session.nextSteps.map(step => `- ${step}`).join('\n') || '- No next steps defined'}
+${session.nextSteps.map((step) => `- ${step}`).join('\n') || '- No next steps defined'}
 
 ## 🏷️ Tags
-${session.tags.map(tag => `#${tag}`).join(' ') || 'No tags'}
+${session.tags.map((tag) => `#${tag}`).join(' ') || 'No tags'}
 
 ## 📊 Development Context
-${hasActivity ? `
+${
+  hasActivity
+    ? `
 ### 🔄 Recent Git Activity
-${context.recentCommits && context.recentCommits.length > 0 ? 
-  context.recentCommits.map(commit => `- ${commit}`).join('\n') : 
-  '- No recent commits'}
+${
+  context.recentCommits && context.recentCommits.length > 0
+    ? context.recentCommits.map((commit) => `- ${commit}`).join('\n')
+    : '- No recent commits'
+}
 
 ### 📂 Working Directory
 \`${context.workingDirectory || 'Unknown'}\`
@@ -404,16 +469,25 @@ ${context.gitStatus || 'No git status available'}
 - **Platform**: ${context.platform || 'Unknown'}
 
 ### 🛠️ Available Scripts
-${context.packageJson?.scripts ? Object.keys(context.packageJson.scripts).slice(0, 10).map(script => `- \`${script}\``).join('\n') : '- No scripts available'}
-` : `
+${
+  context.packageJson?.scripts
+    ? Object.keys(context.packageJson.scripts)
+        .slice(0, 10)
+        .map((script) => `- \`${script}\``)
+        .join('\n')
+    : '- No scripts available'
+}
+`
+    : `
 ### 📊 Context
 \`\`\`json
 ${JSON.stringify(session.context, null, 2)}
 \`\`\`
-`}
+`
+}
 
 ---
-*Generated by FonoSaaS Session Manager - Enhanced with Auto-Detection*
+*Generated by Almanaque da Fala Session Manager - Enhanced with Auto-Detection*
 `;
 
     return template;
@@ -427,7 +501,7 @@ ${JSON.stringify(session.context, null, 2)}
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const remainingMins = diffMins % 60;
-    
+
     if (diffHours > 0) {
       return `${diffHours}h ${remainingMins}m`;
     }
@@ -438,7 +512,7 @@ ${JSON.stringify(session.context, null, 2)}
   generateLearningContext() {
     const sessions = this.listSessions();
     const recentSessions = sessions.slice(0, 10); // Last 10 sessions
-    
+
     const context = {
       totalSessions: sessions.length,
       recentSessions: recentSessions.length,
@@ -446,16 +520,16 @@ ${JSON.stringify(session.context, null, 2)}
       commonSolutions: this.extractCommonSolutions(),
       frequentChallenges: this.extractFrequentChallenges(),
       learningPatterns: this.extractLearningPatterns(),
-      sessionSummaries: recentSessions.map(s => ({
+      sessionSummaries: recentSessions.map((s) => ({
         id: s.id,
         focus: s.focus,
-        summary: s.summary
-      }))
+        summary: s.summary,
+      })),
     };
 
     const contextFile = path.join(this.contextDir, 'learning_context.json');
     fs.writeFileSync(contextFile, JSON.stringify(context, null, 2));
-    
+
     console.log('🧠 Learning context generated for Cursor AI');
     return context;
   }
@@ -464,8 +538,8 @@ ${JSON.stringify(session.context, null, 2)}
   extractCommonMistakes() {
     const sessions = this.listSessions();
     const allMistakes = [];
-    
-    sessions.forEach(session => {
+
+    sessions.forEach((session) => {
       const fullSession = this.loadSession(session.id);
       if (fullSession.mistakes) {
         allMistakes.push(...fullSession.mistakes);
@@ -474,12 +548,12 @@ ${JSON.stringify(session.context, null, 2)}
 
     // Count frequency
     const mistakeCount = {};
-    allMistakes.forEach(mistake => {
+    allMistakes.forEach((mistake) => {
       mistakeCount[mistake] = (mistakeCount[mistake] || 0) + 1;
     });
 
     return Object.entries(mistakeCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([mistake, count]) => ({ mistake, count }));
   }
@@ -488,8 +562,8 @@ ${JSON.stringify(session.context, null, 2)}
   extractCommonSolutions() {
     const sessions = this.listSessions();
     const allSolutions = [];
-    
-    sessions.forEach(session => {
+
+    sessions.forEach((session) => {
       const fullSession = this.loadSession(session.id);
       if (fullSession.solutions) {
         allSolutions.push(...fullSession.solutions);
@@ -497,12 +571,12 @@ ${JSON.stringify(session.context, null, 2)}
     });
 
     const solutionCount = {};
-    allSolutions.forEach(solution => {
+    allSolutions.forEach((solution) => {
       solutionCount[solution] = (solutionCount[solution] || 0) + 1;
     });
 
     return Object.entries(solutionCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([solution, count]) => ({ solution, count }));
   }
@@ -511,8 +585,8 @@ ${JSON.stringify(session.context, null, 2)}
   extractFrequentChallenges() {
     const sessions = this.listSessions();
     const allChallenges = [];
-    
-    sessions.forEach(session => {
+
+    sessions.forEach((session) => {
       const fullSession = this.loadSession(session.id);
       if (fullSession.challenges) {
         allChallenges.push(...fullSession.challenges);
@@ -520,12 +594,12 @@ ${JSON.stringify(session.context, null, 2)}
     });
 
     const challengeCount = {};
-    allChallenges.forEach(challenge => {
+    allChallenges.forEach((challenge) => {
       challengeCount[challenge] = (challengeCount[challenge] || 0) + 1;
     });
 
     return Object.entries(challengeCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([challenge, count]) => ({ challenge, count }));
   }
@@ -537,7 +611,7 @@ ${JSON.stringify(session.context, null, 2)}
       mostProductiveTime: this.analyzeProductiveTime(sessions),
       commonFocusAreas: this.analyzeFocusAreas(sessions),
       sessionLengths: this.analyzeSessionLengths(sessions),
-      successFactors: this.analyzeSuccessFactors(sessions)
+      successFactors: this.analyzeSuccessFactors(sessions),
     };
 
     return patterns;
@@ -546,13 +620,13 @@ ${JSON.stringify(session.context, null, 2)}
   // Analyze productive time
   analyzeProductiveTime(sessions) {
     const hourCount = {};
-    sessions.forEach(session => {
+    sessions.forEach((session) => {
       const hour = new Date(session.startTime).getHours();
       hourCount[hour] = (hourCount[hour] || 0) + 1;
     });
 
     return Object.entries(hourCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .map(([hour, count]) => ({ hour: `${hour}:00`, count }));
   }
@@ -560,30 +634,30 @@ ${JSON.stringify(session.context, null, 2)}
   // Analyze focus areas
   analyzeFocusAreas(sessions) {
     const focusCount = {};
-    sessions.forEach(session => {
+    sessions.forEach((session) => {
       focusCount[session.focus] = (focusCount[session.focus] || 0) + 1;
     });
 
     return Object.entries(focusCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([focus, count]) => ({ focus, count }));
   }
 
   // Analyze session lengths
   analyzeSessionLengths(sessions) {
-    const lengths = sessions.map(session => {
+    const lengths = sessions.map((session) => {
       const fullSession = this.loadSession(session.id);
       return fullSession.duration || 'Unknown';
     });
 
     const lengthCount = {};
-    lengths.forEach(length => {
+    lengths.forEach((length) => {
       lengthCount[length] = (lengthCount[length] || 0) + 1;
     });
 
     return Object.entries(lengthCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([length, count]) => ({ length, count }));
   }
@@ -591,14 +665,14 @@ ${JSON.stringify(session.context, null, 2)}
   // Analyze success factors
   analyzeSuccessFactors(sessions) {
     const successFactors = [];
-    sessions.forEach(session => {
+    sessions.forEach((session) => {
       const fullSession = this.loadSession(session.id);
       if (fullSession.achievements && fullSession.achievements.length > 0) {
         successFactors.push({
           sessionId: session.id,
           achievements: fullSession.achievements.length,
           challenges: fullSession.challenges?.length || 0,
-          learnings: fullSession.learnings?.length || 0
+          learnings: fullSession.learnings?.length || 0,
         });
       }
     });
@@ -610,7 +684,7 @@ ${JSON.stringify(session.context, null, 2)}
   async startInteractiveSession() {
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
 
     console.log('🚀 Starting interactive session management...\n');
@@ -618,7 +692,8 @@ ${JSON.stringify(session.context, null, 2)}
     const session = this.createSession();
     console.log(`📝 New session created: ${session.id}\n`);
 
-    const question = (prompt) => new Promise(resolve => rl.question(prompt, resolve));
+    const question = (prompt) =>
+      new Promise((resolve) => rl.question(prompt, resolve));
 
     try {
       // Get session focus
@@ -626,7 +701,9 @@ ${JSON.stringify(session.context, null, 2)}
       session.focus = focus;
 
       // Get goals
-      console.log('\n📋 What are your goals for this session? (Enter one per line, empty line to finish)');
+      console.log(
+        '\n📋 What are your goals for this session? (Enter one per line, empty line to finish)'
+      );
       let goal = await question('Goal: ');
       while (goal.trim()) {
         session.goals.push(goal.trim());
@@ -635,7 +712,10 @@ ${JSON.stringify(session.context, null, 2)}
 
       // Get tags
       const tags = await question('\n🏷️ Enter tags (comma-separated): ');
-      session.tags = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      session.tags = tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter((tag) => tag);
 
       this.saveSession(session);
       console.log('\n✅ Session initialized! Start coding...\n');
@@ -643,7 +723,7 @@ ${JSON.stringify(session.context, null, 2)}
       // Session monitoring loop
       while (true) {
         const command = await question('💬 Enter command (help for options): ');
-        
+
         if (command === 'help') {
           this.showHelp();
         } else if (command === 'achievement') {
@@ -680,7 +760,6 @@ ${JSON.stringify(session.context, null, 2)}
           console.log('❓ Unknown command. Type "help" for options.');
         }
       }
-
     } finally {
       rl.close();
     }
@@ -688,7 +767,7 @@ ${JSON.stringify(session.context, null, 2)}
 
   showHelp() {
     console.log(`
-🤖 FonoSaaS Session Manager Commands:
+🤖 Almanaque da Fala Session Manager Commands:
 
 📝 Session Management:
   achievement  - Record an achievement
@@ -725,8 +804,10 @@ if (require.main === module) {
     case 'list':
       const sessions = sessionManager.listSessions();
       console.log('📋 Recent Sessions:');
-      sessions.forEach(session => {
-        console.log(`  ${session.id} - ${session.focus} (${new Date(session.startTime).toLocaleDateString('pt-BR')})`);
+      sessions.forEach((session) => {
+        console.log(
+          `  ${session.id} - ${session.focus} (${new Date(session.startTime).toLocaleDateString('pt-BR')})`
+        );
       });
       break;
     case 'summary':
@@ -743,26 +824,32 @@ if (require.main === module) {
     case 'mistakes':
       const context = sessionManager.generateLearningContext();
       console.log('❌ Common Mistakes:');
-      context.commonMistakes.forEach(({mistake, count}) => {
+      context.commonMistakes.forEach(({ mistake, count }) => {
         console.log(`  ${mistake} (${count} times)`);
       });
       break;
     case 'solutions':
       const context2 = sessionManager.generateLearningContext();
       console.log('🔧 Common Solutions:');
-      context2.commonSolutions.forEach(({solution, count}) => {
+      context2.commonSolutions.forEach(({ solution, count }) => {
         console.log(`  ${solution} (${count} times)`);
       });
       break;
     case 'patterns':
       const context3 = sessionManager.generateLearningContext();
       console.log('📊 Learning Patterns:');
-      console.log('Most Productive Times:', context3.learningPatterns.mostProductiveTime);
-      console.log('Common Focus Areas:', context3.learningPatterns.commonFocusAreas);
+      console.log(
+        'Most Productive Times:',
+        context3.learningPatterns.mostProductiveTime
+      );
+      console.log(
+        'Common Focus Areas:',
+        context3.learningPatterns.commonFocusAreas
+      );
       break;
     default:
       console.log(`
-🤖 FonoSaaS Session Manager
+🤖 Almanaque da Fala Session Manager
 
 Usage: node session-manager.js <command>
 

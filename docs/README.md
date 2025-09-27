@@ -1,6 +1,6 @@
-# 📚 FonoSaaS Documentation
+# 📚 Almanaque da Fala Documentation
 
-**Documentação completa do projeto FonoSaaS**
+**Documentação completa do projeto Almanaque da Fala**
 
 ---
 
@@ -100,4 +100,4 @@ Esta documentação é atualizada sempre que:
 
 ---
 
-**Lembre-se: Esta documentação é essencial para manter a qualidade, segurança e conformidade do projeto FonoSaaS. Sempre consulte-a antes de fazer alterações significativas!**
+**Lembre-se: Esta documentação é essencial para manter a qualidade, segurança e conformidade do projeto Almanaque da Fala. Sempre consulte-a antes de fazer alterações significativas!**

@@ -1,4 +1,4 @@
-# 🧠 Session Management Guide for FonoSaaS
+# 🧠 Session Management Guide for Almanaque da Fala
 
 **Complete guide to using session management for enhanced Cursor AI learning**
 

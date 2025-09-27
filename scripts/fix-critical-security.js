@@ -2,9 +2,9 @@
 
 /**
  * Critical Security Fixes Script
- * 
+ *
  * This script automatically fixes the most critical security vulnerabilities
- * identified in the FonoSaaS application.
+ * identified in the Almanaque da Fala application.
  */
 
 const fs = require('fs');
@@ -17,27 +17,28 @@ console.log('1. Fixing hardcoded credentials in onboarding route...');
 const onboardingPath = 'app/api/onboarding/route.ts';
 if (fs.existsSync(onboardingPath)) {
   let content = fs.readFileSync(onboardingPath, 'utf8');
-  
+
   // Replace hardcoded password
   content = content.replace(
     /password: "MERDAP@ssword2023!",/g,
     'password: generateSecurePassword(),'
   );
-  
+
   // Add password generation function
   if (!content.includes('generateSecurePassword')) {
-    const importSection = content.indexOf('import { prisma } from \'@/app/db\';');
+    const importSection = content.indexOf("import { prisma } from '@/app/db';");
     if (importSection !== -1) {
       const insertPoint = content.indexOf('\n', importSection) + 1;
-      content = content.slice(0, insertPoint) + 
+      content =
+        content.slice(0, insertPoint) +
         '\n// Generate secure password for test users\n' +
         'const generateSecurePassword = () => {\n' +
-        '  return Math.random().toString(36).slice(-12) + \'@2024!\';\n' +
+        "  return Math.random().toString(36).slice(-12) + '@2024!';\n" +
         '};\n\n' +
         content.slice(insertPoint);
     }
   }
-  
+
   fs.writeFileSync(onboardingPath, content);
   console.log('   ✅ Fixed hardcoded password in onboarding route');
 } else {
@@ -49,32 +50,35 @@ console.log('2. Fixing hardcoded credentials in create-users route...');
 const createUsersPath = 'app/api/create-users/route.ts';
 if (fs.existsSync(createUsersPath)) {
   let content = fs.readFileSync(createUsersPath, 'utf8');
-  
+
   // Replace hardcoded email and password
   content = content.replace(
     /email: `ecokeepr@gmail.com`,/g,
     'email: `test-${Date.now()}@example.com`,'
   );
-  
+
   content = content.replace(
     /password: 'SecureP@ssword2023!',/g,
     'password: generateSecurePassword(),'
   );
-  
+
   // Add password generation function
   if (!content.includes('generateSecurePassword')) {
-    const importSection = content.indexOf('import { NextResponse } from "next/server";');
+    const importSection = content.indexOf(
+      'import { NextResponse } from "next/server";'
+    );
     if (importSection !== -1) {
       const insertPoint = content.indexOf('\n', importSection) + 1;
-      content = content.slice(0, insertPoint) + 
+      content =
+        content.slice(0, insertPoint) +
         '\n// Generate secure password for test users\n' +
         'const generateSecurePassword = () => {\n' +
-        '  return Math.random().toString(36).slice(-12) + \'@2024!\';\n' +
+        "  return Math.random().toString(36).slice(-12) + '@2024!';\n" +
         '};\n\n' +
         content.slice(insertPoint);
     }
   }
-  
+
   fs.writeFileSync(createUsersPath, content);
   console.log('   ✅ Fixed hardcoded credentials in create-users route');
 } else {
@@ -86,7 +90,7 @@ console.log('3. Adding security headers to Next.js config...');
 const nextConfigPath = 'next.config.ts';
 if (fs.existsSync(nextConfigPath)) {
   let content = fs.readFileSync(nextConfigPath, 'utf8');
-  
+
   // Add security headers if not already present
   if (!content.includes('X-Frame-Options')) {
     const configEnd = content.lastIndexOf('}');
@@ -125,8 +129,13 @@ if (fs.existsSync(nextConfigPath)) {
       },
     ];
   },`;
-      
-      content = content.slice(0, configEnd) + ',' + securityHeaders + '\n' + content.slice(configEnd);
+
+      content =
+        content.slice(0, configEnd) +
+        ',' +
+        securityHeaders +
+        '\n' +
+        content.slice(configEnd);
       fs.writeFileSync(nextConfigPath, content);
       console.log('   ✅ Added security headers to Next.js config');
     }
@@ -142,7 +151,7 @@ console.log('4. Adding authentication to test API route...');
 const testApiPath = 'app/api/test/route.ts';
 if (fs.existsSync(testApiPath)) {
   let content = fs.readFileSync(testApiPath, 'utf8');
-  
+
   // Add authentication if not present
   if (!content.includes('auth()')) {
     content = content.replace(
@@ -157,7 +166,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }`
     );
-    
+
     // Add error handling
     if (!content.includes('catch (error)')) {
       content = content.replace(
@@ -169,7 +178,7 @@ export async function GET() {
   }`
       );
     }
-    
+
     fs.writeFileSync(testApiPath, content);
     console.log('   ✅ Added authentication to test API route');
   } else {
@@ -184,7 +193,7 @@ console.log('5. Creating security middleware...');
 const middlewarePath = 'middleware.ts';
 if (fs.existsSync(middlewarePath)) {
   let content = fs.readFileSync(middlewarePath, 'utf8');
-  
+
   // Add rate limiting if not present
   if (!content.includes('rateLimit')) {
     const rateLimitCode = `
@@ -212,12 +221,16 @@ const rateLimit = {
     return { success: true };
   }
 };`;
-    
+
     // Insert rate limiting code before the main middleware function
     const middlewareStart = content.indexOf('export default clerkMiddleware');
     if (middlewareStart !== -1) {
-      content = content.slice(0, middlewareStart) + rateLimitCode + '\n\n' + content.slice(middlewareStart);
-      
+      content =
+        content.slice(0, middlewareStart) +
+        rateLimitCode +
+        '\n\n' +
+        content.slice(middlewareStart);
+
       // Add rate limiting check in the middleware
       content = content.replace(
         'export default clerkMiddleware(async (auth, req: NextRequest) => {',
@@ -230,7 +243,7 @@ const rateLimit = {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }`
       );
-      
+
       fs.writeFileSync(middlewarePath, content);
       console.log('   ✅ Added rate limiting to middleware');
     }
@@ -302,12 +315,13 @@ console.log('7. Adding security scripts to package.json...');
 const packageJsonPath = 'package.json';
 if (fs.existsSync(packageJsonPath)) {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  
+
   if (!packageJson.scripts['security:test']) {
     packageJson.scripts['security:test'] = 'bash scripts/security-test.sh';
     packageJson.scripts['security:audit'] = 'npm audit --audit-level=moderate';
-    packageJson.scripts['security:fix'] = 'node scripts/fix-critical-security.js';
-    
+    packageJson.scripts['security:fix'] =
+      'node scripts/fix-critical-security.js';
+
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
     console.log('   ✅ Added security scripts to package.json');
   } else {
@@ -322,6 +336,12 @@ console.log('\n📋 Next steps:');
 console.log('1. Run: yarn security:test');
 console.log('2. Run: yarn security:audit');
 console.log('3. Test the application thoroughly');
-console.log('4. Review the security audit report: docs/security/security-audit-report.md');
-console.log('5. Implement the full remediation plan: docs/security/security-remediation-plan.md');
-console.log('\n⚠️  IMPORTANT: These are basic fixes. Please implement the full security remediation plan for complete protection.');
+console.log(
+  '4. Review the security audit report: docs/security/security-audit-report.md'
+);
+console.log(
+  '5. Implement the full remediation plan: docs/security/security-remediation-plan.md'
+);
+console.log(
+  '\n⚠️  IMPORTANT: These are basic fixes. Please implement the full security remediation plan for complete protection.'
+);

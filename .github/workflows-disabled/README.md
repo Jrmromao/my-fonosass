@@ -1,6 +1,6 @@
 # GitHub Actions Workflows - Simplified
 
-This directory contains **3 simple, focused workflows** for the FonoSaaS application.
+This directory contains **3 simple, focused workflows** for the Almanaque da Fala application.
 
 ## 🎯 **Workflow Overview**
 

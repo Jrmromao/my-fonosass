@@ -1,4 +1,4 @@
-# TERMOS DE USO - FONOSAAS
+# TERMOS DE USO - ALMANAQUE DA FALA
 
 **Última atualização**: 15 de dezembro de 2024  
 **Versão**: 1.0  
@@ -9,14 +9,14 @@
 ## 1. **INFORMAÇÕES GERAIS**
 
 ### 1.1 **Identificação da Empresa**
-- **Razão Social**: FonoSaaS Tecnologia Ltda.
+- **Razão Social**: Almanaque da Fala Tecnologia Ltda.
 - **CNPJ**: 12.345.678/0001-90
 - **Endereço**: Rua das Flores, 123, Sala 456, São Paulo - SP, CEP: 01234-567
-- **E-mail**: contato@fonosaas.com.br
+- **E-mail**: contato@almanaquedafala.com.br
 - **Telefone**: (11) 99999-9999
 
 ### 1.2 **Objeto dos Termos**
-Estes Termos de Uso regulam o uso da plataforma FonoSaaS, incluindo:
+Estes Termos de Uso regulam o uso da plataforma Almanaque da Fala, incluindo:
 - Sistema de gestão para fonoaudiólogos
 - Prontuários digitais de pacientes
 - Ferramentas terapêuticas interativas
@@ -27,7 +27,7 @@ Estes Termos de Uso regulam o uso da plataforma FonoSaaS, incluindo:
 ## 2. **DEFINIÇÕES**
 
 ### 2.1 **Termos técnicos**
-- **Plataforma**: Sistema FonoSaaS disponível em fonosaas.com.br
+- **Plataforma**: Sistema Almanaque da Fala disponível em almanaquedafala.com.br
 - **Usuário**: Fonoaudiólogo cadastrado na plataforma
 - **Paciente**: Pessoa atendida pelo usuário
 - **Dados pessoais**: Informações que identificam pessoa natural
@@ -131,7 +131,7 @@ Estes Termos de Uso regulam o uso da plataforma FonoSaaS, incluindo:
 
 ## 7. **PROPRIEDADE INTELECTUAL**
 
-### 7.1 **Direitos da FonoSaaS**
+### 7.1 **Direitos do Almanaque da Fala**
 - Software e plataforma
 - Conteúdo educacional
 - Marcas e logotipos
@@ -153,7 +153,7 @@ Estes Termos de Uso regulam o uso da plataforma FonoSaaS, incluindo:
 
 ## 8. **RESPONSABILIDADES E LIMITAÇÕES**
 
-### 8.1 **Responsabilidades da FonoSaaS**
+### 8.1 **Responsabilidades do Almanaque da Fala**
 - Manutenção da plataforma
 - Proteção de dados pessoais
 - Disponibilidade do serviço
@@ -232,7 +232,7 @@ Estes Termos de Uso regulam o uso da plataforma FonoSaaS, incluindo:
 - Eliminação de dados
 
 ### 11.3 **Exercício de direitos**
-- Solicitação via e-mail dpo@fonosaas.com.br
+- Solicitação via e-mail dpo@almanaquedafala.com.br
 - Prazo de resposta: 15 dias
 - Gratuidade do serviço
 - Comprovação de identidade
@@ -291,8 +291,8 @@ Estes Termos de Uso regulam o uso da plataforma FonoSaaS, incluindo:
 - Eficácia das demais cláusulas
 
 ### 14.3 **Contato**
-- **E-mail**: contato@fonosaas.com.br
-- **DPO**: dpo@fonosaas.com.br
+- **E-mail**: contato@almanaquedafala.com.br
+- **DPO**: dpo@almanaquedafala.com.br
 - **Telefone**: (11) 99999-9999
 - **Endereço**: Rua das Flores, 123, Sala 456, São Paulo - SP
 
@@ -300,6 +300,6 @@ Estes Termos de Uso regulam o uso da plataforma FonoSaaS, incluindo:
 
 **Estes Termos de Uso foram elaborados em conformidade com a Lei Geral de Proteção de Dados (Lei 13.709/2018) e demais normas aplicáveis.**
 
-**FonoSaaS Tecnologia Ltda.**  
+**Almanaque da Fala Tecnologia Ltda.**  
 **CNPJ**: 12.345.678/0001-90  
 **São Paulo, 15 de dezembro de 2024**
