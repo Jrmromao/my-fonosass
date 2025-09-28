@@ -254,20 +254,12 @@ export const activitiesColumns = ({
       cell: ({ row }) => {
         const activity = row.original;
         return (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => alert(`Test: ${activity.name}`)}
-              className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
-            >
-              Test
-            </button>
-            <DataTableRowActions
-              row={row}
-              onDelete={onDelete}
-              onView={onView}
-              role={role}
-            />
-          </div>
+          <DataTableRowActions
+            row={row}
+            onDelete={onDelete}
+            onView={onView}
+            role={role}
+          />
         );
       },
     },

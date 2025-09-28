@@ -171,6 +171,7 @@ export const POST = async (request: NextRequest) => {
 
     // Check if user has permission to create resources
     if (user.role !== 'ADMIN') {
+      console.log('User role:', user.role, 'User ID:', user.id);
       return SecurityMiddleware.createErrorResponse(
         'Insufficient permissions',
         403
@@ -252,7 +253,7 @@ export const POST = async (request: NextRequest) => {
     });
 
     // Clear cache
-    await QueryCache.clear('resources:*');
+    await QueryCache.clear();
 
     return SecurityMiddleware.createSecureResponse({
       success: true,

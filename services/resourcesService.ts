@@ -24,6 +24,7 @@ export interface Resource {
   viewUrl: string; // URL to view resource within the app
   thumbnailUrl?: string;
   isFree: boolean; // Whether this is a free resource
+  isPublished: boolean; // Whether this resource is published
   isFeatured: boolean;
   createdAt: Date;
   updatedAt: Date;

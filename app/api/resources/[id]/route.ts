@@ -111,7 +111,7 @@ export const GET = withCaching(
   },
   {
     ttl: RESOURCE_CACHE_TTL,
-    keyGenerator: (req, { params }) => `resource:${params.id}`,
+    keyGenerator: (req) => `resource:${req.url.split('/').pop()}`,
   }
 );
 
@@ -243,8 +243,7 @@ export const PUT = async (
     });
 
     // Clear cache
-    await QueryCache.clear(`resource:${id}`);
-    await QueryCache.clear('resources:*');
+    await QueryCache.clear();
 
     return SecurityMiddleware.createSecureResponse({
       success: true,
@@ -328,8 +327,7 @@ export const DELETE = async (
     });
 
     // Clear cache
-    await QueryCache.clear(`resource:${id}`);
-    await QueryCache.clear('resources:*');
+    await QueryCache.clear();
 
     return SecurityMiddleware.createSecureResponse({
       success: true,
