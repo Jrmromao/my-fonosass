@@ -12,62 +12,62 @@ export async function GET() {
     {
       url: baseUrl,
       lastModified: new Date().toISOString(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 1.0,
     },
     {
       url: `${baseUrl}/blog`,
       lastModified: new Date().toISOString(),
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/faq`,
       lastModified: new Date().toISOString(),
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/contato`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
-      priority: 0.7,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/comunidade`,
       lastModified: new Date().toISOString(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
+      changeFrequency: 'daily',
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/especialistas`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'weekly',
-      priority: 0.7,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/privacidade`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.6,
     },
     {
       url: `${baseUrl}/termos`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.6,
     },
     {
       url: `${baseUrl}/cookies`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.6,
     },
     {
       url: `${baseUrl}/lgpd`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
-      priority: 0.5,
+      priority: 0.6,
     },
   ];
 
@@ -82,24 +82,24 @@ export async function GET() {
   const allPages = [...staticPages, ...blogPages];
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 ${allPages
   .map(
-    (page) => `
-  <url>
+    (page) => `  <url>
     <loc>${page.url}</loc>
     <lastmod>${page.lastModified}</lastmod>
     <changefreq>${page.changeFrequency}</changefreq>
     <priority>${page.priority}</priority>
   </url>`
   )
-  .join('')}
+  .join('\n')}
 </urlset>`;
 
   return new NextResponse(sitemap, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+      'X-Robots-Tag': 'index, follow',
     },
   });
 }

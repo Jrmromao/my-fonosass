@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 
-# Sitemap
+# Sitemaps
 Sitemap: https://www.almanaquedafala.com.br/sitemap.xml
+Sitemap: https://www.almanaquedafala.com.br/sitemap-index.xml
 
 # Disallow admin and private areas
 Disallow: /dashboard/
@@ -14,6 +15,8 @@ Disallow: /data-rights/
 Disallow: /test-consent/
 Disallow: /test-exercises/
 Disallow: /sso-callback/
+Disallow: /_next/
+Disallow: /_vercel/
 
 # Allow important pages
 Allow: /contato
@@ -25,3 +28,15 @@ Allow: /privacidade
 Allow: /termos
 Allow: /cookies
 Allow: /lgpd
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Additional directives for better SEO
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1

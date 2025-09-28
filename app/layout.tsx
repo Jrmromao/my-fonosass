@@ -88,6 +88,9 @@ export const metadata = {
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
   },
+  category: 'healthcare',
+  classification: 'Speech Therapy Software',
+  referrer: 'origin-when-cross-origin',
 };
 
 export default function RootLayout({
@@ -108,6 +111,45 @@ export default function RootLayout({
           />
           <meta name="apple-mobile-web-app-title" content="Almanaque da Fala" />
           <link rel="apple-touch-icon" href="/logo.png" />
+
+          {/* Additional SEO Meta Tags */}
+          <meta name="language" content="pt-BR" />
+          <meta name="geo.region" content="BR" />
+          <meta name="geo.country" content="Brazil" />
+          <meta name="distribution" content="global" />
+          <meta name="rating" content="general" />
+          <meta name="revisit-after" content="1 days" />
+          <meta
+            name="robots"
+            content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+          />
+
+          {/* Structured Data for Better SEO */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'SoftwareApplication',
+                name: 'Almanaque da Fala',
+                description:
+                  'Plataforma SaaS completa para fonoaudiólogos brasileiros',
+                url: 'https://www.almanaquedafala.com.br',
+                applicationCategory: 'HealthApplication',
+                operatingSystem: 'Web',
+                offers: {
+                  '@type': 'Offer',
+                  price: '0',
+                  priceCurrency: 'BRL',
+                },
+                provider: {
+                  '@type': 'Organization',
+                  name: 'Almanaque da Fala',
+                  url: 'https://www.almanaquedafala.com.br',
+                },
+              }),
+            }}
+          />
         </head>
         <body
           className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
