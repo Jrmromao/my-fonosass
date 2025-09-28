@@ -112,6 +112,12 @@ export default function RootLayout({
           <meta name="apple-mobile-web-app-title" content="Almanaque da Fala" />
           <link rel="apple-touch-icon" href="/logo.png" />
 
+          {/* Google Site Verification */}
+          <meta
+            name="google-site-verification"
+            content="ndrWlg9lGtzJgG4xtDqU0dX0E-nqW-QvHwW2uPfPSeY"
+          />
+
           {/* Additional SEO Meta Tags */}
           <meta name="language" content="pt-BR" />
           <meta name="geo.region" content="BR" />
