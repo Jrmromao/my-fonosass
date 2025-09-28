@@ -81,6 +81,7 @@ export const GET = withCaching(
               thumbnailUrl: true,
               isFree: true,
               isFeatured: true,
+              slug: true,
               createdAt: true,
               updatedAt: true,
               createdBy: {

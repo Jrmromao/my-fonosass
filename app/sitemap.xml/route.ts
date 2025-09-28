@@ -1,3 +1,4 @@
+import { prisma } from '@/app/db';
 import { getAllPosts } from '@/lib/blog';
 import { NextResponse } from 'next/server';
 
@@ -85,7 +86,26 @@ export async function GET() {
     priority: 0.8,
   }));
 
-  const allPages = [...staticPages, ...blogPages];
+  // Add resources to sitemap
+  const resources = await prisma.resource.findMany({
+    where: {
+      isPublished: true,
+    },
+    select: {
+      id: true,
+      slug: true,
+      updatedAt: true,
+    },
+  });
+
+  const resourcePages = resources.map((resource) => ({
+    url: `${baseUrl}/recursos/${resource.slug || resource.id}`,
+    lastModified: resource.updatedAt.toISOString(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  const allPages = [...staticPages, ...blogPages, ...resourcePages];
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">

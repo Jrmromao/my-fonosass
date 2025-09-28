@@ -55,7 +55,7 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
             <div className="text-center max-w-4xl mx-auto">
               <div className="mb-6 sm:mb-8">
                 <span className="inline-block px-3 py-1.5 mb-4 sm:mb-6 text-xs sm:text-sm font-medium rounded-full bg-pink-100 text-pink-600">
-                  Blog & Recursos
+                  Blog
                 </span>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 lg:mb-8 leading-tight">
                   Conhecimento que transforma vidas

@@ -254,7 +254,9 @@ model BlogLike {
 model Resource {
   id                 String               @id @default(cuid())
   title              String
+  slug               String?              @unique
   description        String
+  content            String?              @default("")
   type               ResourceType
   category           String
   ageGroup           String

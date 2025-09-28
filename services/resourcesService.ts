@@ -18,6 +18,7 @@ export interface Resource {
   fileSize?: string;
   downloadCount: number;
   viewCount: number;
+  slug: string;
   rating: number;
   tags: string[];
   downloadUrl: string;
@@ -26,6 +27,7 @@ export interface Resource {
   isFree: boolean; // Whether this is a free resource
   isPublished: boolean; // Whether this resource is published
   isFeatured: boolean;
+  content?: string; // Rich text content for the resource
   createdAt: Date;
   updatedAt: Date;
   createdBy?: {
@@ -148,12 +150,38 @@ export class ResourcesService {
 
   public async downloadResource(id: string): Promise<boolean> {
     try {
+      // First record the download
       await this.makeRequest(`/${id}/download`, {
         method: 'POST',
       });
+
+      // Then trigger the actual file download
+      const response = await fetch(`${this.baseUrl}/${id}/file`);
+
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+
+      // Get the filename from the response headers
+      const contentDisposition = response.headers.get('content-disposition');
+      const filename = contentDisposition
+        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+        : `resource-${id}.pdf`;
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
       return true;
     } catch (error) {
-      console.error('Error recording download:', error);
+      console.error('Error downloading resource:', error);
       return false;
     }
   }
@@ -181,6 +209,24 @@ export class ResourcesService {
     }
 
     return this.makeRequest<Resource[]>(`?${params.toString()}`);
+  }
+
+  public async getFreeResourcesWithStats(): Promise<{
+    resources: Resource[];
+    stats: {
+      totalResources: number;
+      totalDownloads: number;
+      averageRating: number;
+    };
+  }> {
+    return this.makeRequest<{
+      resources: Resource[];
+      stats: {
+        totalResources: number;
+        totalDownloads: number;
+        averageRating: number;
+      };
+    }>('/free');
   }
 
   public async rateResource(

@@ -26,15 +26,16 @@ export const GET = withCaching(
       const resource = await QueryCache.get(
         `resource:${id}`,
         async () => {
-          return await prisma.resource.findUnique({
+          return await prisma.resource.findFirst({
             where: {
-              id,
+              OR: [{ id }, { slug: id }],
               isPublished: true,
             },
             select: {
               id: true,
               title: true,
               description: true,
+              content: true,
               type: true,
               category: true,
               ageGroup: true,
