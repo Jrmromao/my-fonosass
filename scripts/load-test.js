@@ -61,18 +61,19 @@ class LoadTester {
 
   async runScenario(scenario) {
     const promises = [];
-    const startTime = performance.now();
-    const endTime = startTime + this.options.duration * 1000;
-
-    // Ramp up phase
     const rampUpInterval =
       (this.options.rampUp * 1000) / this.options.concurrent;
 
     for (let i = 0; i < this.options.concurrent; i++) {
-      setTimeout(() => {
-        const worker = this.createWorker(scenario, endTime);
-        promises.push(worker);
-      }, i * rampUpInterval);
+      const workerPromise = new Promise((resolve) => {
+        setTimeout(() => {
+          const startTime = performance.now();
+          const endTime = startTime + this.options.duration * 1000;
+          const worker = this.createWorker(scenario, endTime);
+          resolve(worker);
+        }, i * rampUpInterval);
+      });
+      promises.push(workerPromise);
     }
 
     // Wait for all workers to complete

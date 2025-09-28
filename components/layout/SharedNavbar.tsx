@@ -65,7 +65,19 @@ export default function SharedNavbar({
               href="/blog"
               className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
             >
-              Blog & Recursos
+              Blog
+            </Link>
+            <Link
+              href="/comunidade"
+              className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
+            >
+              Recursos
+            </Link>
+            <Link
+              href="/especialistas"
+              className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
+            >
+              Especialistas
             </Link>
             <Link
               href="/faq"
@@ -74,16 +86,10 @@ export default function SharedNavbar({
               FAQ
             </Link>
             <Link
-              href="/#assinatura"
+              href="/contato"
               className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
             >
-              Assinatura
-            </Link>
-            <Link
-              href="/#depoimentos"
-              className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
-            >
-              Depoimentos
+              Contato
             </Link>
 
             {isSignedIn ? (
@@ -135,7 +141,21 @@ export default function SharedNavbar({
               className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              Blog & Recursos
+              Blog
+            </Link>
+            <Link
+              href="/comunidade"
+              className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Recursos
+            </Link>
+            <Link
+              href="/especialistas"
+              className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Especialistas
             </Link>
             <Link
               href="/faq"
@@ -145,25 +165,11 @@ export default function SharedNavbar({
               FAQ
             </Link>
             <Link
-              href="/#como-funciona"
+              href="/contato"
               className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              Como Funciona
-            </Link>
-            <Link
-              href="/#assinatura"
-              className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Assinatura
-            </Link>
-            <Link
-              href="/#depoimentos"
-              className="block px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Depoimentos
+              Contato
             </Link>
             <div className="pt-4 space-y-3">
               {isSignedIn ? (

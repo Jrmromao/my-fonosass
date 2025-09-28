@@ -40,7 +40,12 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
         {/* Breadcrumbs */}
         <div className="bg-white border-b border-gray-100 pt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <Breadcrumbs items={[{ name: 'Blog', href: '/blog' }]} />
+            <Breadcrumbs
+              items={[
+                { name: 'Home', href: '/' },
+                { name: 'Blog', href: '/blog' },
+              ]}
+            />
           </div>
         </div>
 

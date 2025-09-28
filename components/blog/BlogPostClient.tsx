@@ -8,7 +8,6 @@ import { ptBR } from 'date-fns/locale';
 import { marked } from 'marked';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Breadcrumbs from '../seo/Breadcrumbs';
 import BackToBlogButton from './BackToBlogButton';
 import ConversionCTA from './ConversionCTA';
 import ExitIntentPopup from './ExitIntentPopup';
@@ -236,12 +235,13 @@ export default function BlogPostClient({
         {/* Breadcrumbs */}
         <div className="bg-white border-b border-gray-100 pt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <Breadcrumbs
+            {/* <Breadcrumbs
               items={[
+                { name: 'Home', href: '/' },
                 { name: 'Blog', href: '/blog' },
                 { name: post.title, href: `/blog/${post.slug}` },
               ]}
-            />
+            /> */}
           </div>
         </div>
 

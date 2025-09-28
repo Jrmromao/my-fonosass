@@ -43,10 +43,10 @@ export const metadata = {
   },
   metadataBase: new URL('https://www.almanaquedafala.com.br'),
   alternates: {
-    canonical: '/',
+    canonical: 'https://www.almanaquedafala.com.br',
     languages: {
-      'pt-BR': '/',
-      pt: '/', // Fallback for Portuguese
+      'pt-BR': 'https://www.almanaquedafala.com.br',
+      pt: 'https://www.almanaquedafala.com.br', // Fallback for Portuguese
     },
   },
   openGraph: {

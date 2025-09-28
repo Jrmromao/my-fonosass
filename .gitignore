@@ -49,7 +49,5 @@ next-env.d.ts
 /data/
 
 # Cursor AI session data (personal learning data)
-.cursor/sessions/history/
-.cursor/sessions/context/learning_context.json
-.cursor/sessions/context/session-aware-rules.md
-.cursor/sessions/context/quick-reference.md
+.cursor/** 
+

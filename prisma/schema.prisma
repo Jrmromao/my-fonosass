@@ -8,18 +8,22 @@ datasource db {
 }
 
 model User {
-  id                String            @id @default(cuid())
-  email             String            @unique
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  clerkUserId       String            @unique
+  id                String             @id @default(cuid())
+  email             String             @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  clerkUserId       String             @unique
   fullName          String
-  role              UserRole          @default(USER)
+  role              UserRole           @default(USER)
   createdActivities Activity[]
   subscriptions     Subscription?
   consentRecords    ConsentRecord[]
   downloadHistory   DownloadHistory[]
   downloads         Download[]
+  resourceDownloads ResourceDownload[]
+  resourceRatings   ResourceRating[]
+  resourceViews     ResourceView[]
+  createdResources  Resource[]
 
   @@index([createdAt])
   @@index([role])
@@ -206,49 +210,174 @@ model DataRetentionLog {
 }
 
 model BlogPost {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Analytics
-  viewCount   Int      @default(0)
-  likeCount   Int      @default(0)
-  
-  // Relations
-  views       BlogView[]
-  likes       BlogLike[]
-  
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  title     String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  viewCount Int        @default(0)
+  likeCount Int        @default(0)
+  likes     BlogLike[]
+  views     BlogView[]
+
   @@map("blog_posts")
 }
 
 model BlogView {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   postId    String
-  post      BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
   ipAddress String?
   userAgent String?
   referer   String?
-  viewedAt  DateTime  @default(now())
-  
+  viewedAt  DateTime @default(now())
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
   @@index([postId])
   @@index([viewedAt])
   @@map("blog_views")
 }
 
 model BlogLike {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   postId    String
-  post      BlogPost  @relation(fields: [postId], references: [id], onDelete: Cascade)
   ipAddress String?
   userAgent String?
-  likedAt   DateTime  @default(now())
-  
+  likedAt   DateTime @default(now())
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
   @@unique([postId, ipAddress])
   @@index([postId])
   @@index([likedAt])
   @@map("blog_likes")
+}
+
+model Resource {
+  id                 String               @id @default(cuid())
+  title              String
+  description        String
+  type               ResourceType
+  category           String
+  ageGroup           String
+  duration           String?
+  fileSize           String?
+  downloadCount      Int                  @default(0)
+  viewCount          Int                  @default(0)
+  rating             Float                @default(0.0)
+  tags               String[]
+  downloadUrl        String
+  viewUrl            String
+  thumbnailUrl       String?
+  isFree             Boolean              @default(true)
+  isPublished        Boolean              @default(true)
+  isFeatured         Boolean              @default(false)
+  createdById        String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  ResourceToCategory ResourceToCategory[]
+  downloads          ResourceDownload[]
+  files              ResourceFile[]
+  ratings            ResourceRating[]
+  views              ResourceView[]
+  createdBy          User?                @relation(fields: [createdById], references: [id])
+
+  @@index([isPublished, createdAt])
+  @@index([type, category])
+  @@index([isFree, isFeatured])
+  @@index([createdById])
+  @@index([title])
+  @@map("resources")
+}
+
+model ResourceFile {
+  id           String   @id @default(cuid())
+  resourceId   String
+  name         String
+  s3Key        String
+  s3Url        String
+  fileType     String
+  sizeInBytes  Int
+  uploadedById String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  resource     Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+  @@index([fileType])
+  @@index([uploadedById])
+  @@map("resource_files")
+}
+
+model ResourceCategory {
+  id                 String               @id @default(cuid())
+  name               String               @unique
+  description        String?
+  color              String?
+  icon               String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  ResourceToCategory ResourceToCategory[]
+
+  @@map("resource_categories")
+}
+
+model ResourceDownload {
+  id           String   @id @default(cuid())
+  resourceId   String
+  userId       String?
+  ipAddress    String?
+  userAgent    String?
+  downloadedAt DateTime @default(now())
+  resource     Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user         User?    @relation(fields: [userId], references: [id])
+
+  @@index([resourceId])
+  @@index([userId, downloadedAt])
+  @@index([downloadedAt])
+  @@map("resource_downloads")
+}
+
+model ResourceView {
+  id         String   @id @default(cuid())
+  resourceId String
+  userId     String?
+  ipAddress  String?
+  userAgent  String?
+  viewedAt   DateTime @default(now())
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([resourceId])
+  @@index([userId, viewedAt])
+  @@index([viewedAt])
+  @@map("resource_views")
+}
+
+model ResourceRating {
+  id         String   @id @default(cuid())
+  resourceId String
+  userId     String?
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@unique([resourceId, userId])
+  @@index([resourceId])
+  @@index([userId])
+  @@map("resource_ratings")
+}
+
+model ResourceToCategory {
+  A                   String
+  B                   String
+  resources           Resource         @relation(fields: [A], references: [id], onDelete: Cascade)
+  resource_categories ResourceCategory @relation(fields: [B], references: [id], onDelete: Cascade)
+
+  @@id([A, B], map: "_ResourceToCategory_AB_pkey")
+  @@index([B], map: "_ResourceToCategory_B_index")
+  @@map("_ResourceToCategory")
 }
 
 enum UserRole {
@@ -348,4 +477,16 @@ enum RetentionAction {
   ANONYMIZE
   ARCHIVE
   NOTIFY_EXPIRY
+}
+
+enum ResourceType {
+  PDF
+  VIDEO
+  AUDIO
+  GUIDE
+  DOCUMENT
+  PRESENTATION
+  WORKSHEET
+  IMAGE
+  INTERACTIVE
 }

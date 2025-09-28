@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://almanaquedafala.com.br/sitemap.xml
+Sitemap: https://www.almanaquedafala.com.br/sitemap.xml
 
 # Disallow admin and private areas
 Disallow: /dashboard/
@@ -13,3 +13,15 @@ Disallow: /dpo/
 Disallow: /data-rights/
 Disallow: /test-consent/
 Disallow: /test-exercises/
+Disallow: /sso-callback/
+
+# Allow important pages
+Allow: /contato
+Allow: /comunidade
+Allow: /especialistas
+Allow: /faq
+Allow: /blog
+Allow: /privacidade
+Allow: /termos
+Allow: /cookies
+Allow: /lgpd

@@ -42,28 +42,35 @@ export default function Breadcrumbs({
         aria-label="Breadcrumb"
         className={`flex items-center space-x-1 text-sm text-gray-500 ${className}`}
       >
-        <Link
-          href="/"
-          className="flex items-center hover:text-pink-600 transition-colors duration-200"
-        >
-          <Home className="w-4 h-4" />
-          <span className="sr-only">Home</span>
-        </Link>
-
         {items.map((item, index) => (
           <div key={index} className="flex items-center">
-            <ChevronRight className="w-4 h-4 mx-1 text-gray-300" />
-            {index === items.length - 1 ? (
-              <span className="text-gray-900 font-medium" aria-current="page">
-                {item.name}
-              </span>
-            ) : (
+            {index === 0 ? (
               <Link
                 href={item.href}
-                className="hover:text-pink-600 transition-colors duration-200"
+                className="flex items-center hover:text-pink-600 transition-colors duration-200"
               >
-                {item.name}
+                <Home className="w-4 h-4" />
+                <span className="sr-only">{item.name}</span>
               </Link>
+            ) : (
+              <>
+                <ChevronRight className="w-4 h-4 mx-1 text-gray-300" />
+                {index === items.length - 1 ? (
+                  <span
+                    className="text-gray-900 font-medium"
+                    aria-current="page"
+                  >
+                    {item.name}
+                  </span>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="hover:text-pink-600 transition-colors duration-200"
+                  >
+                    {item.name}
+                  </Link>
+                )}
+              </>
             )}
           </div>
         ))}

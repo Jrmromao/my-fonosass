@@ -4,7 +4,7 @@ export default function LandingFooter() {
   return (
     <footer className="py-12 bg-blue-50 dark:bg-blue-950 border-t border-blue-200 dark:border-blue-800">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
           <div>
             <Link href="/" className="flex items-center space-x-2 mb-6">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
@@ -87,31 +87,23 @@ export default function LandingFooter() {
           </div>
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-900 dark:text-white mb-4">
-              Plataforma
+              Recursos
             </h3>
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="#recursos"
+                  href="/comunidade"
                   className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
                 >
-                  Recursos
+                  Biblioteca de Materiais
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#como-funciona"
+                  href="/especialistas"
                   className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
                 >
-                  Como Funciona
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#planos"
-                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                >
-                  Planos
+                  Especialistas
                 </Link>
               </li>
               <li>
@@ -119,7 +111,54 @@ export default function LandingFooter() {
                   href="/blog"
                   className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
                 >
-                  Blog
+                  Blog Educativo
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/faq"
+                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
+                >
+                  Perguntas Frequentes
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-900 dark:text-white mb-4">
+              Plataforma
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  href="/#como-funciona"
+                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
+                >
+                  Como Funciona
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/#planos"
+                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
+                >
+                  Planos e Preços
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/#depoimentos"
+                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
+                >
+                  Depoimentos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/#assinatura"
+                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
+                >
+                  Assinatura
                 </Link>
               </li>
             </ul>
@@ -131,14 +170,6 @@ export default function LandingFooter() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/faq"
-                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
-                >
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/contato"
                   className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
                 >
@@ -147,10 +178,10 @@ export default function LandingFooter() {
               </li>
               <li>
                 <Link
-                  href="/comunidade"
+                  href="/faq"
                   className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
                 >
-                  Comunidade
+                  FAQ
                 </Link>
               </li>
               <li>
@@ -159,6 +190,14 @@ export default function LandingFooter() {
                   className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
                 >
                   Fale com Especialistas
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/dpo"
+                  className="text-blue-700 hover:text-purple-600 dark:text-blue-300 dark:hover:text-purple-400 transition-colors"
+                >
+                  DPO
                 </Link>
               </li>
             </ul>

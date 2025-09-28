@@ -28,6 +28,24 @@ export async function GET() {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/contato`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/comunidade`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/especialistas`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/privacidade`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'monthly',
