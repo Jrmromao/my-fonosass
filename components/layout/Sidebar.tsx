@@ -4,7 +4,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
 import { APP_NAME } from '@/utils/constants';
 import { useClerk, useUser } from '@clerk/nextjs';
-import { BarChart2, FileText, Menu, X } from 'lucide-react';
+import { BarChart2, BookOpen, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -30,11 +30,26 @@ export function Sidebar({ className }: SidebarProps) {
       icon: BarChart2,
       href: '/dashboard',
     },
-    {
-      title: 'Exercícios',
-      icon: FileText,
-      href: '/dashboard/games',
-    },
+    // {
+    //   title: 'Exercícios',
+    //   icon: FileText,
+    //   href: '/dashboard/games',
+    // },
+    // {
+    //   title: 'Meu Perfil',
+    //   icon: User,
+    //   href: '/dashboard/profile',
+    // },
+    // Admin only items
+    ...(userRole.role === 'ADMIN'
+      ? [
+          {
+            title: 'Recursos',
+            icon: BookOpen,
+            href: '/dashboard/resources',
+          },
+        ]
+      : []),
     // {
     //     title: "Meus Dados",
     //     icon: Shield,

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ResourceType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -7,7 +7,7 @@ const initialResources = [
     title: 'Kit Completo de Exercícios para Desenvolvimento do /R/',
     description:
       'Coleção de 25 exercícios práticos com ilustrações para trabalhar o fonema /r/ em diferentes posições. Inclui atividades lúdicas e progressivas.',
-    type: 'PDF',
+    type: ResourceType.PDF,
     category: 'Fonemas',
     ageGroup: '4-6 anos',
     fileSize: '2.3 MB',
@@ -25,7 +25,7 @@ const initialResources = [
     title: 'Exercícios Respiratórios para Melhora da Fala',
     description:
       'Demonstração prática de técnicas respiratórias que auxiliam no desenvolvimento da fala e controle vocal. Ideal para crianças e adultos.',
-    type: 'VIDEO',
+    type: ResourceType.VIDEO,
     category: 'Respiração',
     ageGroup: 'Todas as idades',
     duration: '8 min',
@@ -43,7 +43,7 @@ const initialResources = [
     title: 'Coleção de Sons e Palavras para Treino Auditivo',
     description:
       'Biblioteca de áudios com diferentes fonemas, palavras e frases para treino auditivo e de pronúncia. Inclui exercícios de discriminação auditiva.',
-    type: 'AUDIO',
+    type: ResourceType.AUDIO,
     category: 'Audição',
     ageGroup: '3-8 anos',
     fileSize: '15.2 MB',
@@ -61,7 +61,7 @@ const initialResources = [
     title: 'Guia de Exercícios para TEA',
     description:
       'Recursos especializados para desenvolvimento de linguagem em crianças com Transtorno do Espectro Autista. Inclui estratégias visuais e adaptações.',
-    type: 'GUIDE',
+    type: ResourceType.GUIDE,
     category: 'TEA',
     ageGroup: '2-10 anos',
     fileSize: '4.1 MB',
@@ -79,7 +79,7 @@ const initialResources = [
     title: 'Série de Vídeos: Fonemas Básicos',
     description:
       'Demonstrações práticas de articulação dos fonemas mais comuns. Ideal para pais e terapeutas que trabalham com crianças.',
-    type: 'VIDEO',
+    type: ResourceType.VIDEO,
     category: 'Fonemas',
     ageGroup: '3-7 anos',
     duration: '25 min',
@@ -97,7 +97,7 @@ const initialResources = [
     title: 'Exercícios de Motricidade Orofacial',
     description:
       'Atividades para fortalecimento e coordenação dos músculos da face e boca. Inclui exercícios para lábios, língua e bochechas.',
-    type: 'PDF',
+    type: ResourceType.PDF,
     category: 'Motricidade',
     ageGroup: '4-12 anos',
     fileSize: '3.2 MB',
@@ -115,7 +115,7 @@ const initialResources = [
     title: 'Atividades de Consciência Fonológica',
     description:
       'Exercícios práticos para desenvolvimento da consciência fonológica em crianças. Inclui atividades de rima, segmentação e manipulação de sons.',
-    type: 'WORKSHEET',
+    type: ResourceType.WORKSHEET,
     category: 'Consciência Fonológica',
     ageGroup: '4-8 anos',
     fileSize: '2.8 MB',
@@ -133,7 +133,7 @@ const initialResources = [
     title: 'Guia de Estratégias para Gagueira',
     description:
       'Técnicas e estratégias para trabalhar com crianças que apresentam gagueira. Inclui exercícios de fluência e relaxamento.',
-    type: 'GUIDE',
+    type: ResourceType.GUIDE,
     category: 'Fluência',
     ageGroup: '3-12 anos',
     fileSize: '3.5 MB',
