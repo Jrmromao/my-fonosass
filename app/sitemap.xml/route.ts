@@ -40,6 +40,12 @@ export async function GET() {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/recursos-gratuitos`,
+      lastModified: new Date().toISOString(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/especialistas`,
       lastModified: new Date().toISOString(),
       changeFrequency: 'weekly',

@@ -99,7 +99,68 @@
 - Reordering fields (without changing types)
 - Adding/removing comments only
 
-## Brazilian Requirements
+## UI/UX Design Standards (Medium.com Inspired)
+
+### Design System Principles
+- **Clean Minimalism**: Lots of whitespace, minimal visual clutter
+- **Content-First**: Typography and readability are paramount
+- **Subtle Interactions**: Gentle hover effects and transitions
+- **Reading-Focused**: Optimized for long-form content consumption
+- **Responsive Design**: Mobile-first with excellent tablet/desktop experience
+
+### Color Palette (Medium-Inspired)
+- **Primary Text**: `text-gray-900` (almost black for readability)
+- **Secondary Text**: `text-gray-600` (medium gray for body text)
+- **Muted Text**: `text-gray-500` (light gray for metadata)
+- **Accent**: `text-green-600` (Medium's signature green)
+- **Backgrounds**: `bg-white` (clean white) and `bg-gray-50` (subtle gray)
+- **Borders**: `border-gray-200` (very light borders)
+- **Hover States**: `hover:bg-gray-50` (subtle gray on hover)
+
+### Typography (Medium-Style)
+- **Font Family**: `font-serif` (serif for body text like Medium)
+- **H1 (Article Title)**: `text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight`
+- **H2 (Section Headers)**: `text-2xl md:text-3xl font-bold text-gray-900 leading-tight`
+- **H3 (Subsections)**: `text-xl md:text-2xl font-semibold text-gray-900 leading-tight`
+- **Body Text**: `text-lg md:text-xl text-gray-600 leading-relaxed font-serif`
+- **Small Text**: `text-sm text-gray-500 leading-relaxed`
+- **Meta Text**: `text-sm text-gray-500` (dates, author, tags)
+
+### Component Standards (Medium-Style)
+- **Buttons**: 
+  - Primary: `bg-gray-900 text-white hover:bg-gray-800 px-4 py-2 rounded-full text-sm font-medium`
+  - Secondary: `border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-full text-sm font-medium`
+  - Ghost: `text-gray-600 hover:text-gray-900 px-2 py-1 text-sm font-medium`
+- **Cards**: 
+  - Clean white background with subtle shadow
+  - Rounded corners: `rounded-lg` (less rounded than before)
+  - Hover effects: `hover:shadow-md transition-shadow duration-200`
+- **Tags/Pills**: 
+  - Subtle styling: `bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm`
+  - Hover: `hover:bg-gray-200 transition-colors duration-200`
+
+### Layout Patterns (Medium-Inspired)
+- **Content Width**: Max width `max-w-4xl` for optimal reading
+- **Article Layout**: Centered content with generous margins
+- **Card Grids**: `grid md:grid-cols-2 lg:grid-cols-3 gap-8` (more spacing)
+- **Reading Experience**: `prose prose-lg max-w-none` for rich text
+- **Sidebar**: Optional sidebar for related content
+- **Sticky Elements**: Subtle sticky navigation and CTAs
+
+### Spacing (Medium-Style)
+- **Section Spacing**: `py-16 md:py-20 lg:py-24` (generous vertical spacing)
+- **Card Padding**: `p-6 md:p-8` (comfortable internal spacing)
+- **Text Spacing**: `mb-6 md:mb-8` (breathing room between elements)
+- **Grid Gaps**: `gap-6 md:gap-8` (comfortable spacing between cards)
+
+### Accessibility Standards
+- **Alt Text**: All images must have descriptive alt text
+- **ARIA Labels**: Use `aria-label` and `aria-labelledby` for navigation
+- **Focus States**: Ensure keyboard navigation works properly
+- **Color Contrast**: Maintain WCAG AA compliance
+- **Screen Readers**: Use `aria-hidden="true"` for decorative icons
+
+### Brazilian Requirements
 - Portuguese language (Brazil)
 - Brazilian date format (DD/MM/YYYY)
 - Brazilian currency (R$)

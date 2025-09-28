@@ -21,6 +21,7 @@ Disallow: /_vercel/
 # Allow important pages
 Allow: /contato
 Allow: /comunidade
+Allow: /recursos-gratuitos
 Allow: /especialistas
 Allow: /faq
 Allow: /blog

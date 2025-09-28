@@ -67,11 +67,12 @@ export default function SharedNavbar({
             >
               Blog
             </Link>
+
             <Link
-              href="/comunidade"
+              href="/recursos-gratuitos"
               className="text-indigo-600 hover:text-pink-500 dark:text-cyan-300 dark:hover:text-yellow-300 transition-colors font-medium"
             >
-              Recursos
+              Recursos Grátis
             </Link>
             <Link
               href="/especialistas"
