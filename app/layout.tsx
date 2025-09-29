@@ -1,5 +1,6 @@
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { Providers } from '@/components/Providers';
+import WebVitalsTracker from '@/components/WebVitalsTracker';
 import StructuredData from '@/components/seo/StructuredData';
 import { ptBR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -172,6 +173,7 @@ export default function RootLayout({
             <Analytics />
           </Providers>
           <SpeedInsights />
+          <WebVitalsTracker />
         </body>
       </html>
     </ClerkProvider>
