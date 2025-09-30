@@ -51,3 +51,5 @@ next-env.d.ts
 # Cursor AI session data (personal learning data)
 .cursor/** 
 
+
+.playwright-mcp/
