@@ -1,5 +1,14 @@
 'use client';
 
+import { SubscriptionPlans } from '@/components/SubscriptionPlans';
+import EducationalToolbar from '@/components/Toolbar/EducationalToolbar';
+import WaitingListAlert from '@/components/WaitingListAlert';
+import LandingFooter from '@/components/layout/LandingFooter';
+import SharedNavbar from '@/components/layout/SharedNavbar';
+import { BlogPost } from '@/lib/blog';
+import { ptBR } from '@clerk/localizations';
+import { useAuth } from '@clerk/nextjs';
+import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -14,17 +23,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-// import Balloon from "@/components/Balloon";
-import BalloonOptimizedMinimal from '@/components/Balloon/BalloonOptimizedMinimal';
-import { SubscriptionPlans } from '@/components/SubscriptionPlans';
-import EducationalToolbar from '@/components/Toolbar/EducationalToolbar';
-import WaitingListAlert from '@/components/WaitingListAlert';
-import LandingFooter from '@/components/layout/LandingFooter';
-import SharedNavbar from '@/components/layout/SharedNavbar';
-import { BlogPost } from '@/lib/blog';
-import { ptBR } from '@clerk/localizations';
-import { useAuth } from '@clerk/nextjs';
-import { format } from 'date-fns';
+import LazyBalloon from './LazyBalloon';
 
 interface FomosaasLandingProps {
   featuredBlogPosts: BlogPost[];
@@ -103,7 +102,7 @@ export default function FomosaasLanding({
           transition={{ duration: 0.7, delay: 0.2 }}
         >
           <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
-            <BalloonOptimizedMinimal />
+            <LazyBalloon />
 
             {/* Clear CTA at bottom */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
@@ -379,13 +378,15 @@ export default function FomosaasLanding({
               >
                 <div className="h-48 bg-gradient-to-br from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 relative">
                   <Image
-                    src={
-                      exercise.image || '/placeholder.svg?height=200&width=400'
-                    }
+                    src={exercise.image}
                     alt={exercise.title}
                     width={400}
                     height={200}
                     className="w-full h-full object-cover"
+                    priority={false}
+                    loading="lazy"
+                    placeholder="blur"
+                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-14 h-14 rounded-full bg-white/80 dark:bg-blue-900/80 flex items-center justify-center text-blue-600 dark:text-blue-400 cursor-pointer hover:scale-110 transition-transform">
@@ -464,14 +465,15 @@ export default function FomosaasLanding({
                 <div className="flex items-center mb-4">
                   <div className="mr-4">
                     <Image
-                      src={
-                        testimonial.avatar ||
-                        '/placeholder.svg?height=48&width=48'
-                      }
+                      src={testimonial.avatar}
                       alt={testimonial.name}
                       width={48}
                       height={48}
                       className="rounded-full"
+                      priority={false}
+                      loading="lazy"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                     />
                   </div>
                   <div>
@@ -779,7 +781,7 @@ const exercises = [
     age: '3-6 anos',
     difficulty: 'Iniciante',
     icon: <Volume2 size={16} />,
-    image: '/placeholder.svg?height=200&width=400',
+    image: '/images/exercises/jogo-sons.webp',
   },
   {
     title: 'Rimas Divertidas',
@@ -788,7 +790,7 @@ const exercises = [
     age: '4-7 anos',
     difficulty: 'Intermediário',
     icon: <Music size={16} />,
-    image: '/placeholder.svg?height=200&width=400',
+    image: '/images/exercises/rimas.webp',
   },
   {
     title: 'Histórias Faladas',
@@ -814,7 +816,7 @@ const exercises = [
         <path d="M8 15h5"></path>
       </svg>
     ),
-    image: '/placeholder.svg?height=200&width=400',
+    image: '/images/exercises/historias.webp',
   },
 ];
 
@@ -822,21 +824,21 @@ const testimonials = [
   {
     name: 'Ana Silva',
     relation: 'Mãe do Pedro, 5 anos',
-    avatar: '/placeholder.svg?height=48&width=48',
+    avatar: '/images/testimonials/ana-silva.webp',
     quote:
       'O Almanaque da Fala transformou a vida do meu filho. Em apenas 3 meses, ele já consegue pronunciar palavras que antes eram um desafio!',
   },
   {
     name: 'Carlos Oliveira',
     relation: 'Pai da Júlia, 7 anos',
-    avatar: '/placeholder.svg?height=48&width=48',
+    avatar: '/images/testimonials/carlos-oliveira.webp',
     quote:
       'Minha filha adora os jogos e nem percebe que está fazendo terapia. Os resultados são impressionantes!',
   },
   {
     name: 'Dra. Mariana Santos',
     relation: 'Fonoaudióloga',
-    avatar: '/placeholder.svg?height=48&width=48',
+    avatar: '/images/testimonials/mariana-santos.webp',
     quote:
       'Como profissional, recomendo o Almanaque da Fala para complementar as sessões presenciais. A plataforma é baseada em metodologias comprovadas.',
   },

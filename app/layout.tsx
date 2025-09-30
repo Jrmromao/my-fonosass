@@ -1,6 +1,9 @@
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { Providers } from '@/components/Providers';
 import AccessibilityAudit from '@/components/accessibility/AccessibilityAudit';
+import PerformanceMonitor from '@/components/analytics/PerformanceMonitor';
+import WebVitals from '@/components/analytics/WebVitals';
+import WebVitalsDashboard from '@/components/analytics/WebVitalsDashboard';
 import StructuredData from '@/components/seo/StructuredData';
 import { ptBR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -14,6 +17,8 @@ const inter = Inter({
   display: 'swap',
   preload: true,
   fallback: ['system-ui', 'arial'],
+  variable: '--font-inter',
+  weight: ['300', '400', '500', '600', '700'],
 });
 
 export const metadata = {
@@ -103,6 +108,32 @@ export default function RootLayout({
     <ClerkProvider localization={ptBR}>
       <html lang="pt-BR">
         <head>
+          {/* Preload critical resources */}
+          <link
+            rel="preload"
+            href="/fonts/inter.woff2"
+            as="font"
+            type="font/woff2"
+            crossOrigin="anonymous"
+          />
+          <link
+            rel="preload"
+            href="/fonts/inter.woff"
+            as="font"
+            type="font/woff"
+            crossOrigin="anonymous"
+          />
+
+          {/* DNS prefetch for external domains */}
+          <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+          <link rel="dns-prefetch" href="//va.vercel-scripts.com" />
+          <link rel="dns-prefetch" href="//clerk.accounts.dev" />
+
+          {/* Preconnect to external domains */}
+          <link rel="preconnect" href="https://www.googletagmanager.com" />
+          <link rel="preconnect" href="https://va.vercel-scripts.com" />
+          <link rel="preconnect" href="https://clerk.accounts.dev" />
+
           <link rel="manifest" href="/manifest.json" />
           <meta name="theme-color" content="#6366f1" />
           <meta name="mobile-web-app-capable" content="yes" />
@@ -159,7 +190,7 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
+          className={`${inter.variable} font-sans flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
           suppressHydrationWarning={true}
         >
           {/* Skip to main content link for accessibility */}
@@ -179,6 +210,12 @@ export default function RootLayout({
           </Providers>
           <SpeedInsights />
           <AccessibilityAudit />
+          <WebVitals
+            analyticsId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
+            debug={process.env.NODE_ENV === 'development'}
+          />
+          <WebVitalsDashboard />
+          <PerformanceMonitor />
         </body>
       </html>
     </ClerkProvider>

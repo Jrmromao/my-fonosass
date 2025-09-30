@@ -145,6 +145,7 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.2",
+    "web-vitals": "^5.1.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
