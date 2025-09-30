@@ -31,6 +31,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
   const animationRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [prevDialogOpen, setPrevDialogOpen] = useState<boolean>(false);
   const [activeColor, setActiveColor] = useState<string>('');
   const [poppedBalloonId, setPoppedBalloonId] = useState<number | null>(null);
   const [activePhoneme, setActivePhoneme] = useState<string>('');
@@ -77,142 +78,109 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
   // Performance optimization: Cache gradients
   const gradientCache = useRef<Map<string, CanvasGradient>>(new Map());
 
-  // Initialize canvas and balloons
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // Check if two balloons overlap
+  const checkOverlap = useCallback(
+    (balloon1: Balloon, balloon2: Balloon): boolean => {
+      const dx = balloon1.x - balloon2.x;
+      const dy = balloon1.y - balloon2.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const minDistance = (balloon1.size + balloon2.size) * 50; // 50 is the base size multiplier
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      return distance < minDistance;
+    },
+    []
+  );
 
-    // Set canvas dimensions with proper pixel ratio for sharpness
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
+  // Find valid position for balloon placement
+  const findValidPosition = useCallback(
+    (
+      balloons: Balloon[],
+      widthRange: [number, number],
+      heightRange: [number, number],
+      balloonSize: number,
+      maxAttempts: number = 50
+    ): { x: number; y: number } => {
+      let x: number =
+        widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
+      let y: number =
+        heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
+      let isValid = false;
+      let attempts = 0;
 
-    // Mobile detection and optimization
-    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isMobile) {
-      // Ensure canvas is properly sized for mobile
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.scale(dpr, dpr);
-    }
+      // Try to find a non-overlapping position
+      while (!isValid && attempts < maxAttempts) {
+        x = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
+        y = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
 
-    // Initialize balloons
-    initializeBalloons();
+        isValid = true;
 
-    // Start animation
-    startAnimation();
+        // Check against existing balloons
+        for (const balloon of balloons) {
+          const dx = balloon.x - x;
+          const dy = balloon.y - y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Handle window resize to reinitialize balloons with new sizes
-    const handleResize = () => {
-      initializeBalloons();
-    };
+          // Skip balloons that are far away
+          if (dx * dx + dy * dy > 10000) continue;
 
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [balloonCount]);
-
-  useEffect(() => {
-    const cleanupInterval = setInterval(() => {
-      if (fragmentsRef.current.length > 100) {
-        fragmentsRef.current = fragmentsRef.current.filter(
-          (f) => f.opacity > 0.05
-        );
-      }
-    }, 1000);
-
-    return () => clearInterval(cleanupInterval);
-  }, []);
-
-  // Re-initialize balloons when dialog closes
-  useEffect(() => {
-    if (!dialogOpen && poppedBalloonId !== null) {
-      // Re-inflate the popped balloon
-      balloonsRef.current = balloonsRef.current.map((balloon) => {
-        if (balloon.id === poppedBalloonId) {
-          return {
-            ...balloon,
+          // Create a temporary balloon to check overlap
+          const tempBalloon: Balloon = {
+            id: -1,
+            x,
+            y,
+            vx: 0,
+            vy: 0,
+            radius: 25 + Math.random() * 15,
+            color: '',
+            size: balloonSize,
             popped: false,
-            // Reset any animation state
-            floatPhase: Math.random() * Math.PI * 2,
-            rotationPhase: Math.random() * Math.PI * 2,
-            scalePhase: Math.random() * Math.PI * 2,
-            swayPhase: Math.random() * Math.PI * 2,
-            colorPhase: Math.random() * Math.PI * 2,
-            // Put balloon at a slightly different position for visual interest
-            x: balloon.x + (Math.random() - 0.5) * 20,
+            popTime: 0,
+            fragments: [],
+            floatPhase: 0,
+            floatSpeed: 0,
+            floatAmount: 0,
+            rotation: 0,
+            stringLength: 0,
+            hovering: false,
+            pressing: false,
+            anchorGroup: 'left',
+            phoneme: '',
+            zIndex: 0,
+            isDragging: false,
+            rotationPhase: 0,
+            rotationSpeed: 0,
+            scalePhase: 0,
+            scaleSpeed: 0,
+            scaleAmount: 0,
+            swayPhase: 0,
+            swaySpeed: 0,
+            swayAmount: 0,
+            colorPhase: 0,
+            colorSpeed: 0,
           };
+
+          if (checkOverlap(tempBalloon, balloon)) {
+            isValid = false;
+            break;
+          }
         }
-        return balloon;
-      });
 
-      // Clear the popped balloon reference
-      setPoppedBalloonId(null);
-    }
-  }, [dialogOpen]);
-
-  useEffect(() => {
-    const fetchActivities = async () => {
-      setIsLoading(true);
-      try {
-        // Assume there's an API call to fetch activities based on the activePhoneme
-      } catch (error) {
-        console.error('Failed to fetch activities:', error);
-      } finally {
-        setIsLoading(false);
+        attempts++;
       }
-    };
 
-    if (activePhoneme) {
-      fetchActivities();
-    }
-  }, [activePhoneme]);
+      return { x, y };
+    },
+    [checkOverlap]
+  );
 
-  // Check if two balloons overlap - ensure they never overlap
-  const checkOverlap = (balloon1: Balloon, balloon2: Balloon): boolean => {
-    const dx = balloon1.x - balloon2.x;
-    const dy = balloon1.y - balloon2.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    // Responsive sizing for overlap detection
-    const isLargeScreen = window.innerWidth >= 1200;
-    const isMediumScreen = window.innerWidth >= 768;
-    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-    let baseSize;
-    if (isLargeScreen) {
-      baseSize = 50; // Larger base size for large screens
-    } else if (isMediumScreen) {
-      baseSize = 45; // Medium size for tablets
-    } else {
-      baseSize = isMobile ? 40 : 35; // Mobile-optimized sizing
-    }
-
-    const size1 = baseSize * balloon1.size;
-    const size2 = baseSize * balloon2.size;
-
-    // No overlap allowed - balloons must be completely separate
-    const minDistance = (size1 + size2) * 0.8; // 80% separation to ensure no overlap
-
-    return distance < minDistance;
-  };
-
-  // Initialize balloons with better positioning
+  // Initialize balloons function
   const initializeBalloons = useCallback((): void => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.log('Canvas not found!');
+      return;
+    }
+    console.log('Canvas found, initializing balloons...');
 
     const rect = canvas.getBoundingClientRect();
     const width = rect.width;
@@ -244,7 +212,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     ) => {
       const widthRange: [number, number] = isLeft
         ? [anchorX - width * 0.2, anchorX + width * 0.15]
-        : [anchorX - width * 0.15, anchorX + width * 0.2]; // Restore original right-side range
+        : [anchorX - width * 0.15, anchorX + width * 0.2];
 
       // Create all balloons at once but with different heights
       const heightSections = 4;
@@ -267,51 +235,55 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
         let baseSize, sizeVariation;
         if (isLargeScreen) {
-          baseSize = 0.8; // Larger base size for large screens
-          sizeVariation = 0.4; // More variation: 0.8 to 1.2
+          baseSize = 0.8;
+          sizeVariation = 0.4;
         } else if (isMediumScreen) {
-          baseSize = 0.7; // Medium size for tablets
-          sizeVariation = 0.3; // 0.7 to 1.0
+          baseSize = 0.7;
+          sizeVariation = 0.3;
         } else {
-          baseSize = 0.6; // Smaller size for mobile
-          sizeVariation = 0.3; // 0.6 to 0.9
+          baseSize = 0.6;
+          sizeVariation = 0.3;
         }
 
         const size = baseSize + Math.random() * sizeVariation;
         const phoneme = safePhonemes[id % safePhonemes.length];
 
-        // Find a valid position with more attempts to ensure no overlap
+        // Find a valid position
         const position = findValidPosition(
           balloons,
           widthRange,
           heightRange,
           size,
           100
-        ); // More attempts to find non-overlapping position
+        );
 
-        // Create the balloon with optimized parameters
+        // Create the balloon
         balloons.push({
           id,
           x: position.x,
           y: position.y,
+          vx: 0,
+          vy: 0,
+          radius: 25 + Math.random() * 15,
           color: balloonColors[colorIndex],
           size,
           popped: false,
+          popTime: 0,
+          fragments: [],
           floatPhase: Math.random() * Math.PI * 2,
-          floatSpeed: 0.2 + Math.random() * 0.2, // Reduced for performance
-          floatAmount: 2 + Math.random() * 2, // Reduced for performance
-          rotation: (Math.random() - 0.5) * 0.1, // Reduced rotation
-          // Simplified animation properties for performance
-          rotationPhase: 0, // Disabled
-          rotationSpeed: 0, // Disabled
-          scalePhase: 0, // Disabled
-          scaleSpeed: 0, // Disabled
-          scaleAmount: 0, // Disabled
+          floatSpeed: 0.2 + Math.random() * 0.2,
+          floatAmount: 2 + Math.random() * 2,
+          rotation: (Math.random() - 0.5) * 0.1,
+          rotationPhase: 0,
+          rotationSpeed: 0,
+          scalePhase: 0,
+          scaleSpeed: 0,
+          scaleAmount: 0,
           swayPhase: Math.random() * Math.PI * 2,
-          swaySpeed: 0.1 + Math.random() * 0.1, // Reduced for performance
-          swayAmount: 1 + Math.random() * 1.5, // Reduced for performance
-          colorPhase: 0, // Disabled
-          colorSpeed: 0, // Disabled
+          swaySpeed: 0.1 + Math.random() * 0.1,
+          swayAmount: 1 + Math.random() * 1.5,
+          colorPhase: 0,
+          colorSpeed: 0,
           stringLength: Math.sqrt(
             Math.pow(position.x - anchorX, 2) +
               Math.pow(position.y - anchorY, 2)
@@ -335,9 +307,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       false
     );
 
-    // Only ensure balloons are not completely off-screen (minimal bounds checking)
+    // Ensure balloons are not completely off-screen
     balloons.forEach((balloon) => {
-      // Only adjust if balloon is completely outside canvas
       if (balloon.x < 0) {
         balloon.x = 0;
       } else if (balloon.x > width) {
@@ -351,176 +322,53 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     });
 
     balloonsRef.current = balloons;
+    console.log('Balloons created:', balloons.length);
+  }, [findValidPosition]);
 
-    // Debug: Log balloon distribution
-    const leftBalloons = balloons.filter((b) => b.anchorGroup === 'left');
-    const rightBalloons = balloons.filter((b) => b.anchorGroup === 'right');
-    const topRightBalloons = balloons.filter(
-      (b) => b.x > width * 0.7 && b.y < height * 0.3
-    );
-
-    if (topRightBalloons.length > 5) {
-      console.warn(
-        `[BALLOON INIT] WARNING: Too many balloons in top-right area!`
-      );
-    }
-  }, [balloonCount]);
-
-  // Add this function before the popBalloon function
-  const handleFileDownload = useCallback(
-    async (fileId: string, fileName: string) => {
-      try {
-        setDownloadingFileId(fileId);
-        setDownloadError(null);
-
-        const result = await getFileDownloadUrl({ fileId });
-
-        if (result.success && result.url) {
-          // Create a temporary link element
-          const link = document.createElement('a');
-          //@ts-ignore
-          link.href = result.url;
-          const safeFileName = fileName || `activity-${fileId}.pdf`;
-          link.setAttribute('download', safeFileName);
-
-          // Required for Firefox
-          document.body.appendChild(link);
-
-          // Trigger download
-          link.click();
-
-          // Cleanup
-          document.body.removeChild(link);
-
-          // Show success state briefly
-          setDownloadSuccess(fileId);
-          setTimeout(() => {
-            setDownloadSuccess(null);
-          }, 2000);
-        } else {
-          setDownloadError(fileId);
-          setTimeout(() => {
-            setDownloadError(null);
-          }, 3000);
-        }
-      } catch (error) {
-        console.error('Download failed:', error);
-        setDownloadError(fileId);
-        setTimeout(() => {
-          setDownloadError(null);
-        }, 3000);
-      } finally {
-        setDownloadingFileId(null);
-      }
-    },
-    []
-  );
-
-  const findValidPosition = (
-    balloons: Balloon[],
-    widthRange: [number, number],
-    heightRange: [number, number],
-    balloonSize: number,
-    maxAttempts: number = 50
-  ): { x: number; y: number } => {
-    // Initialize with default values - this ensures they're always defined
-    let x: number =
-      widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
-    let y: number =
-      heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
-    let isValid = false;
-    let attempts = 0;
-
-    // Try to find a non-overlapping position
-    while (!isValid && attempts < maxAttempts) {
-      // Generate new random position
-      x = widthRange[0] + Math.random() * (widthRange[1] - widthRange[0]);
-      y = heightRange[0] + Math.random() * (heightRange[1] - heightRange[0]);
-
-      // Check against existing balloons
-      isValid = true;
-
-      // Only check against balloons that could potentially overlap
-      for (const balloon of balloons) {
-        const dx = balloon.x - x;
-        const dy = balloon.y - y;
-
-        // Skip balloons that are far away
-        if (dx * dx + dy * dy > 10000) continue;
-
-        // Create a temporary balloon to check overlap with the EXACT size being created
-        const tempBalloon: Balloon = {
-          id: -1,
-          x,
-          y,
-          color: '',
-          size: balloonSize, // Use the exact size of the balloon being created
-          popped: false,
-          floatPhase: 0,
-          floatSpeed: 0,
-          floatAmount: 0,
-          rotation: 0,
-          stringLength: 0,
-          hovering: false,
-          pressing: false,
-          anchorGroup: 'left',
-          phoneme: '',
-          zIndex: 0,
-          isDragging: false,
-          // Animation properties
-          rotationPhase: 0,
-          rotationSpeed: 0,
-          scalePhase: 0,
-          scaleSpeed: 0,
-          scaleAmount: 0,
-          swayPhase: 0,
-          swaySpeed: 0,
-          swayAmount: 0,
-          colorPhase: 0,
-          colorSpeed: 0,
-        };
-
-        if (checkOverlap(tempBalloon, balloon)) {
-          isValid = false;
-          break;
-        }
-      }
-
-      attempts++;
-    }
-
-    // If we couldn't find a valid position after attempts,
-    // just use the last position we tried
-    return { x, y };
-  };
-
+  // Start animation function
   const startAnimation = useCallback((): void => {
     let lastTime = 0;
+    let lastFrameTime = 0;
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
 
     const animate = (timestamp: number): void => {
+      console.log('Animation frame called, timestamp:', timestamp);
+      // Pause animation when tab is hidden for better performance
+      if (document.hidden) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
       const delta = lastTime ? (timestamp - lastTime) / 16.66 : 12; // normalize to ~60fps
       lastTime = timestamp;
 
       // Skip frames when browser tab is inactive or frame rate is very low
       if (delta > 100) {
+        console.log('Skipping frame due to high delta:', delta);
         animationRef.current = requestAnimationFrame(animate);
         return;
       }
 
-      // Frame rate limiting for performance - only animate every 2nd frame
-      if (Math.floor(timestamp / 16.66) % 2 !== 0) {
+      // Frame rate limiting for performance - target 30fps instead of 60fps
+      const targetFPS = 30;
+      const frameInterval = 1000 / targetFPS;
+      if (timestamp - lastFrameTime < frameInterval) {
+        console.log('Skipping frame due to frame rate limiting');
         animationRef.current = requestAnimationFrame(animate);
         return;
       }
+      lastFrameTime = timestamp;
 
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const ctx = canvas.getContext('2d', { alpha: false });
       if (!ctx) return;
+
+      // Optimize canvas context for better performance
+      ctx.imageSmoothingEnabled = false; // Disable for pixel art style
+      ctx.imageSmoothingQuality = 'low'; // Lower quality for performance
 
       const rect = canvas.getBoundingClientRect();
       const width = rect.width;
@@ -543,25 +391,13 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         ? [...balloonsRef.current].sort((a, b) => a.zIndex - b.zIndex)
         : balloonsRef.current;
 
-      // Performance optimization: Only update some balloons each frame
-      const updateCount = Math.min(sortedBalloons.length, 4); // Reduced from 8 to 4 balloons per frame
-      const updateOffset = Math.floor(timestamp / 200) % sortedBalloons.length; // Reduced frequency
-
       // Update and draw visible balloons
       sortedBalloons.forEach((balloon, index) => {
         if (balloon.popped) return;
 
-        // Only update float animation for some balloons each frame
-        // Always update the dragging balloon
-        if (
-          balloon.id === draggingBalloonId ||
-          (index + updateOffset) % sortedBalloons.length < updateCount
-        ) {
-          // Update only essential animation phases for performance
-          balloon.floatPhase += 0.02 * balloon.floatSpeed * delta;
-          balloon.swayPhase += 0.02 * balloon.swaySpeed * delta;
-          // Remove expensive animations: rotation, scale, color
-        }
+        // Update all balloons consistently to prevent visual rearrangement
+        balloon.floatPhase += 0.02 * balloon.floatSpeed * delta;
+        balloon.swayPhase += 0.02 * balloon.swaySpeed * delta;
 
         const floatY = Math.sin(balloon.floatPhase) * balloon.floatAmount;
         const swayX = Math.sin(balloon.swayPhase) * balloon.swayAmount;
@@ -583,20 +419,32 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           balloon.anchorGroup === 'left' ? leftAnchorX : rightAnchorX;
 
         // Draw balloon with enhanced animations
-        drawBalloon(
-          ctx,
-          balloon,
-          floatY,
-          anchorX,
-          anchorY,
-          swayX,
-          scaleMultiplier,
-          rotationOffset
+        console.log(
+          `Drawing balloon ${index}:`,
+          balloon.x,
+          balloon.y,
+          balloon.phoneme,
+          'floatY:',
+          floatY
         );
+        try {
+          drawBalloon(
+            ctx,
+            balloon,
+            floatY,
+            anchorX,
+            anchorY,
+            swayX,
+            scaleMultiplier,
+            rotationOffset
+          );
+        } catch (error) {
+          console.error('Error drawing balloon:', error);
+        }
       });
 
       // Process fragments in batches for better performance
-      const maxFragmentsPerFrame = 75; // Reduced from 150 to 75 fragments per frame
+      const maxFragmentsPerFrame = 30; // Further reduced for better performance
       let processedFragments = 0;
       let anyActiveFragments = false;
 
@@ -625,8 +473,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         anyActiveFragments = true;
         processedFragments++;
 
-        // Decrease opacity over time
-        fragment.opacity = Math.max(0, fragment.opacity - 0.005 * delta);
+        // Decrease opacity over time (much slower decay for longer fragment visibility)
+        fragment.opacity = Math.max(0, fragment.opacity - 0.0003 * delta);
 
         // Draw fragment
         ctx.save();
@@ -682,17 +530,419 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         ctx.restore();
       }
 
-      // Clean up old fragments periodically, not every frame
-      if (timestamp % 60 < 16.66 && fragmentsRef.current.length > 500) {
-        fragmentsRef.current = fragmentsRef.current.filter(
-          (f) => f.opacity > 0.02
-        );
-      }
+      // Fragment cleanup is now handled by the dedicated cleanup interval
 
       animationRef.current = requestAnimationFrame(animate);
     };
     animationRef.current = requestAnimationFrame(animate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draggingBalloonId]);
+
+  // Initialize canvas and balloons
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Ensure canvas has proper dimensions
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      // Canvas not ready, retry after a short delay
+      setTimeout(() => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const rect = canvas.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              const dpr = window.devicePixelRatio || 1;
+              canvas.width = rect.width * dpr;
+              canvas.height = rect.height * dpr;
+              ctx.scale(dpr, dpr);
+              initializeBalloons();
+              startAnimation();
+            }
+          }
+        }
+      }, 100);
+      return;
+    }
+
+    // Set canvas dimensions with proper pixel ratio for sharpness
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Mobile detection and optimization
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isMobile) {
+      // Ensure canvas is properly sized for mobile
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+    }
+
+    // Initialize balloons
+    console.log('Initializing balloons...');
+    initializeBalloons();
+    console.log('Balloons initialized:', balloonsRef.current.length);
+
+    // Start animation
+    console.log('Starting animation...');
+    startAnimation();
+
+    // Handle window resize to reinitialize balloons with new sizes
+    const handleResize = () => {
+      initializeBalloons();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      window.removeEventListener('resize', handleResize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [balloonCount]);
+
+  // Draw balloon function
+  const drawBalloon = useCallback(
+    (
+      ctx: CanvasRenderingContext2D,
+      balloon: Balloon,
+      floatY: number,
+      anchorX: number,
+      anchorY: number,
+      swayX: number = 0,
+      scaleMultiplier: number = 1,
+      rotationOffset: number = 0
+    ): void => {
+      console.log('drawBalloon called with:', {
+        x: balloon.x,
+        y: balloon.y,
+        phoneme: balloon.phoneme,
+        floatY,
+        anchorX,
+        anchorY,
+      });
+      const { x, y, color, size, rotation, hovering, pressing } = balloon;
+
+      // Smaller balloon dimensions
+      const balloonWidth = 70 * size; // Reduced from 100 to 70
+      const balloonHeight = 85 * size; // Reduced from 120 to 85
+
+      let scaleX = 1;
+      let scaleY = 1;
+      if (
+        balloon.x < -100 ||
+        balloon.x > ctx.canvas.width + 100 ||
+        balloon.y < -100 ||
+        balloon.y > ctx.canvas.height + 100
+      ) {
+        return;
+      }
+      if (hovering) {
+        scaleX = 1.08;
+        scaleY = 1.08;
+      }
+
+      if (pressing) {
+        scaleX = 1.1;
+        scaleY = 0.98;
+      }
+
+      // Apply animation effects
+      const balloonX = x + swayX;
+      const balloonY = y + floatY;
+      const finalScaleX = scaleX * scaleMultiplier;
+      const finalScaleY = scaleY * scaleMultiplier;
+      const finalRotation = rotation + rotationOffset;
+
+      ctx.save();
+      ctx.translate(balloonX, balloonY);
+      ctx.rotate(finalRotation);
+      ctx.scale(finalScaleX, finalScaleY);
+
+      // More rounded balloon shape
+      ctx.beginPath();
+      ctx.ellipse(0, 0, balloonWidth / 2, balloonHeight / 2, 0, 0, Math.PI * 2);
+
+      // Simplified gradient for performance
+      const gradientKey = `${color}-${balloonWidth}-${balloonHeight}`;
+      let gradient = gradientCache.current.get(gradientKey);
+
+      if (!gradient) {
+        gradient = ctx.createRadialGradient(
+          -balloonWidth / 4,
+          -balloonHeight / 4,
+          0,
+          0,
+          0,
+          balloonWidth * 0.8
+        );
+        gradient.addColorStop(0, shadeColor(color, 20));
+        gradient.addColorStop(0.6, color);
+        gradient.addColorStop(1, shadeColor(color, -10));
+        gradientCache.current.set(gradientKey, gradient);
+      }
+
+      ctx.fillStyle = gradient;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 4;
+      ctx.fill();
+
+      // Thinner outline
+      ctx.strokeStyle = shadeColor(color, -30);
+      ctx.lineWidth = 2 * (size / 0.8);
+      ctx.stroke();
+
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Subtler highlights
+      ctx.beginPath();
+      ctx.ellipse(
+        -balloonWidth / 5,
+        -balloonHeight / 4,
+        balloonWidth / 10,
+        balloonHeight / 8,
+        Math.PI / 4,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.ellipse(
+        -balloonWidth / 10,
+        -balloonHeight / 10,
+        balloonWidth / 25,
+        balloonHeight / 25,
+        0,
+        0,
+        Math.PI * 2
+      );
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fill();
+
+      // Smaller tie
+      const tieSize = 7 * size; // Reduced from 10 to 7
+      ctx.beginPath();
+      ctx.moveTo(-tieSize / 2, balloonHeight / 2);
+      ctx.lineTo(0, balloonHeight / 2 + tieSize);
+      ctx.lineTo(tieSize / 2, balloonHeight / 2);
+      ctx.closePath();
+      ctx.fillStyle = shadeColor(color, -20);
+      ctx.fill();
+      ctx.strokeStyle = shadeColor(color, -40);
+      ctx.lineWidth = 1.5 * (size / 0.8);
+      ctx.stroke();
+
+      // Text styling (unchanged)
+      ctx.save();
+      ctx.scale(1 / scaleX, 1 / scaleY);
+      ctx.rotate(-rotation);
+      const fontSize = Math.max(28 * size, 18); // Smaller font size to match smaller balloons
+      ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeStyle = shadeColor(color, -50);
+      ctx.lineWidth = fontSize / 10;
+      ctx.strokeText(balloon.phoneme, 0, 0);
+      ctx.fillText(balloon.phoneme, 0, 0);
+      ctx.restore();
+
+      ctx.restore();
+
+      // Tape-like string with realistic appearance
+      ctx.save();
+      const balloonBottom =
+        balloonY + (balloonHeight / 2 + tieSize) * finalScaleY;
+      const stringMidX = (balloonX + anchorX) / 2;
+      const stringMidY =
+        (balloonBottom + anchorY) / 2 + Math.sin(balloon.floatPhase / 2) * 8;
+
+      // Create tape path
+      ctx.beginPath();
+      ctx.moveTo(anchorX, anchorY);
+      ctx.quadraticCurveTo(
+        stringMidX,
+        stringMidY + 15,
+        balloonX,
+        balloonBottom
+      );
+
+      // Tape width and styling
+      const tapeWidth = 3 + size; // Wider like tape
+      ctx.lineWidth = tapeWidth;
+
+      // Tape shadow (darker outline)
+      ctx.strokeStyle = shadeColor(color, -60);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Main tape body
+      ctx.lineWidth = tapeWidth - 1;
+      ctx.strokeStyle = shadeColor(color, -20);
+      ctx.stroke();
+
+      // Tape highlight (top edge)
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = shadeColor(color, 30);
+      ctx.globalAlpha = 0.6;
+      ctx.stroke();
+
+      // Add tape texture lines for realism
+      ctx.globalAlpha = 0.3;
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = shadeColor(color, -10);
+
+      // Draw subtle texture lines along the tape
+      const textureSteps = 8;
+      for (let i = 1; i < textureSteps; i++) {
+        const t = i / textureSteps;
+        const textureX = anchorX + (balloonX - anchorX) * t;
+        const textureY = anchorY + (balloonBottom - anchorY) * t;
+
+        // Add slight curve to texture lines
+        const textureOffset = Math.sin(t * Math.PI) * 2;
+
+        ctx.beginPath();
+        ctx.moveTo(textureX - textureOffset, textureY - tapeWidth / 2);
+        ctx.lineTo(textureX + textureOffset, textureY + tapeWidth / 2);
+        ctx.stroke();
+      }
+
+      // Reset alpha
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    },
+    []
+  );
+
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      if (fragmentsRef.current.length > 100) {
+        fragmentsRef.current = fragmentsRef.current.filter(
+          (f) => f.opacity > 0.05
+        );
+      }
+    }, 1000);
+
+    return () => clearInterval(cleanupInterval);
   }, []);
+
+  // Re-initialize balloons when dialog closes
+  useEffect(() => {
+    // Only restore balloon when dialog changes from open to closed
+    if (prevDialogOpen && !dialogOpen && poppedBalloonId !== null) {
+      // Re-inflate the popped balloon
+      balloonsRef.current = balloonsRef.current.map((balloon) => {
+        if (balloon.id === poppedBalloonId) {
+          return {
+            ...balloon,
+            popped: false,
+            // Reset any animation state
+            floatPhase: Math.random() * Math.PI * 2,
+            rotationPhase: Math.random() * Math.PI * 2,
+            scalePhase: Math.random() * Math.PI * 2,
+            swayPhase: Math.random() * Math.PI * 2,
+            colorPhase: Math.random() * Math.PI * 2,
+            // Put balloon at a slightly different position for visual interest
+            x: balloon.x + (Math.random() - 0.5) * 20,
+          };
+        }
+        return balloon;
+      });
+
+      // Clear the popped balloon reference
+      setPoppedBalloonId(null);
+    }
+
+    // Update previous dialog state
+    setPrevDialogOpen(dialogOpen);
+  }, [dialogOpen, poppedBalloonId, prevDialogOpen]);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      setIsLoading(true);
+      try {
+        // Assume there's an API call to fetch activities based on the activePhoneme
+      } catch (error) {
+        console.error('Failed to fetch activities:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (activePhoneme) {
+      fetchActivities();
+    }
+  }, [activePhoneme]);
+
+  // Add this function before the popBalloon function
+  const handleFileDownload = useCallback(
+    async (fileId: string, fileName: string) => {
+      try {
+        setDownloadingFileId(fileId);
+        setDownloadError(null);
+
+        const result = await getFileDownloadUrl({ fileId });
+
+        if (result.success && result.url) {
+          // Create a temporary link element
+          const link = document.createElement('a');
+          //@ts-ignore
+          link.href = result.url;
+          const safeFileName = fileName || `activity-${fileId}.pdf`;
+          link.setAttribute('download', safeFileName);
+
+          // Required for Firefox
+          document.body.appendChild(link);
+
+          // Trigger download
+          link.click();
+
+          // Cleanup
+          document.body.removeChild(link);
+
+          // Show success state briefly
+          setDownloadSuccess(fileId);
+          setTimeout(() => {
+            setDownloadSuccess(null);
+          }, 2000);
+        } else {
+          setDownloadError(fileId);
+          setTimeout(() => {
+            setDownloadError(null);
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Download failed:', error);
+        setDownloadError(fileId);
+        setTimeout(() => {
+          setDownloadError(null);
+        }, 3000);
+      } finally {
+        setDownloadingFileId(null);
+      }
+    },
+    []
+  );
 
   // Utility to shade color
   const shadeColor = (color: string, percent: number): string => {
@@ -705,211 +955,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     B = Math.min(255, Math.max(0, Math.round(B * (1 + percent / 100))));
 
     return `#${R.toString(16).padStart(2, '0')}${G.toString(16).padStart(2, '0')}${B.toString(16).padStart(2, '0')}`;
-  };
-
-  const drawBalloon = (
-    ctx: CanvasRenderingContext2D,
-    balloon: Balloon,
-    floatY: number,
-    anchorX: number,
-    anchorY: number,
-    swayX: number = 0,
-    scaleMultiplier: number = 1,
-    rotationOffset: number = 0
-  ): void => {
-    const { x, y, color, size, rotation, hovering, pressing } = balloon;
-
-    // Smaller balloon dimensions
-    const balloonWidth = 70 * size; // Reduced from 100 to 70
-    const balloonHeight = 85 * size; // Reduced from 120 to 85
-
-    let scaleX = 1;
-    let scaleY = 1;
-    if (
-      balloon.x < -100 ||
-      balloon.x > ctx.canvas.width + 100 ||
-      balloon.y < -100 ||
-      balloon.y > ctx.canvas.height + 100
-    ) {
-      return;
-    }
-    if (hovering) {
-      scaleX = 1.08;
-      scaleY = 1.08;
-    }
-
-    if (pressing) {
-      scaleX = 1.1;
-      scaleY = 0.98;
-    }
-
-    // Apply animation effects
-    const balloonX = x + swayX;
-    const balloonY = y + floatY;
-    const finalScaleX = scaleX * scaleMultiplier;
-    const finalScaleY = scaleY * scaleMultiplier;
-    const finalRotation = rotation + rotationOffset;
-
-    ctx.save();
-    ctx.translate(balloonX, balloonY);
-    ctx.rotate(finalRotation);
-    ctx.scale(finalScaleX, finalScaleY);
-
-    // More rounded balloon shape
-    ctx.beginPath();
-    ctx.ellipse(0, 0, balloonWidth / 2, balloonHeight / 2, 0, 0, Math.PI * 2);
-
-    // Simplified gradient for performance
-    const gradientKey = `${color}-${balloonWidth}-${balloonHeight}`;
-    let gradient = gradientCache.current.get(gradientKey);
-
-    if (!gradient) {
-      gradient = ctx.createRadialGradient(
-        -balloonWidth / 4,
-        -balloonHeight / 4,
-        0,
-        0,
-        0,
-        balloonWidth * 0.8
-      );
-      gradient.addColorStop(0, shadeColor(color, 20));
-      gradient.addColorStop(0.6, color);
-      gradient.addColorStop(1, shadeColor(color, -10));
-      gradientCache.current.set(gradientKey, gradient);
-    }
-
-    ctx.fillStyle = gradient;
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 4;
-    ctx.fill();
-
-    // Thinner outline
-    ctx.strokeStyle = shadeColor(color, -30);
-    ctx.lineWidth = 2 * (size / 0.8);
-    ctx.stroke();
-
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-
-    // Subtler highlights
-    ctx.beginPath();
-    ctx.ellipse(
-      -balloonWidth / 5,
-      -balloonHeight / 4,
-      balloonWidth / 10,
-      balloonHeight / 8,
-      Math.PI / 4,
-      0,
-      Math.PI * 2
-    );
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.ellipse(
-      -balloonWidth / 10,
-      -balloonHeight / 10,
-      balloonWidth / 25,
-      balloonHeight / 25,
-      0,
-      0,
-      Math.PI * 2
-    );
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    ctx.fill();
-
-    // Smaller tie
-    const tieSize = 7 * size; // Reduced from 10 to 7
-    ctx.beginPath();
-    ctx.moveTo(-tieSize / 2, balloonHeight / 2);
-    ctx.lineTo(0, balloonHeight / 2 + tieSize);
-    ctx.lineTo(tieSize / 2, balloonHeight / 2);
-    ctx.closePath();
-    ctx.fillStyle = shadeColor(color, -20);
-    ctx.fill();
-    ctx.strokeStyle = shadeColor(color, -40);
-    ctx.lineWidth = 1.5 * (size / 0.8);
-    ctx.stroke();
-
-    // Text styling (unchanged)
-    ctx.save();
-    ctx.scale(1 / scaleX, 1 / scaleY);
-    ctx.rotate(-rotation);
-    const fontSize = Math.max(28 * size, 18); // Smaller font size to match smaller balloons
-    ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.strokeStyle = shadeColor(color, -50);
-    ctx.lineWidth = fontSize / 10;
-    ctx.strokeText(balloon.phoneme, 0, 0);
-    ctx.fillText(balloon.phoneme, 0, 0);
-    ctx.restore();
-
-    ctx.restore();
-
-    // Tape-like string with realistic appearance
-    ctx.save();
-    const balloonBottom =
-      balloonY + (balloonHeight / 2 + tieSize) * finalScaleY;
-    const stringMidX = (balloonX + anchorX) / 2;
-    const stringMidY =
-      (balloonBottom + anchorY) / 2 + Math.sin(balloon.floatPhase / 2) * 8;
-
-    // Create tape path
-    ctx.beginPath();
-    ctx.moveTo(anchorX, anchorY);
-    ctx.quadraticCurveTo(stringMidX, stringMidY + 15, balloonX, balloonBottom);
-
-    // Tape width and styling
-    const tapeWidth = 3 + size; // Wider like tape
-    ctx.lineWidth = tapeWidth;
-
-    // Tape shadow (darker outline)
-    ctx.strokeStyle = shadeColor(color, -60);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-
-    // Main tape body
-    ctx.lineWidth = tapeWidth - 1;
-    ctx.strokeStyle = shadeColor(color, -20);
-    ctx.stroke();
-
-    // Tape highlight (top edge)
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = shadeColor(color, 30);
-    ctx.globalAlpha = 0.6;
-    ctx.stroke();
-
-    // Add tape texture lines for realism
-    ctx.globalAlpha = 0.3;
-    ctx.lineWidth = 0.5;
-    ctx.strokeStyle = shadeColor(color, -10);
-
-    // Draw subtle texture lines along the tape
-    const textureSteps = 8;
-    for (let i = 1; i < textureSteps; i++) {
-      const t = i / textureSteps;
-      const textureX = anchorX + (balloonX - anchorX) * t;
-      const textureY = anchorY + (balloonBottom - anchorY) * t;
-
-      // Add slight curve to texture lines
-      const textureOffset = Math.sin(t * Math.PI) * 2;
-
-      ctx.beginPath();
-      ctx.moveTo(textureX - textureOffset, textureY - tapeWidth / 2);
-      ctx.lineTo(textureX + textureOffset, textureY + tapeWidth / 2);
-      ctx.stroke();
-    }
-
-    // Reset alpha
-    ctx.globalAlpha = 1;
-    ctx.restore();
   };
 
   // Handle apple click with server action call
@@ -992,6 +1037,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         size: 15 * size + Math.random() * 15 * size,
         x: 0,
         y: 0,
+        vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+        vy: Math.sin(angle) * speed * (0.5 + Math.random()),
+        life: 1.0,
+        alpha: 1.0,
         originX: x,
         originY: y,
         velocity: {
@@ -1014,6 +1063,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         size: 6 * size + Math.random() * 10 * size,
         x: 0,
         y: 0,
+        vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+        vy: Math.sin(angle) * speed * (0.5 + Math.random()),
+        life: 1.0,
+        alpha: 1.0,
         originX: x,
         originY: y,
         velocity: {
@@ -1036,6 +1089,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         size: 1 * size + Math.random() * 3 * size,
         x: 0,
         y: 0,
+        vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+        vy: Math.sin(angle) * speed * (0.5 + Math.random()),
+        life: 1.0,
+        alpha: 1.0,
         originX: x,
         originY: y,
         velocity: {

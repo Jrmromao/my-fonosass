@@ -138,9 +138,14 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
             id,
             x: position.x,
             y: position.y,
+            vx: 0,
+            vy: 0,
+            radius: 25 + Math.random() * 15,
             color: balloonColors[colorIndex],
             size,
             popped: false,
+            popTime: 0,
+            fragments: [],
             floatPhase: Math.random() * Math.PI * 2,
             floatSpeed: 0.3 + Math.random() * 0.3, // Slightly reduced for performance
             floatAmount: 2 + Math.random() * 3, // Slightly reduced for performance
@@ -346,6 +351,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [balloonCount]);
 
   useEffect(() => {
@@ -485,9 +491,14 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           id,
           x: position.x,
           y: position.y,
+          vx: 0,
+          vy: 0,
+          radius: 25 + Math.random() * 15,
           color: balloonColors[colorIndex],
           size,
           popped: false,
+          popTime: 0,
+          fragments: [],
           floatPhase: Math.random() * Math.PI * 2,
           floatSpeed: 0.3 + Math.random() * 0.3, // Slightly reduced for performance
           floatAmount: 2 + Math.random() * 3, // Slightly reduced for performance
@@ -615,9 +626,14 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           id: -1,
           x,
           y,
+          vx: 0,
+          vy: 0,
+          radius: 25 + Math.random() * 15,
           color: '',
           size: 0.7 + Math.random() * 0.5,
           popped: false,
+          popTime: 0,
+          fragments: [],
           floatPhase: 0,
           floatSpeed: 0,
           floatAmount: 0,
@@ -1081,6 +1097,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         size: 15 * size + Math.random() * 15 * size,
         x: 0,
         y: 0,
+        vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+        vy: Math.sin(angle) * speed * (0.5 + Math.random()),
+        life: 1.0,
+        alpha: 1.0,
         originX: x,
         originY: y,
         velocity: {
@@ -1103,6 +1123,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         size: 6 * size + Math.random() * 10 * size,
         x: 0,
         y: 0,
+        vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+        vy: Math.sin(angle) * speed * (0.5 + Math.random()),
+        life: 1.0,
+        alpha: 1.0,
         originX: x,
         originY: y,
         velocity: {
@@ -1125,6 +1149,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         size: 1 * size + Math.random() * 3 * size,
         x: 0,
         y: 0,
+        vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+        vy: Math.sin(angle) * speed * (0.5 + Math.random()),
+        life: 1.0,
+        alpha: 1.0,
         originX: x,
         originY: y,
         velocity: {
@@ -1337,6 +1365,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
                 setDialogOpen(true);
               }}
               className="p-2 bg-white rounded text-gray-800"
+              aria-label={`Selecionar fonema ${phoneme}`}
             >
               /{phoneme}/
             </button>
@@ -1389,9 +1418,14 @@ const findValidPosition = (
         id: -1,
         x,
         y,
+        vx: 0,
+        vy: 0,
+        radius: 25 + Math.random() * 15,
         color: '',
         size: 0.7 + Math.random() * 0.5,
         popped: false,
+        popTime: 0,
+        fragments: [],
         floatPhase: 0,
         floatSpeed: 0,
         floatAmount: 0,

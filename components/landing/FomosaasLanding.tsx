@@ -70,7 +70,7 @@ export default function FomosaasLanding({
               <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
                 Fonoaudiologia Divertida
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-pink-500 to-yellow-400">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-indigo-600 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-pink-500 to-yellow-400">
                 Exercícios de fala divertidos para crianças
               </h1>
               <p className="text-lg md:text-xl text-blue-700 dark:text-blue-300 mb-8 max-w-2xl mx-auto">
@@ -475,9 +475,9 @@ export default function FomosaasLanding({
                     />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-blue-900 dark:text-white">
+                    <h3 className="font-semibold text-blue-900 dark:text-white">
                       {testimonial.name}
-                    </h4>
+                    </h3>
                     <p className="text-sm text-blue-600 dark:text-blue-400">
                       {testimonial.relation}
                     </p>
@@ -654,6 +654,8 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex justify-between items-center w-full text-left focus:outline-none"
+        aria-label={`${isOpen ? 'Fechar' : 'Abrir'} pergunta: ${question}`}
+        aria-expanded={isOpen}
       >
         <h3 className="text-lg font-medium text-blue-900 dark:text-white">
           {question}

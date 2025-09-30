@@ -1,5 +1,6 @@
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { Providers } from '@/components/Providers';
+import AccessibilityAudit from '@/components/accessibility/AccessibilityAudit';
 import StructuredData from '@/components/seo/StructuredData';
 import { ptBR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
@@ -161,6 +162,11 @@ export default function RootLayout({
           className={`${inter.className} flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
           suppressHydrationWarning={true}
         >
+          {/* Skip to main content link for accessibility */}
+          <a href="#main-content" className="skip-link">
+            Pular para o conteúdo principal
+          </a>
+
           {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
             <GoogleAnalytics
               GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
@@ -172,6 +178,7 @@ export default function RootLayout({
             <Analytics />
           </Providers>
           <SpeedInsights />
+          <AccessibilityAudit />
         </body>
       </html>
     </ClerkProvider>

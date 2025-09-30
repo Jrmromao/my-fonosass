@@ -10,7 +10,7 @@ export default function LandingFooter() {
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">AF</span>
               </div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+              <span className="text-xl font-bold text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
                 Almanaque da Fala
               </span>
             </Link>
@@ -22,6 +22,7 @@ export default function LandingFooter() {
               <Link
                 href="#"
                 className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
+                aria-label="Facebook"
               >
                 <svg
                   className="w-5 h-5"
@@ -39,6 +40,7 @@ export default function LandingFooter() {
               <Link
                 href="#"
                 className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
+                aria-label="Twitter"
               >
                 <svg
                   className="w-5 h-5"
@@ -52,6 +54,7 @@ export default function LandingFooter() {
               <Link
                 href="#"
                 className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
+                aria-label="GitHub"
               >
                 <svg
                   className="w-5 h-5"
@@ -69,6 +72,7 @@ export default function LandingFooter() {
               <Link
                 href="#"
                 className="text-blue-500 hover:text-purple-500 dark:text-blue-400 dark:hover:text-purple-400"
+                aria-label="Informações"
               >
                 <svg
                   className="w-5 h-5"
@@ -248,7 +252,10 @@ export default function LandingFooter() {
               &copy; {new Date().getFullYear()} Almanaque da Fala. Todos os
               direitos reservados.
             </p>
-            <button className="px-4 py-2 bg-white border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors flex items-center gap-2">
+            <button
+              className="px-4 py-2 bg-white border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors flex items-center gap-2"
+              aria-label="Gerenciar consentimento de cookies"
+            >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"

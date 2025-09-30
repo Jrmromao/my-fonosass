@@ -4,9 +4,14 @@ export interface Balloon {
   id: number;
   x: number;
   y: number;
+  vx: number; // velocity x
+  vy: number; // velocity y
+  radius: number; // radius for physics calculations
   color: string;
   size: number;
   popped: boolean;
+  popTime?: number; // time when balloon was popped
+  fragments?: Fragment[]; // fragments for explosion effect
   floatPhase: number;
   floatSpeed: number;
   floatAmount: number;
@@ -36,6 +41,10 @@ export interface Fragment {
   size: number;
   x: number;
   y: number;
+  vx: number; // velocity x
+  vy: number; // velocity y
+  life: number; // life remaining (0-1)
+  alpha: number; // opacity (0-1)
   originX: number;
   originY: number;
   velocity: {

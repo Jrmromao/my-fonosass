@@ -111,10 +111,10 @@ export default function EspecialistasClient() {
         <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
           Especialistas em Fonoaudiologia
         </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
+        <h2 className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
           Conecte-se com fonoaudiólogos especialistas e receba orientação
           profissional personalizada
-        </p>
+        </h2>
 
         {/* Search Bar */}
         <motion.div
@@ -127,10 +127,12 @@ export default function EspecialistasClient() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
+              id="search-specialists"
               placeholder="Buscar especialistas por nome, especialidade ou localização..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              aria-label="Buscar especialistas por nome, especialidade ou localização"
             />
           </div>
         </motion.div>
@@ -182,7 +184,7 @@ export default function EspecialistasClient() {
                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
                   {stat.value}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">{stat.label}</p>
+                <p className="text-gray-700 dark:text-gray-200">{stat.label}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -204,9 +206,11 @@ export default function EspecialistasClient() {
                   Especialidade:
                 </label>
                 <select
+                  id="specialty-filter"
                   value={selectedSpecialty}
                   onChange={(e) => setSelectedSpecialty(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
+                  aria-label="Filtrar por especialidade"
                 >
                   <option value="all">Todas</option>
                   <option value="linguagem">Linguagem Infantil</option>
@@ -225,9 +229,11 @@ export default function EspecialistasClient() {
                   Disponibilidade:
                 </label>
                 <select
+                  id="availability-filter"
                   value={selectedAvailability}
                   onChange={(e) => setSelectedAvailability(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors"
+                  aria-label="Filtrar por disponibilidade"
                 >
                   <option value="all">Todas</option>
                   <option value="online">Apenas Online</option>
@@ -286,10 +292,10 @@ export default function EspecialistasClient() {
                       </p>
                       <div className="flex items-center gap-1 mt-1">
                         <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                           {especialista.avaliacao}
                         </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           ({especialista.consultas} consultas)
                         </span>
                       </div>
@@ -308,19 +314,19 @@ export default function EspecialistasClient() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                     <GraduationCap className="h-4 w-4" />
                     <span>{especialista.formacao}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                     <Award className="h-4 w-4" />
                     <span>{especialista.crfa}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                     <MapPin className="h-4 w-4" />
                     <span>{especialista.localizacao}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
                     <Clock className="h-4 w-4" />
                     <span>{especialista.disponibilidade}</span>
                   </div>
@@ -328,7 +334,7 @@ export default function EspecialistasClient() {
               </CardHeader>
 
               <CardContent className="pt-0">
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">
                   {especialista.descricao}
                 </p>
 
@@ -368,6 +374,11 @@ export default function EspecialistasClient() {
                           : 'hover:border-red-500 hover:text-red-500'
                       }`}
                       onClick={() => handleFavorite(especialista.id)}
+                      aria-label={
+                        favoriteSpecialists.has(especialista.id)
+                          ? `Remover ${especialista.nome} dos favoritos`
+                          : `Adicionar ${especialista.nome} aos favoritos`
+                      }
                     >
                       <Heart
                         className={`h-4 w-4 ${favoriteSpecialists.has(especialista.id) ? 'fill-current' : ''}`}
@@ -393,7 +404,7 @@ export default function EspecialistasClient() {
             <h2 className="text-3xl font-bold mb-4">
               Não encontrou o especialista ideal?
             </h2>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-blue-50 mb-8 max-w-2xl mx-auto">
               Nossa equipe pode ajudar você a encontrar o fonoaudiólogo perfeito
               para suas necessidades específicas
             </p>

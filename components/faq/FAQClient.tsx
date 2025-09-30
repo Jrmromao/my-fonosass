@@ -190,9 +190,12 @@ export default function FAQClient() {
       />
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Enhanced Header */}
-        <div className="text-center mb-16">
+        <header className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 text-indigo-600 text-sm font-medium mb-6">
-            <span className="w-2 h-2 bg-indigo-600 rounded-full mr-2"></span>
+            <span
+              className="w-2 h-2 bg-indigo-600 rounded-full mr-2"
+              aria-hidden="true"
+            ></span>
             Suporte & Ajuda
           </div>
           <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-6 leading-relaxed">
@@ -203,7 +206,7 @@ export default function FAQClient() {
             <strong>Almanaque da Fala</strong> e descubra como nossos exercícios
             interativos podem ajudar no desenvolvimento da fala do seu filho
           </p>
-        </div>
+        </header>
 
         {/* Statistics Section */}
         <div className="mb-16">

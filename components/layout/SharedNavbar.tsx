@@ -122,6 +122,8 @@ export default function SharedNavbar({
           <button
             className="md:hidden p-2 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-500 dark:text-blue-400"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
