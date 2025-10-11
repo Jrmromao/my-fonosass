@@ -11,6 +11,7 @@ import {
 import { navigationItems } from '@/lib/constants/content';
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import { Menu } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 
 export default function Header() {
@@ -20,19 +21,27 @@ export default function Header() {
     <header className="px-4 lg:px-6 h-20 flex items-center fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-indigo-100">
       <nav className="flex items-center justify-between w-full max-w-7xl mx-auto">
         <a
-          className="flex items-center gap-2 text-2xl font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-lg px-2 py-1"
+          className="flex items-center space-x-4 text-2xl font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-lg px-2 py-1 group"
           href="/"
           aria-label="Almanaque da Fala - Página inicial"
         >
-          <div className="size-10 bg-indigo-600 text-white flex items-center justify-center rounded-lg rotate-3 hover:rotate-6 transition-transform">
-            {/* Icon placeholder - replace with actual icon */}
-            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-              <span className="font-black text-sm">AF</span>
-            </div>
+          <div className="relative w-24 h-24 transition-all duration-300 group-hover:scale-105">
+            <Image
+              src="/images/logo.png"
+              alt="Almanaque da Fala Logo"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
-          <span className="hidden sm:inline text-indigo-600 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-            Almanaque da Fala
-          </span>
+          <div className="flex flex-col">
+            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 leading-tight group-hover:from-indigo-700 group-hover:to-purple-700 transition-all duration-300">
+              Almanaque da Fala
+            </span>
+            <span className="text-sm text-gray-600 font-medium">
+              Fonoaudiologia
+            </span>
+          </div>
         </a>
 
         <nav

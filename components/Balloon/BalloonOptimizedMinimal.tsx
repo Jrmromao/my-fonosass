@@ -180,8 +180,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       console.log('Canvas not found!');
       return;
     }
-    console.log('Canvas found, initializing balloons...');
-
     const rect = canvas.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -322,7 +320,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     });
 
     balloonsRef.current = balloons;
-    console.log('Balloons created:', balloons.length);
   }, [findValidPosition]);
 
   // Start animation function
@@ -334,7 +331,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     }
 
     const animate = (timestamp: number): void => {
-      console.log('Animation frame called, timestamp:', timestamp);
       // Pause animation when tab is hidden for better performance
       if (document.hidden) {
         animationRef.current = requestAnimationFrame(animate);
@@ -345,7 +341,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
       // Skip frames when browser tab is inactive or frame rate is very low
       if (delta > 100) {
-        console.log('Skipping frame due to high delta:', delta);
         animationRef.current = requestAnimationFrame(animate);
         return;
       }
@@ -354,7 +349,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       const targetFPS = 30;
       const frameInterval = 1000 / targetFPS;
       if (timestamp - lastFrameTime < frameInterval) {
-        console.log('Skipping frame due to frame rate limiting');
         animationRef.current = requestAnimationFrame(animate);
         return;
       }
@@ -388,7 +382,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
       // Only sort balloons if necessary (when dragging or hovering)
       const sortedBalloons = hasDraggingBalloons
-        ? [...balloonsRef.current].sort((a, b) => a.zIndex - b.zIndex)
+        ? balloonsRef.current.slice().sort((a, b) => a.zIndex - b.zIndex)
         : balloonsRef.current;
 
       // Update and draw visible balloons
@@ -404,12 +398,12 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         const scaleMultiplier = 1; // Disabled for performance
         const rotationOffset = 0; // Disabled for performance
 
-        // Skip drawing balloons that are far off-screen
+        // Skip drawing balloons that are far off-screen (more aggressive culling)
         if (
-          balloon.x < -100 ||
-          balloon.x > width + 100 ||
-          balloon.y + floatY < -150 ||
-          balloon.y + floatY > height + 50
+          balloon.x < -150 ||
+          balloon.x > width + 150 ||
+          balloon.y + floatY < -200 ||
+          balloon.y + floatY > height + 100
         ) {
           return;
         }
@@ -419,14 +413,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
           balloon.anchorGroup === 'left' ? leftAnchorX : rightAnchorX;
 
         // Draw balloon with enhanced animations
-        console.log(
-          `Drawing balloon ${index}:`,
-          balloon.x,
-          balloon.y,
-          balloon.phoneme,
-          'floatY:',
-          floatY
-        );
         try {
           drawBalloon(
             ctx,
@@ -536,7 +522,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     };
     animationRef.current = requestAnimationFrame(animate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draggingBalloonId]);
+  }, []); // Remove draggingBalloonId dependency to prevent infinite re-renders
 
   // Initialize canvas and balloons
   useEffect(() => {
@@ -588,12 +574,9 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     }
 
     // Initialize balloons
-    console.log('Initializing balloons...');
     initializeBalloons();
-    console.log('Balloons initialized:', balloonsRef.current.length);
 
     // Start animation
-    console.log('Starting animation...');
     startAnimation();
 
     // Handle window resize to reinitialize balloons with new sizes
@@ -610,7 +593,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       window.removeEventListener('resize', handleResize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [balloonCount]);
+  }, []); // Remove balloonCount dependency to prevent infinite re-renders
 
   // Draw balloon function
   const drawBalloon = useCallback(
@@ -624,14 +607,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       scaleMultiplier: number = 1,
       rotationOffset: number = 0
     ): void => {
-      console.log('drawBalloon called with:', {
-        x: balloon.x,
-        y: balloon.y,
-        phoneme: balloon.phoneme,
-        floatY,
-        anchorX,
-        anchorY,
-      });
       const { x, y, color, size, rotation, hovering, pressing } = balloon;
 
       // Smaller balloon dimensions
@@ -1356,7 +1331,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         });
       }
     },
-    [draggingBalloonId]
+    [] // Remove draggingBalloonId dependency to prevent infinite re-renders
   );
 
   // Handle both mouse and touch up events

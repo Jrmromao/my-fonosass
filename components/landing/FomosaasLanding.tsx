@@ -103,16 +103,6 @@ export default function FomosaasLanding({
         >
           <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">
             <LazyBalloon />
-
-            {/* Clear CTA at bottom */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <Link
-                href="/dashboard/games"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all"
-              >
-                Ver Todos os Exercícios
-              </Link>
-            </div>
           </div>
 
           <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 border border-blue-200 dark:border-blue-800">

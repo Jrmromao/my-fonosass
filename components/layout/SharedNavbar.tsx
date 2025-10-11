@@ -4,6 +4,7 @@ import { APP_NAME } from '@/utils/constants';
 import { useAuth } from '@clerk/nextjs';
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -47,15 +48,24 @@ export default function SharedNavbar({
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
-                <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">A</span>
-                </div>
+            <Link href="/" className="flex items-center space-x-4 group">
+              <div className="relative w-32 h-32 transition-all duration-300 group-hover:scale-105">
+                <Image
+                  src="/images/logo.png"
+                  alt="Almanaque da Fala Logo"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400">
-                {APP_NAME}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-400 leading-tight group-hover:from-pink-600 group-hover:to-yellow-500 transition-all duration-300">
+                  {APP_NAME}
+                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                  Fonoaudiologia
+                </span>
+              </div>
             </Link>
           </div>
 

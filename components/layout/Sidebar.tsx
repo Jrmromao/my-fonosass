@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { APP_NAME } from '@/utils/constants';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { BarChart2, BookOpen, Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -15,8 +16,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed to match server
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user } = useUser();
@@ -69,8 +71,11 @@ export function Sidebar({ className }: SidebarProps) {
     // }
   ];
 
-  // Handle resize and set initial collapsed state
+  // Handle hydration and resize
   useEffect(() => {
+    // Mark as hydrated
+    setIsHydrated(true);
+
     const handleResize = () => {
       const width = window.innerWidth;
       if (width < 768) {
@@ -132,43 +137,45 @@ export function Sidebar({ className }: SidebarProps) {
         suppressHydrationWarning={true}
       >
         {/* Logo area */}
-        <div className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-teal-500">
-            {/* Icon placeholder - replace with actual icon */}
-            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-              <span className="text-sm font-bold text-white">TP</span>
+        <div
+          className={`${!isHydrated || isCollapsed ? 'h-16' : 'h-20'} flex items-center border-b border-gray-200 dark:border-gray-800 transition-all duration-300`}
+        >
+          <div
+            className={`flex items-center ${!isHydrated || isCollapsed ? 'justify-center w-full px-2' : 'space-x-3 px-4'}`}
+          >
+            <div
+              className={`relative transition-all duration-300 ${
+                !isHydrated || isCollapsed ? 'h-16 w-16' : 'h-24 w-24'
+              }`}
+            >
+              <Image
+                src="/images/logo.png"
+                alt="Almanaque da Fala Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
+            {isHydrated && !isCollapsed && (
+              <div className="flex flex-col">
+                <span className="text-base font-bold text-gray-900 dark:text-white leading-tight">
+                  {APP_NAME}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  Fonoaudiologia
+                </span>
+              </div>
+            )}
           </div>
-          {!isCollapsed && (
-            <span className="ml-3 text-lg font-semibold text-gray-900 dark:text-white">
-              {APP_NAME}
-            </span>
-          )}
 
           {/* Collapse toggle for desktop */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-auto hidden md:flex text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-          >
-            {isCollapsed ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 6L15 12L9 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            ) : (
+          {isHydrated && !isCollapsed && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto hidden md:flex text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+            >
               <svg
                 width="16"
                 height="16"
@@ -184,13 +191,43 @@ export function Sidebar({ className }: SidebarProps) {
                   strokeLinejoin="round"
                 />
               </svg>
-            )}
-          </Button>
+            </Button>
+          )}
+
+          {/* Expand toggle for collapsed state */}
+          {isHydrated && isCollapsed && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 -right-3 hidden md:flex text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full w-6 h-6 p-0 shadow-lg border border-gray-200 dark:border-gray-700"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 6L15 12L9 18"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Button>
+          )}
         </div>
 
         {/* Nav items with professional styling */}
-        <nav className="flex-1 px-3 py-6 overflow-y-auto">
-          <ul className="space-y-1">
+        <nav
+          className={`flex-1 overflow-y-auto transition-all duration-300 ${!isHydrated || isCollapsed ? 'px-2 py-4' : 'px-3 py-6'}`}
+        >
+          <ul
+            className={`space-y-1 ${!isHydrated || isCollapsed ? 'space-y-2' : ''}`}
+          >
             {sidebarItems.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -202,32 +239,42 @@ export function Sidebar({ className }: SidebarProps) {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center rounded-lg transition-all duration-200',
-                      isCollapsed ? 'justify-center p-3' : 'px-4 py-3',
+                      'flex items-center rounded-lg transition-all duration-200 group relative',
+                      !isHydrated || isCollapsed
+                        ? 'justify-center p-3 mx-1'
+                        : 'px-4 py-3',
                       isActive
-                        ? 'bg-gray-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-medium'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/60 hover:text-blue-600 dark:hover:text-blue-400'
+                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 font-medium shadow-sm'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50 dark:hover:from-gray-800/60 dark:hover:to-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
                     )}
+                    title={!isHydrated || isCollapsed ? item.title : undefined}
                   >
                     <div className="flex items-center gap-2">
                       <item.icon
                         className={cn(
-                          'flex-shrink-0',
+                          'flex-shrink-0 transition-all duration-200',
                           isActive
                             ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-gray-500 dark:text-gray-400',
-                          isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
+                            : 'text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400',
+                          !isHydrated || isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
                         )}
                       />
                     </div>
 
-                    {!isCollapsed && (
+                    {isHydrated && !isCollapsed && (
                       <span
                         className="ml-3 text-sm font-medium"
                         suppressHydrationWarning={true}
                       >
                         {item.title}
                       </span>
+                    )}
+
+                    {/* Tooltip for collapsed state */}
+                    {isHydrated && isCollapsed && (
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                        {item.title}
+                      </div>
                     )}
                   </Link>
                 </li>

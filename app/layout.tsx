@@ -1,7 +1,6 @@
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { Providers } from '@/components/Providers';
 import AccessibilityAudit from '@/components/accessibility/AccessibilityAudit';
-import PerformanceMonitor from '@/components/analytics/PerformanceMonitor';
 import WebVitals from '@/components/analytics/WebVitals';
 import WebVitalsDashboard from '@/components/analytics/WebVitalsDashboard';
 import StructuredData from '@/components/seo/StructuredData';
@@ -215,7 +214,7 @@ export default function RootLayout({
             debug={process.env.NODE_ENV === 'development'}
           />
           <WebVitalsDashboard />
-          <PerformanceMonitor />
+          {/* <PerformanceMonitor /> */}
         </body>
       </html>
     </ClerkProvider>
