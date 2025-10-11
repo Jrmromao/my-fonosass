@@ -23,12 +23,12 @@ export default function SignUpPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900 flex-col items-center justify-center px-12 text-indigo-900 dark:text-white">
         <div className="max-w-md text-center">
           {/* Logo */}
-          <div className="w-32 h-32 rounded-full bg-white/80 dark:bg-indigo-800/80 backdrop-blur-sm flex items-center justify-center mx-auto mb-8 shadow-lg">
+          <div className="w-48 h-48 rounded-full bg-white/80 dark:bg-indigo-800/80 backdrop-blur-sm flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/20">
             <Image
               src="/images/logo.png"
               alt="Almanaque da Fala Logo"
-              width={112}
-              height={112}
+              width={192}
+              height={192}
               className="object-contain"
               priority
             />
@@ -78,8 +78,8 @@ export default function SignUpPage() {
               <Image
                 src="/images/logo.png"
                 alt="Almanaque da Fala Logo"
-                width={112}
-                height={112}
+                width={160}
+                height={160}
                 className="object-contain"
                 priority
               />
