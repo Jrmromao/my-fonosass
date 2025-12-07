@@ -1,0 +1,19 @@
+{
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "cursor.general.enableAutoComplete": true,
+  "cursor.general.enableCodeActions": true,
+  "cursor.general.enableInlineChat": true,
+  "files.associations": {
+    ".cursor/context.md": "markdown",
+    ".cursor/rules/project-rules.md": "markdown",
+    ".cursor/workflows.md": "markdown",
+    ".cursor/templates.md": "markdown",
+    ".cursor/README.md": "markdown"
+  }
+}

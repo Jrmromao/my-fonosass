@@ -44,3 +44,12 @@ next-env.d.ts
 .idea/misc.xml
 
 .idea/workspace.xml
+
+# waiting list data
+/data/
+
+# Cursor AI session data (personal learning data)
+.cursor/** 
+
+
+.playwright-mcp/

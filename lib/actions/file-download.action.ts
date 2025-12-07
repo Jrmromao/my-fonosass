@@ -28,6 +28,7 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
             include: {
                 activity: {
                     select: {
+                        id: true,
                         createdById: true,
                         isPublic: true,
                     }
@@ -65,19 +66,14 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
             Key: file.s3Key,
             ResponseContentDisposition: contentDisposition,
         });
+        
         // Generate a pre-signed URL that expires in 5 minutes (300 seconds)
         const signedUrl = await getSignedUrl(s3Client, command, {
             expiresIn: 300
         });
 
-        // TODO need to add the activity file download count to get user metrics
-        // // Log the download attempt for analytics (optional)
-        // await prisma.activityFileDownload.create({
-        //     data: {
-        //         activityFileId: file.id,
-        //         userId,
-        //     }
-        // });
+        // TODO: Add download tracking back once core functionality works
+        // For now, just make downloads work
 
         return {
             success: true,

@@ -193,7 +193,6 @@
 // //     const [selectedLetter, setSelectedLetter] = React.useState<Letter | null>(null);
 // //
 // //
-// //     console.log(selectedLetter)
 // //
 // //     return (
 // //         <div className="w-full max-w-4xl mx-auto p-4">
@@ -334,203 +333,208 @@
 
 import React, { useState } from 'react';
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface Position {
-    x: number;
-    y: number;
+  x: number;
+  y: number;
 }
 
 interface Apple {
-    id: string;
-    position: Position;
-    message: string;
-    size: number;
+  id: string;
+  position: Position;
+  message: string;
+  size: number;
 }
 
 interface TreeProps {
-    messages?: string[];
-    onAppleClick?: (apple: Apple) => void;
-    className?: string;
+  messages?: string[];
+  onAppleClick?: (apple: Apple) => void;
+  className?: string;
 }
 
 const createApplePositions = (): Apple[] => {
-    const basePositions = [
-        // Left cluster
-        { x: 180, y: 220 },
-        { x: 160, y: 280 },
-        { x: 200, y: 320 },
-        { x: 240, y: 260 },
-        // Center top cluster
-        { x: 300, y: 180 },
-        { x: 340, y: 150 },
-        { x: 380, y: 160 },
-        // Right cluster
-        { x: 420, y: 220 },
-        { x: 460, y: 280 },
-        { x: 440, y: 320 },
-        // Bottom cluster
-        { x: 280, y: 380 },
-        { x: 320, y: 420 },
-        { x: 360, y: 400 },
-        // Scattered apples
-        { x: 240, y: 340 },
-        { x: 400, y: 360 }
-    ].map((pos, index) => ({
-        id: `apple-${index}`,
-        position: {
-            x: pos.x + (Math.random() * 10 - 5),
-            y: pos.y + (Math.random() * 10 - 5)
-        },
-        message: `Apple ${index + 1}`,
-        size: 12 + Math.random() * 4
-    }));
+  const basePositions = [
+    // Left cluster
+    { x: 180, y: 220 },
+    { x: 160, y: 280 },
+    { x: 200, y: 320 },
+    { x: 240, y: 260 },
+    // Center top cluster
+    { x: 300, y: 180 },
+    { x: 340, y: 150 },
+    { x: 380, y: 160 },
+    // Right cluster
+    { x: 420, y: 220 },
+    { x: 460, y: 280 },
+    { x: 440, y: 320 },
+    // Bottom cluster
+    { x: 280, y: 380 },
+    { x: 320, y: 420 },
+    { x: 360, y: 400 },
+    // Scattered apples
+    { x: 240, y: 340 },
+    { x: 400, y: 360 },
+  ].map((pos, index) => ({
+    id: `apple-${index}`,
+    position: {
+      x: pos.x + (Math.random() * 10 - 5),
+      y: pos.y + (Math.random() * 10 - 5),
+    },
+    message: `Apple ${index + 1}`,
+    size: 12 + Math.random() * 4,
+  }));
 
-    return basePositions;
+  return basePositions;
 };
 
 const PhonemeTree: React.FC<TreeProps> = ({
-                                                    messages = [],
-                                                    onAppleClick,
-                                                    className = ''
-                                                }) => {
-    const [selectedApple, setSelectedApple] = useState<Apple | null>(null);
-    const [apples] = useState<Apple[]>(() => {
-        const positions = createApplePositions();
-        return positions.map((apple, index) => ({
-            ...apple,
-            message: messages[index] || apple.message
-        }));
-    });
+  messages = [],
+  onAppleClick,
+  className = '',
+}) => {
+  const [selectedApple, setSelectedApple] = useState<Apple | null>(null);
+  const [apples] = useState<Apple[]>(() => {
+    const positions = createApplePositions();
+    return positions.map((apple, index) => ({
+      ...apple,
+      message: messages[index] || apple.message,
+    }));
+  });
 
-    const handleAppleClick = (apple: Apple): void => {
-        setSelectedApple(apple);
-        if (onAppleClick) {
-            onAppleClick(apple);
-        }
-    };
+  const handleAppleClick = (apple: Apple): void => {
+    setSelectedApple(apple);
+    if (onAppleClick) {
+      onAppleClick(apple);
+    }
+  };
 
-    return (
-        <div className={`relative ${className}`}>
-            <Dialog>
-                <svg
-                    viewBox="0 0 600 600"
-                    className="w-full h-auto"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <defs>
-                        {/* Enhanced gradients */}
-                        <radialGradient id="leafGradient" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="#2D5A27"/>
-                            <stop offset="40%" stopColor="#1B4121"/>
-                            <stop offset="100%" stopColor="#0F2816"/>
-                        </radialGradient>
+  return (
+    <div className={`relative ${className}`}>
+      <Dialog>
+        <svg
+          viewBox="0 0 600 600"
+          className="w-full h-auto"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            {/* Enhanced gradients */}
+            <radialGradient id="leafGradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#2D5A27" />
+              <stop offset="40%" stopColor="#1B4121" />
+              <stop offset="100%" stopColor="#0F2816" />
+            </radialGradient>
 
-                        <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#4A2F1D"/>
-                            <stop offset="50%" stopColor="#6B4423"/>
-                            <stop offset="100%" stopColor="#4A2F1D"/>
-                        </linearGradient>
+            <linearGradient
+              id="trunkGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor="#4A2F1D" />
+              <stop offset="50%" stopColor="#6B4423" />
+              <stop offset="100%" stopColor="#4A2F1D" />
+            </linearGradient>
 
-                        {/* Shadow */}
-                        <radialGradient id="shadowGradient" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor="rgba(0,0,0,0.2)"/>
-                            <stop offset="100%" stopColor="rgba(0,0,0,0)"/>
-                        </radialGradient>
-                    </defs>
+            {/* Shadow */}
+            <radialGradient id="shadowGradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(0,0,0,0.2)" />
+              <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+            </radialGradient>
+          </defs>
 
-                    {/* Ground shadow */}
-                    <ellipse
-                        cx="300"
-                        cy="580"
-                        rx="200"
-                        ry="20"
-                        fill="url(#shadowGradient)"
-                    />
+          {/* Ground shadow */}
+          <ellipse
+            cx="300"
+            cy="580"
+            rx="200"
+            ry="20"
+            fill="url(#shadowGradient)"
+          />
 
-                    {/* Tree trunk */}
-                    <path
-                        d="M280 570
+          {/* Tree trunk */}
+          <path
+            d="M280 570
                C280 570 260 400 260 400
                C260 380 340 380 340 400
                C340 400 320 570 320 570
                Z"
-                        fill="url(#trunkGradient)"
-                    />
+            fill="url(#trunkGradient)"
+          />
 
-                    {/* Tree foliage */}
-                    <path
-                        d="M300 100
+          {/* Tree foliage */}
+          <path
+            d="M300 100
                C200 100 100 200 100 300
                C100 400 200 500 300 500
                C400 500 500 400 500 300
                C500 200 400 100 300 100"
-                        fill="url(#leafGradient)"
-                    />
+            fill="url(#leafGradient)"
+          />
 
-                    {/* Interactive apples */}
-                    {apples.map((apple) => (
-                        <DialogTrigger key={apple.id} asChild>
-                            <g
-                                onClick={() => handleAppleClick(apple)}
-                                className="cursor-pointer transform transition-all duration-200 hover:scale-110"
-                                role="button"
-                                aria-label={`Apple with message: ${apple.message}`}
-                            >
-                                {/* Apple body */}
-                                <circle
-                                    cx={apple.position.x}
-                                    cy={apple.position.y}
-                                    r={apple.size}
-                                    fill="#E41E31"
-                                    className="transition-colors hover:fill-current hover:text-red-600"
-                                />
-                                {/* Highlight */}
-                                <circle
-                                    cx={apple.position.x - apple.size/3}
-                                    cy={apple.position.y - apple.size/3}
-                                    r={apple.size/4}
-                                    fill="rgba(255,255,255,0.3)"
-                                />
-                                {/* Stem */}
-                                <path
-                                    d={`M${apple.position.x} ${apple.position.y - apple.size}
+          {/* Interactive apples */}
+          {apples.map((apple) => (
+            <DialogTrigger key={apple.id} asChild>
+              <g
+                onClick={() => handleAppleClick(apple)}
+                className="cursor-pointer transform transition-all duration-200 hover:scale-110"
+                role="button"
+                aria-label={`Apple with message: ${apple.message}`}
+              >
+                {/* Apple body */}
+                <circle
+                  cx={apple.position.x}
+                  cy={apple.position.y}
+                  r={apple.size}
+                  fill="#E41E31"
+                  className="transition-colors hover:fill-current hover:text-red-600"
+                />
+                {/* Highlight */}
+                <circle
+                  cx={apple.position.x - apple.size / 3}
+                  cy={apple.position.y - apple.size / 3}
+                  r={apple.size / 4}
+                  fill="rgba(255,255,255,0.3)"
+                />
+                {/* Stem */}
+                <path
+                  d={`M${apple.position.x} ${apple.position.y - apple.size}
                      C${apple.position.x} ${apple.position.y - apple.size - 2}
                      ${apple.position.x + 2} ${apple.position.y - apple.size - 4}
                      ${apple.position.x + 3} ${apple.position.y - apple.size - 3}`}
-                                    stroke="#634B3F"
-                                    strokeWidth="1.5"
-                                    fill="none"
-                                />
-                            </g>
-                        </DialogTrigger>
-                    ))}
-                </svg>
+                  stroke="#634B3F"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+              </g>
+            </DialogTrigger>
+          ))}
+        </svg>
 
-                {/* Dialog for apple messages */}
-                {selectedApple && (
-                    <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur">
-                        <DialogHeader>
-                            <DialogTitle className="text-xl font-semibold text-green-800">
-                                🍎 Apple Message
-                            </DialogTitle>
-                            <DialogDescription className="text-lg mt-4 text-gray-700">
-                                {selectedApple.message}
-                            </DialogDescription>
-                        </DialogHeader>
-                    </DialogContent>
-                )}
-            </Dialog>
-        </div>
-    );
+        {/* Dialog for apple messages */}
+        {selectedApple && (
+          <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold text-green-800">
+                🍎 Apple Message
+              </DialogTitle>
+              <DialogDescription className="text-lg mt-4 text-gray-700">
+                {selectedApple.message}
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        )}
+      </Dialog>
+    </div>
+  );
 };
-
 
 export default PhonemeTree;
 

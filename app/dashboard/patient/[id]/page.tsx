@@ -1,12 +1,11 @@
 "use client"
 
-import {useEffect, useState} from "react"
-import {Button} from "@/components/ui/button"
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
-import {Activity, Calendar, ChevronLeft, Clock, FileText, MessageSquare, Phone, User2} from 'lucide-react'
-import {useRouter} from "next/navigation";
-import {useParams} from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Activity, Calendar, ChevronLeft, Clock, FileText, MessageSquare, Phone, User2 } from 'lucide-react'
+import { useParams, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 // const sampleHistoryEvents = [
 //     {
@@ -93,8 +92,9 @@ export default function Page() {
             try {
                 if (!params.id) return
 
-
-
+                // Patient functionality is not yet implemented in the database
+                // This is a placeholder for future implementation
+                setError('Funcionalidade de pacientes ainda não implementada')
             } catch (err) {
                 setError('Failed to load patient data')
                 console.error(err)
@@ -105,6 +105,66 @@ export default function Page() {
 
         loadPatient()
     }, [params.id])
+
+    if (isLoading) {
+        return (
+            <div className="h-full p-8 bg-white">
+                <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded w-32 mb-6"></div>
+                    <div className="flex gap-6">
+                        <div className="w-2/3">
+                            <div className="flex items-start gap-6 mb-6">
+                                <div className="w-24 h-24 bg-gray-200 rounded-full"></div>
+                                <div className="space-y-2">
+                                    <div className="h-8 bg-gray-200 rounded w-64"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-32"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-1/3">
+                            <div className="h-64 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="h-full p-8 bg-white">
+                <Button variant="ghost" className="mb-6" onClick={() => router.back()}>
+                    <ChevronLeft className="w-4 h-4 mr-2"/>
+                    Voltar para lista
+                </Button>
+                <div className="text-center py-8">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Erro ao carregar paciente</h2>
+                    <p className="text-gray-600 mb-4">{error}</p>
+                    <Button onClick={() => window.location.reload()} variant="outline">
+                        Tentar novamente
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    if (!patient) {
+        return (
+            <div className="h-full p-8 bg-white">
+                <Button variant="ghost" className="mb-6" onClick={() => router.back()}>
+                    <ChevronLeft className="w-4 h-4 mr-2"/>
+                    Voltar para lista
+                </Button>
+                <div className="text-center py-8">
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Paciente não encontrado</h2>
+                    <p className="text-gray-600 mb-4">O paciente solicitado não foi encontrado.</p>
+                    <Button onClick={() => router.back()} variant="outline">
+                        Voltar para lista
+                    </Button>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="h-full p-8 bg-white">

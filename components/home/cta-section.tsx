@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
 export default function CTASection() {
   return (
@@ -10,7 +10,8 @@ export default function CTASection() {
             Pronto para Transformar sua Prática?
           </h2>
           <p className="max-w-[600px] text-xl text-indigo-100">
-            Junte-se a centenas de fonoaudiólogos que já estão revolucionando seu trabalho com o FonoSaaS.
+            Junte-se a centenas de fonoaudiólogos que já estão revolucionando
+            seu trabalho com o Almanaque da Fala.
           </p>
           <Button className="bg-white text-indigo-600 hover:bg-indigo-100 text-lg px-8 py-6 rounded-full shadow-xl hover:shadow-indigo-500/50 transition-all duration-300 transform hover:-translate-y-1">
             Comece seu Teste Gratuito <ArrowRight className="ml-2 size-5" />
@@ -18,5 +19,5 @@ export default function CTASection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

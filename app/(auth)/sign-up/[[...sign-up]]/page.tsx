@@ -1,71 +1,94 @@
-import { SignUp } from "@clerk/nextjs";
+import CustomSignUpForm from '@/components/auth/CustomSignUpForm';
+import { Home, Sparkles } from 'lucide-react';
+import Image from 'next/image';
 
 export default function SignUpPage() {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900">
-            <div className="w-full max-w-md px-6 py-8">
-                {/* Logo */}
-                <div className="flex items-center justify-center mb-8">
-                    <a href="/" className="cursor-pointer transition-transform hover:scale-105">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center">
-                            <span className="text-white font-bold text-xl">F</span>
-                        </div>
-                    </a>
-                </div>
+  return (
+    <div className="min-h-screen flex relative">
+      {/* Home Button - Floating and Playful */}
+      <div className="absolute top-6 left-6 z-10">
+        <a
+          href="/"
+          className="group flex items-center space-x-2 px-4 py-2 rounded-full bg-white/90 dark:bg-indigo-800/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-indigo-200 dark:border-indigo-700"
+        >
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-yellow-400 flex items-center justify-center group-hover:rotate-12 transition-transform duration-300">
+            <Home className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-indigo-700 dark:text-indigo-200 font-medium text-sm group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
+            Voltar ao Início
+          </span>
+        </a>
+      </div>
+      {/* Left Side - Promotional Section */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900 flex-col items-center justify-center px-12 text-indigo-900 dark:text-white">
+        <div className="max-w-md text-center">
+          {/* Logo */}
+          <div className="w-48 h-48 rounded-full bg-white/80 dark:bg-indigo-800/80 backdrop-blur-sm flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-blue-500/20">
+            <Image
+              src="/images/logo.png"
+              alt="Almanaque da Fala Logo"
+              width={192}
+              height={192}
+              className="object-contain"
+              priority
+            />
+          </div>
 
-                <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-pink-500 to-yellow-400 mb-2">
-                        Crie sua conta
-                    </h1>
-                    <p className="text-indigo-600 dark:text-blue-300">
-                        Cadastre-se e comece a sua jornada com exercícios de fonoaudiologia
-                    </p>
-                </div>
+          {/* Title */}
+          <h1 className="text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-pink-500 to-yellow-400">
+            Almanaque da Fala
+          </h1>
 
-                <SignUp
-                    appearance={{
-                        elements: {
-                            formButtonPrimary:
-                                "bg-gradient-to-r from-pink-500 to-yellow-400 hover:shadow-lg hover:shadow-pink-500/20 transition-all",
-                            card: "bg-white dark:bg-indigo-800 shadow-xl shadow-indigo-500/10 rounded-2xl border-0",
-                            headerTitle: "hidden",
-                            headerSubtitle: "hidden",
-                            header: "hidden",
-                            formFieldLabel: "text-indigo-600 dark:text-blue-300",
-                            formFieldInput: "border-indigo-200 dark:border-xindigo-700 bg-white dark:bg-indigo-800/50 text-indigo-600 dark:text-blue-300 focus:border-pink-400 dark:focus:border-pink-500 focus:ring-pink-400/20 dark:focus:ring-pink-500/20",
-                            footerActionLink: "text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300",
-                            identityPreview: "bg-indigo-50 dark:bg-indigo-900/50 border-indigo-200 dark:border-indigo-700",
-                            identityPreviewText: "text-indigo-600 dark:text-blue-300",
-                            identityPreviewEditButton: "text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300",
-                            formFieldAction: "text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300",
-                            formFieldErrorText: "text-red-500 dark:text-red-400",
-                            formFieldSuccessText: "text-green-500 dark:text-green-400",
-                            footer: "hidden",
-                            alertText: "text-indigo-600/80 dark:text-blue-300/80",
-                            socialButtonsBlockButton: "border-indigo-200 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50",
-                            socialButtonsBlockButtonText: "text-indigo-600 dark:text-blue-300",
-                            otpCodeFieldInput: "border-indigo-200 dark:border-indigo-700 bg-white dark:bg-indigo-800/50 text-indigo-600 dark:text-blue-300",
-                        },
-                        variables: {
-                            borderRadius: '16px',
-                            fontFamily: 'inherit',
-                        }
-                    }}
-                    routing="path"
-                    path="/sign-up"
-                    signInUrl="/sign-in"
-                    redirectUrl="/dashboard"
-                />
+          {/* Description */}
+          <p className="text-lg text-indigo-700 dark:text-indigo-200 leading-relaxed mb-8">
+            Desbloqueie seu potencial com exercícios avançados de
+            fonoaudiologia. Confiado por milhares de terapeutas para criar,
+            gerenciar e acompanhar o progresso dos pacientes com facilidade.
+          </p>
 
-                <div className="mt-8 text-center">
-                    <p className="text-indigo-600/70 dark:text-blue-300/70 text-sm">
-                        Já tem uma conta?{" "}
-                        <a href="/sign-in" className="text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 font-medium">
-                            Faça login
-                        </a>
-                    </p>
-                </div>
-            </div>
+          {/* Fun Navigation for Children */}
+          <div className="flex flex-col items-center space-y-4">
+            <a
+              href="/"
+              className="group flex items-center space-x-3 px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/25 transition-all duration-300 hover:scale-105"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>Explorar Exercícios Divertidos</span>
+              <span className="group-hover:translate-x-1 transition-transform">
+                →
+              </span>
+            </a>
+
+            <p className="text-sm text-indigo-600 dark:text-indigo-300 text-center">
+              Mais de 100 exercícios interativos para crianças brasileiras
+            </p>
+          </div>
         </div>
-    );
+      </div>
+
+      {/* Right Side - Sign Up Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white dark:bg-gray-900">
+        <div className="w-full max-w-md px-8 py-12">
+          {/* Mobile Logo */}
+          <div className="flex items-center justify-center mb-8 lg:hidden">
+            <a
+              href="/"
+              className="cursor-pointer transition-transform hover:scale-105"
+            >
+              <Image
+                src="/images/logo.png"
+                alt="Almanaque da Fala Logo"
+                width={160}
+                height={160}
+                className="object-contain"
+                priority
+              />
+            </a>
+          </div>
+
+          <CustomSignUpForm />
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -1,0 +1,99 @@
+# 🎯 **FonoSaaS Production Plan Tracking Instructions**
+
+## **CRITICAL: Always Check Production Plan Status**
+
+Before starting any development work, **ALWAYS** check the current production plan status:
+
+1. **Read**: `docs/production-launch-plan-brazil.md` - Main production plan
+2. **Check**: `docs/production-plan-tracker.md` - Current progress status
+3. **Update**: Progress tracker after completing any tasks
+
+## **Current Status (September 20, 2025)**
+
+**Overall Production Readiness**: 4.5/10 🔴  
+**Current Phase**: Phase 1 - Legal Compliance (Weeks 1-4)  
+**Next Priority**: Data Subject Rights Implementation (Week 1-2)  
+
+## **Production Plan Phases**
+
+### **Phase 1: Legal Compliance (Weeks 1-4) - CRITICAL**
+- **Week 1-2**: Data Subject Rights Implementation
+- **Week 3-4**: Enhanced Consent Management
+
+### **Phase 2: Security Hardening (Weeks 5-8) - CRITICAL**
+- **Week 5-6**: Dependency Security
+- **Week 7-8**: Advanced Security
+
+### **Phase 3: Testing Implementation (Weeks 9-12) - CRITICAL**
+- **Week 9-10**: Unit & Component Testing
+- **Week 11-12**: Integration & E2E Testing
+
+## **Session Workflow**
+
+### **Start of Each Session:**
+1. **Check current phase** in production plan tracker
+2. **Review completed tasks** from previous sessions
+3. **Identify next priority tasks** for current phase
+4. **Focus work** on highest priority items
+
+### **During Session:**
+1. **Work on current phase tasks** only
+2. **Update progress** in tracker as you complete tasks
+3. **Note any blockers** or issues encountered
+4. **Document solutions** applied
+
+### **End of Session:**
+1. **Update production plan tracker** with completed tasks
+2. **Mark status** (NOT STARTED → IN PROGRESS → COMPLETED)
+3. **Add progress notes** in the Progress Log
+4. **Update next action** for next session
+
+## **Priority Order (CRITICAL)**
+
+1. **LGPD Compliance** - Legal requirements (fines up to R$ 50M+)
+2. **Security Vulnerabilities** - Fix 37 vulnerabilities
+3. **Testing Coverage** - Achieve 90%+ coverage
+4. **Business Logic** - Complete subscription and patient management
+5. **Infrastructure** - Database completion and monitoring
+
+## **Key Files to Always Reference**
+
+- `docs/production-launch-plan-brazil.md` - Complete 12-week plan
+- `docs/production-plan-tracker.md` - Current progress tracking
+- `docs/assessments/lgpd-deep-assessment.md` - LGPD compliance details
+- `docs/security/security-summary.md` - Security status
+
+## **Success Criteria**
+
+**Pre-Launch (Must Achieve):**
+- 100% LGPD compliant
+- 0 critical vulnerabilities
+- 90%+ test coverage
+- <2s page load time
+- 99.9% availability
+
+## **Budget Tracking**
+
+**Total Investment Required**: R$ 180,000-290,000
+- Legal Compliance: R$ 50,000-100,000
+- Security Hardening: R$ 30,000-50,000
+- Testing Implementation: R$ 40,000-60,000
+- Business Logic Completion: R$ 60,000-80,000
+
+## **Weekly Checkpoints**
+
+- **Week 4**: Legal Compliance complete
+- **Week 8**: Security & Business Logic complete
+- **Week 12**: Testing & Launch Ready
+
+## **Status Legend**
+
+- 🔴 **NOT STARTED** - Task not begun
+- 🟡 **IN PROGRESS** - Task actively being worked on
+- 🟢 **COMPLETED** - Task finished and verified
+- ⚠️ **BLOCKED** - Task blocked by external dependency
+- ❌ **FAILED** - Task failed and needs attention
+
+---
+
+**Remember**: This application is NOT production ready for Brazil. Follow the production plan religiously to avoid regulatory fines, security breaches, and reputation damage.
