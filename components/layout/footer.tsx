@@ -74,10 +74,10 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
             'justify-center': isCollapsed,
           })}
         >
-          <div className="size-10 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+          <div className="size-10 rounded-full bg-gray-700 animate-pulse" />
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 bg-gray-700 rounded animate-pulse" />
             </div>
           )}
         </div>
@@ -128,11 +128,16 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
       aria-haspopup="true"
       aria-expanded={isMenuOpen}
       className={cn(
-        'flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800',
+        'flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-white/10',
         { 'justify-center': isCollapsed }
       )}
     >
-      <div className="relative flex items-center justify-center size-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg transition-all duration-200 overflow-hidden">
+      <div
+        className={cn(
+          'relative flex items-center justify-center rounded-full bg-gray-700 text-white font-medium text-sm transition-all duration-200 overflow-hidden flex-shrink-0',
+          isCollapsed ? 'size-8' : 'size-9'
+        )}
+      >
         {user.imageUrl ? (
           <img
             src={user.imageUrl}
@@ -152,12 +157,10 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
       {!isCollapsed && (
         <>
           <div className="flex-1 min-w-0 text-left">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 truncate">
+            <h3 className="text-sm font-medium text-gray-200 truncate">
               {username}
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-              Almanaque da Fala
-            </p>
+            <p className="text-xs text-gray-500 truncate">{userEmail}</p>
           </div>
           <ChevronUp
             className={cn('size-4 text-gray-500 transition-transform', {

@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     // Convert to PDF
     const pdfBytes = await imageToPDF(imageBytes);
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="atividade-${phoneme}-${type.toLowerCase()}-idade${age}.pdf"`,

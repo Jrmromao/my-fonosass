@@ -243,23 +243,22 @@ function DashboardContent() {
   }, [mainTab]); // Run this effect whenever mainTab changes
 
   return (
-    <div className="h-full bg-gray-50 dark:bg-gray-950">
+    <div className="h-full">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="py-6 px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+        <div className="py-6 px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
-                Biblioteca de Atividades
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white font-display">
+                Atividades
               </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-                Gerencie suas atividades terapêuticas
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Gerencie e organize suas atividades terapêuticas
               </p>
             </div>
             {isClient && (
               <NewActivityDialog
                 onSuccess={() => {
-                  // Invalidate queries relevant to the current tab to refetch
                   queryClient.invalidateQueries({
                     queryKey: ['activities', debouncedSearch, mainTab],
                   });
@@ -267,8 +266,6 @@ function DashboardContent() {
               />
             )}
           </div>
-          {/* ActivityFilters component - if its contents are moved, you can remove this call */}
-          {/*{ActivityFilters(...)}*/}
         </div>
       </div>
 
@@ -321,164 +318,158 @@ function DashboardContent() {
       )}
 
       {/* Main Tabs */}
-      <div className="p-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <Card className="border-gray-200 dark:border-gray-800 shadow-md rounded-lg overflow-hidden">
-          <CardContent className="p-0">
-            <Tabs
-              value={mainTab}
-              onValueChange={(value) => {
-                setMainTab(value);
-                setSelectedPhoneme('all');
-                setSelectedType('all');
-                clearFilters(); // Also clear dropdown filters on tab change
-              }}
-              className="w-full"
+      <div className="p-8">
+        <Tabs
+          value={mainTab}
+          onValueChange={(value) => {
+            setMainTab(value);
+            setSelectedPhoneme('all');
+            setSelectedType('all');
+            clearFilters();
+          }}
+          className="w-full"
+        >
+          <TabsList className="inline-flex bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 gap-1 rounded-lg shadow-sm">
+            <TabsTrigger
+              value="phonemes"
+              className="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300
+                         data-[state=active]:text-indigo-700 data-[state=active]:bg-indigo-50
+                         data-[state=active]:shadow-sm dark:data-[state=active]:bg-indigo-900/30 dark:data-[state=active]:text-indigo-300
+                         hover:text-gray-900 dark:hover:text-white
+                         transition-all rounded-md"
+              aria-label="Visualizar atividades por fonemas"
             >
-              <TabsList className="flex justify-start bg-gray-100 dark:bg-gray-800 p-1 gap-1 rounded-lg">
-                <TabsTrigger
-                  value="phonemes"
-                  className="snap-start min-w-max px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                               data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
-                               data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
-                               data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
-                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-                               transition-all rounded-md"
-                  aria-label="Visualizar atividades por fonemas"
-                >
-                  Fonemas
-                </TabsTrigger>
+              Fonemas
+            </TabsTrigger>
 
-                <TabsTrigger
-                  value="types"
-                  className="snap-start min-w-max px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                               data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
-                               data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
-                               data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
-                               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-                               transition-all rounded-md"
-                  aria-label="Visualizar atividades por tipos"
-                >
-                  Atividades Diversas
-                </TabsTrigger>
-              </TabsList>
+            <TabsTrigger
+              value="types"
+              className="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300
+                         data-[state=active]:text-indigo-700 data-[state=active]:bg-indigo-50
+                         data-[state=active]:shadow-sm dark:data-[state=active]:bg-indigo-900/30 dark:data-[state=active]:text-indigo-300
+                         hover:text-gray-900 dark:hover:text-white
+                         transition-all rounded-md"
+              aria-label="Visualizar atividades por tipos"
+            >
+              Atividades Diversas
+            </TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="phonemes" className="p-6">
-                {/* CardHeader for Phonemes Tab - Modified */}
-                <Card className="border-gray-200 dark:border-gray-800">
-                  <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                    {' '}
-                    {/* Added responsive flex classes */}
-                    {/* Wrapper for Title and Description - takes full width on small screens */}
-                    <div className="w-full sm:w-auto flex flex-col space-y-1 md:space-y-0">
-                      <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                        Atividades por Fonema
-                      </CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                        Explore atividades agrupadas por fonema ou selecione um
-                        fonema específico.
-                      </CardDescription>
-                    </div>
-                    {/* Search Input Container */}
-                    <div className="relative w-full max-w-xs sm:ml-auto">
-                      {' '}
-                      {/* sm:ml-auto pushes to right on larger screens */}
-                      {/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
-                      {/*<Input*/}
-                      {/*    placeholder="Buscar atividades..."*/}
-                      {/*    className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"*/}
-                      {/*    value={searchTerm}*/}
-                      {/*    onChange={(e) => setSearchTerm(e.target.value)}*/}
-                      {/*/>*/}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Phoneme Filter */}
-                    <div className="flex items-center justify-between mb-4">
-                      <PhonemeFilter
-                        selectedPhoneme={selectedPhoneme}
-                        setSelectedPhoneme={setSelectedPhoneme}
-                        availablePhonemes={availablePhonemes}
-                      />
-                      {/* Include search and dropdown filters here if desired - Search is now in header */}
-                    </div>
-                    {/* DataTable or Skeleton/EmptyState */}
-                    {isLoading ? (
-                      <div className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-64 w-full" />
-                      </div>
-                    ) : filteredActivities.length === 0 ? (
-                      <EmptyState />
-                    ) : (
-                      <DataTable
-                        columns={columns}
-                        data={filteredActivities}
-                        isLoading={isLoading}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
+          <TabsContent value="phonemes" className="p-6">
+            {/* CardHeader for Phonemes Tab - Modified */}
+            <Card className="border-gray-200 dark:border-gray-800">
+              <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                {' '}
+                {/* Added responsive flex classes */}
+                {/* Wrapper for Title and Description - takes full width on small screens */}
+                <div className="w-full sm:w-auto flex flex-col space-y-1 md:space-y-0">
+                  <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    Atividades por Fonema
+                  </CardTitle>
+                  <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                    Explore atividades agrupadas por fonema ou selecione um
+                    fonema específico.
+                  </CardDescription>
+                </div>
+                {/* Search Input Container */}
+                <div className="relative w-full max-w-xs sm:ml-auto">
+                  {' '}
+                  {/* sm:ml-auto pushes to right on larger screens */}
+                  {/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
+                  {/*<Input*/}
+                  {/*    placeholder="Buscar atividades..."*/}
+                  {/*    className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"*/}
+                  {/*    value={searchTerm}*/}
+                  {/*    onChange={(e) => setSearchTerm(e.target.value)}*/}
+                  {/*/>*/}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Phoneme Filter */}
+                <div className="flex items-center justify-between mb-4">
+                  <PhonemeFilter
+                    selectedPhoneme={selectedPhoneme}
+                    setSelectedPhoneme={setSelectedPhoneme}
+                    availablePhonemes={availablePhonemes}
+                  />
+                  {/* Include search and dropdown filters here if desired - Search is now in header */}
+                </div>
+                {/* DataTable or Skeleton/EmptyState */}
+                {isLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                ) : filteredActivities.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  <DataTable
+                    columns={columns}
+                    data={filteredActivities}
+                    isLoading={isLoading}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <TabsContent value="types" className="p-6">
-                {/* CardHeader for Types Tab - Modified (Same structure as Phonemes tab) */}
-                <Card className="border-gray-200 dark:border-gray-800">
-                  <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                    {' '}
-                    {/* Added responsive flex classes */}
-                    {/* Wrapper for Title and Description - takes full width on small screens */}
-                    <div className="w-full sm:w-auto flex flex-col space-y-1 md:space-y-0">
-                      <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                        Atividades por Tipo
-                      </CardTitle>
-                      <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                        Explore atividades agrupadas por tipo ou selecione um
-                        tipo específico.
-                      </CardDescription>
-                    </div>
-                    {/* Search Input Container */}
-                    <div className="relative w-full max-w-xs sm:ml-auto">
-                      {' '}
-                      {/* sm:ml-auto pushes to right on larger screens */}
-                      {/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
-                      {/*<Input*/}
-                      {/*    placeholder="Buscar atividades..." // You might change placeholder text*/}
-                      {/*    className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"*/}
-                      {/*    value={searchTerm}*/}
-                      {/*    onChange={(e) => setSearchTerm(e.target.value)}*/}
-                      {/*/>*/}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {/* Type Filter */}
-                    <div className="flex items-center justify-between mb-4">
-                      <TypeFilter
-                        selectedType={selectedType}
-                        setSelectedType={setSelectedType}
-                        availableTypes={availableTypeOfActivity}
-                      />
-                    </div>
-                    {/* DataTable or Skeleton/EmptyState */}
-                    {isLoading ? (
-                      <div className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-64 w-full" />
-                      </div>
-                    ) : filteredActivities.length === 0 ? (
-                      <EmptyState />
-                    ) : (
-                      <DataTable
-                        columns={columns}
-                        data={filteredActivities}
-                        isLoading={isLoading}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+          <TabsContent value="types" className="p-6">
+            {/* CardHeader for Types Tab - Modified (Same structure as Phonemes tab) */}
+            <Card className="border-gray-200 dark:border-gray-800">
+              <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                {' '}
+                {/* Added responsive flex classes */}
+                {/* Wrapper for Title and Description - takes full width on small screens */}
+                <div className="w-full sm:w-auto flex flex-col space-y-1 md:space-y-0">
+                  <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    Atividades por Tipo
+                  </CardTitle>
+                  <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
+                    Explore atividades agrupadas por tipo ou selecione um tipo
+                    específico.
+                  </CardDescription>
+                </div>
+                {/* Search Input Container */}
+                <div className="relative w-full max-w-xs sm:ml-auto">
+                  {' '}
+                  {/* sm:ml-auto pushes to right on larger screens */}
+                  {/*<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />*/}
+                  {/*<Input*/}
+                  {/*    placeholder="Buscar atividades..." // You might change placeholder text*/}
+                  {/*    className="pl-10 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all"*/}
+                  {/*    value={searchTerm}*/}
+                  {/*    onChange={(e) => setSearchTerm(e.target.value)}*/}
+                  {/*/>*/}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Type Filter */}
+                <div className="flex items-center justify-between mb-4">
+                  <TypeFilter
+                    selectedType={selectedType}
+                    setSelectedType={setSelectedType}
+                    availableTypes={availableTypeOfActivity}
+                  />
+                </div>
+                {/* DataTable or Skeleton/EmptyState */}
+                {isLoading ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                ) : filteredActivities.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  <DataTable
+                    columns={columns}
+                    data={filteredActivities}
+                    isLoading={isLoading}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

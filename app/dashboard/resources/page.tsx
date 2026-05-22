@@ -1,6 +1,7 @@
 'use client';
 
 import ResourceFileUpload from '@/components/admin/ResourceFileUpload';
+import { ActivityReviewPanel } from '@/components/dashboard/ActivityReviewPanel';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -357,287 +358,311 @@ export default function AdminResourcesPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Gerenciar Recursos
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
-            Gerencie a biblioteca de recursos e materiais
-          </p>
+    <div>
+      <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div className="px-8 py-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white font-display">
+              Recursos
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              Biblioteca de materiais e recursos terapêuticos
+            </p>
+          </div>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setEditingResource(null);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Recurso
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingResource ? 'Editar Recurso' : 'Criar Novo Recurso'}
+                </DialogTitle>
+              </DialogHeader>
+              <ResourceForm
+                formData={formData}
+                setFormData={setFormData}
+                categories={categories}
+                onSubmit={
+                  editingResource ? handleUpdateResource : handleCreateResource
+                }
+                isEditing={!!editingResource}
+                editingResource={editingResource}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => {
-                resetForm();
-                setEditingResource(null);
-              }}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Recurso
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingResource ? 'Editar Recurso' : 'Criar Novo Recurso'}
-              </DialogTitle>
-            </DialogHeader>
-            <ResourceForm
-              formData={formData}
-              setFormData={setFormData}
-              categories={categories}
-              onSubmit={
-                editingResource ? handleUpdateResource : handleCreateResource
-              }
-              isEditing={!!editingResource}
-              editingResource={editingResource}
-            />
-          </DialogContent>
-        </Dialog>
       </div>
 
-      <Tabs defaultValue="resources" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="resources">Recursos</TabsTrigger>
-          <TabsTrigger value="categories">Categorias</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
+      <div className="p-8">
+        <Tabs defaultValue="resources" className="space-y-6">
+          <TabsList className="inline-flex bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 rounded-lg shadow-sm">
+            <TabsTrigger
+              value="resources"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+            >
+              Recursos
+            </TabsTrigger>
+            <TabsTrigger
+              value="review"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+            >
+              Revisão
+            </TabsTrigger>
+            <TabsTrigger
+              value="categories"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+            >
+              Categorias
+            </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+            >
+              Analytics
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="resources" className="space-y-6">
-          {/* Filters */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col lg:flex-row gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="search">Buscar</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="search"
-                      placeholder="Buscar recursos..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="type">Tipo</Label>
-                  <Select value={selectedType} onValueChange={setSelectedType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos os tipos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os tipos</SelectItem>
-                      {RESOURCE_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="category">Categoria</Label>
-                  <Select
-                    value={selectedCategory}
-                    onValueChange={setSelectedCategory}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas as categorias" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas as categorias</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <TabsContent value="review" className="space-y-4">
+            <ActivityReviewPanel />
+          </TabsContent>
 
-          {/* Resources List */}
-          <div className="grid gap-6">
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Carregando recursos...
-                </p>
+          <TabsContent value="resources" className="space-y-6">
+            {/* Filters */}
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar recursos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-white border-gray-200"
+                />
               </div>
-            ) : filteredResources.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-8">
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="w-[180px] bg-white">
+                  <SelectValue placeholder="Todos os tipos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  {RESOURCE_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger className="w-[180px] bg-white">
+                  <SelectValue placeholder="Todas as categorias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Resources List */}
+            <div className="grid gap-6">
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
                   <p className="text-gray-600 dark:text-gray-300">
-                    Nenhum recurso encontrado.
+                    Carregando recursos...
+                  </p>
+                </div>
+              ) : filteredResources.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Nenhum recurso encontrado.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredResources.map((resource) => {
+                  const IconComponent = getResourceIcon(resource.type);
+                  return (
+                    <Card key={resource.id}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-4 flex-1">
+                            <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                              <IconComponent className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                                  {resource.title}
+                                </h3>
+                                <Badge
+                                  className={getResourceBadgeColor(
+                                    resource.type
+                                  )}
+                                >
+                                  {resource.type}
+                                </Badge>
+                                {resource.isFeatured && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-yellow-600 border-yellow-600"
+                                  >
+                                    <Star className="h-3 w-3 mr-1" />
+                                    Destaque
+                                  </Badge>
+                                )}
+                                {resource.isFree && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-green-600 border-green-600"
+                                  >
+                                    Gratuito
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                                {resource.description}
+                              </p>
+                              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                <span>
+                                  {resource.category} • {resource.ageGroup}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Download className="h-4 w-4" />
+                                  {resource.downloadCount.toLocaleString()}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Eye className="h-4 w-4" />
+                                  {resource.viewCount.toLocaleString()}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Star className="h-4 w-4" />
+                                  {resource.rating.toFixed(1)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditDialog(resource)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteResource(resource.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="categories">
+            <Card>
+              <CardHeader>
+                <CardTitle>Categorias</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categories.map((category) => (
+                    <div key={category} className="p-4 border rounded-lg">
+                      <h3 className="font-semibold">{category}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {
+                          resources.filter((r) => r.category === category)
+                            .length
+                        }{' '}
+                        recursos
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-2xl font-bold">{resources.length}</div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Total de Recursos
                   </p>
                 </CardContent>
               </Card>
-            ) : (
-              filteredResources.map((resource) => {
-                const IconComponent = getResourceIcon(resource.type);
-                return (
-                  <Card key={resource.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-4 flex-1">
-                          <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                            <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-gray-900 dark:text-white">
-                                {resource.title}
-                              </h3>
-                              <Badge
-                                className={getResourceBadgeColor(resource.type)}
-                              >
-                                {resource.type}
-                              </Badge>
-                              {resource.isFeatured && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-yellow-600 border-yellow-600"
-                                >
-                                  <Star className="h-3 w-3 mr-1" />
-                                  Destaque
-                                </Badge>
-                              )}
-                              {resource.isFree && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-green-600 border-green-600"
-                                >
-                                  Gratuito
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
-                              {resource.description}
-                            </p>
-                            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                              <span>
-                                {resource.category} • {resource.ageGroup}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Download className="h-4 w-4" />
-                                {resource.downloadCount.toLocaleString()}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Eye className="h-4 w-4" />
-                                {resource.viewCount.toLocaleString()}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Star className="h-4 w-4" />
-                                {resource.rating.toFixed(1)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditDialog(resource)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteResource(resource.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="categories">
-          <Card>
-            <CardHeader>
-              <CardTitle>Categorias</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categories.map((category) => (
-                  <div key={category} className="p-4 border rounded-lg">
-                    <h3 className="font-semibold">{category}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {resources.filter((r) => r.category === category).length}{' '}
-                      recursos
-                    </p>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-2xl font-bold">
+                    {resources
+                      .reduce((sum, r) => sum + r.downloadCount, 0)
+                      .toLocaleString()}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold">{resources.length}</div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Total de Recursos
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold">
-                  {resources
-                    .reduce((sum, r) => sum + r.downloadCount, 0)
-                    .toLocaleString()}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Total de Downloads
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold">
-                  {resources
-                    .reduce((sum, r) => sum + r.viewCount, 0)
-                    .toLocaleString()}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Total de Visualizações
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-2xl font-bold">
-                  {(
-                    resources.reduce((sum, r) => sum + r.rating, 0) /
-                      resources.length || 0
-                  ).toFixed(1)}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Avaliação Média
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Total de Downloads
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-2xl font-bold">
+                    {resources
+                      .reduce((sum, r) => sum + r.viewCount, 0)
+                      .toLocaleString()}
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Total de Visualizações
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-2xl font-bold">
+                    {(
+                      resources.reduce((sum, r) => sum + r.rating, 0) /
+                        resources.length || 0
+                    ).toFixed(1)}
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Avaliação Média
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

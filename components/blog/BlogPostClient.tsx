@@ -363,13 +363,18 @@ export default function BlogPostClient({
                           <span itemProp="name">{post.author}</span>
                         </div>
                         <div className="text-xs text-gray-500">
-                          {post.authorRole || 'Especialista em Fonoaudiologia'}
-                          {post.authorInstagram && (
+                          {(post as unknown as Record<string, string>)
+                            .authorRole || 'Especialista em Fonoaudiologia'}
+                          {(post as unknown as Record<string, string>)
+                            .authorInstagram && (
                             <>
                               {' '}
                               ·{' '}
                               <a
-                                href={post.authorInstagram}
+                                href={
+                                  (post as unknown as Record<string, string>)
+                                    .authorInstagram
+                                }
                                 target="_blank"
                                 rel="nofollow noopener noreferrer ugc"
                                 className="text-pink-500 hover:underline"
