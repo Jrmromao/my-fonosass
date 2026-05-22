@@ -20,8 +20,9 @@ on:
         required: false
 
   schedule:
-    # Every Monday at 9am UTC - generate 1 blog post
+    # Monday and Thursday at 9am UTC
     - cron: '0 9 * * 1'
+    - cron: '0 9 * * 4'
 
 jobs:
   generate-activities:
