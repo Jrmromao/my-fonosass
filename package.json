@@ -39,6 +39,8 @@
     "type-check:precommit": "tsc --noEmit --skipLibCheck --strict false",
     "prepare": "husky",
     "db:seed": "tsx scripts/seed-exercises.ts",
+    "db:generate-exercises": "tsx scripts/batch-generate-exercises.ts",
+    "db:local": "tsx scripts/dev-db.ts",
     "db:diagnose": "node scripts/db-diagnose.js",
     "security:test": "bash scripts/security-test.sh",
     "security:audit": "npm audit --audit-level=moderate",
@@ -173,6 +175,7 @@
     "postcss": "^8.4.0",
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.0",
+    "testcontainers": "^12.0.0",
     "ts-jest": "^29.2.5",
     "tsx": "^4.20.5",
     "whatwg-fetch": "^3.6.20"

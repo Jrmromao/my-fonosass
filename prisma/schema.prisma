@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -41,6 +42,8 @@ model Activity {
   isPublic        Boolean            @default(true)
   type            ActivityType
   phoneme         String             @default("")
+  status          ActivityStatus     @default(PUBLISHED)
+  approvalToken   String?
   createdBy       User               @relation(fields: [createdById], references: [id])
   files           ActivityFile[]
   downloadHistory DownloadHistory[]
@@ -51,6 +54,7 @@ model Activity {
   @@index([ageRange])
   @@index([createdById])
   @@index([name])
+  @@index([status])
 }
 
 model ActivityFile {
@@ -385,6 +389,13 @@ model ResourceToCategory {
 enum UserRole {
   ADMIN
   USER
+}
+
+enum ActivityStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
 }
 
 enum ActivityType {

@@ -12,7 +12,10 @@ export const GET = withCaching(
     try {
       const { userId } = await auth();
       if (!userId) {
-        return SecurityMiddleware.createErrorResponse('Authentication required', 401);
+        return SecurityMiddleware.createErrorResponse(
+          'Authentication required',
+          401
+        );
       }
 
       // Use QueryCache to cache database queries
@@ -21,7 +24,8 @@ export const GET = withCaching(
         async () => {
           return await prisma.activity.findMany({
             where: {
-              isPublic: true
+              isPublic: true,
+              status: 'PUBLISHED',
             },
             select: {
               id: true,
@@ -34,13 +38,13 @@ export const GET = withCaching(
               createdAt: true,
               categories: {
                 select: {
-                  name: true
-                }
-              }
+                  name: true,
+                },
+              },
             },
             orderBy: {
-              createdAt: 'desc'
-            }
+              createdAt: 'desc',
+            },
           });
         },
         EXERCISES_CACHE_TTL
@@ -50,9 +54,8 @@ export const GET = withCaching(
         success: true,
         data: exercises,
         count: exercises.length,
-        cached: true
+        cached: true,
       });
-
     } catch (error) {
       return SecurityMiddleware.createErrorResponse(
         'Failed to fetch exercises',
@@ -67,6 +70,6 @@ export const GET = withCaching(
       // Skip cache for requests with specific query parameters
       const url = new URL(req.url);
       return url.searchParams.has('nocache') || url.searchParams.has('refresh');
-    }
+    },
   }
 );

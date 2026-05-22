@@ -7,6 +7,10 @@ const isProtectedRoute = createRouteMatcher([
   '/settings(.*)',
 ]);
 
+const isPublicReviewRoute = createRouteMatcher([
+  '/dashboard/exercises/review(.*)',
+]);
+
 const isProtectedAPIRoute = createRouteMatcher([
   '/api/ai(.*)',
   '/api/user(.*)',
@@ -14,8 +18,8 @@ const isProtectedAPIRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Protect dashboard and profile routes
-  if (isProtectedRoute(req)) {
+  // Protect dashboard and profile routes (except public review pages)
+  if (isProtectedRoute(req) && !isPublicReviewRoute(req)) {
     await auth.protect();
   }
 

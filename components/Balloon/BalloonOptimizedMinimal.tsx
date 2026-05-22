@@ -21,8 +21,8 @@ import React, {
 
 const BalloonField: React.FC<BalloonFieldProps> = ({
   balloonCount = 23, // Fixed at 23 balloons
-  title = 'Phoneme Pop!',
-  description = 'Pop balloons to learn phonemes',
+  title = 'Estourar Fonemas!',
+  description = 'Clique nos balões para explorar os fonemas',
   onBalloonPopped,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

@@ -8,7 +8,7 @@ import { ptBR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Inter } from 'next/font/google';
+import { Inter, Nunito } from 'next/font/google';
 import './globals.css';
 
 const inter = Inter({
@@ -18,6 +18,13 @@ const inter = Inter({
   fallback: ['system-ui', 'arial'],
   variable: '--font-inter',
   weight: ['300', '400', '500', '600', '700'],
+});
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-nunito',
+  weight: ['400', '600', '700', '800'],
 });
 
 export const metadata = {
@@ -189,7 +196,7 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${inter.variable} font-sans flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
+          className={`${inter.variable} ${nunito.variable} font-sans flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
           suppressHydrationWarning={true}
         >
           {/* Skip to main content link for accessibility */}

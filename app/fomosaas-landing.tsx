@@ -47,7 +47,7 @@ export default function FomosaasLanding({
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cyan-100 to-fuchsia-100 dark:from-indigo-900 dark:to-fuchsia-900 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white dark:from-indigo-900 dark:to-fuchsia-900 overflow-hidden">
       {/* Waiting List Alert */}
       {showWaitingList && (
         <WaitingListAlert onClose={() => setShowWaitingList(false)} />
@@ -70,17 +70,18 @@ export default function FomosaasLanding({
               <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
                 Fonoaudiologia Divertida
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-pink-500 to-yellow-400">
-                Exercícios de fala divertidos para crianças
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-indigo-900 dark:text-white font-display">
+                Sua criança vai treinar a fala brincando
               </h1>
-              <p className="text-lg md:text-xl text-blue-700 dark:text-blue-300 mb-8 max-w-2xl mx-auto">
-                Ajudamos crianças a superar desafios de fala com exercícios
-                interativos, jogos divertidos e acompanhamento profissional.
+              <p className="text-lg md:text-xl text-gray-600 dark:text-blue-300 mb-8 max-w-2xl mx-auto">
+                Atividades interativas criadas por fonoaudióloga para praticar
+                fonemas em casa. Cada exercício é uma brincadeira — e você
+                acompanha o progresso.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/cadastro"
-                  className="px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/20 transition-all flex items-center gap-2 w-full sm:w-auto justify-center"
+                  className="px-6 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-all flex items-center gap-2 w-full sm:w-auto justify-center shadow-sm"
                 >
                   Comece Agora <ArrowRight size={16} />
                 </Link>
@@ -121,46 +122,8 @@ export default function FomosaasLanding({
             <EducationalToolbar />
           </div>
           {/* Decorative elements */}
-          <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-to-br from-pink-500/30 to-yellow-400/30 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-to-br from-cyan-500/30 to-indigo-500/30 rounded-full blur-3xl"></div>
-
-          {/* Floating elements */}
-          <motion.div
-            className="absolute -top-10 right-1/4 w-16 h-16 bg-yellow-400 rounded-2xl rotate-12"
-            animate={{
-              y: [0, -10, 0],
-              rotate: [12, 5, 12],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatType: 'reverse',
-            }}
-          />
-          <motion.div
-            className="absolute top-1/3 -left-10 w-12 h-12 bg-green-400 rounded-full"
-            animate={{
-              y: [0, 10, 0],
-              x: [0, 5, 0],
-            }}
-            transition={{
-              duration: 3.5,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatType: 'reverse',
-            }}
-          />
-          <motion.div
-            className="absolute  right-10 w-14 h-14 bg-pink-400 rounded-lg rotate-45"
-            animate={{
-              y: [0, -15, 0],
-              rotate: [45, 30, 45],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Number.POSITIVE_INFINITY,
-              repeatType: 'reverse',
-            }}
-          />
+          <div className="absolute -top-8 -right-8 w-40 h-40 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-to-br from-indigo-500/10 to-pink-500/10 rounded-full blur-3xl"></div>
         </motion.div>
       </section>
 
@@ -171,7 +134,7 @@ export default function FomosaasLanding({
       {/*<span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">*/}
       {/*  Recursos*/}
       {/*</span>*/}
-      {/*            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">*/}
+      {/*            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">*/}
       {/*                Ferramentas divertidas para o desenvolvimento da fala*/}
       {/*            </h2>*/}
       {/*            <p className="text-lg text-blue-700 dark:text-blue-300">*/}
@@ -212,7 +175,7 @@ export default function FomosaasLanding({
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
               Como Funciona
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">
               Três passos simples para começar
             </h2>
             <p className="text-lg text-blue-700 dark:text-blue-300">
@@ -272,7 +235,7 @@ export default function FomosaasLanding({
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
               Conhecimento Especializado
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">
               Aprenda com Especialistas
             </h2>
             <p className="text-lg text-blue-700 dark:text-blue-300">
@@ -350,7 +313,7 @@ export default function FomosaasLanding({
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
               Exercícios
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">
               Exercícios divertidos e eficazes
             </h2>
             <p className="text-lg text-blue-700 dark:text-blue-300">
@@ -432,14 +395,14 @@ export default function FomosaasLanding({
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center mb-16">
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400">
-              Depoimentos
+              Por que confiar
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
-              O que as famílias estão dizendo
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">
+              Feito por quem entende de fala
             </h2>
             <p className="text-lg text-blue-700 dark:text-blue-300">
-              Veja como o Almanaque da Fala tem ajudado crianças em todo o
-              Brasil.
+              Desenvolvido em parceria com fonoaudióloga clínica, seguindo
+              metodologias comprovadas.
             </p>
           </div>
 
@@ -496,7 +459,7 @@ export default function FomosaasLanding({
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
               Assinatura
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">
               Acesso completo para fonoaudiólogos
             </h2>
             <p className="text-lg text-blue-700 dark:text-blue-300">
@@ -563,7 +526,7 @@ export default function FomosaasLanding({
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
               Perguntas Frequentes
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">
               Dúvidas comuns
             </h2>
             <p className="text-lg text-blue-700 dark:text-blue-300">
@@ -603,13 +566,12 @@ export default function FomosaasLanding({
               <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
 
               <div className="relative">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white">
-                  Pronto para começar a jornada de fala do seu filho?
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900 dark:text-white font-display">
+                  Quer experimentar antes do lançamento?
                 </h2>
                 <p className="text-lg text-blue-700 dark:text-blue-300 mb-8 max-w-2xl mx-auto">
-                  Junte-se a milhares de famílias brasileiras que já estão
-                  transformando o desenvolvimento da fala de seus filhos com o
-                  Almanaque da Fala.
+                  Estamos em fase final de desenvolvimento. Cadastre-se na lista
+                  de espera e ganhe acesso antecipado gratuito.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Link
@@ -745,19 +707,19 @@ const features = [
 
 const steps = [
   {
-    title: 'Cadastre-se',
+    title: 'Escolha o fonema',
     description:
-      'Crie uma conta gratuita e preencha um breve questionário sobre as necessidades do seu filho.',
+      'Clique no balão do fonema que a criança precisa treinar. Cada balão tem atividades específicas.',
   },
   {
-    title: 'Receba um Plano Personalizado',
+    title: 'Imprima a atividade',
     description:
-      'Nosso sistema criará um plano de exercícios personalizado com base nas necessidades específicas.',
+      'Baixe o PDF com jogos ilustrados — caça-palavras, trilhas, colorir — tudo pronto para imprimir.',
   },
   {
-    title: 'Comece a Praticar',
+    title: 'Brinque e treine',
     description:
-      'Acesse os exercícios interativos e acompanhe o progresso do seu filho de forma divertida.',
+      'A criança pratica o fonema sem perceber que está fazendo terapia. Diversão com resultado.',
   },
 ];
 
@@ -810,25 +772,25 @@ const exercises = [
 
 const testimonials = [
   {
-    name: 'Ana Silva',
-    relation: 'Mãe do Pedro, 5 anos',
-    avatar: '/placeholder.svg?height=48&width=48',
+    name: 'Criado por Fonoaudióloga',
+    relation: 'Profissional com experiência clínica',
+    avatar: '/logo.png',
     quote:
-      'O Almanaque da Fala transformou a vida do meu filho. Em apenas 3 meses, ele já consegue pronunciar palavras que antes eram um desafio!',
+      'Cada exercício é desenvolvido com base em práticas clínicas reais e validado por profissional de fonoaudiologia antes de ser publicado.',
   },
   {
-    name: 'Carlos Oliveira',
-    relation: 'Pai da Júlia, 7 anos',
-    avatar: '/placeholder.svg?height=48&width=48',
+    name: 'Baseado em Evidências',
+    relation: 'Metodologia CFFa',
+    avatar: '/logo.png',
     quote:
-      'Minha filha adora os jogos e nem percebe que está fazendo terapia. Os resultados são impressionantes!',
+      'Os exercícios seguem as diretrizes do Conselho Federal de Fonoaudiologia e são adaptados para o contexto brasileiro.',
   },
   {
-    name: 'Dra. Mariana Santos',
-    relation: 'Fonoaudióloga',
-    avatar: '/placeholder.svg?height=48&width=48',
+    name: 'Em Construção',
+    relation: 'Lançamento em breve',
+    avatar: '/logo.png',
     quote:
-      'Como profissional, recomendo o Almanaque da Fala para complementar as sessões presenciais. A plataforma é baseada em metodologias comprovadas.',
+      'Estamos em fase final de desenvolvimento. Cadastre-se na lista de espera para ser um dos primeiros a experimentar.',
   },
 ];
 

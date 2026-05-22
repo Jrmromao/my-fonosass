@@ -363,7 +363,21 @@ export default function BlogPostClient({
                           <span itemProp="name">{post.author}</span>
                         </div>
                         <div className="text-xs text-gray-500">
-                          Especialista em Fonoaudiologia
+                          {post.authorRole || 'Especialista em Fonoaudiologia'}
+                          {post.authorInstagram && (
+                            <>
+                              {' '}
+                              ·{' '}
+                              <a
+                                href={post.authorInstagram}
+                                target="_blank"
+                                rel="nofollow noopener noreferrer ugc"
+                                className="text-pink-500 hover:underline"
+                              >
+                                @fonoeliane
+                              </a>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
