@@ -24,15 +24,16 @@ export class TelegramService {
 
     const reviewUrl = `${APP_URL}/dashboard/exercises/review/${exercise.id}?token=${exercise.approvalToken}`;
     const approveUrl = `${APP_URL}/api/exercises/${exercise.id}/approve?token=${exercise.approvalToken}`;
+    const rejectUrl = `${APP_URL}/api/exercises/${exercise.id}/reject?token=${exercise.approvalToken}`;
 
-    const message = `🆕 *Novo Exercício para Revisão*
+    const message = `*Novo Exercicio para Revisao*
 
-📝 *${exercise.name}*
-🔤 Fonema: /${exercise.phoneme}/
-📊 Dificuldade: ${exercise.difficulty}
-👶 Faixa etária: ${exercise.ageRange}
+*${exercise.name}*
+Fonema: /${exercise.phoneme}/
+Dificuldade: ${exercise.difficulty}
+Faixa etaria: ${exercise.ageRange}
 
-[👁 Ver exercício](${reviewUrl})`;
+[Ver exercicio](${reviewUrl})`;
 
     const response = await fetch(`${this.baseUrl()}/sendMessage`, {
       method: 'POST',
@@ -44,9 +45,10 @@ export class TelegramService {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '✅ Aprovar', url: approveUrl },
-              { text: '👁 Ver detalhes', url: reviewUrl },
+              { text: 'Aprovar', url: approveUrl },
+              { text: 'Rejeitar', url: rejectUrl },
             ],
+            [{ text: 'Ver detalhes', url: reviewUrl }],
           ],
         },
       }),

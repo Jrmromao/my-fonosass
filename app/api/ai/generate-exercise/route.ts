@@ -36,36 +36,43 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { phoneme, age, difficulty, autoSave } = exerciseSchema.parse(body);
 
+    const qualityRules = `
+REGRAS OBRIGATORIAS:
+- Gramatica perfeita em portugues brasileiro. ZERO erros ortograficos, ZERO erros de concordancia.
+- NAO use emojis em nenhuma parte do conteudo.
+- Revise cada palavra antes de finalizar. O conteudo sera publicado com a marca almanaquedafala.com.br.
+- Linguagem profissional, clara e precisa.`;
+
     const childFriendlyPrompt =
       age <= 12
-        ? `Crie um exercício DIVERTIDO e LÚDICO de fonoaudiologia para CRIANÇA de ${age} anos com o fonema /${phoneme}/, nível ${difficulty}.
+        ? `Crie um exercicio DIVERTIDO e LUDICO de fonoaudiologia para CRIANCA de ${age} anos com o fonema /${phoneme}/, nivel ${difficulty}.
 
-      IMPORTANTE: Use linguagem infantil, brincadeiras, jogos, histórias, personagens e atividades envolventes.
+      IMPORTANTE: Use linguagem infantil, brincadeiras, jogos, historias, personagens e atividades envolventes.
+      ${qualityRules}
       
-      Responda APENAS em formato JSON válido:
+      Responda APENAS em formato JSON valido:
       {
-        "titulo": "Nome divertido do exercício",
-        "objetivo": "Objetivo terapêutico específico",
+        "titulo": "Nome divertido do exercicio",
+        "objetivo": "Objetivo terapeutico especifico",
         "instrucoes": ["Passo 1", "Passo 2", "Passo 3"],
         "materiais": ["Material 1", "Material 2"],
         "tempo": "10-15 minutos",
         "observacoes": "Dicas para tornar mais divertido",
-        "brincadeira": "Descrição de uma brincadeira específica com o fonema",
-        "recompensa": "Sugestão de recompensa"
+        "brincadeira": "Descricao de uma brincadeira especifica com o fonema",
+        "recompensa": "Sugestao de recompensa"
       }`
-        : `Crie um exercício de fonoaudiologia para o fonema /${phoneme}/, idade ${age} anos, nível ${difficulty}.
+        : `Crie um exercicio de fonoaudiologia para o fonema /${phoneme}/, idade ${age} anos, nivel ${difficulty}.
+      ${qualityRules}
 
-      Responda APENAS em formato JSON válido:
+      Responda APENAS em formato JSON valido:
       {
-        "titulo": "Nome do exercício",
-        "objetivo": "Objetivo terapêutico específico",
+        "titulo": "Nome do exercicio",
+        "objetivo": "Objetivo terapeutico especifico",
         "instrucoes": ["Passo 1", "Passo 2", "Passo 3"],
         "materiais": ["Material 1", "Material 2"],
         "tempo": "15-20 minutos",
         "observacoes": "Dicas importantes para o terapeuta"
-      }
-      
-      Use linguagem profissional em português brasileiro.`;
+      }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

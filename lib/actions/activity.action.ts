@@ -165,16 +165,43 @@ export async function createActivity(formData: FormData) {
             if (file.type === 'application/pdf') {
               s3Result = await pdfService.watermarkAndUploadPDF(
                 buffer,
-                logoBuffer, // Pass the logo Buffer
-                'Fomosaas', // Keep original text watermark
+                logoBuffer,
+                'almanaquedafala.com.br',
                 `${activity.id}/${safeFilename}`,
                 {
-                  logoScale: 0.5, // 10% of original logo size
-                  tileSpacing: 150, // 150px between logos
-                  logoOpacity: 0.2, // Subtle transparency
-                  logoRotation: 30, // 30-degree rotation
+                  logoScale: 0.5,
+                  tileSpacing: 150,
+                  logoOpacity: 0.2,
+                  logoRotation: 30,
                 }
               );
+            } else if (file.type.startsWith('image/')) {
+              const imgType = file.type === 'image/jpeg' ? 'jpg' : 'png';
+              const pdfFilename = safeFilename.replace(/\.[^.]+$/, '.pdf');
+              s3Result = await pdfService.createBrandedPDF(
+                buffer,
+                imgType,
+                {
+                  title: name,
+                  phoneme,
+                  difficulty,
+                  ageRange,
+                },
+                `${activity.id}/${pdfFilename}`
+              );
+              // Override file metadata for the DB record
+              await prisma.activityFile.create({
+                data: {
+                  activityId: activity.id,
+                  name: pdfFilename,
+                  s3Key: `${activity.id}/${pdfFilename}`,
+                  s3Url: s3Result.Location || '',
+                  fileType: 'application/pdf',
+                  sizeInBytes: buffer.length,
+                  uploadedById: user.id,
+                },
+              });
+              continue; // Skip the generic activityFile.create below
             } else {
               s3Result = await s3Service.uploadFile(
                 `${activity.id}/${safeFilename}`,
