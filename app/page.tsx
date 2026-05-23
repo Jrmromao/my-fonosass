@@ -1,5 +1,5 @@
-import FomosaasLandingWrapper from '@/components/landing/FomosaasLandingWrapper';
+import LandingPageV2 from './landing-v2';
 
-export default function SyntheticV0PageForDeployment() {
-  return <FomosaasLandingWrapper />;
+export default function Home() {
+  return <LandingPageV2 />;
 }
