@@ -25,28 +25,51 @@ const buildPrompt = (
 ) => {
   const style =
     age <= 5
-      ? 'Very childish, kindergarten style, big bubbly fonts, thick outlines, stars and hearts, large illustrations'
+      ? 'Very childish style: big bubbly fonts, thick outlines for coloring, large illustrations, simple layout'
       : age <= 8
-        ? 'Colorful, playful, fun adventurous style, cute illustrations, engaging for young kids'
+        ? 'Playful style: fun illustrations, engaging layout, medium complexity'
         : age <= 11
-          ? 'Modern, engaging like a real board game or workbook, cool dynamic fonts, not babyish'
-          : 'Clean, modern, professional workbook style with subtle colors, geometric accents, not childish';
+          ? 'Modern style: like a real board game or workbook, cool fonts, more detail'
+          : 'Clean workbook style: professional, not childish, geometric accents';
 
   const types: Record<string, string> = {
-    FIND_CIRCLE: `a "Find and Circle" activity with a grid of 12 illustrations (8 containing the phoneme, 4 without). Add empty circles next to each for marking.`,
+    FIND_CIRCLE: `a "Encontre e Circule" activity with a grid of 12 illustrations (8 containing the phoneme, 4 without). Add empty circles next to each for marking.`,
     WORD_SEARCH: `a word search puzzle with an 8x8 letter grid. Hide 6-8 words with the target phoneme. Show small illustrations and a word list with checkboxes.`,
-    BOARD_GAME: `a winding board game path with 15-20 spaces, each with a word containing the phoneme. Include START, FINISH, dice illustration, and special spaces like "Diga 3 vezes!" or "Faca uma frase!"`,
-    CROSSWORD: `a crossword puzzle with 6-8 words containing the phoneme. Include numbered clues and a sentence completion section.`,
-    COLOR_SPEAK: `a coloring activity with 6 large outlined illustrations of objects with the phoneme. Each has the word below. Instruction: say the word 5 times before coloring.`,
+    BOARD_GAME: `a winding board game path with 15-20 spaces, each with a word containing the phoneme. Include START, FINISH, dice illustration, and special spaces.`,
+    CROSSWORD: `a crossword puzzle with 6-8 words containing the phoneme. Include numbered clues.`,
+    COLOR_SPEAK: `a coloring activity with 6 large outlined illustrations of objects with the phoneme. Each has the word below.`,
   };
 
-  return `Create a premium colorful A4 portrait activity sheet for ${age <= 5 ? 'toddlers' : 'kids'} age ${age} speech therapy.
-Theme: ${topic}. Phoneme: /${phoneme}/.
-Design ${types[type] || types.FIND_CIRCLE}
-${style}.
-BRAND IDENTITY: Include colorful floating balloons as decorative elements around the borders and corners. The balloons should have different colors (purple, blue, pink, orange, green) and some should have phoneme letters written on them. This is the signature visual element of the "Almanaque da Fala" brand.
-All text in Brazilian Portuguese.
-Watermark at bottom: almanaquedafala.com.br`;
+  return `Create a premium A4 portrait activity sheet for kids age ${age} speech therapy.
+
+CONTENT:
+- Theme: ${topic}
+- Phoneme: /${phoneme}/
+- Design ${types[type] || types.FIND_CIRCLE}
+- All text in Brazilian Portuguese
+
+VISUAL STYLE (MUST follow exactly):
+- Background: clean white
+- Primary accent color: warm orange/coral (#f97316)
+- Secondary colors: soft gray borders, light orange highlights
+- ${style}
+- Header: activity title in bold, phoneme badge in orange circle, age indicator
+- Footer: small text "almanaquedafala.com.br" centered, light gray, 8pt
+
+BRAND ELEMENTS (MUST include):
+- 3-4 small colorful balloons as corner decorations (not overwhelming)
+- Each balloon has a single letter/phoneme on it
+- Balloons use these colors only: #6366f1, #ec4899, #f59e0b, #10b981, #8b5cf6
+- Clean rounded borders on activity areas
+- No gradients on backgrounds
+- Professional workbook quality
+
+DO NOT:
+- Use neon colors
+- Add random decorative shapes
+- Use more than 2 fonts
+- Make it look like a coloring book cover
+- Add excessive stars or hearts`;
 };
 
 export async function POST(request: NextRequest) {

@@ -208,13 +208,36 @@ async function generateActivities(phonemes: string[]) {
               ? 'Modern, engaging like a real board game, cool dynamic fonts'
               : 'Clean, modern workbook style, not childish';
 
-      const prompt = `Create a premium colorful A4 portrait activity sheet for kids age ${combo.age} speech therapy.
-Theme: ${combo.topic}. Phoneme: /${phoneme}/.
-Activity type: ${combo.type.replace('_', ' ').toLowerCase()}.
-${style}.
-BRAND: Include colorful floating balloons with phoneme letters as decorative elements.
-All text in Brazilian Portuguese.
-Watermark: almanaquedafala.com.br`;
+      const prompt = `Create a premium A4 portrait activity sheet for kids age ${combo.age} speech therapy.
+
+CONTENT:
+- Theme: ${combo.topic}
+- Phoneme: /${phoneme}/
+- Activity type: ${combo.type.replace('_', ' ').toLowerCase()}
+- All text in Brazilian Portuguese
+
+VISUAL STYLE (MUST follow exactly):
+- Background: clean white
+- Primary accent color: warm orange/coral (#f97316)
+- Secondary colors: soft gray borders, light orange highlights
+- ${style}
+- Header: activity title in bold, phoneme badge in orange circle, age indicator
+- Footer: small text "almanaquedafala.com.br" centered, light gray, 8pt
+
+BRAND ELEMENTS (MUST include):
+- 3-4 small colorful balloons as corner decorations (not overwhelming)
+- Each balloon has a single letter/phoneme on it
+- Balloons use these colors only: #6366f1, #ec4899, #f59e0b, #10b981, #8b5cf6
+- Clean rounded borders on activity areas
+- No gradients on backgrounds
+- Professional workbook quality, not clip-art
+
+DO NOT:
+- Use neon colors
+- Add random decorative shapes
+- Use more than 2 fonts
+- Make it look like a coloring book cover
+- Add excessive stars or hearts (max 2-3 small ones)`;
 
       try {
         const img = await geminiImage(prompt);
