@@ -68,11 +68,24 @@ async function geminiImage(prompt: string): Promise<Buffer | null> {
     }
   );
   const data = await res.json();
-  if (!res.ok || !data.candidates?.[0]) return null;
+  if (!res.ok) {
+    console.error(
+      '    API error:',
+      data.error?.message || JSON.stringify(data).slice(0, 200)
+    );
+    return null;
+  }
+  if (!data.candidates?.[0]) {
+    console.error('    No candidates in response');
+    return null;
+  }
   const imgPart = data.candidates[0].content.parts.find(
     (p: any) => p.inlineData
   );
-  if (!imgPart) return null;
+  if (!imgPart) {
+    console.error('    Response had text but no image');
+    return null;
+  }
   return Buffer.from(imgPart.inlineData.data, 'base64');
 }
 
@@ -102,6 +115,51 @@ async function sendTelegram(message: string) {
       text: message,
       parse_mode: 'Markdown',
     }),
+  });
+}
+
+async function sendActivityForReview(activity: {
+  imageBuffer: Buffer;
+  phoneme: string;
+  type: string;
+  topic: string;
+  age: number;
+  s3Key: string;
+  s3Url: string;
+}) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
+
+  const APP_URL =
+    process.env.NEXT_PUBLIC_APP_URL || 'https://www.almanaquedafala.com.br';
+  const approveUrl = `${APP_URL}/api/activities/review?action=approve&key=${encodeURIComponent(activity.s3Key)}`;
+  const rejectUrl = `${APP_URL}/api/activities/review?action=reject&key=${encodeURIComponent(activity.s3Key)}`;
+
+  const formData = new FormData();
+  formData.append('chat_id', TELEGRAM_CHAT);
+  formData.append(
+    'photo',
+    new Blob([activity.imageBuffer], { type: 'image/png' }),
+    'activity.png'
+  );
+  formData.append(
+    'caption',
+    `Nova atividade\n\nFonema: /${activity.phoneme}/\nTipo: ${activity.type}\nTema: ${activity.topic}\nIdade: ${activity.age} anos`
+  );
+  formData.append(
+    'reply_markup',
+    JSON.stringify({
+      inline_keyboard: [
+        [
+          { text: '✅ Aprovar', url: approveUrl },
+          { text: '❌ Rejeitar', url: rejectUrl },
+        ],
+      ],
+    })
+  );
+
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
+    method: 'POST',
+    body: formData,
   });
 }
 
@@ -172,8 +230,19 @@ Watermark: almanaquedafala.com.br`;
           `  ✅ [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age}`
         );
 
+        // Send to Telegram for review with image
+        await sendActivityForReview({
+          imageBuffer: img,
+          phoneme,
+          type: combo.type,
+          topic: combo.topic,
+          age: combo.age,
+          s3Key: key,
+          s3Url: url,
+        });
+
         // Rate limit
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 3000));
       } catch (err: any) {
         console.log(`  ❌ /${phoneme}/ ${combo.type}: ${err.message}`);
       }
