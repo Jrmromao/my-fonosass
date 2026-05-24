@@ -13,6 +13,66 @@ const s3 = new S3Client({
   },
 });
 
+/**
+ * AI Quality Check — validates activity metadata for:
+ * - Spelling/grammar in Portuguese
+ * - Correct watermark reference (almanaquedafala.com.br)
+ * - Appropriate content for stated age/phoneme
+ * - No emojis
+ */
+async function runQualityCheck(parsed: {
+  name: string;
+  description: string;
+  phoneme: string;
+  ageRange: string;
+  type: string;
+  difficulty: string;
+}): Promise<{ passed: boolean; reason?: string }> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return { passed: true }; // Skip if no API key
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `Voce e um revisor de qualidade para a plataforma almanaquedafala.com.br. Avalie a atividade e responda APENAS com JSON: {"passed": true/false, "reason": "motivo se reprovado"}
+
+Criterios de reprovacao:
+- Erros ortograficos ou gramaticais em portugues brasileiro
+- Emojis no conteudo
+- Nome ou descricao inadequados para a faixa etaria indicada
+- Fonema incorreto para o tipo de atividade
+- Referencia incorreta a marca (deve ser almanaquedafala.com.br)`,
+          },
+          {
+            role: 'user',
+            content: `Nome: ${parsed.name}\nDescricao: ${parsed.description}\nFonema: ${parsed.phoneme}\nFaixa etaria: ${parsed.ageRange}\nTipo: ${parsed.type}\nDificuldade: ${parsed.difficulty}`,
+          },
+        ],
+        max_tokens: 150,
+        temperature: 0,
+      }),
+    });
+
+    if (!response.ok) return { passed: true }; // Don't block on API failure
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    const result = JSON.parse(content);
+    return { passed: !!result.passed, reason: result.reason };
+  } catch {
+    return { passed: true }; // Don't block on parse/network errors
+  }
+}
+
 const activityTypeMap: Record<string, { type: string; difficulty: string }> = {
   find_circle: { type: 'SPEECH', difficulty: 'BEGINNER' },
   word_search: { type: 'LANGUAGE', difficulty: 'INTERMEDIATE' },
@@ -145,6 +205,24 @@ export async function POST(request: Request) {
         continue;
       }
 
+      // Quality Gate 1: Dedup — no duplicate phoneme + type + ageRange + theme combo
+      const existingActivity = await prisma.activity.findFirst({
+        where: {
+          phoneme: parsed.phoneme,
+          type: parsed.type as any,
+          ageRange: parsed.ageRange as any,
+          name: parsed.name,
+        },
+      });
+
+      if (existingActivity) {
+        skipped++;
+        continue;
+      }
+
+      // Quality Gate 2: AI quality check on metadata
+      const qualityResult = await runQualityCheck(parsed);
+
       const activity = await prisma.activity.create({
         data: {
           name: parsed.name,
@@ -153,8 +231,8 @@ export async function POST(request: Request) {
           difficulty: parsed.difficulty as any,
           ageRange: parsed.ageRange as any,
           phoneme: parsed.phoneme,
-          isPublic: true,
-          status: 'PUBLISHED',
+          isPublic: qualityResult.passed,
+          status: qualityResult.passed ? 'PUBLISHED' : 'PENDING_REVIEW',
           createdById: user.id,
         },
       });

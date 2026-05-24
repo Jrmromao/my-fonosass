@@ -112,6 +112,35 @@ REGRAS OBRIGATORIAS:
     // Auto-save to DB and notify reviewer
     let savedActivity = null;
     if (autoSave) {
+      // Dedup: check if same phoneme + difficulty + ageRange already exists today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const existingToday = await prisma.activity.findFirst({
+        where: {
+          phoneme,
+          difficulty: difficultyMap[difficulty],
+          ageRange: ageToRange(age),
+          createdAt: { gte: today },
+        },
+      });
+
+      if (existingToday) {
+        return NextResponse.json({
+          success: true,
+          exercise: exerciseData,
+          saved: null,
+          skipped: true,
+          reason:
+            'Activity for this phoneme/difficulty/age already created today',
+          metadata: {
+            phoneme,
+            age,
+            difficulty,
+            generatedAt: new Date().toISOString(),
+          },
+        });
+      }
+
       const approvalToken = nanoid(32);
       const user = await prisma.user.findUnique({
         where: { clerkUserId: userId },
