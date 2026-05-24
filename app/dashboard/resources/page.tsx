@@ -2,6 +2,7 @@
 
 import ResourceFileUpload from '@/components/admin/ResourceFileUpload';
 import { ActivityReviewPanel } from '@/components/dashboard/ActivityReviewPanel';
+import { ActivityManagerPanel } from '@/components/dashboard/ActivityManagerPanel';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -407,8 +408,14 @@ export default function AdminResourcesPage() {
       </div>
 
       <div className="p-8">
-        <Tabs defaultValue="resources" className="space-y-6">
+        <Tabs defaultValue="activities" className="space-y-6">
           <TabsList className="inline-flex bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 rounded-lg shadow-sm">
+            <TabsTrigger
+              value="activities"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+            >
+              Atividades
+            </TabsTrigger>
             <TabsTrigger
               value="resources"
               className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
@@ -434,6 +441,10 @@ export default function AdminResourcesPage() {
               Analytics
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="activities" className="space-y-4">
+            <ActivityManagerPanel />
+          </TabsContent>
 
           <TabsContent value="review" className="space-y-4">
             <ActivityReviewPanel />

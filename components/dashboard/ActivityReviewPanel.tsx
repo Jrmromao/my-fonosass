@@ -20,6 +20,9 @@ export function ActivityReviewPanel() {
   const [activities, setActivities] = useState<PendingActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [feedbackId, setFeedbackId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState('');
+  const [correcting, setCorrecting] = useState(false);
 
   const loadActivities = useCallback(async () => {
     try {
@@ -40,17 +43,37 @@ export function ActivityReviewPanel() {
   }, [loadActivities]);
 
   const handleApprove = async (id: string) => {
-    await fetch(`/api/exercises/${id}/approve?token=admin`, { method: 'POST' });
+    await fetch(`/api/admin/activities/${id}/approve`, { method: 'POST' });
     setActivities((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: 'PUBLISHED' } : a))
     );
   };
 
   const handleReject = async (id: string) => {
-    await fetch(`/api/exercises/${id}/reject?token=admin`, { method: 'POST' });
+    await fetch(`/api/admin/activities/${id}/discard`, { method: 'POST' });
     setActivities((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: 'REJECTED' } : a))
     );
+  };
+
+  const handleCorrectWithAI = async (id: string) => {
+    if (!feedback.trim()) return;
+    setCorrecting(true);
+    const res = await fetch(
+      `/api/admin/activities/${id}/reject-with-feedback`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback }),
+      }
+    );
+    const data = await res.json();
+    if (data.success) {
+      await loadActivities();
+    }
+    setFeedbackId(null);
+    setFeedback('');
+    setCorrecting(false);
   };
 
   const selected = activities.find((a) => a.id === selectedId);
@@ -191,6 +214,18 @@ export function ActivityReviewPanel() {
                   </Button>
                   <Button
                     size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      setFeedbackId(
+                        feedbackId === selected.id ? null : selected.id
+                      )
+                    }
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    Corrigir com IA
+                  </Button>
+                  <Button
+                    size="sm"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white"
                     onClick={() => handleApprove(selected.id)}
                   >
@@ -205,6 +240,38 @@ export function ActivityReviewPanel() {
             <div className="space-y-4">
               <ExerciseContent description={selected.description} />
             </div>
+
+            {/* AI Correction feedback */}
+            {feedbackId === selected.id && (
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
+                <textarea
+                  className="w-full p-3 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={3}
+                  placeholder="Descreva o que esta errado (ex: erro ortografico no titulo, faixa etaria incorreta...)"
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleCorrectWithAI(selected.id)}
+                    disabled={!feedback.trim() || correcting}
+                  >
+                    {correcting ? 'Corrigindo...' : 'Enviar para correcao'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setFeedbackId(null);
+                      setFeedback('');
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-center h-64 text-sm text-gray-400 border border-dashed border-gray-200 rounded-xl">

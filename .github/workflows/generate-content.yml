@@ -48,6 +48,13 @@ jobs:
           TELEGRAM_REVIEWER_CHAT_ID: ${{ secrets.TELEGRAM_REVIEWER_CHAT_ID }}
         run: npx tsx scripts/generate-content.ts activities "${{ github.event.inputs.phonemes || 'r,s,l' }}"
 
+      - name: Sync S3 activities to DB
+        run: |
+          curl -s -X POST \
+            "${{ secrets.APP_URL }}/api/admin/sync-activities" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+            --connect-timeout 10 --max-time 60
+
   generate-blog:
     if: ${{ github.event.inputs.type == 'blog' || github.event.inputs.type == 'both' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
