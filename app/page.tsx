@@ -1,5 +1,5 @@
-import LandingPageV2 from './landing-v2';
+import FomosaasLanding from './fomosaas-landing';
 
 export default function Home() {
-  return <LandingPageV2 />;
+  return <FomosaasLanding featuredBlogPosts={[]} />;
 }
