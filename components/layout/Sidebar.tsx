@@ -32,16 +32,11 @@ export function Sidebar({ className }: SidebarProps) {
       icon: BarChart2,
       href: '/dashboard',
     },
-    // {
-    //   title: 'Exercícios',
-    //   icon: FileText,
-    //   href: '/dashboard/games',
-    // },
-    // {
-    //   title: 'Meu Perfil',
-    //   icon: User,
-    //   href: '/dashboard/profile',
-    // },
+    {
+      title: 'Atividades',
+      icon: BookOpen,
+      href: '/dashboard/games',
+    },
     // Admin only items
     ...(userRole.role === 'ADMIN'
       ? [
