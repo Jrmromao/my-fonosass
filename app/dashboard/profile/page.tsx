@@ -287,8 +287,8 @@ export default function ProfilePage() {
                 <TabsTrigger
                   value="overview"
                   className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                             data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
-                             data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
+                              
+                             data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700
                              data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
                              transition-all rounded-md"
@@ -298,8 +298,8 @@ export default function ProfilePage() {
                 <TabsTrigger
                   value="stats"
                   className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                             data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
-                             data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
+                              
+                             data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700
                              data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
                              transition-all rounded-md"
@@ -309,8 +309,8 @@ export default function ProfilePage() {
                 <TabsTrigger
                   value="activity"
                   className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                             data-[state=active]:text-white data-[state=active]:bg-gradient-to-r
-                             data-[state=active]:from-blue-500 data-[state=active]:to-teal-500
+                              
+                             data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700
                              data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
                              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
                              transition-all rounded-md"

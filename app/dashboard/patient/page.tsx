@@ -10,7 +10,7 @@ export default async function PatientsPage() {
     <div className="h-full p-8 bg-white">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-gray-900">
             Gerenciamento de Pacientes
           </h1>
           <p className="text-muted-foreground mt-1">
