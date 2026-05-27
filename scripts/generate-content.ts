@@ -208,6 +208,27 @@ async function generateActivities(phonemes: string[]) {
               ? 'Modern, engaging like a real board game, cool dynamic fonts'
               : 'Clean, modern workbook style, not childish';
 
+      // Step 1: Generate validated word list for this phoneme+topic
+      const wordListPrompt = `Liste exatamente 8 palavras em português brasileiro que:
+1. Contenham o fonema /${phoneme}/ (na posição inicial, medial ou final)
+2. Sejam do tema "${combo.topic}"
+3. Sejam adequadas para crianças de ${combo.age} anos
+4. Tenham ortografia 100% correta
+
+Responda APENAS com as palavras separadas por vírgula, sem numeração, sem explicação.`;
+
+      const wordListRaw = await geminiText(wordListPrompt);
+      const words = wordListRaw
+        .split(',')
+        .map((w) => w.trim().toLowerCase())
+        .filter((w) => w.length > 0)
+        .slice(0, 8);
+
+      if (words.length < 4) {
+        console.log(`  ⚠️ Insufficient words for /${phoneme}/ ${combo.topic}`);
+        continue;
+      }
+
       const prompt = `Create a premium A4 portrait activity sheet for kids age ${combo.age} speech therapy.
 
 CONTENT:
@@ -215,6 +236,8 @@ CONTENT:
 - Phoneme: /${phoneme}/
 - Activity type: ${combo.type.replace('_', ' ').toLowerCase()}
 - All text in Brazilian Portuguese
+- MANDATORY WORDS TO INCLUDE: ${words.join(', ')}
+- These words MUST appear correctly spelled in the activity (crossword, word search, etc.)
 
 VISUAL STYLE (MUST follow exactly):
 - Background: clean white
@@ -222,7 +245,7 @@ VISUAL STYLE (MUST follow exactly):
 - Secondary colors: soft gray borders, light orange highlights
 - ${style}
 - Header: activity title in bold, phoneme badge in orange circle, age indicator
-- Footer: small text "almanaquedafala.com.br" centered, light gray, 8pt
+- Footer: MUST contain exactly "almanaquedafala.com.br" centered, light gray, 8pt — NO typos
 
 BRAND ELEMENTS (MUST include):
 - 3-4 small colorful balloons as corner decorations (not overwhelming)
@@ -232,17 +255,86 @@ BRAND ELEMENTS (MUST include):
 - No gradients on backgrounds
 - Professional workbook quality, not clip-art
 
+CRITICAL RULES:
+- Every word in the activity MUST be spelled correctly in Portuguese
+- The watermark "almanaquedafala.com.br" MUST be exactly as written — zero typos
+- All words MUST contain the phoneme /${phoneme}/
+- Do NOT invent words that don't exist in Portuguese
+
 DO NOT:
 - Use neon colors
 - Add random decorative shapes
 - Use more than 2 fonts
 - Make it look like a coloring book cover
-- Add excessive stars or hearts (max 2-3 small ones)`;
+- Add excessive stars or hearts (max 2-3 small ones)
+- Misspell any word`;
 
       try {
         const img = await geminiImage(prompt);
         if (!img) {
           console.log(`  ⚠️ No image for /${phoneme}/ ${combo.type}`);
+          continue;
+        }
+
+        // Step 3: Post-generation quality validation
+        const validationPrompt = `Analise esta imagem de atividade terapêutica e responda APENAS com JSON:
+{
+  "watermark_correct": true/false (contém "almanaquedafala.com.br" sem erros?),
+  "words_visible": true/false (as palavras são legíveis e parecem corretas em português?),
+  "spelling_errors": [] (liste palavras com erro ortográfico visível, ou [] se nenhum),
+  "phoneme_match": true/false (as palavras visíveis contêm o fonema /${phoneme}/?),
+  "overall_pass": true/false (aprovado para publicação?)
+}
+
+Palavras esperadas: ${words.join(', ')}
+Fonema alvo: /${phoneme}/`;
+
+        let qualityPass = true;
+        try {
+          const valRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [
+                      {
+                        inlineData: {
+                          mimeType: 'image/png',
+                          data: img.toString('base64'),
+                        },
+                      },
+                      { text: validationPrompt },
+                    ],
+                  },
+                ],
+              }),
+            }
+          );
+          const valData = await valRes.json();
+          const valText =
+            valData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const jsonMatch = valText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const validation = JSON.parse(jsonMatch[0]);
+            qualityPass = validation.overall_pass === true;
+            if (!qualityPass) {
+              console.log(
+                `  ❌ Quality check FAILED for /${phoneme}/ ${combo.type}: ${JSON.stringify(validation.spelling_errors || [])}`
+              );
+            }
+          }
+        } catch (valErr) {
+          // Don't block on validation failure — log and continue
+          console.log(`  ⚠️ Validation check skipped (error)`);
+        }
+
+        if (!qualityPass) {
+          console.log(
+            `  ⏭️ Skipping /${phoneme}/ ${combo.type} — failed quality gate`
+          );
           continue;
         }
 
