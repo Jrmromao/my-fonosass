@@ -15,32 +15,41 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
 import { getFileDownloadUrl } from '@/lib/actions/file-download.action';
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-} from '@tanstack/react-query';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  FileDown,
-  Search,
-} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { ChevronLeft, ChevronRight, FileDown, Search } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 
-const queryClient = new QueryClient();
+function ActivityThumbnail({ s3Key }: { s3Key: string }) {
+  const { data } = useQuery({
+    queryKey: ['thumbnail', s3Key],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/activities/thumbnail?key=${encodeURIComponent(s3Key)}`
+      );
+      const json = await res.json();
+      return json.url as string;
+    },
+    staleTime: 300_000,
+  });
 
-export default function ActivitiesPage() {
+  if (!data)
+    return (
+      <div className="w-full h-32 bg-gray-100 rounded-t-lg animate-pulse" />
+    );
   return (
-    <QueryClientProvider client={queryClient}>
-      <ActivitiesContent />
-    </QueryClientProvider>
+    <img
+      src={data}
+      alt=""
+      className="w-full h-32 object-cover rounded-t-lg"
+      loading="lazy"
+    />
   );
 }
 
-function ActivitiesContent() {
+export default function ActivitiesPage() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -312,8 +321,11 @@ function ActivitiesContent() {
               {activities.map((activity: any) => (
                 <Card
                   key={activity.id}
-                  className="border-gray-200 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all hover:shadow-sm"
+                  className="border-gray-200 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all hover:shadow-sm overflow-hidden"
                 >
+                  {activity.files?.[0]?.s3Key && (
+                    <ActivityThumbnail s3Key={activity.files[0].s3Key} />
+                  )}
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <Badge variant="outline" className="text-xs font-medium">

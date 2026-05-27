@@ -5,22 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BookOpen, Download, FileText, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-
-const queryClient = new QueryClient();
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Dashboard() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <DashboardContent />
-    </QueryClientProvider>
-  );
-}
-
-function DashboardContent() {
   const { user } = useUser();
+  const router = useRouter();
+
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (user && !user.unsafeMetadata?.onboarded) {
+      router.replace('/dashboard/onboarding');
+    }
+  }, [user, router]);
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],

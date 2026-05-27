@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
           difficulty: true,
           ageRange: true,
           createdAt: true,
-          files: { select: { id: true, fileType: true }, take: 1 },
+          files: { select: { id: true, fileType: true, s3Key: true }, take: 1 },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,

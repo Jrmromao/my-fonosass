@@ -1,0 +1,10 @@
+2026-05-23 09:48:54 | 1a33e6b | fix(security): upgrade Next.js 15.5.3 → 15.5.18 (13 CVEs patched)
+2026-05-23 10:49:24 | 8dcd26b | feat(exercises): branded PDF, S3 sync endpoint, review flow fix, quality rules
+2026-05-24 19:44:02 | 363a8fc | feat: quality gates for activities, landing page redesign
+2026-05-24 20:44:23 | a0cce4a | feat(admin): review UI with approve, discard, and AI-powered correction
+2026-05-24 21:03:11 | 63bd70c | feat(admin): activity manager with preview, visibility toggle, notify; restore landing page
+2026-05-24 21:19:22 | cfda7d4 | refactor(games): server-side search, pagination, URL state
+2026-05-24 21:23:05 | a7ee126 | revert(landing): restore to pre-AI-pipeline version
+2026-05-25 08:03:35 | 795d4b2 | refactor(dashboard): professional overview, stats, sidebar nav
+2026-05-26 20:11:38 | 9197213 | fix(landing): remove AI mentions, fix Portuguese, add project rules
+2026-05-26 20:57:29 | 1bc005c | refactor(ui): remove gradients, unify to indigo, medical app feel
