@@ -3,603 +3,275 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import { useUser } from '@clerk/nextjs';
-import {
-  Award,
-  BarChart3,
-  Calendar,
-  Clock,
-  Edit,
-  Mail,
-  MapPin,
-  Phone,
-  Save,
-  TrendingUp,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { Download, Edit, FileText, Mail, Save, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface UserStats {
-  totalExercises: number;
-  completedThisMonth: number;
-  averageSessionTime: number;
-  favoriteCategory: string;
-  streak: number;
-  totalHours: number;
-  weeklyProgress: number;
-  monthlyGoal: number;
-  completedGoal: number;
-}
-
 export default function ProfilePage() {
-  const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [profileData, setProfileData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    location: '',
-    bio: '',
-    clinic: '',
-    experience: '',
-    specialization: '',
+  const [formData, setFormData] = useState({ clinic: '', specialization: '' });
+
+  const { data: stats } = useQuery({
+    queryKey: ['profile-stats'],
+    queryFn: async (): Promise<{
+      data?: { total?: number; downloads?: number };
+    }> => {
+      const res = await fetch('/api/dashboard/stats');
+      return res.json();
+    },
+    staleTime: 60_000,
   });
 
-  // Real user statistics - will be fetched from API
-  const [userStats, setUserStats] = useState<UserStats>({
-    totalExercises: 0,
-    completedThisMonth: 0,
-    averageSessionTime: 0,
-    favoriteCategory: '',
-    streak: 0,
-    totalHours: 0,
-    weeklyProgress: 0,
-    monthlyGoal: 30,
-    completedGoal: 0,
-  });
-
-  // Load user data
   useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        setIsLoading(true);
-
-        // TODO: Replace with actual API calls
-        // For now, use mock data with user info from Clerk
-        if (user) {
-          setProfileData({
-            name: user.fullName || 'Usuário',
-            email: user.primaryEmailAddress?.emailAddress || '',
-            phone: '+55 11 99999-9999',
-            location: 'São Paulo, SP',
-            bio: 'Fonoaudiólogo especializado em terapia da fala para crianças.',
-            clinic: 'Clínica FonoVida',
-            experience: '5 anos',
-            specialization: 'Fonemas e Consciência Fonológica',
-          });
-
-          // Mock stats - replace with real API calls
-          setUserStats({
-            totalExercises: 127,
-            completedThisMonth: 23,
-            averageSessionTime: 25,
-            favoriteCategory: 'Fonemas',
-            streak: 12,
-            totalHours: 45,
-            weeklyProgress: 75,
-            monthlyGoal: 30,
-            completedGoal: 23,
-          });
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUserData();
+    if (user?.unsafeMetadata) {
+      setFormData({
+        clinic: (user.unsafeMetadata.clinic as string) || '',
+        specialization: (user.unsafeMetadata.specialization as string) || '',
+      });
+    }
   }, [user]);
 
   const handleSave = async () => {
-    try {
-      // TODO: Implement save functionality with API call
-      console.log('Saving profile data:', profileData);
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Error saving profile:', error);
-    }
+    await user?.update({
+      unsafeMetadata: { ...user.unsafeMetadata, ...formData },
+    });
+    setIsEditing(false);
   };
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
-      <div className="h-full bg-gray-50 dark:bg-gray-950">
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-          <div className="py-6 px-6">
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-8 w-20" />
-              <Skeleton className="h-8 w-32" />
-            </div>
-          </div>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader className="text-center">
-                  <Skeleton className="h-24 w-24 mx-auto rounded-full" />
-                  <Skeleton className="h-6 w-32 mx-auto" />
-                  <Skeleton className="h-4 w-48 mx-auto" />
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="lg:col-span-2">
-              <div className="space-y-6">
-                <Skeleton className="h-10 w-64" />
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="h-full p-8">
+        <Skeleton className="h-48 w-full rounded-xl" />
       </div>
     );
   }
 
+  const initials =
+    user?.fullName
+      ?.split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'U';
+
   return (
-    <div className="h-full bg-gray-50 dark:bg-gray-950">
+    <div className="h-full">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="py-6 px-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => router.back()}
-                className="h-8 w-8"
-              >
-                ←
-              </Button>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  Meu Perfil
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-                  Gerencie suas informações pessoais e acompanhe seu progresso
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              {isEditing ? 'Cancelar' : 'Editar Perfil'}
-            </Button>
-          </div>
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+        <div className="px-8 py-6">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white font-display">
+            Meu Perfil
+          </h1>
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Profile Information */}
-          <div className="lg:col-span-1">
-            <Card className="border-gray-200 dark:border-gray-800 shadow-md">
-              <CardHeader className="text-center">
-                <div className="mx-auto mb-4">
-                  <Avatar className="h-24 w-24 border-4 border-blue-100 dark:border-blue-900">
-                    <AvatarFallback className="text-2xl bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                      {profileData.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <CardTitle className="text-xl text-gray-800 dark:text-gray-200">
-                  {profileData.name}
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
-                  {profileData.specialization}
-                </CardDescription>
-                <div className="flex justify-center space-x-2 mt-3">
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                  >
-                    {profileData.experience} de experiência
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="border-gray-300 dark:border-gray-600"
-                  >
-                    {profileData.clinic}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3 text-sm">
-                    <Mail className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {profileData.email}
-                    </span>
+      <div className="p-8 max-w-3xl">
+        {/* Profile Card */}
+        <Card className="border-gray-200 dark:border-gray-800">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16 border-2 border-gray-100">
+                  <AvatarFallback className="text-lg bg-indigo-50 text-indigo-600 font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {user?.fullName || 'Utilizador'}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                    <Mail className="h-3.5 w-3.5" />
+                    {user?.primaryEmailAddress?.emailAddress}
                   </div>
-                  <div className="flex items-center space-x-3 text-sm">
-                    <Phone className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {profileData.phone}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3 text-sm">
-                    <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {profileData.location}
-                    </span>
-                  </div>
+                  {formData.specialization && (
+                    <Badge variant="outline" className="mt-2 text-xs">
+                      {formData.specialization}
+                    </Badge>
+                  )}
                 </div>
-                <Separator className="my-4" />
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Biografia
-                  </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {profileData.bio}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="bg-gray-100 dark:bg-gray-800 p-1 gap-1 rounded-lg">
-                <TabsTrigger
-                  value="overview"
-                  className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                              
-                             data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700
-                             data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-                             transition-all rounded-md"
-                >
-                  Visão Geral
-                </TabsTrigger>
-                <TabsTrigger
-                  value="stats"
-                  className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                              
-                             data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700
-                             data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-                             transition-all rounded-md"
-                >
-                  Estatísticas
-                </TabsTrigger>
-                <TabsTrigger
-                  value="activity"
-                  className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300
-                              
-                             data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700
-                             data-[state=active]:shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700
-                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-                             transition-all rounded-md"
-                >
-                  Atividade
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="overview" className="space-y-6">
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                        Exercícios Completos
-                      </CardTitle>
-                      <Award className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {userStats.totalExercises}
-                      </div>
-                      <p className="text-xs text-green-600 dark:text-green-400 font-medium">
-                        +{userStats.completedThisMonth} este mês
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                        Sequência Atual
-                      </CardTitle>
-                      <Clock className="h-4 w-4 text-orange-500" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {userStats.streak} dias
-                      </div>
-                      <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                        Mantenha o ritmo!
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                        Tempo Total
-                      </CardTitle>
-                      <TrendingUp className="h-4 w-4 text-purple-500" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {userStats.totalHours}h
-                      </div>
-                      <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">
-                        Média: {userStats.averageSessionTime}min/sessão
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Monthly Goal Progress */}
-                <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-gray-800 dark:text-gray-200">
-                      Meta Mensal
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Progresso em direção à sua meta de {userStats.monthlyGoal}{' '}
-                      exercícios este mês
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {userStats.completedGoal} de {userStats.monthlyGoal}{' '}
-                          exercícios
-                        </span>
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {Math.round(
-                            (userStats.completedGoal / userStats.monthlyGoal) *
-                              100
-                          )}
-                          %
-                        </span>
-                      </div>
-                      <Progress
-                        value={
-                          (userStats.completedGoal / userStats.monthlyGoal) *
-                          100
-                        }
-                        className="h-2"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Profile Edit Form */}
-                {isEditing && (
-                  <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                    <CardHeader>
-                      <CardTitle className="text-gray-800 dark:text-gray-200">
-                        Editar Informações do Perfil
-                      </CardTitle>
-                      <CardDescription className="text-gray-600 dark:text-gray-400">
-                        Atualize suas informações pessoais e profissionais.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <div>
-                          <Label
-                            htmlFor="name"
-                            className="text-gray-700 dark:text-gray-300"
-                          >
-                            Nome Completo
-                          </Label>
-                          <Input
-                            id="name"
-                            value={profileData.name}
-                            onChange={(e) =>
-                              setProfileData({
-                                ...profileData,
-                                name: e.target.value,
-                              })
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="email"
-                            className="text-gray-700 dark:text-gray-300"
-                          >
-                            Email
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={profileData.email}
-                            onChange={(e) =>
-                              setProfileData({
-                                ...profileData,
-                                email: e.target.value,
-                              })
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="phone"
-                            className="text-gray-700 dark:text-gray-300"
-                          >
-                            Telefone
-                          </Label>
-                          <Input
-                            id="phone"
-                            value={profileData.phone}
-                            onChange={(e) =>
-                              setProfileData({
-                                ...profileData,
-                                phone: e.target.value,
-                              })
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="location"
-                            className="text-gray-700 dark:text-gray-300"
-                          >
-                            Localização
-                          </Label>
-                          <Input
-                            id="location"
-                            value={profileData.location}
-                            onChange={(e) =>
-                              setProfileData({
-                                ...profileData,
-                                location: e.target.value,
-                              })
-                            }
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label
-                          htmlFor="bio"
-                          className="text-gray-700 dark:text-gray-300"
-                        >
-                          Biografia
-                        </Label>
-                        <Textarea
-                          id="bio"
-                          value={profileData.bio}
-                          onChange={(e) =>
-                            setProfileData({
-                              ...profileData,
-                              bio: e.target.value,
-                            })
-                          }
-                          rows={3}
-                          className="mt-1"
-                        />
-                      </div>
-                      <div className="flex justify-end space-x-2 pt-4">
-                        <Button
-                          variant="outline"
-                          onClick={() => setIsEditing(false)}
-                          className="border-gray-300 dark:border-gray-600"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          onClick={handleSave}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <Save className="mr-2 h-4 w-4" />
-                          Salvar
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                {isEditing ? (
+                  <X className="h-4 w-4" />
+                ) : (
+                  <Edit className="h-4 w-4" />
                 )}
-              </TabsContent>
+              </Button>
+            </div>
 
-              <TabsContent value="stats" className="space-y-6">
-                <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-gray-800 dark:text-gray-200">
-                      Estatísticas Detalhadas
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Análise do seu progresso e uso da plataforma.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12">
-                      <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
-                        <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                        Estatísticas em Desenvolvimento
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400">
-                        Em breve você terá acesso a gráficos detalhados e
-                        análises avançadas do seu progresso.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+            {/* Edit Form */}
+            {isEditing && (
+              <div className="mt-6 pt-6 border-t border-gray-100 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-gray-500">Clínica</Label>
+                    <Input
+                      value={formData.clinic}
+                      onChange={(e) =>
+                        setFormData({ ...formData, clinic: e.target.value })
+                      }
+                      placeholder="Nome da clínica"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500">
+                      Especialização
+                    </Label>
+                    <Input
+                      value={formData.specialization}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          specialization: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: Fonemas e Consciência Fonológica"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    onClick={handleSave}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
+                    <Save className="h-3.5 w-3.5 mr-1.5" />
+                    Guardar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-              <TabsContent value="activity" className="space-y-6">
-                <Card className="border-gray-200 dark:border-gray-800 shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-gray-800 dark:text-gray-200">
-                      Histórico de Atividade
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-gray-400">
-                      Registro completo de todos os seus exercícios e
-                      interações.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-12">
-                      <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
-                        <Calendar className="h-8 w-8 text-green-600 dark:text-green-400" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                        Histórico em Desenvolvimento
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400">
-                        Em breve você poderá visualizar todo o seu histórico de
-                        atividades e progresso.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
+        {/* Usage Stats */}
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <Card className="border-gray-200 dark:border-gray-800">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats?.data?.total || 0}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Atividades disponíveis
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-gray-200 dark:border-gray-800">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center">
+                  <Download className="h-4 w-4 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats?.data?.downloads || 0}
+                  </p>
+                  <p className="text-xs text-gray-500">Downloads este mês</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Preferences */}
+        {!!user?.unsafeMetadata?.preferences && (
+          <Card className="border-gray-200 dark:border-gray-800 mt-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-900">
+                Preferências
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {(user.unsafeMetadata.preferences as any)?.ageRanges?.length >
+                  0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1.5">
+                      Faixas etárias
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {(user.unsafeMetadata.preferences as any).ageRanges.map(
+                        (age: string) => (
+                          <Badge
+                            key={age}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {age}
+                          </Badge>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+                {(user.unsafeMetadata.preferences as any)?.phonemes?.length >
+                  0 && (
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1.5">Fonemas</p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {(user.unsafeMetadata.preferences as any).phonemes.map(
+                        (p: string) => (
+                          <Badge key={p} variant="outline" className="text-xs">
+                            /{p}/
+                          </Badge>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Account Info */}
+        <Card className="border-gray-200 dark:border-gray-800 mt-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-gray-900">
+              Conta
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Membro desde</span>
+                <span className="text-gray-900">
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString('pt-BR')
+                    : '—'}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-gray-500">Plano</span>
+                <Badge variant="outline" className="text-xs">
+                  Gratuito
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
