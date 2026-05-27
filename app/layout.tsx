@@ -196,7 +196,7 @@ export default function RootLayout({
           />
         </head>
         <body
-          className={`${inter.variable} ${nunito.variable} font-sans flex flex-col min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100`}
+          className={`${inter.variable} ${nunito.variable} font-sans flex flex-col min-h-screen bg-white`}
           suppressHydrationWarning={true}
         >
           {/* Skip to main content link for accessibility */}
