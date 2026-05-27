@@ -340,7 +340,6 @@ Fonema alvo: /${phoneme}/`;
 
       // ═══ STEP 6: Upload to S3 (watermark added programmatically via sync endpoint) ═══
       try {
-      try {
         const key = `activities/${phoneme}/${combo.type.toLowerCase()}-${combo.topic}-age${combo.age}.png`;
         const url = await uploadToS3(key, img, 'image/png');
         count++;
