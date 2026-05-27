@@ -22,6 +22,7 @@ export async function GET() {
         type: true,
         status: true,
         createdAt: true,
+        files: { select: { id: true, s3Key: true, fileType: true }, take: 1 },
       },
     });
 

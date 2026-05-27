@@ -14,6 +14,7 @@ interface PendingActivity {
   status: string;
   createdAt: string;
   description: string;
+  files?: { id: string; s3Key: string; fileType: string }[];
 }
 
 export function ActivityReviewPanel() {
@@ -26,10 +27,10 @@ export function ActivityReviewPanel() {
 
   const loadActivities = useCallback(async () => {
     try {
-      const res = await fetch('/api/exercises?status=all&nocache=1');
+      const res = await fetch('/api/admin/activities/pending');
       const data = await res.json();
       if (data.success) {
-        setActivities(data.data || []);
+        setActivities(data.activities || []);
       }
     } catch (err) {
       console.error(err);
@@ -236,6 +237,11 @@ export function ActivityReviewPanel() {
               )}
             </div>
 
+            {/* Activity preview image */}
+            {selected.files?.[0]?.s3Key && (
+              <ActivityPreviewImage activityId={selected.id} />
+            )}
+
             {/* Exercise content */}
             <div className="space-y-4">
               <ExerciseContent description={selected.description} />
@@ -280,6 +286,31 @@ export function ActivityReviewPanel() {
         )}
       </div>
     </div>
+  );
+}
+
+function ActivityPreviewImage({ activityId }: { activityId: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/admin/activities/${activityId}/preview`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.url) setUrl(data.url);
+      })
+      .catch(() => {
+        /* ignore */
+      });
+  }, [activityId]);
+
+  if (!url)
+    return <div className="w-full h-48 bg-gray-100 rounded-lg animate-pulse" />;
+  return (
+    <img
+      src={url}
+      alt=""
+      className="w-full rounded-lg border border-gray-200"
+    />
   );
 }
 
