@@ -1,7 +1,19 @@
 import { prisma } from '@/app/db';
 import { auth } from '@clerk/nextjs/server';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Prisma } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || 'eu-west-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  },
+});
+
+const BUCKET = process.env.AWS_S3_BUCKET_NAME || 'fonosapp';
 
 export async function GET(request: NextRequest) {
   try {
@@ -85,9 +97,29 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    // Generate presigned thumbnail URLs in batch
+    const activitiesWithThumbnails = await Promise.all(
+      activities.map(async (activity) => {
+        const file = activity.files[0];
+        let thumbnailUrl = null;
+        if (file?.s3Key) {
+          try {
+            const command = new GetObjectCommand({
+              Bucket: BUCKET,
+              Key: file.s3Key,
+            });
+            thumbnailUrl = await getSignedUrl(s3, command, { expiresIn: 600 });
+          } catch {
+            /* skip failed thumbnails */
+          }
+        }
+        return { ...activity, thumbnailUrl };
+      })
+    );
+
     return NextResponse.json({
       success: true,
-      data: activities,
+      data: activitiesWithThumbnails,
       pagination: {
         page,
         limit,

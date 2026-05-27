@@ -4,6 +4,12 @@ import { NewActivityDialog } from '@/components/dialogs/new-activity-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -21,26 +27,11 @@ import { ChevronLeft, ChevronRight, FileDown, Search } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 
-function ActivityThumbnail({ s3Key }: { s3Key: string }) {
-  const { data } = useQuery({
-    queryKey: ['thumbnail', s3Key],
-    queryFn: async () => {
-      const res = await fetch(
-        `/api/activities/thumbnail?key=${encodeURIComponent(s3Key)}`
-      );
-      const json = await res.json();
-      return json.url as string;
-    },
-    staleTime: 300_000,
-  });
-
-  if (!data)
-    return (
-      <div className="w-full h-32 bg-gray-100 rounded-t-lg animate-pulse" />
-    );
+function ActivityThumbnail({ url }: { url: string | null }) {
+  if (!url) return <div className="w-full h-32 bg-gray-100 rounded-t-lg" />;
   return (
     <img
-      src={data}
+      src={url}
       alt=""
       className="w-full h-32 object-cover rounded-t-lg"
       loading="lazy"
@@ -65,6 +56,7 @@ export default function ActivitiesPage() {
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebounce(searchInput, 400);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [previewActivity, setPreviewActivity] = useState<any>(null);
   const [isPending, startTransition] = useTransition();
 
   // Update URL params
@@ -321,10 +313,11 @@ export default function ActivitiesPage() {
               {activities.map((activity: any) => (
                 <Card
                   key={activity.id}
-                  className="border-gray-200 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all hover:shadow-sm overflow-hidden"
+                  className="border-gray-200 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden cursor-pointer"
+                  onClick={() => setPreviewActivity(activity)}
                 >
                   {activity.files?.[0]?.s3Key && (
-                    <ActivityThumbnail s3Key={activity.files[0].s3Key} />
+                    <ActivityThumbnail url={activity.thumbnailUrl} />
                   )}
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
@@ -413,6 +406,63 @@ export default function ActivitiesPage() {
           </>
         )}
       </div>
+      {/* Activity Preview Modal */}
+      <Dialog
+        open={!!previewActivity}
+        onOpenChange={() => setPreviewActivity(null)}
+      >
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          {previewActivity && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-lg">
+                  {previewActivity.name}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {/* Preview image */}
+                {previewActivity.thumbnailUrl && (
+                  <img
+                    src={previewActivity.thumbnailUrl}
+                    alt={previewActivity.name}
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                )}
+                {/* Metadata */}
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant="outline">/{previewActivity.phoneme}/</Badge>
+                  <Badge variant="outline">{previewActivity.difficulty}</Badge>
+                  <Badge variant="outline">{previewActivity.ageRange}</Badge>
+                  <Badge variant="outline">{previewActivity.type}</Badge>
+                </div>
+                {/* Description */}
+                <p className="text-sm text-gray-600">
+                  {previewActivity.description}
+                </p>
+                {/* Download button */}
+                {previewActivity.files?.[0] && (
+                  <Button
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(
+                        previewActivity.files[0].id,
+                        `${previewActivity.name}.pdf`
+                      );
+                    }}
+                    disabled={downloadingId === previewActivity.files[0].id}
+                  >
+                    <FileDown className="h-4 w-4 mr-2" />
+                    {downloadingId === previewActivity.files[0].id
+                      ? 'A descarregar...'
+                      : 'Descarregar atividade'}
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
