@@ -1,6 +1,18 @@
 import { prisma } from '@/app/db';
 import { auth } from '@clerk/nextjs/server';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { NextRequest, NextResponse } from 'next/server';
+
+const GEMINI_KEY = process.env.GOOGLE_CLOUD_API_KEY;
+const BUCKET = process.env.AWS_S3_BUCKET_NAME || 'fonosapp';
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || 'eu-west-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  },
+});
 
 export async function POST(
   request: NextRequest,
@@ -28,13 +40,94 @@ export async function POST(
     });
 
     if (!activity) {
+      return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
+    }
+
+    const hasImageFile = activity.files.some((f) =>
+      f.fileType.startsWith('image/')
+    );
+
+    // If activity has an image file, regenerate the image with corrections
+    if (hasImageFile && GEMINI_KEY) {
+      const file = activity.files[0];
+
+      // Get the current image from S3
+      const getCmd = new GetObjectCommand({ Bucket: BUCKET, Key: file.s3Key });
+      const s3Obj = await s3.send(getCmd);
+      const currentImage = Buffer.from(
+        await s3Obj.Body!.transformToByteArray()
+      );
+
+      // Ask AI to regenerate with corrections
+      const regeneratePrompt = `This is a speech therapy activity sheet that has issues.
+
+FEEDBACK FROM REVIEWER: ${feedback}
+
+Please regenerate this activity sheet fixing ALL the issues mentioned above.
+
+RULES:
+- Fix all spelling errors in Portuguese
+- Ensure all words contain the phoneme /${activity.phoneme}/
+- Keep the same visual style and layout
+- DO NOT add any watermark or footer text (added programmatically)
+- All text must be in correct Brazilian Portuguese
+- Activity is for children age ${activity.ageRange}
+- Theme/type: ${activity.type}`;
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { inlineData: { mimeType: 'image/png', data: currentImage.toString('base64') } },
+                { text: regeneratePrompt },
+              ],
+            }],
+            generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
+          }),
+        }
+      );
+
+      const data = await res.json();
+      const imgPart = data.candidates?.[0]?.content?.parts?.find(
+        (p: any) => p.inlineData
+      );
+
+      if (imgPart) {
+        const newImage = Buffer.from(imgPart.inlineData.data, 'base64');
+
+        // Upload corrected image to S3 (overwrite)
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: BUCKET,
+            Key: file.s3Key,
+            Body: newImage,
+            ContentType: 'image/png',
+          })
+        );
+
+        await prisma.activity.update({
+          where: { id },
+          data: { status: 'PENDING_REVIEW' },
+        });
+
+        return NextResponse.json({
+          success: true,
+          regenerated: true,
+          message: 'Image regenerated with corrections',
+        });
+      }
+
       return NextResponse.json(
-        { error: 'Activity not found' },
-        { status: 404 }
+        { error: 'Failed to regenerate image' },
+        { status: 500 }
       );
     }
 
-    // Parse existing exercise data
+    // For text-based activities, fix via text AI
     let exerciseData;
     try {
       exerciseData = JSON.parse(activity.description);
@@ -42,8 +135,7 @@ export async function POST(
       exerciseData = { titulo: activity.name, descricao: activity.description };
     }
 
-    // Ask AI to fix based on feedback
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const textRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -54,11 +146,11 @@ export async function POST(
         messages: [
           {
             role: 'system',
-            content: `Voce e um revisor de conteudo para almanaquedafala.com.br. Corrija o exercicio com base no feedback do admin. Responda APENAS com o JSON corrigido, mantendo a mesma estrutura. Regras: zero erros ortograficos, zero emojis, portugues brasileiro perfeito, conteudo adequado para a faixa etaria.`,
+            content: `Corrija o exercício com base no feedback. Responda APENAS com JSON corrigido. Regras: zero erros ortográficos, zero emojis, português brasileiro perfeito.`,
           },
           {
             role: 'user',
-            content: `Exercicio atual:\n${JSON.stringify(exerciseData, null, 2)}\n\nFeedback do admin:\n${feedback}\n\nCorreija e retorne o JSON corrigido.`,
+            content: `Exercício:\n${JSON.stringify(exerciseData)}\n\nFeedback:\n${feedback}`,
           },
         ],
         max_tokens: 800,
@@ -66,27 +158,19 @@ export async function POST(
       }),
     });
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: 'AI service unavailable' },
-        { status: 502 }
-      );
+    if (!textRes.ok) {
+      return NextResponse.json({ error: 'AI service unavailable' }, { status: 502 });
     }
 
-    const aiData = await response.json();
+    const aiData = await textRes.json();
     const correctedText = aiData.choices?.[0]?.message?.content;
-
     let correctedData;
     try {
       correctedData = JSON.parse(correctedText);
     } catch {
-      return NextResponse.json(
-        { error: 'AI returned invalid response' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'AI returned invalid response' }, { status: 500 });
     }
 
-    // Update the activity with corrected content, keep as PENDING_REVIEW
     await prisma.activity.update({
       where: { id },
       data: {
@@ -96,10 +180,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      corrected: correctedData,
-    });
+    return NextResponse.json({ success: true, corrected: correctedData });
   } catch (error) {
     console.error('Reject with feedback error:', error);
     return NextResponse.json(

@@ -208,12 +208,12 @@ async function generateActivities(phonemes: string[]) {
               ? 'Modern, engaging like a real board game, cool dynamic fonts'
               : 'Clean, modern workbook style, not childish';
 
-      // Step 1: Generate validated word list for this phoneme+topic
+      // ═══ STEP 1: Generate validated word list ═══
       const wordListPrompt = `Liste exatamente 8 palavras em português brasileiro que:
 1. Contenham o fonema /${phoneme}/ (na posição inicial, medial ou final)
 2. Sejam do tema "${combo.topic}"
 3. Sejam adequadas para crianças de ${combo.age} anos
-4. Tenham ortografia 100% correta
+4. Tenham ortografia 100% correta em português brasileiro
 
 Responda APENAS com as palavras separadas por vírgula, sem numeração, sem explicação.`;
 
@@ -229,6 +229,7 @@ Responda APENAS com as palavras separadas por vírgula, sem numeração, sem exp
         continue;
       }
 
+      // ═══ STEP 2: Generate image WITHOUT watermark ═══
       const prompt = `Create a premium A4 portrait activity sheet for kids age ${combo.age} speech therapy.
 
 CONTENT:
@@ -237,115 +238,117 @@ CONTENT:
 - Activity type: ${combo.type.replace('_', ' ').toLowerCase()}
 - All text in Brazilian Portuguese
 - MANDATORY WORDS TO INCLUDE: ${words.join(', ')}
-- These words MUST appear correctly spelled in the activity (crossword, word search, etc.)
+- These words MUST appear correctly spelled in the activity
 
-VISUAL STYLE (MUST follow exactly):
+VISUAL STYLE:
 - Background: clean white
 - Primary accent color: warm orange/coral (#f97316)
 - Secondary colors: soft gray borders, light orange highlights
 - ${style}
 - Header: activity title in bold, phoneme badge in orange circle, age indicator
-- Footer: MUST contain exactly "almanaquedafala.com.br" centered, light gray, 8pt — NO typos
+- DO NOT add any footer or watermark text — this will be added programmatically
 
-BRAND ELEMENTS (MUST include):
-- 3-4 small colorful balloons as corner decorations (not overwhelming)
+BRAND ELEMENTS:
+- 3-4 small colorful balloons as corner decorations
 - Each balloon has a single letter/phoneme on it
-- Balloons use these colors only: #6366f1, #ec4899, #f59e0b, #10b981, #8b5cf6
+- Balloons use these colors: #6366f1, #ec4899, #f59e0b, #10b981, #8b5cf6
 - Clean rounded borders on activity areas
-- No gradients on backgrounds
-- Professional workbook quality, not clip-art
+- Professional workbook quality
 
-CRITICAL RULES:
-- Every word in the activity MUST be spelled correctly in Portuguese
-- The watermark "almanaquedafala.com.br" MUST be exactly as written — zero typos
+CRITICAL:
+- Every word MUST be spelled correctly in Portuguese
 - All words MUST contain the phoneme /${phoneme}/
-- Do NOT invent words that don't exist in Portuguese
+- Do NOT add any watermark or footer text
+- Do NOT invent words that don't exist in Portuguese`;
 
-DO NOT:
-- Use neon colors
-- Add random decorative shapes
-- Use more than 2 fonts
-- Make it look like a coloring book cover
-- Add excessive stars or hearts (max 2-3 small ones)
-- Misspell any word`;
+      // ═══ STEP 3: Generate with retry (max 2 attempts) ═══
+      let img: Buffer | null = null;
+      let qualityScore = 0;
+      let validationResult: any = null;
 
-      try {
-        const img = await geminiImage(prompt);
-        if (!img) {
-          console.log(`  ⚠️ No image for /${phoneme}/ ${combo.type}`);
-          continue;
-        }
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          img = await geminiImage(attempt === 0 ? prompt : prompt + '\n\nPREVIOUS ATTEMPT FAILED. Fix: ensure all words are correctly spelled and contain the phoneme.');
+          if (!img) break;
 
-        // Step 3: Post-generation quality validation
-        const validationPrompt = `Analise esta imagem de atividade terapêutica e responda APENAS com JSON:
+          // ═══ STEP 4: AI Vision validation with confidence scoring ═══
+          const validationPrompt = `Analise esta imagem de atividade terapêutica infantil. Responda APENAS com JSON:
 {
-  "watermark_correct": true/false (contém "almanaquedafala.com.br" sem erros?),
-  "words_visible": true/false (as palavras são legíveis e parecem corretas em português?),
-  "spelling_errors": [] (liste palavras com erro ortográfico visível, ou [] se nenhum),
-  "phoneme_match": true/false (as palavras visíveis contêm o fonema /${phoneme}/?),
-  "overall_pass": true/false (aprovado para publicação?)
+  "words_readable": true/false,
+  "spelling_errors": [],
+  "words_with_phoneme": 0,
+  "total_words_visible": 0,
+  "age_appropriate": true/false,
+  "professional_quality": true/false,
+  "confidence_score": 0-100
 }
+
+Critérios de pontuação (confidence_score):
+- Palavras legíveis e corretas: +30 pontos
+- Todas contêm o fonema /${phoneme}/: +30 pontos
+- Visual profissional e adequado à idade ${combo.age}: +20 pontos
+- Sem erros ortográficos: +20 pontos
+- Cada erro ortográfico: -15 pontos
 
 Palavras esperadas: ${words.join(', ')}
 Fonema alvo: /${phoneme}/`;
 
-        let qualityPass = true;
-        try {
           const valRes = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                contents: [
-                  {
-                    parts: [
-                      {
-                        inlineData: {
-                          mimeType: 'image/png',
-                          data: img.toString('base64'),
-                        },
-                      },
-                      { text: validationPrompt },
-                    ],
-                  },
-                ],
+                contents: [{
+                  parts: [
+                    { inlineData: { mimeType: 'image/png', data: img.toString('base64') } },
+                    { text: validationPrompt },
+                  ],
+                }],
               }),
             }
           );
           const valData = await valRes.json();
-          const valText =
-            valData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const valText = valData.candidates?.[0]?.content?.parts?.[0]?.text || '';
           const jsonMatch = valText.match(/\{[\s\S]*\}/);
+
           if (jsonMatch) {
-            const validation = JSON.parse(jsonMatch[0]);
-            qualityPass = validation.overall_pass === true;
-            if (!qualityPass) {
-              console.log(
-                `  ❌ Quality check FAILED for /${phoneme}/ ${combo.type}: ${JSON.stringify(validation.spelling_errors || [])}`
-              );
-            }
+            validationResult = JSON.parse(jsonMatch[0]);
+            qualityScore = validationResult.confidence_score || 0;
+          } else {
+            qualityScore = 70; // Can't validate — assume moderate quality
           }
-        } catch (valErr) {
-          // Don't block on validation failure — log and continue
-          console.log(`  ⚠️ Validation check skipped (error)`);
+
+          if (qualityScore >= 60) break; // Good enough, stop retrying
+          console.log(`  ⚠️ Attempt ${attempt + 1} scored ${qualityScore}/100 — retrying...`);
+        } catch (err: any) {
+          console.log(`  ❌ Attempt ${attempt + 1} error: ${err.message}`);
         }
 
-        if (!qualityPass) {
-          console.log(
-            `  ⏭️ Skipping /${phoneme}/ ${combo.type} — failed quality gate`
-          );
-          continue;
-        }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
 
+      if (!img || qualityScore < 40) {
+        console.log(`  ⏭️ Skipping /${phoneme}/ ${combo.type} — score ${qualityScore}/100 (min 40)`);
+        continue;
+      }
+
+      // ═══ STEP 5: Determine routing based on score ═══
+      // 85+ = auto-publish, 60-84 = manual review, 40-59 = upload but flag
+      const status = qualityScore >= 85 ? 'PUBLISHED' : 'PENDING_REVIEW';
+      const statusLabel = qualityScore >= 85 ? 'AUTO-APPROVED' : 'NEEDS REVIEW';
+
+      // ═══ STEP 6: Upload to S3 (watermark added programmatically via sync endpoint) ═══
+      try {
+      try {
         const key = `activities/${phoneme}/${combo.type.toLowerCase()}-${combo.topic}-age${combo.age}.png`;
         const url = await uploadToS3(key, img, 'image/png');
         count++;
         console.log(
-          `  ✅ [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age}`
+          `  ✅ [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — ${statusLabel} (${qualityScore}/100)`
         );
 
-        // Send to Telegram for review with image
+        // Send to Telegram for review with quality score
         await sendActivityForReview({
           imageBuffer: img,
           phoneme,
