@@ -231,8 +231,8 @@ export async function POST(request: Request) {
           difficulty: parsed.difficulty as any,
           ageRange: parsed.ageRange as any,
           phoneme: parsed.phoneme,
-          isPublic: qualityResult.passed,
-          status: qualityResult.passed ? 'PUBLISHED' : 'PENDING_REVIEW',
+          isPublic: false,
+          status: 'PENDING_REVIEW',
           createdById: user.id,
         },
       });

@@ -333,10 +333,8 @@ Fonema alvo: /${phoneme}/`;
         continue;
       }
 
-      // ═══ STEP 5: Determine routing based on score ═══
-      // 85+ = auto-publish, 60-84 = manual review, 40-59 = upload but flag
-      const status = qualityScore >= 85 ? 'PUBLISHED' : 'PENDING_REVIEW';
-      const statusLabel = qualityScore >= 85 ? 'AUTO-APPROVED' : 'NEEDS REVIEW';
+      // ═══ STEP 5: All activities go to PENDING_REVIEW — admin approves via Telegram/dashboard ═══
+      const status = 'PENDING_REVIEW';
 
       // ═══ STEP 6: Upload to S3 (watermark added programmatically via sync endpoint) ═══
       try {
@@ -344,7 +342,7 @@ Fonema alvo: /${phoneme}/`;
         const url = await uploadToS3(key, img, 'image/png');
         count++;
         console.log(
-          `  ✅ [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — ${statusLabel} (${qualityScore}/100)`
+          `  ✅ [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — PENDING REVIEW (score: ${qualityScore}/100)`
         );
 
         // Send to Telegram for review with quality score
