@@ -35,7 +35,7 @@ export default function Header() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 leading-tight group-hover:from-indigo-700 group-hover:to-purple-700 transition-all duration-300">
+            <span className="text-2xl font-bold text-indigo-600 font-bold">
               Almanaque da Fala
             </span>
             <span className="text-sm text-gray-600 font-medium">
@@ -62,7 +62,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <SignedOut>
             <SignInButton mode="modal" forceRedirectUrl="/dashboard">
-              <Button className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 transition-all duration-300">
+              <Button className="bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm">
                 Começar Agora
               </Button>
             </SignInButton>

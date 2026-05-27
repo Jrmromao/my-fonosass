@@ -87,7 +87,7 @@ export default function SharedNavbar({
                   </Link>
                   <Link
                     href="/sign-up"
-                    className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-full hover:bg-orange-600 transition-colors shadow-sm"
+                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-full hover:bg-indigo-700 transition-colors shadow-sm"
                   >
                     Começar grátis
                   </Link>
@@ -147,7 +147,7 @@ export default function SharedNavbar({
                   </Link>
                   <Link
                     href="/sign-up"
-                    className="block mx-3 px-4 py-2.5 text-center bg-orange-500 text-white text-sm font-medium rounded-full hover:bg-orange-600"
+                    className="block mx-3 px-4 py-2.5 text-center bg-indigo-600 text-white text-sm font-medium rounded-full hover:bg-indigo-700"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Começar grátis

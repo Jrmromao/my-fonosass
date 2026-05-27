@@ -8,7 +8,7 @@ export default function HeroSection() {
       <div className="container px-4 md:px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
-            <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 leading-[1.1]">
+            <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl text-gray-900 leading-[1.1]">
               Revolucione suas Terapias
             </h1>
             <p className="text-xl text-gray-600 max-w-[600px]">
@@ -28,15 +28,15 @@ export default function HeroSection() {
             </div>
           </div>
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-3xl transform rotate-3 scale-105 opacity-20 blur-2xl"></div>
+            <div className="absolute inset-0 hidden"></div>
             <Image
               src="/images/hero.png"
               alt="Dashboard Almanaque da Fala"
               width={600}
               height={600}
-              className="relative rounded-3xl shadow-2xl border-8 border-white"
+              className="relative rounded-3xl shadow-sm border border-gray-200"
             />
-            <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl">
+            <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl ">
               <div className="flex items-center gap-2 text-indigo-600">
                 <Phone className="size-5" />
                 <span className="font-semibold">Suporte 24/7</span>

@@ -189,7 +189,7 @@ export default function Page() {
       <div className="flex gap-6">
         <div className="w-2/3">
           <div className="flex items-start gap-6 mb-6">
-            <div className="w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center">
+            <div className="w-24 h-24 rounded-full bg-indigo-50 flex items-center justify-center">
               <User2 className="w-12 h-12 text-purple-600" />
             </div>
             <div>
@@ -270,7 +270,7 @@ export default function Page() {
                         key={i}
                         className="flex gap-4 pb-4 border-b last:border-0 last:pb-0"
                       >
-                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
                           <FileText className="w-4 h-4 text-purple-600" />
                         </div>
                         <div>
