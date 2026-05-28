@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from '@/app/db';
 import { auth } from '@clerk/nextjs/server';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';

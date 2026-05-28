@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from '@/app/db';
 import { TelegramService } from '@/services/telegramService';
 import { auth } from '@clerk/nextjs/server';
