@@ -23,13 +23,11 @@ on:
         required: false
 
   schedule:
-    # Monday and Thursday at 9am UTC
-    - cron: '0 9 * * 1'
-    - cron: '0 9 * * 4'
+    - cron: '0 9 * * *'  # Daily at 9am UTC
 
 jobs:
   generate-activities:
-    if: ${{ github.event.inputs.type == 'activities' || github.event.inputs.type == 'both' || github.event_name == 'schedule' }}
+    if: ${{ github.event.inputs.type == 'activities' || github.event.inputs.type == 'both' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
