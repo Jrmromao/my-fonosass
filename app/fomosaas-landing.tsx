@@ -133,12 +133,12 @@ export default function FomosaasLanding({ featuredBlogPosts }: FomosaasLandingPr
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {differentiators.map((item, i) => (
-              <div key={i} className="p-5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                <div className="w-8 h-8 rounded-md bg-[#f97066]/20 flex items-center justify-center mb-3">
+              <div key={i} className="p-6 rounded-lg bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors">
+                <div className="w-11 h-11 rounded-lg bg-[#f97066]/10 border border-[#f97066]/20 flex items-center justify-center mb-4">
                   {item.icon}
                 </div>
-                <h3 className="font-semibold text-white text-sm mb-1">{item.title}</h3>
-                <p className="text-xs text-gray-400 leading-relaxed">{item.description}</p>
+                <h3 className="font-semibold text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
