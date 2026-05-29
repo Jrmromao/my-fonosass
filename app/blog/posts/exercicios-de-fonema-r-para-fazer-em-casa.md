@@ -4,6 +4,11 @@ date: "2026-05-22"
 excerpt: "Descubra estratégias eficazes e baseadas em evidências para auxiliar na produção do fonema /r/ em casa, com o apoio de fonoaudiólogos brasileiros."
 author: "Eliane Mota"
 tags: ["fonema /r/", "terapia fonoaudiológica", "exercícios em casa", "linguagem infantil", "dislalia", "fonoaudiologia brasileira"]
+featured: false
+seo:
+  title: "Exercícios de Fonema /r/ para Fazer em Casa | Almanaque da Fala"
+  description: "Estratégias eficazes para auxiliar na produção do fonema /r/ em casa com orientação fonoaudiológica."
+  keywords: ["fonema r", "exercícios fonema", "dislalia", "fonoaudiologia crianças"]
 ---
 
 ## Dominando o Fonema /r/: Exercícios Práticos para Fazer em Casa com Orientação Fonoaudiológica

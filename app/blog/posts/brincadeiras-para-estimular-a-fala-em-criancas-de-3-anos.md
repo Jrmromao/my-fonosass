@@ -4,6 +4,11 @@ date: "2026-05-22"
 excerpt: "Descubra como o brincar se torna a ferramenta mais poderosa para estimular a fala em crianças de 3 anos, com dicas práticas e baseadas em evidências para fonoaudiólogos e pais."
 author: "Eliane Mota"
 tags: ["fonoaudiologia", "desenvolvimento infantil", "estimulação da fala", "crianças de 3 anos", "brincadeiras terapêuticas", "terapia fonoaudiológica"]
+featured: false
+seo:
+  title: "Brincadeiras para Estimular a Fala em Crianças de 3 Anos | Almanaque da Fala"
+  description: "Descubra como o brincar estimula a fala em crianças de 3 anos com dicas práticas para fonoaudiólogos e pais."
+  keywords: ["brincadeiras fala", "crianças 3 anos", "estimulação linguagem", "fonoaudiologia infantil"]
 ---
 
 ## Desvendando a Magia da Fala: Brincadeiras Essenciais para Crianças de 3 Anos

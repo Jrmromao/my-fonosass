@@ -6,7 +6,7 @@ author: "Eliane Mota"
 tags: ["fonemas", "desenvolvimento infantil", "terapia fala", "exercícios", "crianças"]
 featured: true
 seo:
-  title: "Exercícios de Fonemas para Crianças | Desenvolvimento da Fala | Dr. Eliane Pereira"
+  title: "Exercícios de Fonemas para Crianças | Desenvolvimento da Fala | Eliane Mota"
   description: "Exercícios de fonemas que realmente funcionam para o desenvolvimento da fala em crianças. Técnicas comprovadas por 20 anos de experiência clínica em fonoaudiologia."
   keywords: ["exercícios fonemas crianças", "desenvolvimento fala infantil", "terapia fonoaudiológica", "atraso fala", "exercícios fala", "fonoaudiologia infantil"]
 ---
@@ -124,4 +124,4 @@ A terapia da fala não é apenas sobre corrigir sons. É sobre dar voz às crian
 
 ---
 
-*Dra Eliane Pereira é fonoaudióloga especializada em desenvolvimento infantil, com 20 anos de experiência clínica. Formada pela Universidade de São Paulo, possui especialização em distúrbios da comunicação e é autora de diversos artigos científicos na área. Atualmente, atende em consultório particular e desenvolve pesquisas sobre métodos inovadores de terapia da fala para crianças.*
+*Eliane Mota é fonoaudióloga especializada em desenvolvimento infantil, com 20 anos de experiência clínica. Formada pela Universidade de São Paulo, possui especialização em distúrbios da comunicação e é autora de diversos artigos científicos na área. Atualmente, atende em consultório particular e desenvolve pesquisas sobre métodos inovadores de terapia da fala para crianças.*

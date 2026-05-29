@@ -496,14 +496,27 @@ Formato do output (markdown):
 ---
 title: "Título do artigo"
 date: "${new Date().toISOString().split('T')[0]}"
-excerpt: "Resumo em 1-2 frases"
+excerpt: "Resumo em 1-2 frases para SEO (máximo 160 caracteres)"
 author: "Eliane Mota"
-authorRole: "Fonoaudióloga - CRFa"
-authorInstagram: "https://www.instagram.com/fonoeliane"
-tags: ["tag1", "tag2", "tag3"]
+tags: ["tag1 long-tail", "tag2 long-tail", "tag3 long-tail"]
+featured: false
+seo:
+  title: "Título Otimizado para SEO | Almanaque da Fala"
+  description: "Descrição SEO com palavra-chave principal (máximo 160 caracteres)"
+  keywords: ["palavra-chave principal", "variação 1", "variação 2", "variação 3"]
 ---
 
-Conteúdo do artigo aqui...`;
+Conteúdo do artigo aqui...
+
+REGRAS SEO OBRIGATÓRIAS:
+- Título deve conter a palavra-chave principal
+- Excerpt deve ter no máximo 160 caracteres
+- Tags devem ser long-tail (ex: "exercícios fonema r crianças" não apenas "exercícios")
+- seo.title deve ser diferente do title principal e incluir "| Almanaque da Fala"
+- seo.description deve ser diferente do excerpt
+- seo.keywords deve ter 4 palavras-chave relevantes para busca no Google
+- NÃO usar "Dr." ou "Dra." — o título profissional é "Fonoaudióloga"
+- NÃO incluir authorRole ou authorInstagram no frontmatter`;
 
   const content = await geminiText(prompt);
   if (!content) {

@@ -6,6 +6,10 @@ author: "Eliane Mota"
 tags: ["fonemas nasais", "exercícios articulação", "terapia fala", "fonoaudiologia", "sons nasais"]
 category: "Exercícios Terapêuticos"
 featured: true
+seo:
+  title: "Fonemas Nasais: Exercícios Práticos para Melhorar a Articulação | Almanaque da Fala"
+  description: ""
+  keywords: [fonemas nasais, exercícios articulação, terapia fala, fonoaudiologia, sons nasais]
 ---
 
 # Fonemas Nasais: Exercícios Práticos para Melhorar a Articulação

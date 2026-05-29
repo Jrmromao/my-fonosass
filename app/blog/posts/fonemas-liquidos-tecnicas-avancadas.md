@@ -6,6 +6,10 @@ author: "Eliane Mota"
 tags: ["fonemas líquidos", "dificuldades pronúncia", "técnicas avançadas", "terapia fala", "fonoaudiologia"]
 category: "Exercícios Terapêuticos"
 featured: true
+seo:
+  title: "Fonemas Líquidos: Técnicas Avançadas para Crianças com Dificuldades de Pronúncia | Almanaque da Fala"
+  description: ""
+  keywords: [fonemas líquidos, dificuldades pronúncia, técnicas avançadas, terapia fala, fonoaudiologia]
 ---
 
 # Fonemas Líquidos: Técnicas Avançadas para Crianças com Dificuldades de Pronúncia
