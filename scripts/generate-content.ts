@@ -499,6 +499,7 @@ date: "${new Date().toISOString().split('T')[0]}"
 excerpt: "Resumo em 1-2 frases para SEO (máximo 160 caracteres)"
 author: "Eliane Mota"
 authorRole: "Fonoaudióloga"
+authorInstagram: "https://www.instagram.com/fonoeliane"
 tags: ["tag1 long-tail", "tag2 long-tail", "tag3 long-tail"]
 featured: false
 seo:
@@ -517,7 +518,8 @@ REGRAS SEO OBRIGATÓRIAS:
 - seo.description deve ser diferente do excerpt
 - seo.keywords deve ter 4 palavras-chave relevantes para busca no Google
 - NÃO usar "Dr." ou "Dra." — o título profissional é "Fonoaudióloga"
-- Sempre incluir authorRole: "Fonoaudióloga"`;
+- Sempre incluir authorRole: "Fonoaudióloga"
+authorInstagram: "https://www.instagram.com/fonoeliane"`;
 
   const content = await geminiText(prompt);
   if (!content) {
