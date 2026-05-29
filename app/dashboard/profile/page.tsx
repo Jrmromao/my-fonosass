@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import { Download, Edit, FileText, Mail, Save, X } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export default function ProfilePage() {
@@ -91,7 +92,7 @@ export default function ProfilePage() {
                     <Mail className="h-3.5 w-3.5" />
                     {user?.primaryEmailAddress?.emailAddress}
                   </div>
-                  {formData.specialization && (
+                  {formData.specialization && formData.specialization.length > 2 && (
                     <Badge variant="outline" className="mt-2 text-xs">
                       {formData.specialization}
                     </Badge>
@@ -168,10 +169,10 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900">
-                    {stats?.data?.total || 0}
+                    3
                   </p>
                   <p className="text-xs text-gray-500">
-                    Atividades disponíveis
+                    Downloads restantes
                   </p>
                 </div>
               </div>
@@ -263,11 +264,14 @@ export default function ProfilePage() {
                 </span>
               </div>
               <Separator />
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-gray-500">Plano</span>
-                <Badge variant="outline" className="text-xs">
-                  Gratuito
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">Gratuito</Badge>
+                  <Link href="/#assinatura" className="text-xs text-[#f97066] font-medium hover:underline">
+                    Fazer upgrade
+                  </Link>
+                </div>
               </div>
             </div>
           </CardContent>
