@@ -56,7 +56,6 @@ export default function SharedNavbar({
             {[
               { href: '/blog', label: 'Blog' },
               { href: '/recursos-gratuitos', label: 'Recursos' },
-              { href: '/especialistas', label: 'Especialistas' },
               { href: '/faq', label: 'FAQ' },
               { href: '/contato', label: 'Contato' },
             ].map((item) => (
@@ -114,7 +113,6 @@ export default function SharedNavbar({
             {[
               { href: '/blog', label: 'Blog' },
               { href: '/recursos-gratuitos', label: 'Recursos' },
-              { href: '/especialistas', label: 'Especialistas' },
               { href: '/faq', label: 'FAQ' },
               { href: '/contato', label: 'Contato' },
             ].map((item) => (
