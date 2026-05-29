@@ -25,6 +25,24 @@ export async function GET() {
       }),
     ]);
 
+    // Get user's remaining downloads
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { id: true },
+    });
+
+    let remaining = 3;
+    if (user) {
+      const limit = await prisma.downloadLimit.findUnique({
+        where: { userId: user.id },
+      });
+      if (limit) {
+        const daysSinceReset = Math.floor((now.getTime() - limit.resetDate.getTime()) / (1000 * 60 * 60 * 24));
+        const currentDownloads = daysSinceReset >= 30 ? 0 : limit.downloads;
+        remaining = Math.max(0, 3 - currentDownloads);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -32,6 +50,7 @@ export async function GET() {
         phonemes: phonemes.length,
         pending,
         downloads,
+        remaining,
       },
     });
   } catch (error) {
