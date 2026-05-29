@@ -2,7 +2,7 @@
 title: "Como Exercícios de Fonemas Transformam o Desenvolvimento da Fala em Crianças"
 excerpt: "Descubra como exercícios específicos de fonemas podem acelerar o desenvolvimento da fala e comunicação em crianças. Baseado em 20 anos de experiência clínica."
 date: "2024-01-20"
-author: "Dra Eliane Pereira"
+author: "Eliane Mota"
 tags: ["fonemas", "desenvolvimento infantil", "terapia fala", "exercícios", "crianças"]
 featured: true
 seo:

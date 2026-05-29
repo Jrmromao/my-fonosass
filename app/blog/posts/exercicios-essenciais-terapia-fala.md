@@ -2,7 +2,7 @@
 title: "10 Exercícios Essenciais para Terapia da Fala"
 excerpt: "Descubra os exercícios mais eficazes para diferentes distúrbios da comunicação."
 date: "2024-01-15"
-author: "Dr. Ana Silva"
+author: "Eliane Mota"
 tags: ["exercícios", "terapia", "fala", "fonoaudiologia"]
 featured: true
 seo:

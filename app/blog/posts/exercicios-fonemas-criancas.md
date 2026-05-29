@@ -2,7 +2,7 @@
 title: "Exercícios de Fonemas para Crianças: Desenvolvimento da Fala"
 excerpt: "Guia prático de exercícios de fonemas para estimular o desenvolvimento da fala em crianças. Técnicas eficazes para fonoaudiólogos."
 date: "2025-09-22"
-author: "Dra. Eliane Pereira"
+author: "Eliane Mota"
 tags: ["fonemas", "desenvolvimento infantil", "terapia fala", "exercícios", "crianças"]
 featured: true
 seo:

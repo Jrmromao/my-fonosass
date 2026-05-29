@@ -2,7 +2,7 @@
 title: "Fonemas Líquidos: Técnicas Avançadas para Crianças com Dificuldades de Pronúncia"
 description: "Explore técnicas especializadas para trabalhar fonemas líquidos /l/ e /r/ com crianças. Métodos avançados e estratégias terapêuticas comprovadas para superar dificuldades de pronúncia."
 date: "2025-01-22"
-author: "Celso Pereira e Eliane Mota"
+author: "Eliane Mota"
 tags: ["fonemas líquidos", "dificuldades pronúncia", "técnicas avançadas", "terapia fala", "fonoaudiologia"]
 category: "Exercícios Terapêuticos"
 featured: true

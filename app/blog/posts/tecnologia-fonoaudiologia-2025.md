@@ -2,7 +2,7 @@
 title: "Como a Tecnologia Está Revolucionando a Fonoaudiologia em 2025"
 excerpt: "Descubra as principais tendências tecnológicas que estão transformando a prática fonoaudiológica e como implementá-las no seu consultório."
 date: "2025-09-22"
-author: "Dra. Marina Santos"
+author: "Eliane Mota"
 tags: ["tecnologia", "fonoaudiologia", "inovação", "consultório", "digital"]
 featured: true
 seo:

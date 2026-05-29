@@ -2,7 +2,7 @@
 title: "Fonemas Nasais: Exercícios Práticos para Melhorar a Articulação"
 description: "Descubra técnicas eficazes para trabalhar fonemas nasais com seus pacientes. Exercícios práticos e estratégias comprovadas para melhorar a articulação dos sons /m/, /n/ e /ɲ/."
 date: "2025-01-22"
-author: "Celso Pereira e Eliane Mota"
+author: "Eliane Mota"
 tags: ["fonemas nasais", "exercícios articulação", "terapia fala", "fonoaudiologia", "sons nasais"]
 category: "Exercícios Terapêuticos"
 featured: true

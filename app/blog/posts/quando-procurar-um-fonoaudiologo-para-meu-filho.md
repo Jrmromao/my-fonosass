@@ -2,7 +2,7 @@
 title: "Quando Procurar um Fonoaudiólogo para o Meu Filho: Um Guia Essencial para Pais e Fonoaudiólogos"
 date: "2026-05-22"
 excerpt: "Um guia completo para pais identificarem os sinais que indicam a necessidade de avaliação fonoaudiológica para seus filhos, com insights valiosos para fonoaudiólogos."
-author: "Equipe Almanaque da Fala"
+author: "Eliane Mota"
 tags: ["fonoaudiologia infantil", "desenvolvimento infantil", "saúde da criança", "pais e filhos", "orientação fonoaudiológica"]
 ---
 

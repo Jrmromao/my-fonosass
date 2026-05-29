@@ -2,7 +2,7 @@
 title: "Como Organizar Prontuários Digitais em Conformidade com LGPD"
 excerpt: "Guia completo para manter seus registros seguros e em conformidade legal."
 date: "2024-01-10"
-author: "Dr. Carlos Mendes"
+author: "Eliane Mota"
 tags: ["lgpd", "prontuários", "conformidade", "segurança"]
 featured: false
 seo:

@@ -2,7 +2,7 @@
 title: "Terapia de Fonemas para Adultos e Idosos: Exercícios Eficazes"
 excerpt: "Descubra exercícios específicos de fonemas para adultos e idosos. Técnicas de reabilitação fonoaudiológica para diferentes condições."
 date: "2025-09-22"
-author: "Dr. Roberto Silva"
+author: "Eliane Mota"
 tags: ["fonemas", "adultos", "idosos", "reabilitação", "terapia fala"]
 featured: false
 seo:

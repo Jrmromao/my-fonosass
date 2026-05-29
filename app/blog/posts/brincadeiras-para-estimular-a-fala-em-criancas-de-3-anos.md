@@ -2,7 +2,7 @@
 title: "Desvendando a Magia da Fala: Brincadeiras Essenciais para Crianças de 3 Anos"
 date: "2026-05-22"
 excerpt: "Descubra como o brincar se torna a ferramenta mais poderosa para estimular a fala em crianças de 3 anos, com dicas práticas e baseadas em evidências para fonoaudiólogos e pais."
-author: "Equipe Almanaque da Fala"
+author: "Eliane Mota"
 tags: ["fonoaudiologia", "desenvolvimento infantil", "estimulação da fala", "crianças de 3 anos", "brincadeiras terapêuticas", "terapia fonoaudiológica"]
 ---
 
