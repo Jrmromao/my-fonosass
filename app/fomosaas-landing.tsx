@@ -54,13 +54,13 @@ export default function FomosaasLanding({ featuredBlogPosts }: FomosaasLandingPr
               <div className="flex items-center gap-3">
                 <Link
                   href="/sign-up"
-                  className="px-6 py-2.5 rounded-md bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors inline-flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-md bg-[#f97066] text-white text-sm font-medium hover:bg-[#e5645b] transition-colors inline-flex items-center gap-2"
                 >
                   Começar grátis <ArrowRight size={15} />
                 </Link>
                 <Link
                   href="#como-funciona"
-                  className="px-6 py-2.5 rounded-md border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2.5 rounded-md border border-gray-200 text-slate-900 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
                   Como funciona
                 </Link>
@@ -90,13 +90,13 @@ export default function FomosaasLanding({ featuredBlogPosts }: FomosaasLandingPr
       </section>
 
       {/* Numbers */}
-      <section className="py-12 border-t border-gray-100">
+      <section className="py-10 border-t border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {stats.map((stat, i) => (
               <div key={i}>
-                <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
-                <p className="text-sm text-gray-500 mt-0.5">{stat.label}</p>
+                <p className="text-3xl font-bold text-slate-900 font-display">{stat.value}</p>
+                <p className="text-xs text-gray-400 mt-1 uppercase tracking-wide">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -104,18 +104,19 @@ export default function FomosaasLanding({ featuredBlogPosts }: FomosaasLandingPr
       </section>
 
       {/* How it works */}
-      <section id="como-funciona" className="py-20 bg-gray-50">
+      <section id="como-funciona" className="py-16">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-12 font-display">
+          <p className="text-xs text-[#f97066] font-medium uppercase tracking-wide mb-2">Processo</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-10 font-display">
             Como funciona
           </h2>
-          <div className="grid md:grid-cols-3 gap-12">
+          <div className="grid md:grid-cols-3 gap-8">
             {steps.map((step, i) => (
-              <div key={i}>
-                <div className="w-8 h-8 rounded-md bg-slate-900 text-white text-sm font-bold flex items-center justify-center mb-4">
+              <div key={i} className="relative pl-10">
+                <div className="absolute left-0 top-0 w-7 h-7 rounded-full bg-[#f97066] text-white text-xs font-bold flex items-center justify-center">
                   {i + 1}
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-2">{step.title}</h3>
+                <h3 className="font-semibold text-slate-900 mb-1.5 text-sm">{step.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{step.description}</p>
               </div>
             ))}
@@ -124,19 +125,20 @@ export default function FomosaasLanding({ featuredBlogPosts }: FomosaasLandingPr
       </section>
 
       {/* Why us */}
-      <section className="py-20">
+      <section className="py-16 bg-slate-900">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-12 font-display">
+          <p className="text-xs text-[#f97066] font-medium uppercase tracking-wide mb-2">Vantagens</p>
+          <h2 className="text-2xl font-bold text-white mb-10 font-display">
             Por que o Almanaque da Fala
           </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {differentiators.map((item, i) => (
-              <div key={i} className="p-5 rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-150">
-                <div className="w-9 h-9 rounded-md bg-red-50 flex items-center justify-center mb-3">
+              <div key={i} className="p-5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <div className="w-8 h-8 rounded-md bg-[#f97066]/20 flex items-center justify-center mb-3">
                   {item.icon}
                 </div>
-                <h3 className="font-semibold text-slate-900 text-sm mb-1">{item.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{item.description}</p>
+                <h3 className="font-semibold text-white text-sm mb-1">{item.title}</h3>
+                <p className="text-xs text-gray-400 leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
@@ -144,36 +146,34 @@ export default function FomosaasLanding({ featuredBlogPosts }: FomosaasLandingPr
       </section>
 
       {/* Trust */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-16">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-start">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-6 font-display">
+          <div className="grid md:grid-cols-5 gap-12 items-start">
+            <div className="md:col-span-3">
+              <p className="text-xs text-[#f97066] font-medium uppercase tracking-wide mb-2">Credibilidade</p>
+              <h2 className="text-2xl font-bold text-slate-900 mb-5 font-display">
                 Criado por quem entende de fala
               </h2>
-              <p className="text-gray-500 mb-6 leading-relaxed">
-                Todos os materiais são desenvolvidos por fonoaudióloga com experiência clínica em atendimento infantil. A biblioteca cresce semanalmente com novos exercícios revisados antes da publicação.
-              </p>
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {trustPoints.map((point, i) => (
                   <div key={i} className="flex items-start gap-2.5">
-                    <Check className="w-4 h-4 text-[#f97066] mt-0.5 flex-shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-[#f97066] mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-gray-600">{point}</p>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="p-6 rounded-lg border border-gray-100 bg-white">
-              <p className="text-sm text-gray-600 leading-relaxed mb-5">
+            <div className="md:col-span-2 p-5 rounded-lg border border-gray-100 bg-gray-50">
+              <p className="text-sm text-gray-600 leading-relaxed mb-4 italic">
                 "Cada exercício é desenvolvido com base em práticas clínicas reais. Eu reviso tudo antes de publicar para garantir que o material é adequado para cada faixa etária."
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
+                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
                   EL
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-900">Eliane Lourenço</p>
-                  <p className="text-xs text-gray-400">Fonoaudióloga — Revisora de conteúdo</p>
+                  <p className="text-xs text-gray-400">Fonoaudióloga Clínica</p>
                 </div>
               </div>
             </div>
@@ -182,49 +182,53 @@ export default function FomosaasLanding({ featuredBlogPosts }: FomosaasLandingPr
       </section>
 
       {/* Pricing */}
-      <section id="assinatura" className="py-20">
+      <section id="assinatura" className="py-16 bg-gray-50">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3 font-display">
-            Planos
+          <p className="text-xs text-[#f97066] font-medium uppercase tracking-wide mb-2">Planos</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2 font-display">
+            Acesso completo à biblioteca
           </h2>
-          <p className="text-gray-500 mb-12">
-            Acesso completo à biblioteca. Novos materiais toda semana.
+          <p className="text-sm text-gray-500 mb-10">
+            Novos materiais toda semana. Cancele quando quiser.
           </p>
           <SubscriptionPlans />
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 bg-gray-50">
+      <section id="faq" className="py-16">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-12 font-display">
-            Perguntas frequentes
-          </h2>
-          <div className="max-w-2xl divide-y divide-gray-200">
-            {faqs.map((faq, i) => (
-              <FaqItem key={i} question={faq.question} answer={faq.answer} />
-            ))}
+          <div className="grid md:grid-cols-3 gap-12">
+            <div>
+              <p className="text-xs text-[#f97066] font-medium uppercase tracking-wide mb-2">FAQ</p>
+              <h2 className="text-2xl font-bold text-slate-900 font-display">
+                Perguntas frequentes
+              </h2>
+            </div>
+            <div className="md:col-span-2 divide-y divide-gray-100">
+              {faqs.map((faq, i) => (
+                <FaqItem key={i} question={faq.question} answer={faq.answer} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="max-w-xl">
-            <h2 className="text-2xl font-bold text-slate-900 mb-3 font-display">
-              Otimize o tempo de preparação das suas sessões
-            </h2>
-            <p className="text-gray-500 mb-6">
-              Acesse a biblioteca, escolha o fonema e imprima.
-            </p>
-            <Link
-              href="/sign-up"
-              className="px-6 py-2.5 rounded-md bg-[#f97066] text-white text-sm font-medium hover:bg-[#e5645b] transition-colors inline-flex items-center gap-2"
-            >
-              Criar conta gratuita <ArrowRight size={15} />
-            </Link>
-          </div>
+      <section className="py-16 bg-slate-900">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-2xl font-bold text-white mb-3 font-display">
+            Otimize o tempo de preparação das suas sessões
+          </h2>
+          <p className="text-gray-400 mb-6 text-sm">
+            Acesse a biblioteca, escolha o fonema e imprima.
+          </p>
+          <Link
+            href="/sign-up"
+            className="px-6 py-2.5 rounded-md bg-[#f97066] text-white text-sm font-medium hover:bg-[#e5645b] transition-colors inline-flex items-center gap-2"
+          >
+            Criar conta gratuita <ArrowRight size={15} />
+          </Link>
         </div>
       </section>
 
