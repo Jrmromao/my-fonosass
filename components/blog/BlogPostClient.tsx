@@ -378,7 +378,7 @@ export default function BlogPostClient({
                         </div>
                         <div className="text-xs text-gray-500">
                           {(post as unknown as Record<string, string>)
-                            .authorRole || 'Especialista em Fonoaudiologia'}
+                            .authorRole || 'Fonoaudióloga'}
                           {(post as unknown as Record<string, string>)
                             .authorInstagram && (
                             <>
