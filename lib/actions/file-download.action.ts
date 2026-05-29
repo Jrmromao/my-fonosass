@@ -4,6 +4,8 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from '@/app/db';
+import { DownloadLimitService } from '@/services/downloadLimitService';
+
 interface GetFileDownloadUrlParams {
     fileId: string;
     activityId?: string;
@@ -14,6 +16,29 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
         const { userId } = await auth();
         if (!userId) {
             return { success: false, error: "Unauthorized" };
+        }
+
+        // Check download limits for free users
+        const user = await prisma.user.findUnique({
+            where: { clerkUserId: userId },
+            select: { id: true },
+        });
+
+        if (!user) {
+            return { success: false, error: "User not found" };
+        }
+
+        const isPro = await DownloadLimitService.hasProAccess(user.id);
+        if (!isPro) {
+            const { canDownload, remaining } = await DownloadLimitService.checkDownloadLimit(user.id);
+            if (!canDownload) {
+                return {
+                    success: false,
+                    error: "Limite de downloads atingido. Assine o plano Profissional para downloads ilimitados.",
+                    limitReached: true,
+                    remaining: 0,
+                };
+            }
         }
 
         const bucketName = process.env.AWS_S3_BUCKET_NAME;
@@ -72,8 +97,10 @@ export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownload
             expiresIn: 300
         });
 
-        // TODO: Add download tracking back once core functionality works
-        // For now, just make downloads work
+        // Record download for limit tracking (free users)
+        if (!isPro) {
+            await DownloadLimitService.recordDownload(user.id, file.activityId, file.name);
+        }
 
         return {
             success: true,

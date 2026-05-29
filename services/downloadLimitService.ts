@@ -1,6 +1,6 @@
 import { prisma } from '@/app/db'
 
-const FREE_DOWNLOAD_LIMIT = 5
+const FREE_DOWNLOAD_LIMIT = 3
 const RESET_PERIOD_DAYS = 30
 
 export class DownloadLimitService {
