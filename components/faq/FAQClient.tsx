@@ -329,14 +329,14 @@ export default function FAQClient() {
                   href="/dashboard"
                   className="inline-flex items-center px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
-                  <span className="mr-2">🚀</span>
+                  <span className="mr-2"></span>
                   Experimente Grátis
                 </a>
                 <a
                   href="mailto:contato@almanaquedafala.com.br"
                   className="inline-flex items-center px-8 py-4 bg-white/20 text-white font-semibold rounded-xl border border-white/30 hover:bg-white/30 transition-all duration-200 backdrop-blur-sm"
                 >
-                  <span className="mr-2">💬</span>
+                  <span className="mr-2"></span>
                   Fale com um Especialista
                 </a>
               </div>

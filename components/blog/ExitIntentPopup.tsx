@@ -83,7 +83,7 @@ export default function ExitIntentPopup({
 
         {/* Content */}
         <h3 className="text-2xl font-bold text-gray-900 mb-4">
-          Não vá embora ainda! 🎯
+          Não vá embora ainda!
         </h3>
 
         {currentArticle ? (

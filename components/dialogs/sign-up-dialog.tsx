@@ -251,7 +251,7 @@ export function SignUpDialog({ plan }: SignUpDialogProps) {
                     >
                         {isSubmitting ? (
                             <span className="flex items-center gap-2">
-                                <span className="animate-spin">⏳</span>
+                                Aguarde...
                                 Processando...
                             </span>
                         ) : (

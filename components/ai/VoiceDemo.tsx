@@ -252,7 +252,7 @@ export default function VoiceDemo({ phoneme, className = '' }: VoiceDemoProps) {
               onClick={() => setIsSlowMode(!isSlowMode)}
               className="text-xs"
             >
-              {isSlowMode ? '🐌 Lento' : '⚡ Normal'}
+              {isSlowMode ? 'Lento' : 'Normal'}
             </Button>
             <Button
               variant={repeatMode ? 'default' : 'outline'}
@@ -260,7 +260,7 @@ export default function VoiceDemo({ phoneme, className = '' }: VoiceDemoProps) {
               onClick={() => setRepeatMode(!repeatMode)}
               className="text-xs"
             >
-              {repeatMode ? '🔄 3x' : '1x'}
+              {repeatMode ? '3x' : '1x'}
             </Button>
           </div>
 
@@ -286,10 +286,10 @@ export default function VoiceDemo({ phoneme, className = '' }: VoiceDemoProps) {
           <div className="mt-3 p-2 bg-green-50 rounded border border-green-200 flex items-center justify-between">
             <div>
               <span className="text-sm font-medium text-green-800">
-                🔊 {currentPhrase}
+                {currentPhrase}
               </span>
               <div className="text-xs text-green-600">
-                {isSlowMode && '🐌 Lento'} {repeatMode && '🔄 3x'}{' '}
+                {isSlowMode && 'Lento'} {repeatMode && '3x'}{' '}
                 {isSlowMode || repeatMode ? '' : 'Normal'}
               </div>
             </div>
@@ -307,7 +307,7 @@ export default function VoiceDemo({ phoneme, className = '' }: VoiceDemoProps) {
         {/* USAGE STATS - show value */}
         <div className="mt-3 text-center">
           <p className="text-xs text-gray-400">
-            💡 Voz de alta qualidade • Economiza 30+ repetições por sessão
+            Voz de alta qualidade • Economiza 30+ repetições por sessão
           </p>
         </div>
       </CardContent>

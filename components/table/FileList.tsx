@@ -116,16 +116,16 @@ const FileList: React.FC<FileListProps> = ({
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'pdf':
-        return '📄';
+        return 'PDF';
       case 'doc':
       case 'docx':
-        return '📝';
+        return 'DOC';
       case 'ppt':
       case 'pptx':
-        return '📊';
+        return 'XLS';
       case 'mp3':
       case 'wav':
-        return '🎵';
+        return 'Audio';
       case 'mp4':
       case 'avi':
         return '🎬';

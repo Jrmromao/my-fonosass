@@ -35,17 +35,17 @@ export default async function ExerciseReviewPage({
     <div className="max-w-2xl mx-auto p-6">
       {approved && (
         <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-          ✅ Exercício aprovado e publicado com sucesso!
+          Exercício aprovado e publicado com sucesso.
         </div>
       )}
       {rejected && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
-          ❌ Exercício rejeitado.
+          Exercício rejeitado.
         </div>
       )}
       {already && (
         <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
-          ⚠️ Este exercício já foi aprovado anteriormente.
+          Este exercício já foi aprovado anteriormente.
         </div>
       )}
 
@@ -65,10 +65,10 @@ export default async function ExerciseReviewPage({
                     : 'bg-gray-100 text-gray-800'
             }`}
           >
-            {activity.status === 'PUBLISHED' && '✅ Publicado'}
-            {activity.status === 'PENDING_REVIEW' && '⏳ Aguardando revisão'}
-            {activity.status === 'REJECTED' && '❌ Rejeitado'}
-            {activity.status === 'DRAFT' && '📝 Rascunho'}
+            {activity.status === 'PUBLISHED' && 'Publicado'}
+            {activity.status === 'PENDING_REVIEW' && 'Aguardando revisão'}
+            {activity.status === 'REJECTED' && 'Rejeitado'}
+            {activity.status === 'DRAFT' && 'Rascunho'}
           </span>
         </div>
 
@@ -136,13 +136,13 @@ export default async function ExerciseReviewPage({
               href={`/api/exercises/${id}/approve?token=${token}`}
               className="flex-1 text-center px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
             >
-              ✅ Aprovar e Publicar
+              Aprovar e Publicar
             </a>
             <a
               href={`/api/exercises/${id}/reject?token=${token}`}
               className="flex-1 text-center px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
             >
-              ❌ Rejeitar
+              Rejeitar
             </a>
           </div>
         )}

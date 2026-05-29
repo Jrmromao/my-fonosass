@@ -152,8 +152,8 @@ export default function ResourceFileUpload({
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith('image/')) return '🖼️';
     if (fileType.startsWith('video/')) return '🎥';
-    if (fileType.startsWith('audio/')) return '🎵';
-    if (fileType.includes('pdf')) return '📄';
+    if (fileType.startsWith('audio/')) return 'Audio';
+    if (fileType.includes('pdf')) return 'PDF';
     return '📁';
   };
 

@@ -48,7 +48,7 @@ const PhonemeCard: React.FC<PhonemeCardProps> = ({ phoneme, onClose }) => {
 
                     <div className="bg-muted/50 rounded-lg p-4">
                         <h4 className="font-bold mb-2 flex items-center gap-2">
-                            <span>🎯</span> Como Praticar
+                            <span></span> Como Praticar
                         </h4>
                         <ol className="space-y-2 text-sm text-gray-600">
                             <li>1. Observe a posição da boca no espelho</li>
@@ -100,7 +100,7 @@ const PhonemeCard: React.FC<PhonemeCardProps> = ({ phoneme, onClose }) => {
             {/* Footer */}
             <div className="p-6 border-t bg-muted/20">
                 <div className="flex items-start gap-3">
-                    <span className="text-xl">💡</span>
+                    <span className="text-xl"></span>
                     <div>
                         <h6 className="font-semibold mb-1">Dicas:</h6>
                         <ul className="text-sm text-gray-600 space-y-1">

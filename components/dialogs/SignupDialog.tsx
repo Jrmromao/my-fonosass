@@ -91,21 +91,21 @@ export default function SignupDialog({
     switch (trigger) {
       case 'balloon':
         return {
-          title: '🎈 Quer estourar balões?',
+          title: 'Quer estourar balões?',
           subtitle:
             'Junte-se à nossa lista de espera e seja o primeiro a testar esta funcionalidade incrível!',
           cta: 'Entrar na Lista de Espera',
         };
       case 'feature':
         return {
-          title: '🚀 Estamos construindo algo incrível!',
+          title: 'Estamos construindo algo incrível!',
           subtitle:
             'Seja notificado quando lançarmos a plataforma completa para fonoaudiólogos',
           cta: 'Quero ser Notificado',
         };
       default:
         return {
-          title: '🎯 Almanaque da Fala está chegando!',
+          title: 'Almanaque da Fala está chegando!',
           subtitle:
             'A revolução na fonoaudiologia brasileira está sendo construída',
           cta: 'Entrar na Lista de Espera',
@@ -125,7 +125,7 @@ export default function SignupDialog({
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">
-              🎉 Você está na lista!
+              Você está na lista!
             </CardTitle>
             <p className="text-gray-600">
               Obrigado! Te avisaremos assim que o Almanaque da Fala estiver
@@ -266,7 +266,7 @@ export default function SignupDialog({
               variant="secondary"
               className="mb-2 bg-orange-100 text-orange-800"
             >
-              🚀 Lançamento em Breve
+              Lançamento em Breve
             </Badge>
             <p className="text-sm text-orange-800 font-medium">
               Primeiros 10 da lista de espera ganham acesso gratuito vitalício!

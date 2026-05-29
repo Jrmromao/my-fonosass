@@ -138,7 +138,7 @@ export default function ExerciseGenerator() {
       {exercise && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>📋 {exercise.titulo}</CardTitle>
+            <CardTitle>{exercise.titulo}</CardTitle>
             <Button
               onClick={downloadPDF}
               disabled={pdfLoading}
@@ -158,12 +158,12 @@ export default function ExerciseGenerator() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-sm mb-2">🎯 Objetivo:</h4>
+              <h4 className="font-semibold text-sm mb-2">Objetivo:</h4>
               <p className="text-sm text-gray-700">{exercise.objetivo}</p>
             </div>
 
             <div>
-              <h4 className="font-semibold text-sm mb-2">📋 Instruções:</h4>
+              <h4 className="font-semibold text-sm mb-2">Instruções:</h4>
               <ol className="text-sm text-gray-700 space-y-1">
                 {exercise.instrucoes.map((instrucao, index) => (
                   <li key={index} className="flex">
@@ -195,7 +195,7 @@ export default function ExerciseGenerator() {
 
             {exercise.observacoes && (
               <div>
-                <h4 className="font-semibold text-sm mb-2">💡 Observações:</h4>
+                <h4 className="font-semibold text-sm mb-2">Observações:</h4>
                 <p className="text-sm text-gray-700">{exercise.observacoes}</p>
               </div>
             )}

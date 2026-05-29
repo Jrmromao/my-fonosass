@@ -152,7 +152,7 @@ export default function TextToSpeech() {
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-6">
           <h3 className="font-semibold text-blue-900 mb-3">
-            💡 Como Usar na Prática:
+            Como usar na prática:
           </h3>
           <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
             <div className="space-y-2">

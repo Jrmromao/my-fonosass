@@ -58,7 +58,7 @@ export default function TextToSpeechPage() {
         {/* MOTIVATION - therapists use this CONSTANTLY */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">🌟 Frases Motivacionais</CardTitle>
+            <CardTitle className="text-lg">Frases Motivacionais</CardTitle>
             <p className="text-sm text-gray-600">
               Use quando o paciente acerta
             </p>
@@ -72,7 +72,7 @@ export default function TextToSpeechPage() {
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">🔴 Fonema R</CardTitle>
+              <CardTitle className="text-lg">Fonema R</CardTitle>
               <p className="text-sm text-gray-600">
                 Mais difícil - precisa de mais repetição
               </p>
@@ -137,7 +137,7 @@ export default function TextToSpeechPage() {
       {/* SIMPLE CALL TO ACTION */}
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-500">
-          💡 <strong>Dica:</strong> Deixe esta página aberta durante suas
+          Dica: Deixe esta página aberta durante suas
           sessões para acesso rápido
         </p>
       </div>

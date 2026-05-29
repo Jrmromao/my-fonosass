@@ -61,7 +61,7 @@ export function ExercisePreviewDialog({ exercise }: ExercisePreviewDialogProps) 
           
           <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
             <p className="text-sm text-yellow-800">
-              💡 <strong>Preview limitado:</strong> Para acessar o exercício completo e fazer download, 
+              Preview limitado: Para acessar o exercício completo e fazer download, 
               é necessário ter uma assinatura ativa.
             </p>
           </div>

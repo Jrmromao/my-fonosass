@@ -1356,12 +1356,12 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       {/* CH Balloon Alert */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-3 rounded-t-lg shadow-lg">
         <div className="flex items-center justify-center gap-2 text-sm font-medium">
-          <div className="animate-pulse">🎈</div>
+          <div className="animate-pulse"></div>
           <span>
             Dica: Clique duas vezes no balão <strong>CH</strong> para
             estourá-lo!
           </span>
-          <div className="animate-pulse">🎈</div>
+          <div className="animate-pulse"></div>
         </div>
       </div>
 

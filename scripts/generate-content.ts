@@ -319,7 +319,7 @@ Fonema alvo: /${phoneme}/`;
             qualityScore = 70; // Can't validate — assume moderate quality
           }
 
-          if (qualityScore >= 60) break; // Good enough, stop retrying
+          if (qualityScore >= 70) break; // Good enough, stop retrying
           console.log(`  ⚠️ Attempt ${attempt + 1} scored ${qualityScore}/100 — retrying...`);
         } catch (err: any) {
           console.log(`  ❌ Attempt ${attempt + 1} error: ${err.message}`);
