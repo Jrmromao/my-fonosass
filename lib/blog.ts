@@ -32,9 +32,13 @@ export function getAllPosts(): BlogPost[] {
         const fileContents = fs.readFileSync(fullPath, 'utf8');
         const { data, content } = matter(fileContents);
 
+        const wordCount = content.split(/\s+/).length;
+        const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
         return {
           slug,
           content,
+          readingTime,
           ...data,
         } as BlogPost;
       })
@@ -53,9 +57,13 @@ export function getPostBySlug(slug: string): BlogPost | null {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
 
+    const wordCount = content.split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
     return {
       slug,
       content,
+      readingTime,
       ...data,
     } as BlogPost;
   } catch (error) {
