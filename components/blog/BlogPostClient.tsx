@@ -318,6 +318,20 @@ export default function BlogPostClient({
                 </ol>
               </nav>
 
+              {/* Article Navigation Bar */}
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                <BackToBlogButton variant="auth" size="md" />
+                <div className="flex items-center gap-4">
+                  <Link href="/faq" className="text-xs text-gray-500 hover:text-gray-900 transition-colors">FAQ</Link>
+                  <Link href="/blog" className="text-xs text-gray-500 hover:text-gray-900 transition-colors">Mais Artigos</Link>
+                  <Link href="/dashboard" className="text-xs text-gray-500 hover:text-gray-900 transition-colors">Dashboard</Link>
+                  <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
+                    <LikeButton articleId={post.slug} initialLikes={likeCount} onLikeChange={handleLikeChange} />
+                    <ShareButton url={`/blog/${post.slug}`} title={post.title} description={post.excerpt} />
+                  </div>
+                </div>
+              </div>
+
               {/* Enhanced Article Header */}
               <header className="mb-8 sm:mb-12">
                 <div className="bg-gradient-to-br from-pink-50 via-white to-yellow-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-pink-100 shadow-sm">
@@ -637,51 +651,6 @@ export default function BlogPostClient({
 
           {/* Enhanced Article Navigation */}
           <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <BackToBlogButton variant="auth" size="md" />
-
-              {/* Internal Links */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Link
-                  href="/faq"
-                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
-                >
-                  📋 FAQ
-                </Link>
-                <span className="text-gray-300">•</span>
-                <Link
-                  href="/blog"
-                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
-                >
-                  📚 Mais Artigos
-                </Link>
-                <span className="text-gray-300">•</span>
-                <Link
-                  href="/dashboard"
-                  className="text-sm text-pink-600 hover:text-pink-700 font-medium"
-                >
-                  🏥 Dashboard
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                <div className="flex items-center gap-1">
-                  <LikeButton
-                    articleId={post.slug}
-                    initialLikes={likeCount}
-                    onLikeChange={handleLikeChange}
-                  />
-                </div>
-                <div className="w-px h-4 sm:h-5 bg-gray-200"></div>
-                <div className="flex items-center gap-1">
-                  <ShareButton
-                    url={`/blog/${post.slug}`}
-                    title={post.title}
-                    description={post.excerpt}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
