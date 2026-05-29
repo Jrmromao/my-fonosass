@@ -7,6 +7,12 @@ import { SubStatus, TierType } from '@prisma/client';
 import Link from 'next/link';
 
 // Define your price IDs from Stripe
+const FREE_FEATURES = [
+    '3 downloads por mês',
+    'Acesso à biblioteca de fonemas',
+    'Visualização de atividades',
+];
+
 const PLAN = {
     name: 'Profissional',
     description: 'Para fonoaudiólogos trabalhando com exercícios de fonemas',
@@ -71,40 +77,59 @@ export function SubscriptionPlans() {
                 </div>
             </div>
 
-            {/* Plan Card */}
-            <div className="max-w-sm mx-auto">
+            {/* Plans Grid */}
+            <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-4">
+                {/* Free Plan */}
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Gratuito</p>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Explorar</h3>
+                    <div className="flex items-baseline mb-6">
+                        <span className="text-3xl font-bold text-slate-900">R$0</span>
+                        <span className="text-gray-500 ml-1 text-sm">/mês</span>
+                    </div>
+                    <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
+                        {FREE_FEATURES.map((feature, i) => (
+                            <div key={i} className="flex items-start gap-2.5">
+                                <Check size={14} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm text-gray-600">{feature}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <Button
+                        className="w-full py-3 rounded-md bg-gray-100 hover:bg-gray-200 text-slate-900 text-sm font-medium transition-colors"
+                        onClick={() => window.location.href = '/sign-up'}
+                    >
+                        Criar conta
+                    </Button>
+                </div>
+
+                {/* Pro Plan */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="rounded-lg overflow-hidden border border-gray-200 bg-white"
+                    className="rounded-lg overflow-hidden border-2 border-slate-900 bg-white relative"
                 >
-                    {/* Card Header */}
-                    <div className="bg-slate-900 px-6 py-5">
-                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Acesso Total</p>
-                        <h3 className="text-white text-lg font-bold">{PLAN.name}</h3>
+                    <div className="absolute top-0 right-0 bg-slate-900 text-white text-xs px-3 py-1 rounded-bl-lg font-medium">
+                        Recomendado
                     </div>
-
-                    {/* Card Content */}
                     <div className="p-6">
-                        <div className="mb-6">
-                            <p className="text-xs text-gray-500 mb-1">
-                                {billingInterval === 'monthly' ? 'Cobrança mensal' : 'Cobrança anual'}
-                            </p>
-                            <div className="flex items-baseline">
-                                <span className="text-4xl font-bold text-slate-900">
-                                    R${billingInterval === 'monthly' ? PLAN.monthlyPrice : PLAN.yearlyPrice}
-                                </span>
-                                <span className="text-gray-500 ml-1 text-sm">
-                                    /{billingInterval === 'monthly' ? 'mês' : 'ano'}
-                                </span>
-                            </div>
-                            {billingInterval === 'yearly' && (
-                                <p className="mt-1 text-xs text-[#f97066]">
-                                    Economia de R${(PLAN.monthlyPrice * 12 - PLAN.yearlyPrice).toFixed(2)} por ano
-                                </p>
-                            )}
+                        <p className="text-xs text-[#f97066] uppercase tracking-wide mb-1">Acesso Total</p>
+                        <h3 className="text-lg font-bold text-slate-900 mb-4">{PLAN.name}</h3>
+                        <div className="flex items-baseline mb-1">
+                            <span className="text-3xl font-bold text-slate-900">
+                                R${billingInterval === 'monthly' ? PLAN.monthlyPrice : PLAN.yearlyPrice}
+                            </span>
+                            <span className="text-gray-500 ml-1 text-sm">
+                                /{billingInterval === 'monthly' ? 'mês' : 'ano'}
+                            </span>
                         </div>
+                        {billingInterval === 'yearly' && (
+                            <p className="text-xs text-[#f97066] mb-4">
+                                Economia de R${(PLAN.monthlyPrice * 12 - PLAN.yearlyPrice).toFixed(2)} por ano
+                            </p>
+                        )}
+                        {billingInterval === 'monthly' && <div className="mb-4" />}
 
                         <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
                             {PLAN.features.map((feature, i) => (
@@ -126,7 +151,7 @@ export function SubscriptionPlans() {
                             </Button>
                         ) : (
                             <Button
-                                className="w-full py-3 rounded-md bg-[#f97066] hover:bg-[#e5645b] text-white text-sm font-medium transition-colors flex items-center justify-center"
+                                className="w-full py-3 rounded-md bg-[#f97066] hover:bg-[#e5645b] text-white text-sm font-medium transition-colors"
                                 disabled={isCreatingCheckout}
                                 onClick={() => createCheckout({
                                     priceId: billingInterval === 'monthly'
@@ -135,7 +160,7 @@ export function SubscriptionPlans() {
                                     tier: TierType.PRO
                                 })}
                             >
-                                {isCreatingCheckout ? 'Processando...' : 'Assinar Agora'}
+                                {isCreatingCheckout ? 'Processando...' : 'Começar agora'}
                             </Button>
                         )}
 
