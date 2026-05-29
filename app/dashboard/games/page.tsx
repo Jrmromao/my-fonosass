@@ -41,6 +41,7 @@ export default function ActivitiesPage() {
   const debouncedSearch = useDebounce(searchInput, 400);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewActivity, setPreviewActivity] = useState<any>(null);
+  const [limitReached, setLimitReached] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const updateParams = useCallback(
@@ -91,6 +92,8 @@ export default function ActivitiesPage() {
         a.href = result.url;
         a.download = name;
         a.click();
+      } else if ((result as any).limitReached) {
+        setLimitReached(true);
       }
     } finally {
       setDownloadingId(null);
@@ -292,6 +295,34 @@ export default function ActivitiesPage() {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+      {/* Upgrade Dialog */}
+      <Dialog open={limitReached} onOpenChange={setLimitReached}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold">Limite de downloads atingido</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Você atingiu o limite de 3 downloads gratuitos este mês. Assine o plano Profissional para downloads ilimitados.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                className="flex-1 bg-[#f97066] hover:bg-[#e5645b] text-white text-sm"
+                onClick={() => { setLimitReached(false); router.push('/#assinatura'); }}
+              >
+                Ver planos
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-sm text-gray-500"
+                onClick={() => setLimitReached(false)}
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
