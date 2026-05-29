@@ -225,29 +225,24 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
 
           {/* Newsletter Signup */}
           <section className="mt-12 sm:mt-16 lg:mt-20">
-            <div className="bg-gradient-to-br from-pink-50 to-yellow-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 text-center">
-              <div className="max-w-2xl mx-auto">
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
+            <div className="bg-slate-900 rounded-lg p-8 md:p-12 text-center">
+              <div className="max-w-xl mx-auto">
+                <h3 className="text-xl font-bold text-white mb-2">
                   Fique por dentro das novidades
                 </h3>
-                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 px-2">
-                  Receba artigos exclusivos, dicas práticas e recursos para
-                  fonoaudiólogos diretamente na sua caixa de entrada. Sem spam,
-                  apenas conteúdo de qualidade.
+                <p className="text-sm text-gray-400 mb-6">
+                  Receba artigos e dicas para fonoaudiólogos. Sem spam.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-lg mx-auto">
+                <div className="flex gap-2 max-w-sm mx-auto">
                   <input
                     type="email"
-                    placeholder="Digite seu email"
-                    className="flex-1 px-4 py-3 sm:px-6 sm:py-4 border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 focus:border-transparent text-center sm:text-left placeholder-gray-400 text-sm sm:text-base"
+                    placeholder="O seu email"
+                    className="flex-1 px-4 py-2.5 border border-gray-700 bg-white/5 rounded-md text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f97066]/50"
                   />
-                  <button className="px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-pink-500/25 transition-all text-sm sm:text-base">
-                    Inscrever-se
+                  <button className="px-5 py-2.5 bg-[#f97066] hover:bg-[#e5645b] text-white rounded-md text-sm font-medium transition-colors">
+                    Inscrever
                   </button>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-500 mt-3 sm:mt-4">
-                  Cancele a qualquer momento. Respeitamos sua privacidade.
-                </p>
               </div>
             </div>
           </section>
