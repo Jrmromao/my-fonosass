@@ -18,7 +18,7 @@ function baseTemplate(content: string) {
 
     <!-- Header -->
     <div style="padding: 28px 40px; text-align: center;">
-      <img src="${APP_URL}/images/logo.png" alt="Almanaque da Fala" width="40" height="40" style="display: inline-block; vertical-align: middle; margin-right: 10px;" />
+      <img src="${APP_URL}/images/logo.png" alt="Almanaque da Fala" width="64" height="64" style="display: inline-block; vertical-align: middle; margin-right: 10px;" />
       <span style="font-family: 'Nunito', 'Georgia', serif; font-size: 20px; font-weight: 700; color: #1e293b; letter-spacing: -0.02em; vertical-align: middle;">Almanaque da Fala</span>
     </div>
 
