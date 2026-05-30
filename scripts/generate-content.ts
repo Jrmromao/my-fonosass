@@ -438,29 +438,30 @@ async function generateBlogPost(topic?: string) {
     : [];
 
   if (!selectedTopic) {
-    console.log('  🔍 Finding trending topics...');
+    console.log('  Finding trending topics...');
     const topics = await findTrendingTopics();
-    // Filter out topics too similar to existing posts
+    // Filter out topics too similar to existing posts (stricter: 2+ word overlap = duplicate)
     const fresh = topics.filter(
       (t) =>
         !existingPosts.some((p: string) => {
-          const similarity = p
-            .split(' ')
-            .filter((w: string) => t.toLowerCase().includes(w)).length;
-          return similarity > 3;
+          const topicWords = t.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
+          const postWords = p.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
+          const overlap = topicWords.filter((w: string) => postWords.includes(w)).length;
+          return overlap >= 2;
         })
     );
     if (fresh.length > 0) {
       selectedTopic = await pickBestTopic(fresh);
     } else if (topics.length > 0) {
-      selectedTopic = await pickBestTopic(topics);
+      // All topics are similar — pick one that's least similar
+      selectedTopic = await pickBestTopic(topics.slice(-3));
     } else {
       selectedTopic =
         SEED_KEYWORDS[Math.floor(Math.random() * SEED_KEYWORDS.length)];
     }
   }
 
-  // Check if we already have a very similar post
+  // Final dedup: check if slug already exists
   const slug = selectedTopic!
     .toLowerCase()
     .normalize('NFD')
@@ -468,6 +469,12 @@ async function generateBlogPost(topic?: string) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 60);
+
+  const filePath = `${postsDir}/${slug}.md`;
+  if (existsSync(filePath)) {
+    console.log('  Post already exists: ' + slug + ' — skipping');
+    return;
+  }
 
   const filePath = `${postsDir}/${slug}.md`;
   if (existsSync(filePath)) {
