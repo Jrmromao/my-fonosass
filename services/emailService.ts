@@ -74,17 +74,20 @@ export class EmailService {
       await resend.emails.send({
         from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: userEmail,
-        subject: 'Bem-vindo ao Almanaque da Fala',
+        subject: 'Bem-vinda ao Almanaque da Fala',
         html: baseTemplate(`
-          <h2 style="color: #1e293b; font-size: 20px; margin: 0 0 16px 0;">Bem-vindo, ${userName}!</h2>
-          <p>A sua conta foi criada com sucesso. Agora tem acesso a materiais terapeuticos prontos para usar nas suas sessoes.</p>
+          <p>Ola ${userName},</p>
+          <p>Que bom ter voce connosco! Sei como e a rotina de preparar materiais para cada sessao — por isso criei o Almanaque da Fala.</p>
+          <p>Aqui vai encontrar atividades prontas para imprimir, organizadas por fonema e faixa etaria. Toda semana adiciono materiais novos.</p>
           ${infoBox(`
-            <strong>O seu plano gratuito inclui:</strong><br>
-            3 downloads por mes &middot; Acesso a toda a biblioteca &middot; Visualizacao de atividades
+            <strong>O que pode fazer agora:</strong><br><br>
+            &bull; Explorar a biblioteca por fonema<br>
+            &bull; Descarregar ate 3 atividades por mes (plano gratuito)<br>
+            &bull; Imprimir e usar direto na sessao
           `)}
-          <p>Explore a biblioteca e encontre atividades organizadas por fonema, faixa etaria e dificuldade.</p>
-          ${button(`${APP_URL}/dashboard/games`, 'Explorar atividades')}
-          <p style="color: #64748b; font-size: 12px;">Se tiver alguma duvida, responda a este email ou visite a nossa <a href="${APP_URL}/faq" style="color: #1e293b;">pagina de FAQ</a>.</p>
+          ${button(`${APP_URL}/dashboard/games`, 'Ver atividades')}
+          <p>Se precisar de algo, e so responder a este email. Estou aqui para ajudar.</p>
+          <p style="margin-top: 24px;">Um abraco,<br><strong>Eliane Mota</strong><br><span style="color: #64748b; font-size: 12px;">Fonoaudiologa — Almanaque da Fala</span></p>
         `),
       });
     } catch (error) {
