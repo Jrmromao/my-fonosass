@@ -337,7 +337,7 @@ export default function AdminResourcesPage() {
       case 'PDF':
         return 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400';
       case 'VIDEO':
-        return 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400';
+        return 'bg-muted text-muted-foreground';
       case 'AUDIO':
         return 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400';
       case 'GUIDE':
@@ -351,7 +351,7 @@ export default function AdminResourcesPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">Carregando...</p>
         </div>
       </div>
@@ -366,7 +366,7 @@ export default function AdminResourcesPage() {
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white font-display">
               Recursos
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               Biblioteca de materiais e recursos terapêuticos
             </p>
           </div>
@@ -380,7 +380,7 @@ export default function AdminResourcesPage() {
                   resetForm();
                   setEditingResource(null);
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                className="h-8 text-xs bg-foreground text-background hover:bg-foreground/90"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Recurso
@@ -409,34 +409,34 @@ export default function AdminResourcesPage() {
 
       <div className="p-8">
         <Tabs defaultValue="activities" className="space-y-6">
-          <TabsList className="inline-flex bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-1 rounded-lg shadow-sm">
+          <TabsList className="inline-flex bg-muted p-1 rounded-md">
             <TabsTrigger
               value="activities"
-              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-muted data-[state=active]:text-foreground"
             >
               Atividades
             </TabsTrigger>
             <TabsTrigger
               value="resources"
-              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-muted data-[state=active]:text-foreground"
             >
               Recursos
             </TabsTrigger>
             <TabsTrigger
               value="review"
-              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-muted data-[state=active]:text-foreground"
             >
               Revisão
             </TabsTrigger>
             <TabsTrigger
               value="categories"
-              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-muted data-[state=active]:text-foreground"
             >
               Categorias
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
-              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
+              className="px-4 py-2 text-sm rounded-md data-[state=active]:bg-muted data-[state=active]:text-foreground"
             >
               Analytics
             </TabsTrigger>
@@ -497,7 +497,7 @@ export default function AdminResourcesPage() {
             <div className="grid gap-6">
               {loading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
                   <p className="text-gray-600 dark:text-gray-300">
                     Carregando recursos...
                   </p>
@@ -518,8 +518,8 @@ export default function AdminResourcesPage() {
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-4 flex-1">
-                            <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
-                              <IconComponent className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                              <IconComponent className="h-5 w-5 text-foreground" />
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
@@ -554,7 +554,7 @@ export default function AdminResourcesPage() {
                               <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
                                 {resource.description}
                               </p>
-                              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span>
                                   {resource.category} • {resource.ageGroup}
                                 </span>

@@ -112,7 +112,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider localization={ptBR}>
-      <html lang="pt-BR">
+      <html lang="pt-BR" suppressHydrationWarning>
         <head>
           {/* Preload critical resources */}
           <link
@@ -215,12 +215,12 @@ export default function RootLayout({
             <Analytics />
           </Providers>
           <SpeedInsights />
-          <AccessibilityAudit />
+          
           <WebVitals
             analyticsId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
             debug={process.env.NODE_ENV === 'development'}
           />
-          <WebVitalsDashboard />
+          
           {/* <PerformanceMonitor /> */}
         </body>
       </html>

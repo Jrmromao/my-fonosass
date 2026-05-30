@@ -101,15 +101,15 @@ export default function ActivitiesPage() {
   };
 
   return (
-    <div className="h-full bg-white dark:bg-black">
+    <div className="h-full bg-background">
       {/* Header */}
-      <div className="border-b border-gray-200 dark:border-gray-800">
+      <div className="border-b border-border">
         <div className="px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-sm font-semibold text-gray-900 dark:text-white">
+            <h1 className="text-sm font-semibold text-foreground">
               Atividades
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {pagination.total} atividades
             </p>
           </div>
@@ -119,16 +119,16 @@ export default function ActivitiesPage() {
         {/* Filters */}
         <div className="px-6 pb-3 flex items-center gap-2">
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               placeholder="Buscar..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="h-8 pl-8 text-xs bg-white dark:bg-black border-gray-200 dark:border-gray-800"
+              className="h-8 pl-8 text-xs bg-background border-border"
             />
           </div>
           <Select value={phoneme || 'all'} onValueChange={(v) => updateParams({ phoneme: v === 'all' ? '' : v })}>
-            <SelectTrigger className="h-8 w-28 text-xs border-gray-200 dark:border-gray-800">
+            <SelectTrigger className="h-8 w-28 text-xs border-border">
               <SelectValue placeholder="Fonema" />
             </SelectTrigger>
             <SelectContent>
@@ -139,7 +139,7 @@ export default function ActivitiesPage() {
             </SelectContent>
           </Select>
           <Select value={type || 'all'} onValueChange={(v) => updateParams({ type: v === 'all' ? '' : v })}>
-            <SelectTrigger className="h-8 w-32 text-xs border-gray-200 dark:border-gray-800">
+            <SelectTrigger className="h-8 w-32 text-xs border-border">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
@@ -150,7 +150,7 @@ export default function ActivitiesPage() {
             </SelectContent>
           </Select>
           <Select value={difficulty || 'all'} onValueChange={(v) => updateParams({ difficulty: v === 'all' ? '' : v })}>
-            <SelectTrigger className="h-8 w-32 text-xs border-gray-200 dark:border-gray-800">
+            <SelectTrigger className="h-8 w-32 text-xs border-border">
               <SelectValue placeholder="Dificuldade" />
             </SelectTrigger>
             <SelectContent>
@@ -173,17 +173,17 @@ export default function ActivitiesPage() {
           </div>
         ) : activities.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="text-sm text-gray-400">Nenhuma atividade encontrada.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma atividade encontrada.</p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 dark:border-gray-800">
-                <th className="text-left py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                <th className="text-left py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Fonema</th>
-                <th className="text-left py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Tipo</th>
-                <th className="text-left py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Dificuldade</th>
-                <th className="text-left py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Idade</th>
+              <tr className="border-b border-border">
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Nome</th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-20">Fonema</th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-28">Tipo</th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-28">Dificuldade</th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">Idade</th>
                 <th className="w-10"></th>
               </tr>
             </thead>
@@ -191,23 +191,23 @@ export default function ActivitiesPage() {
               {activities.map((activity: any) => (
                 <tr
                   key={activity.id}
-                  className="border-b border-gray-50 dark:border-gray-900 hover:bg-gray-50 dark:hover:bg-gray-950 cursor-pointer transition-colors"
+                  className="border-b border-border/50 hover:bg-muted cursor-pointer transition-colors"
                   onClick={() => setPreviewActivity(activity)}
                 >
                   <td className="py-3">
-                    <span className="text-sm text-gray-900 dark:text-white">{activity.name}</span>
+                    <span className="text-sm text-foreground">{activity.name}</span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs font-mono text-gray-500">/{activity.phoneme}/</span>
+                    <span className="text-xs font-mono text-muted-foreground">/{activity.phoneme}/</span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs text-gray-500">{activity.type}</span>
+                    <span className="text-xs text-muted-foreground">{activity.type}</span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs text-gray-500">{activity.difficulty}</span>
+                    <span className="text-xs text-muted-foreground">{activity.difficulty}</span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs text-gray-500">{activity.ageRange}</span>
+                    <span className="text-xs text-muted-foreground">{activity.ageRange}</span>
                   </td>
                   <td className="py-3 text-right">
                     {activity.files?.[0] && (
@@ -222,7 +222,7 @@ export default function ActivitiesPage() {
                         {downloadingId === activity.files[0].id ? (
                           <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
                         ) : (
-                          <Download className="h-3.5 w-3.5 text-gray-400" />
+                          <Download className="h-3.5 w-3.5 text-muted-foreground" />
                         )}
                       </button>
                     )}
@@ -235,8 +235,8 @@ export default function ActivitiesPage() {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between py-4 border-t border-gray-100 dark:border-gray-800">
-            <span className="text-xs text-gray-500">
+          <div className="flex items-center justify-between py-4 border-t border-border">
+            <span className="text-xs text-muted-foreground">
               {pagination.page} de {pagination.totalPages}
             </span>
             <div className="flex gap-1">
@@ -275,7 +275,7 @@ export default function ActivitiesPage() {
                 {previewActivity.thumbnailUrl && (
                   <img src={previewActivity.thumbnailUrl} alt="" className="w-full rounded border border-gray-200" />
                 )}
-                <div className="flex gap-3 text-xs text-gray-500">
+                <div className="flex gap-3 text-xs text-muted-foreground">
                   <span className="font-mono">/{previewActivity.phoneme}/</span>
                   <span>{previewActivity.type}</span>
                   <span>{previewActivity.difficulty}</span>
@@ -304,7 +304,7 @@ export default function ActivitiesPage() {
             <DialogTitle className="text-base font-semibold">Limite de downloads atingido</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Você atingiu o limite de 3 downloads gratuitos este mês. Assine o plano Profissional para downloads ilimitados.
             </p>
             <div className="flex gap-2">
@@ -316,7 +316,7 @@ export default function ActivitiesPage() {
               </Button>
               <Button
                 variant="ghost"
-                className="text-sm text-gray-500"
+                className="text-sm text-muted-foreground"
                 onClick={() => setLimitReached(false)}
               >
                 Fechar

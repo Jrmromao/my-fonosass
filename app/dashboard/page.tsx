@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
@@ -14,7 +14,6 @@ export default function Dashboard() {
   const { user } = useUser();
   const router = useRouter();
 
-  // Redirect to onboarding if not completed
   useEffect(() => {
     if (user && !user.unsafeMetadata?.onboarded) {
       router.replace('/dashboard/onboarding');
@@ -27,7 +26,6 @@ export default function Dashboard() {
       const res = await fetch('/api/dashboard/stats');
       return res.json();
     },
-    staleTime: 60_000,
   });
 
   const { data: recent } = useQuery({
@@ -36,7 +34,6 @@ export default function Dashboard() {
       const res = await fetch('/api/activities/search?limit=5');
       return res.json();
     },
-    staleTime: 30_000,
   });
 
   const greeting = () => {
@@ -49,170 +46,97 @@ export default function Dashboard() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-        <div className="px-8 py-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-display">
-            {greeting()}, {user?.firstName || 'Profissional'}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Aqui esta o resumo da sua biblioteca de atividades.
-          </p>
-        </div>
+      <div className="border-b border-border px-6 py-6">
+        <h1 className="text-lg font-semibold text-foreground">
+          {greeting()}, {user?.firstName || 'Profissional'}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          Resumo da sua biblioteca de atividades.
+        </p>
       </div>
 
-      <div className="p-8 space-y-8">
-        {/* Stats Grid */}
+      <div className="px-6 py-6 space-y-8">
+        {/* Stats */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
+              <Skeleton key={i} className="h-20" />
             ))
           ) : (
             <>
-              <StatCard
-                title="Total de Atividades"
-                value={stats?.data?.total || 0}
-                icon={<FileText className="h-5 w-5 text-indigo-600" />}
-              />
-              <StatCard
-                title="Fonemas Cobertos"
-                value={stats?.data?.phonemes || 0}
-                icon={<BookOpen className="h-5 w-5 text-emerald-600" />}
-              />
-              <StatCard
-                title="Pendentes de Revisao"
-                value={stats?.data?.pending || 0}
-                icon={<TrendingUp className="h-5 w-5 text-amber-600" />}
-              />
-              <StatCard
-                title="Downloads este Mes"
-                value={stats?.data?.downloads || 0}
-                icon={<Download className="h-5 w-5 text-pink-600" />}
-              />
+              <StatCard label="Atividades" value={stats?.data?.total || 0} icon={<FileText className="h-4 w-4" />} />
+              <StatCard label="Fonemas" value={stats?.data?.phonemes || 0} icon={<BookOpen className="h-4 w-4" />} />
+              <StatCard label="Pendentes" value={stats?.data?.pending || 0} icon={<TrendingUp className="h-4 w-4" />} />
+              <StatCard label="Downloads" value={stats?.data?.downloads || 0} icon={<Download className="h-4 w-4" />} />
             </>
           )}
         </div>
 
-        {/* Quick Actions + Recent */}
+        {/* Recent + Quick Actions */}
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Recent Activities */}
-          <div className="lg:col-span-2">
-            <Card className="border-gray-200 dark:border-gray-800">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
-                    Atividades Recentes
-                  </CardTitle>
-                  <Link
-                    href="/dashboard/games"
-                    className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                  >
-                    Ver todas
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {recent?.data?.length > 0 ? (
-                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {recent.data.map((activity: any) => (
-                      <div
-                        key={activity.id}
-                        className="py-3 flex items-center justify-between"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">
-                            {activity.name}
-                          </p>
-                          <div className="flex gap-2 mt-1">
-                            <Badge variant="outline" className="text-[10px]">
-                              /{activity.phoneme}/
-                            </Badge>
-                            <Badge variant="outline" className="text-[10px]">
-                              {activity.difficulty}
-                            </Badge>
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-[10px]">
-                          {activity.ageRange}
-                        </Badge>
+          {/* Recent */}
+          <section className="lg:col-span-2 border rounded-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Recentes</h2>
+              <Link href="/dashboard/games" className="text-xs text-accent-foreground hover:underline" style={{ color: 'hsl(var(--accent))' }}>
+                Ver todas
+              </Link>
+            </div>
+            {recent?.data?.length > 0 ? (
+              <div className="divide-y divide-border">
+                {recent.data.map((activity: any) => (
+                  <div key={activity.id} className="py-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{activity.name}</p>
+                      <div className="flex gap-2 mt-1">
+                        <span className="text-xs font-mono text-muted-foreground">/{activity.phoneme}/</span>
+                        <span className="text-xs text-muted-foreground">{activity.difficulty}</span>
                       </div>
-                    ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground">{activity.ageRange}</span>
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-400 py-4">
-                    Nenhuma atividade ainda.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground py-4">Nenhuma atividade ainda.</p>
+            )}
+          </section>
 
           {/* Quick Actions */}
-          <div>
-            <Card className="border-gray-200 dark:border-gray-800">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
-                  Acesso Rapido
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <QuickAction
-                  href="/dashboard/games"
-                  label="Biblioteca de Atividades"
-                />
-                <QuickAction
-                  href="/dashboard/ai"
-                  label="Gerar Exercicio com IA"
-                />
-                <QuickAction
-                  href="/dashboard/resources"
-                  label="Gerenciar Recursos"
-                />
-                <QuickAction href="/dashboard/profile" label="Meu Perfil" />
-              </CardContent>
-            </Card>
-          </div>
+          <section className="border rounded-md p-6 space-y-4">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Acesso rápido</h2>
+            <div className="space-y-2">
+              <QuickLink href="/dashboard/games" label="Biblioteca de Atividades" />
+              <QuickLink href="/dashboard/ai" label="Gerar Exercício" />
+              <QuickLink href="/dashboard/resources" label="Gerenciar Recursos" />
+              <QuickLink href="/dashboard/profile" label="Meu Perfil" />
+            </div>
+          </section>
         </div>
       </div>
     </div>
   );
 }
 
-function StatCard({
-  title,
-  value,
-  icon,
-}: {
-  title: string;
-  value: number;
-  icon: React.ReactNode;
-}) {
+function StatCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
   return (
-    <Card className="border-gray-200 dark:border-gray-800">
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              {title}
-            </p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-              {value}
-            </p>
-          </div>
-          <div className="h-10 w-10 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
-            {icon}
-          </div>
+    <div className="border rounded-md p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
+          <p className="text-2xl font-bold font-mono text-foreground mt-1">{value}</p>
         </div>
-      </CardContent>
-    </Card>
+        <div className="text-muted-foreground">{icon}</div>
+      </div>
+    </div>
   );
 }
 
-function QuickAction({ href, label }: { href: string; label: string }) {
+function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="block px-4 py-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all text-sm font-medium text-gray-700 dark:text-gray-300"
+      className="block px-3 py-2.5 rounded-md border border-border text-sm text-foreground hover:bg-muted transition-colors"
     >
       {label}
     </Link>
