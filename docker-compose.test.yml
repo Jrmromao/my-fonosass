@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  test-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: fonosass_test
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d fonosass_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  test_postgres_data:

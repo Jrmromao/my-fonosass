@@ -16,6 +16,7 @@
     "test:integration": "jest --testPathPattern=__tests__/integration --coverage",
     "test:security": "jest --testPathPattern=__tests__/security --coverage",
     "test:e2e": "playwright test",
+    "test:db": "DATABASE_URL="postgresql://testuser:testpass@localhost:5433/fonosass_test" DIRECT_URL="postgresql://testuser:testpass@localhost:5433/fonosass_test" jest --config jest.config.db.js --forceExit",
     "test:e2e:ui": "playwright test --ui",
     "test:comprehensive": "node __tests__/run-comprehensive-tests.js",
     "test:comprehensive:fail-fast": "node __tests__/run-comprehensive-tests.js --fail-fast",
