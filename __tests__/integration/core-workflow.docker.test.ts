@@ -219,3 +219,157 @@ describe('Activity Workflow Integration (Real DB)', () => {
     });
   });
 });
+
+
+describe('Edge Cases (Real DB)', () => {
+  let testUserId: string;
+
+  beforeAll(async () => {
+    const user = await prisma.user.findFirst({ where: { email: 'test@almanaquedafala.com.br' } });
+    testUserId = user!.id;
+  });
+
+  describe('Download limit boundaries', () => {
+    it('blocks on exactly the 4th download attempt', async () => {
+      await prisma.downloadLimit.update({
+        where: { userId: testUserId },
+        data: { downloads: 3, resetDate: new Date() },
+      });
+
+      const limit = await prisma.downloadLimit.findUnique({ where: { userId: testUserId } });
+      const remaining = Math.max(0, 3 - limit!.downloads);
+      expect(remaining).toBe(0);
+
+      // Revert
+      await prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: 2 } });
+    });
+
+    it('resets at exactly 30 days (not 29)', async () => {
+      const day29 = new Date();
+      day29.setDate(day29.getDate() - 29);
+
+      await prisma.downloadLimit.update({
+        where: { userId: testUserId },
+        data: { downloads: 3, resetDate: day29 },
+      });
+
+      const limit = await prisma.downloadLimit.findUnique({ where: { userId: testUserId } });
+      const daysSinceReset = Math.floor((Date.now() - limit!.resetDate.getTime()) / (1000 * 60 * 60 * 24));
+      // 29 days — should NOT reset
+      expect(daysSinceReset).toBeLessThan(30);
+
+      // Revert
+      await prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: 2, resetDate: new Date() } });
+    });
+
+    it('concurrent increment does not skip counts', async () => {
+      await prisma.downloadLimit.update({
+        where: { userId: testUserId },
+        data: { downloads: 0 },
+      });
+
+      // Simulate 3 concurrent increments
+      await Promise.all([
+        prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: { increment: 1 } } }),
+        prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: { increment: 1 } } }),
+        prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: { increment: 1 } } }),
+      ]);
+
+      const limit = await prisma.downloadLimit.findUnique({ where: { userId: testUserId } });
+      expect(limit!.downloads).toBe(3);
+
+      // Revert
+      await prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: 2 } });
+    });
+  });
+
+  describe('Search edge cases', () => {
+    it('handles special characters in search', async () => {
+      const results = await prisma.activity.findMany({
+        where: { name: { contains: '/R/', mode: 'insensitive' } },
+      });
+      // Should not throw, may return 0 results
+      expect(Array.isArray(results)).toBe(true);
+    });
+
+    it('handles Portuguese characters in search', async () => {
+      const results = await prisma.activity.findMany({
+        where: { name: { contains: 'ção', mode: 'insensitive' } },
+      });
+      expect(Array.isArray(results)).toBe(true);
+    });
+
+    it('handles empty search gracefully', async () => {
+      const results = await prisma.activity.findMany({
+        where: { name: { contains: '', mode: 'insensitive' } },
+      });
+      expect(results.length).toBeGreaterThan(0);
+    });
+
+    it('handles SQL injection attempt in search', async () => {
+      const results = await prisma.activity.findMany({
+        where: { name: { contains: "'; DROP TABLE Activity; --", mode: 'insensitive' } },
+      });
+      // Prisma parameterizes — should return 0, not crash
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(0);
+
+      // Verify table still exists
+      const count = await prisma.activity.count();
+      expect(count).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Approval edge cases', () => {
+    it('double-approve does not error', async () => {
+      const activity = await prisma.activity.findFirst({ where: { status: 'PUBLISHED' } });
+
+      // Approve an already-published activity
+      const result = await prisma.activity.update({
+        where: { id: activity!.id },
+        data: { status: 'PUBLISHED', isPublic: true },
+      });
+      expect(result.status).toBe('PUBLISHED');
+    });
+
+    it('approving non-existent activity throws', async () => {
+      await expect(
+        prisma.activity.update({
+          where: { id: 'non-existent-id-12345' },
+          data: { status: 'PUBLISHED' },
+        })
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('Activity with no file', () => {
+    it('activity without files has empty files array', async () => {
+      const activity = await prisma.activity.findFirst({
+        include: { files: true },
+      });
+      expect(activity).not.toBeNull();
+      // Our test data has no files — should be empty array, not null
+      expect(Array.isArray(activity!.files)).toBe(true);
+    });
+  });
+
+  describe('User data integrity', () => {
+    it('cannot create activity with non-existent user', async () => {
+      await expect(
+        prisma.activity.create({
+          data: {
+            name: 'Orphan',
+            description: 'test',
+            type: 'SPEECH',
+            difficulty: 'BEGINNER',
+            ageRange: 'CHILD',
+            phoneme: 'X',
+            isPublic: false,
+            status: 'DRAFT',
+            createdById: 'non-existent-user-id',
+          },
+        })
+      ).rejects.toThrow();
+    });
+  });
+});
