@@ -122,7 +122,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen flex flex-col bg-gray-900 transition-all duration-300 ease-in-out overflow-hidden',
+          'fixed top-0 left-0 z-40 h-screen flex flex-col bg-white border-r border-border transition-all duration-200 overflow-hidden',
           isCollapsed ? 'w-16' : 'w-56',
           isMobileMenuOpen
             ? 'translate-x-0 shadow-xl'
@@ -132,7 +132,7 @@ export function Sidebar({ className }: SidebarProps) {
         suppressHydrationWarning={true}
       >
         {/* Logo area */}
-        <div className="h-20 flex items-center border-b border-gray-800/50">
+        <div className="h-20 flex items-center border-b border-border">
           <div className="flex items-center justify-center w-full">
             <div
               className={`relative transition-all duration-300 ${
@@ -157,7 +157,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto mr-2 hidden md:flex text-gray-500 hover:text-white hover:bg-white/10 rounded-md h-7 w-7 p-0"
+              className="ml-auto mr-2 hidden md:flex text-gray-500 hover:text-foreground hover:bg-white/10 rounded-md h-7 w-7 p-0"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -222,8 +222,8 @@ export function Sidebar({ className }: SidebarProps) {
                         ? 'justify-center p-3 mx-1'
                         : 'px-3 py-2.5',
                       isActive
-                        ? 'bg-white/10 text-white font-medium'
-                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                        ? 'bg-muted text-foreground font-medium'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     )}
                     title={!isHydrated || isCollapsed ? item.title : undefined}
                   >
@@ -232,8 +232,8 @@ export function Sidebar({ className }: SidebarProps) {
                         className={cn(
                           'flex-shrink-0 transition-colors',
                           isActive
-                            ? 'text-white'
-                            : 'text-gray-500 group-hover:text-gray-300',
+                            ? 'text-foreground'
+                            : 'text-muted-foreground group-hover:text-foreground',
                           !isHydrated || isCollapsed
                             ? 'h-5 w-5'
                             : 'h-[18px] w-[18px]'
@@ -252,7 +252,7 @@ export function Sidebar({ className }: SidebarProps) {
 
                     {/* Tooltip for collapsed state */}
                     {isHydrated && isCollapsed && (
-                      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-foreground text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                         {item.title}
                       </div>
                     )}

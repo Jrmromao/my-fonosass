@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "./scripts/dev.sh",
+    "dev:next": "next dev --turbopack",
+    "dev:seed": "./scripts/seed-dev.sh",
     "dev:no-turbo": "next dev",
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",

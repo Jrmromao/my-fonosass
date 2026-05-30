@@ -42,18 +42,29 @@ export function ActivityManagerPanel() {
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
   const [notifying, setNotifying] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
 
   const loadActivities = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/admin/activities/all');
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('limit', '20');
+      if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (search) params.set('search', search);
+      const res = await fetch(`/api/admin/activities/all?${params.toString()}`);
       const data = await res.json();
-      if (data.success) setActivities(data.activities);
+      if (data.success) {
+        setActivities(data.activities);
+        setPagination(data.pagination || { total: 0, totalPages: 1 });
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, statusFilter, search]);
 
   useEffect(() => {
     loadActivities();
@@ -88,13 +99,14 @@ export function ActivityManagerPanel() {
     setNotifying(null);
   };
 
-  const filtered = activities.filter((a) => {
-    if (search && !a.name.toLowerCase().includes(search.toLowerCase()))
-      return false;
-    if (statusFilter !== 'all' && a.status !== statusFilter) return false;
-    if (phonemeFilter !== 'all' && a.phoneme !== phonemeFilter) return false;
-    return true;
-  });
+  const filtered = activities;
+
+
+
+
+
+
+
 
   const phonemes = [...new Set(activities.map((a) => a.phoneme))].sort();
 
@@ -111,7 +123,7 @@ export function ActivityManagerPanel() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar atividades..."
             value={search}
@@ -147,30 +159,28 @@ export function ActivityManagerPanel() {
       </div>
 
       {/* Stats */}
-      <div className="flex gap-4 text-sm text-gray-500">
-        <span>{filtered.length} atividades</span>
-        <span>{activities.filter((a) => a.isPublic).length} visiveis</span>
-        <span>{activities.filter((a) => !a.isPublic).length} ocultas</span>
+      <div className="flex gap-4 text-sm text-muted-foreground">
+        <span>{pagination.total} atividades</span>
       </div>
 
       {/* Table */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-900">
+          <thead className="bg-muted">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Nome
               </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Fonema
               </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Dificuldade
               </th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">
+              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Status
               </th>
-              <th className="text-right px-4 py-3 font-medium text-gray-600">
+              <th className="text-right px-4 py-3 font-medium text-muted-foreground">
                 Acoes
               </th>
             </tr>
@@ -179,13 +189,13 @@ export function ActivityManagerPanel() {
             {filtered.map((activity) => (
               <tr
                 key={activity.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-900/50"
+                className="hover:bg-muted"
               >
                 <td className="px-4 py-3">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-foreground">
                     {activity.name}
                   </span>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {activity.ageRange}
                   </p>
                 </td>
@@ -194,7 +204,7 @@ export function ActivityManagerPanel() {
                     /{activity.phoneme}/
                   </Badge>
                 </td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="px-4 py-3 text-muted-foreground">
                   {activity.difficulty}
                 </td>
                 <td className="px-4 py-3">
@@ -207,7 +217,7 @@ export function ActivityManagerPanel() {
                           ? 'bg-amber-50 text-amber-700 border-amber-200'
                           : activity.status === 'REJECTED'
                             ? 'bg-red-50 text-red-700 border-red-200'
-                            : 'bg-gray-50 text-gray-600 border-gray-200'
+                            : 'bg-gray-50 text-muted-foreground border-gray-200'
                     }`}
                   >
                     {activity.status === 'PUBLISHED' && 'Publicado'}
@@ -238,7 +248,7 @@ export function ActivityManagerPanel() {
                       title={activity.isPublic ? 'Ocultar' : 'Mostrar'}
                     >
                       {activity.isPublic ? (
-                        <EyeOff className="h-4 w-4 text-gray-500" />
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
                       ) : (
                         <Eye className="h-4 w-4 text-emerald-600" />
                       )}
@@ -251,7 +261,7 @@ export function ActivityManagerPanel() {
                       disabled={notifying === activity.id}
                       title="Notificar admin para revisao"
                     >
-                      <Bell className="h-4 w-4 text-indigo-500" />
+                      <Bell className="h-4 w-4 text-accent" />
                     </Button>
                   </div>
                 </td>
@@ -260,6 +270,23 @@ export function ActivityManagerPanel() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4">
+          <span className="text-xs text-muted-foreground">
+            Página {page} de {pagination.totalPages} ({pagination.total} total)
+          </span>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+              &lt;
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={page >= pagination.totalPages} onClick={() => setPage(page + 1)}>
+              &gt;
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Preview Dialog */}
       <Dialog
@@ -312,7 +339,7 @@ function ActivityPreview({ activity }: { activity: Activity }) {
 
       {/* File preview */}
       {loadingPreview && (
-        <p className="text-sm text-gray-400">Carregando preview...</p>
+        <p className="text-sm text-muted-foreground">Carregando preview...</p>
       )}
       {previewUrl && activity.files?.[0]?.fileType?.startsWith('image/') && (
         <img
@@ -331,13 +358,13 @@ function ActivityPreview({ activity }: { activity: Activity }) {
           {parsed.objetivo && (
             <div>
               <span className="font-medium text-gray-700">Objetivo:</span>
-              <p className="text-gray-600">{parsed.objetivo}</p>
+              <p className="text-muted-foreground">{parsed.objetivo}</p>
             </div>
           )}
           {parsed.instrucoes && (
             <div>
               <span className="font-medium text-gray-700">Instrucoes:</span>
-              <ol className="list-decimal list-inside mt-1 text-gray-600">
+              <ol className="list-decimal list-inside mt-1 text-muted-foreground">
                 {parsed.instrucoes.map((s: string, i: number) => (
                   <li key={i}>{s}</li>
                 ))}
@@ -347,14 +374,14 @@ function ActivityPreview({ activity }: { activity: Activity }) {
           {parsed.materiais && (
             <div>
               <span className="font-medium text-gray-700">Materiais:</span>
-              <p className="text-gray-600">{parsed.materiais.join(', ')}</p>
+              <p className="text-muted-foreground">{parsed.materiais.join(', ')}</p>
             </div>
           )}
         </div>
       )}
 
       {!parsed && (
-        <p className="text-sm text-gray-600">{activity.description}</p>
+        <p className="text-sm text-muted-foreground">{activity.description}</p>
       )}
     </div>
   );
