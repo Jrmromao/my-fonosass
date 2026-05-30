@@ -134,7 +134,7 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
     >
       <div
         className={cn(
-          'relative flex items-center justify-center rounded-full bg-gray-700 text-white font-medium text-sm transition-all duration-200 overflow-hidden flex-shrink-0',
+          'relative flex items-center justify-center rounded-full bg-muted text-foreground font-medium text-sm transition-all duration-200 overflow-hidden flex-shrink-0',
           isCollapsed ? 'size-8' : 'size-9'
         )}
       >
@@ -157,10 +157,10 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
       {!isCollapsed && (
         <>
           <div className="flex-1 min-w-0 text-left">
-            <h3 className="text-sm font-medium text-gray-200 truncate">
+            <h3 className="text-sm font-medium text-foreground truncate">
               {username}
             </h3>
-            <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+            <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
           </div>
           <ChevronUp
             className={cn('size-4 text-gray-500 transition-transform', {
