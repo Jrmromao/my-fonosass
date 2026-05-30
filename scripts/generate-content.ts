@@ -336,16 +336,67 @@ Fonema alvo: /${phoneme}/`;
       // ═══ STEP 5: All activities go to PENDING_REVIEW — admin approves via Telegram/dashboard ═══
       const status = 'PENDING_REVIEW';
 
-      // ═══ STEP 6: Upload to S3 (watermark added programmatically via sync endpoint) ═══
+      // ═══ STEP 6: Wrap in branded PDF + upload to S3 ═══
       try {
-        const key = `activities/${phoneme}/${combo.type.toLowerCase()}-${combo.topic}-age${combo.age}.png`;
-        const url = await uploadToS3(key, img, 'image/png');
+        const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+
+        // Create branded PDF with the activity image
+        const pdfDoc = await PDFDocument.create();
+        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        const image = await pdfDoc.embedPng(img);
+
+        // Brand colors
+        const navy = rgb(30 / 255, 41 / 255, 59 / 255);
+        const gray400 = rgb(148 / 255, 163 / 255, 184 / 255);
+
+        // Layout
+        const margin = 40;
+        const headerHeight = 56;
+        const footerHeight = 36;
+        const maxWidth = 595 - margin * 2; // A4 width
+        const scale = Math.min(maxWidth / image.width, 1);
+        const imgWidth = image.width * scale;
+        const imgHeight = image.height * scale;
+        const pageWidth = 595;
+        const pageHeight = imgHeight + headerHeight + footerHeight + margin * 2;
+
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+        // Header bar
+        page.drawRectangle({ x: 0, y: pageHeight - headerHeight, width: pageWidth, height: headerHeight, color: navy });
+        page.drawText('almanaquedafala.com.br', { x: margin, y: pageHeight - 35, size: 14, font: fontBold, color: rgb(1, 1, 1) });
+
+        const activityTitle = `${combo.type.replace('_', ' ')} — ${combo.topic} (/${phoneme}/)`;
+        page.drawText(activityTitle, { x: margin, y: pageHeight - 50, size: 9, font, color: rgb(0.8, 0.8, 0.8) });
+
+        // Image
+        const imgX = (pageWidth - imgWidth) / 2;
+        const imgY = footerHeight + margin;
+        page.drawImage(image, { x: imgX, y: imgY, width: imgWidth, height: imgHeight });
+
+        // Footer
+        page.drawRectangle({ x: 0, y: 0, width: pageWidth, height: footerHeight, color: rgb(0.98, 0.98, 0.99) });
+        page.drawLine({ start: { x: 0, y: footerHeight }, end: { x: pageWidth, y: footerHeight }, thickness: 0.5, color: rgb(0.9, 0.9, 0.92) });
+
+        const footerText = `Fonema /${phoneme}/ | ${combo.type.replace('_', ' ')} | Idade: ${combo.age} anos`;
+        page.drawText(footerText, { x: margin, y: 12, size: 8, font, color: gray400 });
+        page.drawText('almanaquedafala.com.br', {
+          x: pageWidth - margin - font.widthOfTextAtSize('almanaquedafala.com.br', 8),
+          y: 12, size: 8, font, color: navy,
+        });
+
+        const pdfBytes = await pdfDoc.save();
+        const pdfBuffer = Buffer.from(pdfBytes);
+
+        const key = `activities/${phoneme}/${combo.type.toLowerCase()}-${combo.topic}-age${combo.age}.pdf`;
+        const url = await uploadToS3(key, pdfBuffer, 'application/pdf');
         count++;
         console.log(
-          `  ✅ [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — PENDING REVIEW (score: ${qualityScore}/100)`
+          `  [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — PDF created (score: ${qualityScore}/100)`
         );
 
-        // Send to Telegram for review with quality score
+        // Send to Telegram for review with quality score (send PNG for visual preview)
         await sendActivityForReview({
           imageBuffer: img,
           phoneme,
