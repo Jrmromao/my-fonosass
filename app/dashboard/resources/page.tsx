@@ -2,6 +2,7 @@
 
 import ResourceFileUpload from '@/components/admin/ResourceFileUpload';
 import { ActivityReviewPanel } from '@/components/dashboard/ActivityReviewPanel';
+import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
 import { ActivityManagerPanel } from '@/components/dashboard/ActivityManagerPanel';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -624,53 +625,9 @@ export default function AdminResourcesPage() {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-2xl font-bold">{resources.length}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Total de Recursos
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-2xl font-bold">
-                    {resources
-                      .reduce((sum, r) => sum + r.downloadCount, 0)
-                      .toLocaleString()}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Total de Downloads
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-2xl font-bold">
-                    {resources
-                      .reduce((sum, r) => sum + r.viewCount, 0)
-                      .toLocaleString()}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Total de Visualizações
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-2xl font-bold">
-                    {(
-                      resources.reduce((sum, r) => sum + r.rating, 0) /
-                        resources.length || 0
-                    ).toFixed(1)}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Avaliação Média
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="analytics">
+            <AnalyticsPanel />
+          </TabsContent>
           </TabsContent>
         </Tabs>
       </div>
