@@ -9,6 +9,9 @@ const customJestConfig = {
   testTimeout: 30000,
   maxWorkers: 1,
   verbose: true,
+  roots: ['<rootDir>/__tests__/integration'],
+  automock: false,
+  modulePathIgnorePatterns: ['<rootDir>/__mocks__'],
 };
 
 module.exports = createJestConfig(customJestConfig);

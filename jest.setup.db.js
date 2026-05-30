@@ -1,4 +1,4 @@
-import { setupDockerTest, teardownDockerTest } from './__tests__/setup/docker-test';
+const { setupDockerTest, teardownDockerTest } = require('./__tests__/setup/docker-test');
 
 beforeAll(async () => {
   await setupDockerTest();
