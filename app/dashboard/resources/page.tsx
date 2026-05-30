@@ -380,7 +380,7 @@ export default function AdminResourcesPage() {
                   resetForm();
                   setEditingResource(null);
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+                className="h-8 text-xs bg-foreground text-background hover:bg-foreground/90"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Recurso
