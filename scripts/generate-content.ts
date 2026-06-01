@@ -523,12 +523,6 @@ async function generateBlogPost(topic?: string) {
 
   const filePath = `${postsDir}/${slug}.md`;
   if (existsSync(filePath)) {
-    console.log('  Post already exists: ' + slug + ' — skipping');
-    return;
-  }
-
-  const filePath = `${postsDir}/${slug}.md`;
-  if (existsSync(filePath)) {
     console.log(`  ⚠️ Post already exists: ${filePath}. Skipping.`);
     return;
   }
