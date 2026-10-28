@@ -118,51 +118,6 @@ async function sendTelegram(message: string) {
   });
 }
 
-async function sendActivityForReview(activity: {
-  imageBuffer: Buffer;
-  phoneme: string;
-  type: string;
-  topic: string;
-  age: number;
-  s3Key: string;
-  s3Url: string;
-}) {
-  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
-
-  const APP_URL =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://www.almanaquedafala.com.br';
-  const approveUrl = `${APP_URL}/api/activities/review?action=approve&key=${encodeURIComponent(activity.s3Key)}`;
-  const rejectUrl = `${APP_URL}/api/activities/review?action=reject&key=${encodeURIComponent(activity.s3Key)}`;
-
-  const formData = new FormData();
-  formData.append('chat_id', TELEGRAM_CHAT);
-  formData.append(
-    'photo',
-    new Blob([activity.imageBuffer], { type: 'image/png' }),
-    'activity.png'
-  );
-  formData.append(
-    'caption',
-    `Nova atividade\n\nFonema: /${activity.phoneme}/\nTipo: ${activity.type}\nTema: ${activity.topic}\nIdade: ${activity.age} anos`
-  );
-  formData.append(
-    'reply_markup',
-    JSON.stringify({
-      inline_keyboard: [
-        [
-          { text: '✅ Aprovar', url: approveUrl },
-          { text: '❌ Rejeitar', url: rejectUrl },
-        ],
-      ],
-    })
-  );
-
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
-    method: 'POST',
-    body: formData,
-  });
-}
-
 async function uploadToS3(
   key: string,
   body: Buffer,
@@ -453,22 +408,15 @@ Fonema alvo: /${phoneme}/`;
         const pdfBuffer = Buffer.from(pdfBytes);
 
         const key = `activities/${phoneme}/${combo.type.toLowerCase()}-${combo.topic}-age${combo.age}.pdf`;
-        const url = await uploadToS3(key, pdfBuffer, 'application/pdf');
+        await uploadToS3(key, pdfBuffer, 'application/pdf');
         count++;
         console.log(
           `  [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — PDF created (score: ${qualityScore}/100)`
         );
 
-        // Send to Telegram for review with quality score (send PNG for visual preview)
-        await sendActivityForReview({
-          imageBuffer: img,
-          phoneme,
-          type: combo.type,
-          topic: combo.topic,
-          age: combo.age,
-          s3Key: key,
-          s3Url: url,
-        });
+        // Review notification is sent by the sync-activities route after the
+        // DB row + single-use approvalToken exist (the magic link needs the
+        // activity id and token, which don't exist at generation time).
 
         // Rate limit
         await new Promise((r) => setTimeout(r, 3000));
