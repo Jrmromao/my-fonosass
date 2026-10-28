@@ -10,6 +10,8 @@ import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { generateActivityContent } from '../lib/activities/generateContent';
 import { ActivityPDFRenderer } from '../lib/activities/pdfRenderer';
 import { getWordIllustrations } from '../lib/activities/illustrator';
+import { generateSortActivity } from '../lib/activities/sortActivity';
+import { renderSortPdf, type CardImages } from '../lib/activities/sortRenderer';
 
 const GEMINI_KEY = process.env.GOOGLE_CLOUD_API_KEY!;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -234,6 +236,53 @@ async function generateActivities(phonemes: string[]) {
   console.log(`\n🎉 Done! ${count} activities uploaded to S3.`);
 }
 
+/**
+ * Generate rich "cut & sort" worksheets (one per theme). Content + layout are
+ * deterministic (sortActivity + sortRenderer); the image model only draws the
+ * per-card clip-art. Output matches the professional reference quality.
+ */
+async function generateSortActivities(themes: string[]) {
+  console.log(`\n✂️  Generating sort activities for: ${themes.join(', ')}\n`);
+  let count = 0;
+
+  for (const theme of themes) {
+    try {
+      const activity = await generateSortActivity({
+        theme,
+        age: 6,
+        cardCount: 12,
+      });
+
+      // Per-card clip-art -> data URIs for the HTML renderer (S3-cached).
+      const pngs = await getWordIllustrations(
+        activity.cards.map((c) => ({ word: c.word }))
+      );
+      const images: CardImages = new Map();
+      for (const [word, buf] of pngs) {
+        images.set(word, `data:image/png;base64,${buf.toString('base64')}`);
+      }
+
+      const pdf = await renderSortPdf(activity, images);
+
+      const key = `activities/sort/${theme.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;
+      await uploadToS3(key, pdf, 'application/pdf');
+      count++;
+      console.log(
+        `  [${count}] sort "${theme}" — "${activity.title}" (${activity.cards.length} cards, ${images.size} illustrations)`
+      );
+
+      await new Promise((r) => setTimeout(r, 1500));
+    } catch (err: any) {
+      console.log(`  ❌ sort "${theme}": ${err.message}`);
+    }
+  }
+
+  await sendTelegram(
+    `✂️ *${count} atividades de recortar geradas!*\nTemas: ${themes.join(', ')}\nAcesse o painel para revisar.`
+  );
+  console.log(`\n🎉 Done! ${count} sort activities uploaded to S3.`);
+}
+
 // ─── BLOG ─────────────────────────────────────────────────────
 
 const SEED_KEYWORDS = [
@@ -421,11 +470,17 @@ async function main() {
         ? ALL_PHONEMES
         : arg.split(',').map((p) => p.trim());
     await generateActivities(phonemes);
+  } else if (command === 'sort') {
+    // arg = comma-separated themes, e.g. "animais,alimentos"
+    const themes = arg
+      ? arg.split(',').map((t) => t.trim())
+      : ['animais', 'alimentos', 'objetos'];
+    await generateSortActivities(themes);
   } else if (command === 'blog') {
     await generateBlogPost(arg || undefined);
   } else {
     console.log(
-      'Usage: npx tsx scripts/generate-content.ts [activities|blog] [args]'
+      'Usage: npx tsx scripts/generate-content.ts [activities|sort|blog] [args]'
     );
   }
 }

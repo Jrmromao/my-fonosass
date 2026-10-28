@@ -157,6 +157,28 @@ function parseKey(key: string) {
   const parts = key.split('/');
   if (parts.length < 3) return null;
 
+  // Cut & sort worksheets: activities/sort/<theme-slug>.pdf
+  if (parts[1] === 'sort') {
+    const filename = parts[2];
+    const ext = filename.split('.').pop() || 'pdf';
+    const slug = filename.replace(/\.[^.]+$/, '');
+    const themeLabel = slug
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      phoneme: '',
+      age: 6,
+      ageRange: 'CHILD',
+      type: 'OTHER',
+      difficulty: 'BEGINNER',
+      name: `Recortar e Classificar - ${themeLabel}`,
+      description: `Atividade de recortar e classificar com tema "${themeLabel}". A criança recorta os cartões e cola cada um na categoria certa, dizendo o nome em voz alta.`,
+      s3Key: key,
+      fileName: filename,
+      fileType: ext === 'pdf' ? 'application/pdf' : `image/${ext}`,
+    };
+  }
+
   const phoneme = parts[1].toUpperCase();
   const filename = parts[2];
   const ext = filename.split('.').pop() || 'png';
