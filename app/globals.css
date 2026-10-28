@@ -44,7 +44,7 @@
   }
 
   .prose a {
-    @apply text-pink-600 underline decoration-pink-300 underline-offset-2 hover:decoration-pink-500;
+    @apply text-coral-600 underline decoration-coral-300 underline-offset-2 hover:decoration-coral-500;
   }
 
   .prose strong {
@@ -61,7 +61,7 @@
   }
 
   .prose blockquote {
-    @apply border-l-4 border-pink-500 pl-6 italic text-gray-600 text-lg my-8 bg-pink-50 py-4 rounded-r-lg;
+    @apply border-l-4 border-coral-500 pl-6 italic text-gray-600 text-lg my-8 bg-coral-50 py-4 rounded-r-lg;
   }
 
   .prose code {
@@ -100,7 +100,7 @@
 
   /* Focus styles */
   .focus-visible:focus {
-    @apply outline-none ring-2 ring-pink-500 ring-offset-2;
+    @apply outline-none ring-2 ring-coral-500 ring-offset-2;
   }
 
   /* Animation utilities */
@@ -144,7 +144,7 @@ body {
 
   /* Accessibility utilities */
   .focus-visible-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2;
   }
 
   .high-contrast-text {
@@ -168,7 +168,7 @@ body {
   }
 
   .skip-link {
-    @apply absolute -top-10 left-4 bg-indigo-600 text-white px-4 py-2 rounded-md z-50 focus:top-4 transition-all;
+    @apply absolute -top-10 left-4 bg-neutral-900 text-white px-4 py-2 rounded-md z-50 focus:top-4 transition-all;
   }
 }
 
@@ -177,6 +177,40 @@ body {
     /* Almanaque da Fala — Navy + Coral */
     --background: 0 0% 100%;
     --foreground: 215 28% 10%;
+
+    /* ---- Brand coral ramp (accent). Single source of truth for the brand
+       color. Use via Tailwind: bg-coral-500, text-coral-600, etc. ---- */
+    --coral-50: 6 100% 97%;
+    --coral-100: 6 100% 94%;
+    --coral-200: 7 100% 88%;
+    --coral-300: 7 96% 80%;
+    --coral-400: 5 92% 73%;
+    --coral-500: 4 90% 68%; /* brand base (~#f9736b) */
+    --coral-600: 2 76% 60%; /* hover */
+    --coral-700: 2 64% 51%;
+    --coral-800: 2 58% 42%;
+    --coral-900: 3 52% 35%;
+
+    /* ---- Neutral ramp (navy-tinted slate). Pick ONE neutral family app-wide. ---- */
+    --neutral-50: 210 20% 98%;
+    --neutral-100: 210 20% 96%;
+    --neutral-200: 214 20% 92%;
+    --neutral-300: 213 16% 84%;
+    --neutral-400: 215 12% 65%;
+    --neutral-500: 215 10% 45%;
+    --neutral-600: 215 14% 34%;
+    --neutral-700: 215 18% 25%;
+    --neutral-800: 215 25% 15%;
+    --neutral-900: 215 28% 10%;
+
+    /* Brand-signature gradient (Stripe-style, controlled — hero band only) */
+    --brand-gradient: linear-gradient(
+      135deg,
+      hsl(7 96% 80%) 0%,
+      hsl(4 90% 68%) 45%,
+      hsl(2 76% 60%) 100%
+    );
+
     --card: 0 0% 100%;
     --card-foreground: 215 28% 10%;
     --popover: 0 0% 100%;

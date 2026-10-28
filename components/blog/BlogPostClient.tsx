@@ -193,7 +193,7 @@ export default function BlogPostClient({
         {/* Reading Progress Bar */}
         <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
           <div
-            className="h-full bg-[#f97066] transition-all duration-300"
+            className="h-full bg-coral-500 transition-all duration-300"
             style={{ width: `${readingProgress}%` }}
           />
         </div>
@@ -259,7 +259,7 @@ export default function BlogPostClient({
                   <li>
                     <Link
                       href="/"
-                      className="text-gray-500 hover:text-[#f97066] transition-colors duration-200 flex items-center gap-1 whitespace-nowrap"
+                      className="text-gray-500 hover:text-coral-600 transition-colors duration-200 flex items-center gap-1 whitespace-nowrap"
                     >
                       <svg
                         className="w-3 h-3 sm:w-4 sm:h-4"
@@ -291,7 +291,7 @@ export default function BlogPostClient({
                     </svg>
                     <Link
                       href="/blog"
-                      className="text-gray-500 hover:text-[#f97066] transition-colors duration-200 whitespace-nowrap"
+                      className="text-gray-500 hover:text-coral-600 transition-colors duration-200 whitespace-nowrap"
                     >
                       Blog
                     </Link>
@@ -322,12 +322,35 @@ export default function BlogPostClient({
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
                 <BackToBlogButton variant="auth" size="md" />
                 <div className="flex items-center gap-4">
-                  <Link href="/faq" className="text-xs text-gray-500 hover:text-gray-900 transition-colors">FAQ</Link>
-                  <Link href="/blog" className="text-xs text-gray-500 hover:text-gray-900 transition-colors">Mais Artigos</Link>
-                  <Link href="/dashboard" className="text-xs text-gray-500 hover:text-gray-900 transition-colors">Dashboard</Link>
+                  <Link
+                    href="/faq"
+                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    FAQ
+                  </Link>
+                  <Link
+                    href="/blog"
+                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    Mais Artigos
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
                   <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
-                    <LikeButton articleId={post.slug} initialLikes={likeCount} onLikeChange={handleLikeChange} />
-                    <ShareButton url={`/blog/${post.slug}`} title={post.title} description={post.excerpt} />
+                    <LikeButton
+                      articleId={post.slug}
+                      initialLikes={likeCount}
+                      onLikeChange={handleLikeChange}
+                    />
+                    <ShareButton
+                      url={`/blog/${post.slug}`}
+                      title={post.title}
+                      description={post.excerpt}
+                    />
                   </div>
                 </div>
               </div>
@@ -352,7 +375,7 @@ export default function BlogPostClient({
                   {/* Enhanced Author Info */}
                   <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-4 sm:gap-6 text-xs sm:text-sm mb-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#f97066] rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-coral-500 rounded-full flex items-center justify-center">
                         <svg
                           className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                           fill="none"
@@ -391,7 +414,7 @@ export default function BlogPostClient({
                                 }
                                 target="_blank"
                                 rel="nofollow noopener noreferrer ugc"
-                                className="text-[#f97066] hover:underline"
+                                className="text-coral-600 hover:underline"
                               >
                                 @fonoeliane
                               </a>
@@ -476,7 +499,7 @@ export default function BlogPostClient({
                         <Link
                           key={tag}
                           href={`/blog?tag=${encodeURIComponent(tag)}`}
-                          className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 text-slate-700 rounded-full text-xs sm:text-sm font-medium  transition-all duration-200 border border-gray-200"
+                          className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 text-neutral-700 rounded-full text-xs sm:text-sm font-medium  transition-all duration-200 border border-gray-200"
                           aria-label={`Filtrar artigos por tag: ${tag}`}
                         >
                           #{tag}
@@ -515,18 +538,18 @@ export default function BlogPostClient({
               <div
                 className="prose prose-xl max-w-none 
                 prose-headings:text-gray-900 prose-headings:font-bold prose-headings:tracking-tight
-                prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-12 prose-h1:text-slate-900
+                prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-12 prose-h1:text-neutral-900
                 prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:border-b prose-h2:border-gray-200 prose-h2:pb-3 prose-h2:relative
                 prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-gray-800
                 prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-h4:text-gray-800
                 prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-p:text-lg prose-p:font-normal
-                prose-a:text-[#f97066] prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-a:duration-200
+                prose-a:text-coral-600 prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-a:duration-200
                 prose-strong:text-gray-900 prose-strong:font-semibold
-                prose-code:text-[#f97066] prose-code:bg-gray-100 prose-code:px-3 prose-code:py-1 prose-code:rounded-md prose-code:text-sm prose-code:font-mono prose-code:border prose-code:border-gray-200
+                prose-code:text-coral-600 prose-code:bg-gray-100 prose-code:px-3 prose-code:py-1 prose-code:rounded-md prose-code:text-sm prose-code:font-mono prose-code:border prose-code:border-gray-200
                 prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:p-6 prose-pre:overflow-x-auto prose-pre:shadow-lg prose-pre:border prose-pre:border-gray-700
-                prose-blockquote:border-l-4 prose-blockquote:border-[#f97066] prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-4 prose-blockquote:rounded-r-lg prose-blockquote:shadow-sm
-                prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-3 prose-ul:marker:text-[#f97066]
-                prose-ol:list-decimal prose-ol:pl-6 prose-ol:space-y-3 prose-ol:marker:text-[#f97066] prose-ol:marker:font-bold
+                prose-blockquote:border-l-4 prose-blockquote:border-coral-500 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-4 prose-blockquote:rounded-r-lg prose-blockquote:shadow-sm
+                prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-3 prose-ul:marker:text-coral-600
+                prose-ol:list-decimal prose-ol:pl-6 prose-ol:space-y-3 prose-ol:marker:text-coral-600 prose-ol:marker:font-bold
                 prose-li:text-gray-700 prose-li:leading-relaxed prose-li:mb-2
                 prose-img:rounded-xl prose-img:shadow-xl prose-img:mx-auto prose-img:border prose-img:border-gray-200
                 prose-hr:border-gray-200 prose-hr:my-12 prose-hr:border-t-2"
@@ -593,7 +616,7 @@ export default function BlogPostClient({
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-[#f97066] h-2 rounded-full transition-all duration-300"
+                          className="bg-coral-500 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${readingProgress}%` }}
                         />
                       </div>
@@ -634,7 +657,7 @@ export default function BlogPostClient({
                           href={`/blog/${relatedPost.slug}`}
                           className="block group hover:bg-gray-50 p-2 rounded-md transition-colors duration-200"
                         >
-                          <h4 className="text-sm font-medium text-gray-900 group-hover:text-[#f97066] mb-1 line-clamp-2 leading-tight">
+                          <h4 className="text-sm font-medium text-gray-900 group-hover:text-coral-600 mb-1 line-clamp-2 leading-tight">
                             {relatedPost.title}
                           </h4>
                           <p className="text-xs text-gray-500 line-clamp-2">
@@ -650,8 +673,7 @@ export default function BlogPostClient({
           </div>
 
           {/* Enhanced Article Navigation */}
-          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200">
-          </div>
+          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200"></div>
         </div>
 
         {/* Footer */}

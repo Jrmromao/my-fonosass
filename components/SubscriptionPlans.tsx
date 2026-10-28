@@ -8,168 +8,189 @@ import Link from 'next/link';
 
 // Define your price IDs from Stripe
 const FREE_FEATURES = [
-    '3 downloads por mês',
-    'Acesso à biblioteca de fonemas',
-    'Visualização de atividades',
+  '3 downloads por mês',
+  'Acesso à biblioteca de fonemas',
+  'Visualização de atividades',
 ];
 
 const PLAN = {
-    name: 'Profissional',
-    description: 'Para fonoaudiólogos trabalhando com exercícios de fonemas',
-    features: [
-        'Acesso a todos os exercícios de fonemas',
-        'Biblioteca completa de recursos',
-        'Material para imprimir',
-        'Materiais de referência estendidos',
-        'Suporte por email prioritário'
-    ],
-    monthlyPriceId: process.env.STRIPE_MONTLY_PRICE_ID as string,
-    yearlyPriceId: process.env.STRIPE_ANNUAL_PRICE_ID as string,
-    monthlyPrice: 39.90,
-    yearlyPrice: 399.90
+  name: 'Profissional',
+  description: 'Para fonoaudiólogos trabalhando com exercícios de fonemas',
+  features: [
+    'Acesso a todos os exercícios de fonemas',
+    'Biblioteca completa de recursos',
+    'Material para imprimir',
+    'Materiais de referência estendidos',
+    'Suporte por email prioritário',
+  ],
+  monthlyPriceId: process.env.STRIPE_MONTLY_PRICE_ID as string,
+  yearlyPriceId: process.env.STRIPE_ANNUAL_PRICE_ID as string,
+  monthlyPrice: 39.9,
+  yearlyPrice: 399.9,
 };
 
 export function SubscriptionPlans() {
-    const [billingInterval, setBillingInterval] = useState<string>('monthly');
+  const [billingInterval, setBillingInterval] = useState<string>('monthly');
 
+  const {
+    isLoading,
+    createCheckout,
+    isCreatingCheckout,
+    createPortal,
+    isCreatingPortal,
+    isActive,
+  } = useSubscription({
+    billingInterval,
+  });
+  // Calculate yearly savings
+  const yearlySavings = Math.round(
+    ((PLAN.monthlyPrice * 12 - PLAN.yearlyPrice) / (PLAN.monthlyPrice * 12)) *
+      100
+  );
 
-    const {
-        isLoading,
-        createCheckout,
-        isCreatingCheckout,
-        createPortal,
-        isCreatingPortal,
-        isActive
-    } = useSubscription({
-        billingInterval
-    });
-    // Calculate yearly savings
-    const yearlySavings = Math.round((PLAN.monthlyPrice * 12 - PLAN.yearlyPrice) / (PLAN.monthlyPrice * 12) * 100);
-
-    return (
-        <div className="space-y-8 py-4">
-            {/* Billing Toggle */}
-            <div className="flex justify-center">
-                <div className="bg-gray-100 p-1 rounded-lg inline-flex">
-                    <button
-                        onClick={() => setBillingInterval('monthly')}
-                        className={`px-4 py-2 rounded-md text-sm transition-all ${
-                            billingInterval === 'monthly'
-                                ? 'bg-white shadow-sm text-slate-900 font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                        Mensal
-                    </button>
-                    <button
-                        onClick={() => setBillingInterval('yearly')}
-                        className={`px-4 py-2 rounded-md text-sm transition-all ${
-                            billingInterval === 'yearly'
-                                ? 'bg-white shadow-sm text-slate-900 font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                        Anual
-                        <span className="ml-1.5 text-[#f97066] text-xs font-medium">
-                            -{yearlySavings}%
-                        </span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Plans Grid */}
-            <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-4">
-                {/* Free Plan */}
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Gratuito</p>
-                    <h3 className="text-lg font-bold text-slate-900 mb-4">Explorar</h3>
-                    <div className="flex items-baseline mb-6">
-                        <span className="text-3xl font-bold text-slate-900">R$0</span>
-                        <span className="text-gray-500 ml-1 text-sm">/mês</span>
-                    </div>
-                    <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
-                        {FREE_FEATURES.map((feature, i) => (
-                            <div key={i} className="flex items-start gap-2.5">
-                                <Check size={14} className="text-gray-400 mt-0.5 flex-shrink-0" />
-                                <span className="text-sm text-gray-600">{feature}</span>
-                            </div>
-                        ))}
-                    </div>
-                    <Button
-                        className="w-full py-3 rounded-md bg-gray-100 hover:bg-gray-200 text-slate-900 text-sm font-medium transition-colors"
-                        onClick={() => window.location.href = '/sign-up'}
-                    >
-                        Criar conta
-                    </Button>
-                </div>
-
-                {/* Pro Plan */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="rounded-lg overflow-hidden border-2 border-slate-900 bg-white relative"
-                >
-                    <div className="absolute top-0 right-0 bg-slate-900 text-white text-xs px-3 py-1 rounded-bl-lg font-medium">
-                        Recomendado
-                    </div>
-                    <div className="p-6">
-                        <p className="text-xs text-[#f97066] uppercase tracking-wide mb-1">Acesso Total</p>
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">{PLAN.name}</h3>
-                        <div className="flex items-baseline mb-1">
-                            <span className="text-3xl font-bold text-slate-900">
-                                R${billingInterval === 'monthly' ? PLAN.monthlyPrice : PLAN.yearlyPrice}
-                            </span>
-                            <span className="text-gray-500 ml-1 text-sm">
-                                /{billingInterval === 'monthly' ? 'mês' : 'ano'}
-                            </span>
-                        </div>
-                        {billingInterval === 'yearly' && (
-                            <p className="text-xs text-[#f97066] mb-4">
-                                Economia de R${(PLAN.monthlyPrice * 12 - PLAN.yearlyPrice).toFixed(2)} por ano
-                            </p>
-                        )}
-                        {billingInterval === 'monthly' && <div className="mb-4" />}
-
-                        <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
-                            {PLAN.features.map((feature, i) => (
-                                <div key={i} className="flex items-start gap-2.5">
-                                    <Check size={14} className="text-[#f97066] mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm text-gray-600">{feature}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        {isActive ? (
-                            <Button
-                                className="w-full py-3 rounded-md bg-gray-100 hover:bg-gray-200 text-slate-900 text-sm font-medium transition-colors flex items-center justify-center"
-                                disabled={isCreatingPortal}
-                                onClick={() => createPortal()}
-                            >
-                                <CreditCard size={16} className="mr-2" />
-                                {isCreatingPortal ? 'Carregando...' : 'Gerenciar Assinatura'}
-                            </Button>
-                        ) : (
-                            <Button
-                                className="w-full py-3 rounded-md bg-[#f97066] hover:bg-[#e5645b] text-white text-sm font-medium transition-colors"
-                                disabled={isCreatingCheckout}
-                                onClick={() => createCheckout({
-                                    priceId: billingInterval === 'monthly'
-                                        ? PLAN.monthlyPriceId
-                                        : PLAN.yearlyPriceId,
-                                    tier: TierType.PRO
-                                })}
-                            >
-                                {isCreatingCheckout ? 'Processando...' : 'Começar agora'}
-                            </Button>
-                        )}
-
-                        <p className="mt-3 text-xs text-center text-gray-400">
-                            Cancele a qualquer momento.
-                        </p>
-                    </div>
-                </motion.div>
-            </div>
+  return (
+    <div className="space-y-8 py-4">
+      {/* Billing Toggle */}
+      <div className="flex justify-center">
+        <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+          <button
+            onClick={() => setBillingInterval('monthly')}
+            className={`px-4 py-2 rounded-md text-sm transition-all ${
+              billingInterval === 'monthly'
+                ? 'bg-white shadow-sm text-neutral-900 font-medium'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Mensal
+          </button>
+          <button
+            onClick={() => setBillingInterval('yearly')}
+            className={`px-4 py-2 rounded-md text-sm transition-all ${
+              billingInterval === 'yearly'
+                ? 'bg-white shadow-sm text-neutral-900 font-medium'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Anual
+            <span className="ml-1.5 text-coral-600 text-xs font-medium">
+              -{yearlySavings}%
+            </span>
+          </button>
         </div>
-    );
+      </div>
+
+      {/* Plans Grid */}
+      <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-4">
+        {/* Free Plan */}
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
+            Gratuito
+          </p>
+          <h3 className="text-lg font-bold text-neutral-900 mb-4">Explorar</h3>
+          <div className="flex items-baseline mb-6">
+            <span className="text-3xl font-bold text-neutral-900">R$0</span>
+            <span className="text-gray-500 ml-1 text-sm">/mês</span>
+          </div>
+          <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
+            {FREE_FEATURES.map((feature, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <Check
+                  size={14}
+                  className="text-gray-400 mt-0.5 flex-shrink-0"
+                />
+                <span className="text-sm text-gray-600">{feature}</span>
+              </div>
+            ))}
+          </div>
+          <Button
+            className="w-full py-3 rounded-md bg-gray-100 hover:bg-gray-200 text-neutral-900 text-sm font-medium transition-colors"
+            onClick={() => (window.location.href = '/sign-up')}
+          >
+            Criar conta
+          </Button>
+        </div>
+
+        {/* Pro Plan */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="rounded-lg overflow-hidden border-2 border-neutral-900 bg-white relative"
+        >
+          <div className="absolute top-0 right-0 bg-neutral-900 text-white text-xs px-3 py-1 rounded-bl-lg font-medium">
+            Recomendado
+          </div>
+          <div className="p-6">
+            <p className="text-xs text-coral-600 uppercase tracking-wide mb-1">
+              Acesso Total
+            </p>
+            <h3 className="text-lg font-bold text-neutral-900 mb-4">
+              {PLAN.name}
+            </h3>
+            <div className="flex items-baseline mb-1">
+              <span className="text-3xl font-bold text-neutral-900">
+                R$
+                {billingInterval === 'monthly'
+                  ? PLAN.monthlyPrice
+                  : PLAN.yearlyPrice}
+              </span>
+              <span className="text-gray-500 ml-1 text-sm">
+                /{billingInterval === 'monthly' ? 'mês' : 'ano'}
+              </span>
+            </div>
+            {billingInterval === 'yearly' && (
+              <p className="text-xs text-coral-600 mb-4">
+                Economia de R$
+                {(PLAN.monthlyPrice * 12 - PLAN.yearlyPrice).toFixed(2)} por ano
+              </p>
+            )}
+            {billingInterval === 'monthly' && <div className="mb-4" />}
+
+            <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
+              {PLAN.features.map((feature, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <Check
+                    size={14}
+                    className="text-coral-600 mt-0.5 flex-shrink-0"
+                  />
+                  <span className="text-sm text-gray-600">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            {isActive ? (
+              <Button
+                className="w-full py-3 rounded-md bg-gray-100 hover:bg-gray-200 text-neutral-900 text-sm font-medium transition-colors flex items-center justify-center"
+                disabled={isCreatingPortal}
+                onClick={() => createPortal()}
+              >
+                <CreditCard size={16} className="mr-2" />
+                {isCreatingPortal ? 'Carregando...' : 'Gerenciar Assinatura'}
+              </Button>
+            ) : (
+              <Button
+                className="w-full py-3 rounded-md bg-coral-500 hover:bg-coral-600 text-white text-sm font-medium transition-colors"
+                disabled={isCreatingCheckout}
+                onClick={() =>
+                  createCheckout({
+                    priceId:
+                      billingInterval === 'monthly'
+                        ? PLAN.monthlyPriceId
+                        : PLAN.yearlyPriceId,
+                    tier: TierType.PRO,
+                  })
+                }
+              >
+                {isCreatingCheckout ? 'Processando...' : 'Começar agora'}
+              </Button>
+            )}
+
+            <p className="mt-3 text-xs text-center text-gray-400">
+              Cancele a qualquer momento.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
 }

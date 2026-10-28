@@ -1,19 +1,8 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  AlertCircle,
-  ArrowRight,
-  CheckCircle,
-  Mail,
-  Rocket,
-  Shield,
-  Users,
-  X,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { AlertCircle, ArrowRight, Check, Mail, X } from 'lucide-react';
 import { useState } from 'react';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Input } from '../ui/input';
@@ -29,7 +18,6 @@ export default function SignupDialog({
   onClose,
   trigger = 'balloon',
 }: SignupDialogProps) {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -47,9 +35,7 @@ export default function SignupDialog({
     try {
       const response = await fetch('/api/waiting-list', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
 
@@ -67,73 +53,61 @@ export default function SignupDialog({
     }
   };
 
+  // Concrete, honest product facts — no hype, no fake numbers.
   const benefits = [
-    {
-      icon: Rocket,
-      title: 'Revolução na Fonoaudiologia',
-      description:
-        'A primeira plataforma completa desenvolvida especificamente para fonoaudiólogos brasileiros',
-    },
-    {
-      icon: Shield,
-      title: '100% LGPD Compliant',
-      description:
-        'Prontuários digitais seguros e em conformidade com a legislação',
-    },
-    {
-      icon: Users,
-      title: 'Comunidade Exclusiva',
-      description: 'Conecte-se com centenas de fonoaudiólogos em todo o Brasil',
-    },
+    'Atividades imprimíveis organizadas por fonema',
+    'Criadas e revisadas por fonoaudióloga clínica',
+    'Novos materiais adicionados toda semana',
   ];
 
   const getTriggerCopy = () => {
     switch (trigger) {
       case 'balloon':
         return {
-          title: 'Quer estourar balões?',
+          title: 'Esta função está chegando',
           subtitle:
-            'Junte-se à nossa lista de espera e seja o primeiro a testar esta funcionalidade incrível!',
-          cta: 'Entrar na Lista de Espera',
+            'Deixe seu email e avisaremos assim que os balões interativos estiverem disponíveis.',
+          cta: 'Entrar na lista de espera',
         };
       case 'feature':
         return {
-          title: 'Estamos construindo algo incrível!',
+          title: 'Ainda em desenvolvimento',
           subtitle:
-            'Seja notificado quando lançarmos a plataforma completa para fonoaudiólogos',
-          cta: 'Quero ser Notificado',
+            'Deixe seu email para ser avisado quando esta funcionalidade for lançada.',
+          cta: 'Quero ser avisado',
         };
       default:
         return {
-          title: 'Almanaque da Fala está chegando!',
+          title: 'O Almanaque da Fala está chegando',
           subtitle:
-            'A revolução na fonoaudiologia brasileira está sendo construída',
-          cta: 'Entrar na Lista de Espera',
+            'Deixe seu email e avisaremos assim que a biblioteca estiver disponível.',
+          cta: 'Entrar na lista de espera',
         };
     }
   };
 
   const copy = getTriggerCopy();
 
-  // Show success state
   if (isSubmitted) {
     return (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-neutral-900/60 flex items-center justify-center p-4 z-50">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="mx-auto w-10 h-10 rounded-full bg-coral-500/10 border border-coral-500/20 flex items-center justify-center mb-3">
+              <Check className="h-5 w-5 text-coral-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              Você está na lista!
+            <CardTitle className="text-xl font-bold text-neutral-900 font-display">
+              Pronto, você está na lista
             </CardTitle>
-            <p className="text-gray-600">
-              Obrigado! Te avisaremos assim que o Almanaque da Fala estiver
-              pronto.
+            <p className="text-sm text-neutral-600 mt-1">
+              Avisaremos no seu email assim que a biblioteca estiver disponível.
             </p>
           </CardHeader>
-          <CardContent className="text-center">
-            <Button onClick={onClose} className="w-full">
+          <CardContent>
+            <Button
+              onClick={onClose}
+              className="w-full bg-coral-500 hover:bg-coral-600 text-white"
+            >
               Fechar
             </Button>
           </CardContent>
@@ -143,98 +117,71 @@ export default function SignupDialog({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="text-center pb-4">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
-              <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
+    <div className="fixed inset-0 bg-neutral-900/60 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              <p className="text-xs text-coral-600 font-medium uppercase tracking-wide mb-2">
+                Lista de espera
+              </p>
+              <CardTitle className="text-2xl font-bold text-neutral-900 font-display mb-1.5">
                 {copy.title}
               </CardTitle>
-              <p className="text-gray-600 text-lg">{copy.subtitle}</p>
+              <p className="text-sm text-neutral-500 leading-relaxed">
+                {copy.subtitle}
+              </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={onClose}
-              className="ml-4 h-8 w-8 p-0"
+              aria-label="Fechar"
+              className="shrink-0 h-8 w-8 flex items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2"
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Benefits Grid */}
-          <div className="grid md:grid-cols-3 gap-4">
+          {/* What you get — concrete, no hype, no decorative icons */}
+          <ul className="space-y-2.5 border-l-2 border-coral-500/30 pl-4">
             {benefits.map((benefit, index) => (
-              <div
+              <li
                 key={index}
-                className="text-center p-4 bg-gray-50 rounded-lg"
+                className="text-sm text-neutral-600 leading-relaxed"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full mb-3">
-                  <benefit.icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  {benefit.title}
-                </h3>
-                <p className="text-sm text-gray-600">{benefit.description}</p>
-              </div>
+                {benefit}
+              </li>
             ))}
-          </div>
+          </ul>
 
-          {/* Social Proof */}
-          {/* <div className="text-center py-4 bg-green-50 rounded-lg border border-green-200">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Star className="h-5 w-5 text-yellow-500 fill-current" />
-              <Star className="h-5 w-5 text-yellow-500 fill-current" />
-              <Star className="h-5 w-5 text-yellow-500 fill-current" />
-              <Star className="h-5 w-5 text-yellow-500 fill-current" />
-              <Star className="h-5 w-5 text-yellow-500 fill-current" />
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+              <Input
+                type="email"
+                placeholder="Seu email profissional"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 h-11 bg-white border-neutral-200"
+                required
+              />
             </div>
-            <p className="text-sm text-green-800 font-medium">
-              "Revolucionou minha prática clínica!" - Dr. Maria Silva
-            </p>
-            <p className="text-xs text-green-600 mt-1">
-              +500 fonoaudiólogos já confiam na nossa plataforma
-            </p>
-          </div> */}
 
-          {/* Waiting List Form */}
-          <div className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="text-center">
-                <div className="relative max-w-md mx-auto">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    type="email"
-                    placeholder="Seu melhor email profissional"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-12 h-12 text-lg"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="text-center">
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-lg py-6"
-                  disabled={isSubmitting || !email}
-                >
-                  {isSubmitting ? (
-                    'Adicionando à lista...'
-                  ) : (
-                    <>
-                      {copy.cta}
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
+            <Button
+              type="submit"
+              className="w-full h-11 bg-coral-500 hover:bg-coral-600 text-white font-medium"
+              disabled={isSubmitting || !email}
+            >
+              {isSubmitting ? (
+                'Adicionando...'
+              ) : (
+                <>
+                  {copy.cta}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
 
             {error && (
               <Alert variant="destructive">
@@ -242,36 +189,11 @@ export default function SignupDialog({
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-          </div>
+          </form>
 
-          {/* Trust Signals */}
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>Grátis para começar</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>Sem cartão de crédito</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>Cancelamento livre</span>
-            </div>
-          </div>
-
-          {/* Urgency/Scarcity */}
-          <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
-            <Badge
-              variant="secondary"
-              className="mb-2 bg-orange-100 text-orange-800"
-            >
-              Lançamento em Breve
-            </Badge>
-            <p className="text-sm text-orange-800 font-medium">
-              Primeiros 10 da lista de espera ganham acesso gratuito vitalício!
-            </p>
-          </div>
+          <p className="text-xs text-neutral-400 text-center">
+            Usamos seu email apenas para avisar sobre o lançamento. Sem spam.
+          </p>
         </CardContent>
       </Card>
     </div>

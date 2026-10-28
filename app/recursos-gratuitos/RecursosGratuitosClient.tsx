@@ -13,24 +13,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Resource, resourcesService } from '@/services/resourcesService';
-import {
-  BookOpen,
-  Download,
-  FileText,
-  Search,
-  Star,
-  Users,
-} from 'lucide-react';
+import { Download, FileText, Search, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 // Use the Resource interface from the service
 type FreeResource = Resource;
-
-// Sample content for resources (this could also come from the database)
-const RESOURCE_CONTENT: { [key: string]: string } = {
-  // Content will be loaded from database or static files
-};
 
 const CATEGORIES = [
   'Todos',
@@ -190,7 +178,7 @@ export default function RecursosGratuitosClient() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-coral-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Carregando recursos...</p>
         </div>
       </div>
@@ -241,20 +229,19 @@ export default function RecursosGratuitosClient() {
         </div>
 
         {/* Hero Section */}
-        <section className="bg-gradient-to-br from-pink-50 to-yellow-50 pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">
+        <section className="bg-gradient-to-b from-coral-50/40 to-white pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24 lg:pb-20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-4xl mx-auto">
               <div className="mb-6 sm:mb-8">
-                <span className="inline-block px-3 py-1.5 mb-4 sm:mb-6 text-xs sm:text-sm font-medium rounded-full bg-pink-100 text-pink-600">
+                <span className="inline-block px-3 py-1.5 mb-4 sm:mb-6 text-xs sm:text-sm font-medium rounded-full bg-coral-100 text-coral-600">
                   Recursos Gratuitos
                 </span>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6 lg:mb-8 leading-tight">
-                  Recursos Gratuitos de Fonoaudiologia
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-neutral-900 mb-4 sm:mb-6 leading-tight font-display">
+                  Recursos gratuitos de fonoaudiologia
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-6 sm:mb-8 lg:mb-10 leading-relaxed max-w-3xl mx-auto px-2">
-                  Baixe gratuitamente exercícios, planilhas de avaliação e
-                  materiais didáticos desenvolvidos por especialistas em
-                  fonoaudiologia para terapia da fala.
+                <p className="text-lg sm:text-xl text-neutral-600 mb-6 sm:mb-8 leading-relaxed max-w-2xl mx-auto px-2">
+                  Baixe exercícios, planilhas de avaliação e materiais didáticos
+                  criados por fonoaudióloga para usar direto na sua sessão.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3 px-2">
@@ -284,7 +271,7 @@ export default function RecursosGratuitosClient() {
             {featuredResources.length > 0 && (
               <section className="mb-12" aria-labelledby="featured-resources">
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="w-1 h-8 bg-pink-500 rounded-full"></div>
+                  <div className="w-1 h-8 bg-coral-500 rounded-full"></div>
                   <h2
                     id="featured-resources"
                     className="text-2xl font-bold text-gray-900"
@@ -301,7 +288,7 @@ export default function RecursosGratuitosClient() {
                   {featuredResources.map((resource) => (
                     <article
                       key={resource.id}
-                      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-pink-200 flex flex-col h-full"
+                      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-sm transition-all duration-300 hover:border-coral-200 flex flex-col h-full"
                       itemScope
                       itemType="https://schema.org/CreativeWork"
                     >
@@ -312,7 +299,7 @@ export default function RecursosGratuitosClient() {
                               href={`/recursos-gratuitos/${resource.slug || resource.id}`}
                             >
                               <h3
-                                className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-pink-600 transition-colors cursor-pointer"
+                                className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-coral-600 transition-colors cursor-pointer"
                                 itemProp="name"
                               >
                                 {resource.title}
@@ -325,7 +312,7 @@ export default function RecursosGratuitosClient() {
                               {resource.description}
                             </p>
                           </div>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-600 ml-2">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-coral-100 text-coral-600 ml-2">
                             <Star className="w-3 h-3 mr-1" />
                             Destaque
                           </span>
@@ -364,7 +351,7 @@ export default function RecursosGratuitosClient() {
                           <Button
                             onClick={() => handleDownload(resource)}
                             disabled={downloading === resource.id}
-                            className="flex-1 bg-pink-600 hover:bg-pink-700 text-white disabled:opacity-50"
+                            className="flex-1 bg-coral-500 hover:bg-coral-600 text-white disabled:opacity-50"
                           >
                             {downloading === resource.id ? (
                               <>
@@ -400,7 +387,7 @@ export default function RecursosGratuitosClient() {
                         placeholder="Buscar recursos..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 border-gray-300 focus:border-pink-500 focus:ring-pink-500"
+                        className="pl-10 border-gray-300 focus:border-coral-500 focus:ring-coral-500"
                       />
                     </div>
                   </div>
@@ -412,7 +399,7 @@ export default function RecursosGratuitosClient() {
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-coral-500 focus:border-coral-500"
                     >
                       {CATEGORIES.map((category) => (
                         <option key={category} value={category}>
@@ -429,7 +416,7 @@ export default function RecursosGratuitosClient() {
                     <select
                       value={selectedAgeGroup}
                       onChange={(e) => setSelectedAgeGroup(e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-coral-500 focus:border-coral-500"
                     >
                       {AGE_GROUPS.map((ageGroup) => (
                         <option key={ageGroup} value={ageGroup}>
@@ -446,7 +433,7 @@ export default function RecursosGratuitosClient() {
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-coral-500 focus:border-coral-500"
                     >
                       <option value="popular">Mais Baixados</option>
                       <option value="rating">Melhor Avaliados</option>
@@ -461,7 +448,7 @@ export default function RecursosGratuitosClient() {
             {/* Resources Grid */}
             <section aria-labelledby="all-resources">
               <div className="flex items-center gap-3 mb-8">
-                <div className="w-1 h-8 bg-pink-500 rounded-full"></div>
+                <div className="w-1 h-8 bg-coral-500 rounded-full"></div>
                 <h2
                   id="all-resources"
                   className="text-2xl font-bold text-gray-900"
@@ -491,7 +478,7 @@ export default function RecursosGratuitosClient() {
                   {sortedResources.map((resource) => (
                     <article
                       key={resource.id}
-                      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-pink-200 flex flex-col h-full"
+                      className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-sm transition-all duration-300 hover:border-coral-200 flex flex-col h-full"
                     >
                       <div className="p-6 flex flex-col h-full">
                         <div className="flex items-start justify-between mb-4">
@@ -499,7 +486,7 @@ export default function RecursosGratuitosClient() {
                             <Link
                               href={`/recursos-gratuitos/${resource.slug || resource.id}`}
                             >
-                              <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-pink-600 transition-colors">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-coral-600 transition-colors">
                                 {resource.title}
                               </h3>
                             </Link>
@@ -508,7 +495,7 @@ export default function RecursosGratuitosClient() {
                             </p>
                           </div>
                           {resource.isFeatured && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-600 ml-2">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-coral-100 text-coral-600 ml-2">
                               <Star className="w-3 h-3 mr-1" />
                               Destaque
                             </span>
@@ -548,7 +535,7 @@ export default function RecursosGratuitosClient() {
                           <Button
                             onClick={() => handleDownload(resource)}
                             disabled={downloading === resource.id}
-                            className="flex-1 bg-pink-600 hover:bg-pink-700 text-white disabled:opacity-50"
+                            className="flex-1 bg-coral-500 hover:bg-coral-600 text-white disabled:opacity-50"
                           >
                             {downloading === resource.id ? (
                               <>
@@ -574,33 +561,24 @@ export default function RecursosGratuitosClient() {
 
         {/* CTA Section */}
         <WaitingListAlert />
-        <div className="bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl p-8 text-center text-white mt-16">
-          <h2 className="text-2xl font-bold mb-4">
-            Quer Acesso a Mais Recursos?
-          </h2>
-          <p className="text-pink-100 mb-6 max-w-2xl mx-auto">
-            Junte-se à nossa plataforma e tenha acesso a centenas de exercícios,
-            planilhas de avaliação e ferramentas profissionais.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="bg-white text-pink-600 hover:bg-gray-50"
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="rounded-xl bg-neutral-900 p-8 sm:p-10 text-center">
+            <h2 className="text-2xl font-bold text-white mb-3 font-display">
+              Precisa de mais materiais?
+            </h2>
+            <p className="text-neutral-300 mb-6 max-w-xl mx-auto text-sm leading-relaxed">
+              Além dos recursos gratuitos, a biblioteca completa traz novas
+              atividades por fonema toda semana, criadas e revisadas por
+              fonoaudióloga.
+            </p>
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-coral-500 text-white text-sm font-medium hover:bg-coral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
             >
-              <BookOpen className="w-5 h-5 mr-2" />
-              Explorar Plataforma
-            </Button>
-            <Button
-              size="lg"
-              variant="secondary"
-              className="bg-white text-pink-600 hover:bg-gray-50"
-            >
-              <Users className="w-5 h-5 mr-2" />
-              Ver Comunidade
-            </Button>
+              Conhecer a biblioteca completa
+            </Link>
           </div>
-        </div>
+        </section>
 
         {/* Content Modal */}
         <Dialog
@@ -630,17 +608,9 @@ export default function RecursosGratuitosClient() {
             <div className="flex-1 overflow-y-auto p-6">
               {selectedResource && (
                 <div className="prose prose-lg max-w-none">
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-neutral-700 leading-relaxed">
                     {selectedResource.description}
                   </p>
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600">
-                      <strong>Download Count:</strong>{' '}
-                      {selectedResource.downloadCount} |
-                      <strong> Rating:</strong> {selectedResource.rating}/5 |
-                      <strong> File Size:</strong> {selectedResource.fileSize}
-                    </p>
-                  </div>
                 </div>
               )}
             </div>
@@ -660,7 +630,7 @@ export default function RecursosGratuitosClient() {
                       ? downloading === selectedResource.id
                       : false
                   }
-                  className="bg-pink-600 hover:bg-pink-700 text-white disabled:opacity-50"
+                  className="bg-coral-500 hover:bg-coral-600 text-white disabled:opacity-50"
                 >
                   {selectedResource && downloading === selectedResource.id ? (
                     <>

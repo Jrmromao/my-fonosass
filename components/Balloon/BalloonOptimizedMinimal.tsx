@@ -28,6 +28,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const balloonsRef = useRef<Balloon[]>([]);
   const fragmentsRef = useRef<Fragment[]>([]);
+  const canvasSizeRef = useRef<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
   const animationRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -360,13 +364,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       const ctx = canvas.getContext('2d', { alpha: false });
       if (!ctx) return;
 
-      // Optimize canvas context for better performance
-      ctx.imageSmoothingEnabled = false; // Disable for pixel art style
-      ctx.imageSmoothingQuality = 'low'; // Lower quality for performance
-
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+      const { width, height } = canvasSizeRef.current;
+      if (width === 0 || height === 0) return;
 
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
@@ -547,6 +546,11 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
               canvas.width = rect.width * dpr;
               canvas.height = rect.height * dpr;
               ctx.scale(dpr, dpr);
+              ctx.imageSmoothingEnabled = false;
+              canvasSizeRef.current = {
+                width: rect.width,
+                height: rect.height,
+              };
               initializeBalloons();
               startAnimation();
             }
@@ -561,6 +565,8 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
+    ctx.imageSmoothingEnabled = false;
+    canvasSizeRef.current = { width: rect.width, height: rect.height };
 
     // Mobile detection and optimization
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -571,6 +577,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       ctx.scale(dpr, dpr);
+      canvasSizeRef.current = { width: rect.width, height: rect.height };
     }
 
     // Initialize balloons
@@ -581,6 +588,19 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
     // Handle window resize to reinitialize balloons with new sizes
     const handleResize = () => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.scale(dpr, dpr);
+          ctx.imageSmoothingEnabled = false;
+        }
+        canvasSizeRef.current = { width: rect.width, height: rect.height };
+      }
       initializeBalloons();
     };
 
@@ -669,21 +689,10 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       }
 
       ctx.fillStyle = gradient;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 4;
-      ctx.fill();
-
-      // Thinner outline
       ctx.strokeStyle = shadeColor(color, -30);
       ctx.lineWidth = 2 * (size / 0.8);
+      ctx.fill();
       ctx.stroke();
-
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
 
       // Subtler highlights
       ctx.beginPath();
@@ -742,7 +751,7 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
 
       ctx.restore();
 
-      // Tape-like string with realistic appearance
+      // String
       ctx.save();
       const balloonBottom =
         balloonY + (balloonHeight / 2 + tieSize) * finalScaleY;
@@ -750,7 +759,6 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
       const stringMidY =
         (balloonBottom + anchorY) / 2 + Math.sin(balloon.floatPhase / 2) * 8;
 
-      // Create tape path
       ctx.beginPath();
       ctx.moveTo(anchorX, anchorY);
       ctx.quadraticCurveTo(
@@ -759,51 +767,12 @@ const BalloonField: React.FC<BalloonFieldProps> = ({
         balloonX,
         balloonBottom
       );
-
-      // Tape width and styling
-      const tapeWidth = 3 + size; // Wider like tape
-      ctx.lineWidth = tapeWidth;
-
-      // Tape shadow (darker outline)
-      ctx.strokeStyle = shadeColor(color, -60);
+      ctx.lineWidth = 2 + size;
+      ctx.strokeStyle = shadeColor(color, -20);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
 
-      // Main tape body
-      ctx.lineWidth = tapeWidth - 1;
-      ctx.strokeStyle = shadeColor(color, -20);
-      ctx.stroke();
-
-      // Tape highlight (top edge)
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = shadeColor(color, 30);
-      ctx.globalAlpha = 0.6;
-      ctx.stroke();
-
-      // Add tape texture lines for realism
-      ctx.globalAlpha = 0.3;
-      ctx.lineWidth = 0.5;
-      ctx.strokeStyle = shadeColor(color, -10);
-
-      // Draw subtle texture lines along the tape
-      const textureSteps = 8;
-      for (let i = 1; i < textureSteps; i++) {
-        const t = i / textureSteps;
-        const textureX = anchorX + (balloonX - anchorX) * t;
-        const textureY = anchorY + (balloonBottom - anchorY) * t;
-
-        // Add slight curve to texture lines
-        const textureOffset = Math.sin(t * Math.PI) * 2;
-
-        ctx.beginPath();
-        ctx.moveTo(textureX - textureOffset, textureY - tapeWidth / 2);
-        ctx.lineTo(textureX + textureOffset, textureY + tapeWidth / 2);
-        ctx.stroke();
-      }
-
-      // Reset alpha
-      ctx.globalAlpha = 1;
       ctx.restore();
     },
     []

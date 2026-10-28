@@ -21,7 +21,13 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { getFileDownloadUrl } from '@/lib/actions/file-download.action';
 import { useQuery } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Download, MoreHorizontal, Search } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  MoreHorizontal,
+  Search,
+} from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 
@@ -81,7 +87,11 @@ export default function ActivitiesPage() {
 
   const activities = data?.data || [];
   const pagination = data?.pagination || { page: 1, total: 0, totalPages: 1 };
-  const filters = data?.filters || { phonemes: [], types: [], difficulties: [] };
+  const filters = data?.filters || {
+    phonemes: [],
+    types: [],
+    difficulties: [],
+  };
 
   const handleDownload = async (fileId: string, name: string) => {
     setDownloadingId(fileId);
@@ -113,7 +123,11 @@ export default function ActivitiesPage() {
               {pagination.total} atividades
             </p>
           </div>
-          <NewActivityDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ['activities'] })} />
+          <NewActivityDialog
+            onSuccess={() =>
+              queryClient.invalidateQueries({ queryKey: ['activities'] })
+            }
+          />
         </div>
 
         {/* Filters */}
@@ -127,36 +141,55 @@ export default function ActivitiesPage() {
               className="h-8 pl-8 text-xs bg-background border-border"
             />
           </div>
-          <Select value={phoneme || 'all'} onValueChange={(v) => updateParams({ phoneme: v === 'all' ? '' : v })}>
+          <Select
+            value={phoneme || 'all'}
+            onValueChange={(v) =>
+              updateParams({ phoneme: v === 'all' ? '' : v })
+            }
+          >
             <SelectTrigger className="h-8 w-28 text-xs border-border">
               <SelectValue placeholder="Fonema" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Fonema</SelectItem>
               {filters.phonemes.map((p: string) => (
-                <SelectItem key={p} value={p}>/{p}/</SelectItem>
+                <SelectItem key={p} value={p}>
+                  /{p}/
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={type || 'all'} onValueChange={(v) => updateParams({ type: v === 'all' ? '' : v })}>
+          <Select
+            value={type || 'all'}
+            onValueChange={(v) => updateParams({ type: v === 'all' ? '' : v })}
+          >
             <SelectTrigger className="h-8 w-32 text-xs border-border">
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tipo</SelectItem>
               {filters.types.map((t: string) => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Select value={difficulty || 'all'} onValueChange={(v) => updateParams({ difficulty: v === 'all' ? '' : v })}>
+          <Select
+            value={difficulty || 'all'}
+            onValueChange={(v) =>
+              updateParams({ difficulty: v === 'all' ? '' : v })
+            }
+          >
             <SelectTrigger className="h-8 w-32 text-xs border-border">
               <SelectValue placeholder="Dificuldade" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Dificuldade</SelectItem>
               {filters.difficulties.map((d: string) => (
-                <SelectItem key={d} value={d}>{d}</SelectItem>
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -173,17 +206,29 @@ export default function ActivitiesPage() {
           </div>
         ) : activities.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="text-sm text-muted-foreground">Nenhuma atividade encontrada.</p>
+            <p className="text-sm text-muted-foreground">
+              Nenhuma atividade encontrada.
+            </p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Nome</th>
-                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-20">Fonema</th>
-                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-28">Tipo</th>
-                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-28">Dificuldade</th>
-                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">Idade</th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Nome
+                </th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-20">
+                  Fonema
+                </th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-28">
+                  Tipo
+                </th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-28">
+                  Dificuldade
+                </th>
+                <th className="text-left py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wider w-24">
+                  Idade
+                </th>
                 <th className="w-10"></th>
               </tr>
             </thead>
@@ -195,19 +240,29 @@ export default function ActivitiesPage() {
                   onClick={() => setPreviewActivity(activity)}
                 >
                   <td className="py-3">
-                    <span className="text-sm text-foreground">{activity.name}</span>
+                    <span className="text-sm text-foreground">
+                      {activity.name}
+                    </span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs font-mono text-muted-foreground">/{activity.phoneme}/</span>
+                    <span className="text-xs font-mono text-muted-foreground">
+                      /{activity.phoneme}/
+                    </span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs text-muted-foreground">{activity.type}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {activity.type}
+                    </span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs text-muted-foreground">{activity.difficulty}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {activity.difficulty}
+                    </span>
                   </td>
                   <td className="py-3">
-                    <span className="text-xs text-muted-foreground">{activity.ageRange}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {activity.ageRange}
+                    </span>
                   </td>
                   <td className="py-3 text-right">
                     {activity.files?.[0] && (
@@ -215,7 +270,10 @@ export default function ActivitiesPage() {
                         className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDownload(activity.files[0].id, `${activity.name}.pdf`);
+                          handleDownload(
+                            activity.files[0].id,
+                            `${activity.name}.pdf`
+                          );
                         }}
                         disabled={downloadingId === activity.files[0].id}
                       >
@@ -264,16 +322,25 @@ export default function ActivitiesPage() {
       </div>
 
       {/* Preview Modal */}
-      <Dialog open={!!previewActivity} onOpenChange={() => setPreviewActivity(null)}>
+      <Dialog
+        open={!!previewActivity}
+        onOpenChange={() => setPreviewActivity(null)}
+      >
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           {previewActivity && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-sm font-medium">{previewActivity.name}</DialogTitle>
+                <DialogTitle className="text-sm font-medium">
+                  {previewActivity.name}
+                </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 {previewActivity.thumbnailUrl && (
-                  <img src={previewActivity.thumbnailUrl} alt="" className="w-full rounded border border-gray-200" />
+                  <img
+                    src={previewActivity.thumbnailUrl}
+                    alt=""
+                    className="w-full rounded border border-gray-200"
+                  />
                 )}
                 <div className="flex gap-3 text-xs text-muted-foreground">
                   <span className="font-mono">/{previewActivity.phoneme}/</span>
@@ -281,11 +348,18 @@ export default function ActivitiesPage() {
                   <span>{previewActivity.difficulty}</span>
                   <span>{previewActivity.ageRange}</span>
                 </div>
-                <p className="text-sm text-gray-600">{previewActivity.description}</p>
+                <p className="text-sm text-gray-600">
+                  {previewActivity.description}
+                </p>
                 {previewActivity.files?.[0] && (
                   <Button
                     className="w-full bg-black hover:bg-gray-800 text-white text-sm h-9"
-                    onClick={() => handleDownload(previewActivity.files[0].id, `${previewActivity.name}.pdf`)}
+                    onClick={() =>
+                      handleDownload(
+                        previewActivity.files[0].id,
+                        `${previewActivity.name}.pdf`
+                      )
+                    }
                     disabled={downloadingId === previewActivity.files[0].id}
                   >
                     <Download className="h-3.5 w-3.5 mr-2" />
@@ -301,16 +375,22 @@ export default function ActivitiesPage() {
       <Dialog open={limitReached} onOpenChange={setLimitReached}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold">Limite de downloads atingido</DialogTitle>
+            <DialogTitle className="text-base font-semibold">
+              Limite de downloads atingido
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Você atingiu o limite de 3 downloads gratuitos este mês. Assine o plano Profissional para downloads ilimitados.
+              Você atingiu o limite de 3 downloads gratuitos este mês. Assine o
+              plano Profissional para downloads ilimitados.
             </p>
             <div className="flex gap-2">
               <Button
-                className="flex-1 bg-[#f97066] hover:bg-[#e5645b] text-white text-sm"
-                onClick={() => { setLimitReached(false); router.push('/#assinatura'); }}
+                className="flex-1 bg-coral-500 hover:bg-coral-600 text-white text-sm"
+                onClick={() => {
+                  setLimitReached(false);
+                  router.push('/#assinatura');
+                }}
               >
                 Ver planos
               </Button>

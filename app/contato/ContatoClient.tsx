@@ -34,20 +34,27 @@ export default function ContatoClient() {
       <div className="max-w-2xl mx-auto px-6">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs text-[#f97066] font-medium uppercase tracking-wide mb-2">Contacto</p>
-          <h1 className="text-3xl font-bold text-slate-900 font-display mb-2">
+          <p className="text-xs text-coral-600 font-medium uppercase tracking-wide mb-2">
+            Contacto
+          </p>
+          <h1 className="text-3xl font-bold text-neutral-900 font-display mb-2">
             Fale connosco
           </h1>
           <p className="text-sm text-gray-500">
-            Tem alguma dúvida ou sugestão? Envie uma mensagem e respondemos em até 24 horas.
+            Tem alguma dúvida ou sugestão? Envie uma mensagem e respondemos em
+            até 24 horas.
           </p>
         </div>
 
         {submitted ? (
           <div className="p-8 rounded-lg border border-gray-100 bg-gray-50 text-center">
             <CheckCircle className="w-8 h-8 text-emerald-600 mx-auto mb-3" />
-            <h2 className="text-lg font-semibold text-slate-900 mb-1">Mensagem enviada</h2>
-            <p className="text-sm text-gray-500 mb-4">Respondemos em até 24 horas úteis.</p>
+            <h2 className="text-lg font-semibold text-neutral-900 mb-1">
+              Mensagem enviada
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Respondemos em até 24 horas úteis.
+            </p>
             <Button
               variant="ghost"
               className="text-sm"
@@ -60,47 +67,75 @@ export default function ContatoClient() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="nome" className="text-xs text-gray-500 mb-1.5 block">Nome</Label>
+                <Label
+                  htmlFor="nome"
+                  className="text-xs text-gray-500 mb-1.5 block"
+                >
+                  Nome
+                </Label>
                 <Input
                   id="nome"
                   name="nome"
                   value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nome: e.target.value })
+                  }
                   required
                   className="h-9 text-sm"
                 />
               </div>
               <div>
-                <Label htmlFor="email" className="text-xs text-gray-500 mb-1.5 block">Email</Label>
+                <Label
+                  htmlFor="email"
+                  className="text-xs text-gray-500 mb-1.5 block"
+                >
+                  Email
+                </Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   required
                   className="h-9 text-sm"
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="assunto" className="text-xs text-gray-500 mb-1.5 block">Assunto</Label>
+              <Label
+                htmlFor="assunto"
+                className="text-xs text-gray-500 mb-1.5 block"
+              >
+                Assunto
+              </Label>
               <Input
                 id="assunto"
                 name="assunto"
                 value={formData.assunto}
-                onChange={(e) => setFormData({ ...formData, assunto: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, assunto: e.target.value })
+                }
                 required
                 className="h-9 text-sm"
               />
             </div>
             <div>
-              <Label htmlFor="mensagem" className="text-xs text-gray-500 mb-1.5 block">Mensagem</Label>
+              <Label
+                htmlFor="mensagem"
+                className="text-xs text-gray-500 mb-1.5 block"
+              >
+                Mensagem
+              </Label>
               <Textarea
                 id="mensagem"
                 name="mensagem"
                 value={formData.mensagem}
-                onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, mensagem: e.target.value })
+                }
                 required
                 rows={5}
                 className="text-sm resize-none"
@@ -109,7 +144,7 @@ export default function ContatoClient() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-slate-900 hover:bg-slate-800 text-white text-sm px-6"
+              className="bg-neutral-900 hover:bg-neutral-800 text-white text-sm px-6"
             >
               {isSubmitting ? 'A enviar...' : 'Enviar mensagem'}
             </Button>
