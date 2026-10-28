@@ -7,6 +7,11 @@
  */
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { generateActivityContent } from '../lib/activities/generateContent';
+import { ActivityPDFRenderer } from '../lib/activities/pdfRenderer';
+import { getWordIllustrations } from '../lib/activities/illustrator';
+import { generateSortActivity } from '../lib/activities/sortActivity';
+import { renderSortPdf, type CardImages } from '../lib/activities/sortRenderer';
 
 const GEMINI_KEY = process.env.GOOGLE_CLOUD_API_KEY!;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -55,40 +60,6 @@ const ACTIVITY_TYPES = [
 ] as const;
 const AGES = [4, 6, 9, 12];
 
-async function geminiImage(prompt: string): Promise<Buffer | null> {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ['IMAGE', 'TEXT'] },
-      }),
-    }
-  );
-  const data = await res.json();
-  if (!res.ok) {
-    console.error(
-      '    API error:',
-      data.error?.message || JSON.stringify(data).slice(0, 200)
-    );
-    return null;
-  }
-  if (!data.candidates?.[0]) {
-    console.error('    No candidates in response');
-    return null;
-  }
-  const imgPart = data.candidates[0].content.parts.find(
-    (p: any) => p.inlineData
-  );
-  if (!imgPart) {
-    console.error('    Response had text but no image');
-    return null;
-  }
-  return Buffer.from(imgPart.inlineData.data, 'base64');
-}
-
 async function geminiText(prompt: string): Promise<string> {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,
@@ -136,293 +107,126 @@ async function uploadToS3(
 
 // ─── ACTIVITIES ───────────────────────────────────────────────
 
+// Curated phonemes with a vetted word bank. We restrict automated generation
+// to these so every activity has phonetically-correct, well-spelled content.
+const CURATED_PHONEMES = new Set([
+  'R',
+  'L',
+  'S',
+  'Z',
+  'CH',
+  'J',
+  'K',
+  'G',
+  'LH',
+]);
+
+// Map the script's type list to the deterministic pipeline's supported types.
+// COLOR_SPEAK is a picture-word activity, same shape as FIND_CIRCLE.
+const TYPE_MAP: Record<
+  string,
+  'FIND_CIRCLE' | 'WORD_SEARCH' | 'BOARD_GAME' | 'CROSSWORD'
+> = {
+  FIND_CIRCLE: 'FIND_CIRCLE',
+  WORD_SEARCH: 'WORD_SEARCH',
+  BOARD_GAME: 'BOARD_GAME',
+  COLOR_SPEAK: 'FIND_CIRCLE',
+};
+
+function ageToRange(age: number): string {
+  if (age <= 3) return 'TODDLER';
+  if (age <= 5) return 'PRESCHOOL';
+  if (age <= 12) return 'CHILD';
+  if (age <= 17) return 'TEENAGER';
+  return 'ADULT';
+}
+
+function ageToDifficulty(age: number): 'EASY' | 'MEDIUM' | 'HARD' {
+  if (age <= 5) return 'EASY';
+  if (age <= 9) return 'MEDIUM';
+  return 'HARD';
+}
+
+/**
+ * Generate activities with the deterministic content + layout pipeline.
+ *
+ * Content (words, grid, crossword) comes from generateActivityContent(), which
+ * validates against the curated word bank and rebuilds puzzles in code. Layout
+ * is drawn by ActivityPDFRenderer. The image model is used ONLY for per-word
+ * clip-art (illustrator.ts), never for text or puzzle structure — this is what
+ * fixes the misspellings, broken grids, and wrong-phoneme words.
+ */
 async function generateActivities(phonemes: string[]) {
   console.log(
     `\n🎨 Generating activities for phonemes: ${phonemes.join(', ')}\n`
   );
   let count = 0;
 
-  for (const [phonemeIndex, phoneme] of phonemes.entries()) {
-    // One activity per phoneme. Vary type/topic/age across phonemes so the
-    // batch still covers a range instead of always using the same combo.
-    const combos = [
-      {
-        type: ACTIVITY_TYPES[phonemeIndex % ACTIVITY_TYPES.length],
-        topic: TOPICS[phonemeIndex % TOPICS.length],
-        age: AGES[phonemeIndex % AGES.length],
-      },
-    ];
+  for (const [phonemeIndex, rawPhoneme] of phonemes.entries()) {
+    const phoneme = rawPhoneme.toUpperCase();
 
-    for (const combo of combos) {
-      const style =
-        combo.age <= 5
-          ? 'Very childish, kindergarten style, big bubbly fonts, thick outlines, stars and hearts'
-          : combo.age <= 8
-            ? 'Colorful, playful, fun adventurous style, cute illustrations'
-            : combo.age <= 11
-              ? 'Modern, engaging like a real board game, cool dynamic fonts'
-              : 'Clean, modern workbook style, not childish';
+    if (!CURATED_PHONEMES.has(phoneme)) {
+      console.log(
+        `  ⏭️ Skipping /${rawPhoneme}/ — no curated word bank (not yet supported)`
+      );
+      continue;
+    }
 
-      // ═══ STEP 1: Generate validated word list ═══
-      const wordListPrompt = `Liste exatamente 8 palavras em português brasileiro que:
-1. Contenham o fonema /${phoneme}/ (na posição inicial, medial ou final)
-2. Sejam do tema "${combo.topic}"
-3. Sejam adequadas para crianças de ${combo.age} anos
-4. Tenham ortografia 100% correta em português brasileiro
+    // One activity per phoneme; vary type/topic/age across phonemes.
+    const rawType = ACTIVITY_TYPES[phonemeIndex % ACTIVITY_TYPES.length];
+    const type = TYPE_MAP[rawType];
+    const topic = TOPICS[phonemeIndex % TOPICS.length];
+    const age = AGES[phonemeIndex % AGES.length];
 
-Responda APENAS com as palavras separadas por vírgula, sem numeração, sem explicação.`;
+    try {
+      // ═══ STEP 1: Deterministic, validated content (text only) ═══
+      const content = await generateActivityContent({
+        type,
+        phoneme,
+        topic,
+        age,
+      });
 
-      const wordListRaw = await geminiText(wordListPrompt);
-      const words = wordListRaw
-        .split(',')
-        .map((w) => w.trim().toLowerCase())
-        .filter((w) => w.length > 0)
-        .slice(0, 8);
-
-      if (words.length < 4) {
-        console.log(`  ⚠️ Insufficient words for /${phoneme}/ ${combo.topic}`);
-        continue;
-      }
-
-      // ═══ STEP 2: Generate image WITHOUT watermark ═══
-      const prompt = `Create a premium A4 portrait activity sheet for kids age ${combo.age} speech therapy.
-
-CONTENT:
-- Theme: ${combo.topic}
-- Phoneme: /${phoneme}/
-- Activity type: ${combo.type.replace('_', ' ').toLowerCase()}
-- All text in Brazilian Portuguese
-- MANDATORY WORDS TO INCLUDE: ${words.join(', ')}
-- These words MUST appear correctly spelled in the activity
-
-VISUAL STYLE:
-- Background: clean white
-- Primary accent color: warm orange/coral (#f97316)
-- Secondary colors: soft gray borders, light orange highlights
-- ${style}
-- Header: activity title in bold, phoneme badge in orange circle, age indicator
-- DO NOT add any footer or watermark text — this will be added programmatically
-
-BRAND ELEMENTS:
-- 3-4 small colorful balloons as corner decorations
-- Each balloon has a single letter/phoneme on it
-- Balloons use these colors: #6366f1, #ec4899, #f59e0b, #10b981, #8b5cf6
-- Clean rounded borders on activity areas
-- Professional workbook quality
-
-CRITICAL:
-- Every word MUST be spelled correctly in Portuguese
-- All words MUST contain the phoneme /${phoneme}/
-- Do NOT add any watermark or footer text
-- Do NOT invent words that don't exist in Portuguese`;
-
-      // ═══ STEP 3: Generate with retry (max 2 attempts) ═══
-      let img: Buffer | null = null;
-      let qualityScore = 0;
-      let validationResult: any = null;
-
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          img = await geminiImage(
-            attempt === 0
-              ? prompt
-              : prompt +
-                  '\n\nPREVIOUS ATTEMPT FAILED. Fix: ensure all words are correctly spelled and contain the phoneme.'
-          );
-          if (!img) break;
-
-          // ═══ STEP 4: AI Vision validation with confidence scoring ═══
-          const validationPrompt = `Analise esta imagem de atividade terapêutica infantil. Responda APENAS com JSON:
-{
-  "words_readable": true/false,
-  "spelling_errors": [],
-  "words_with_phoneme": 0,
-  "total_words_visible": 0,
-  "age_appropriate": true/false,
-  "professional_quality": true/false,
-  "confidence_score": 0-100
-}
-
-Critérios de pontuação (confidence_score):
-- Palavras legíveis e corretas: +30 pontos
-- Todas contêm o fonema /${phoneme}/: +30 pontos
-- Visual profissional e adequado à idade ${combo.age}: +20 pontos
-- Sem erros ortográficos: +20 pontos
-- Cada erro ortográfico: -15 pontos
-
-Palavras esperadas: ${words.join(', ')}
-Fonema alvo: /${phoneme}/`;
-
-          const valRes = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    parts: [
-                      {
-                        inlineData: {
-                          mimeType: 'image/png',
-                          data: img.toString('base64'),
-                        },
-                      },
-                      { text: validationPrompt },
-                    ],
-                  },
-                ],
-              }),
-            }
-          );
-          const valData = await valRes.json();
-          const valText =
-            valData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          const jsonMatch = valText.match(/\{[\s\S]*\}/);
-
-          if (jsonMatch) {
-            validationResult = JSON.parse(jsonMatch[0]);
-            qualityScore = validationResult.confidence_score || 0;
-          } else {
-            qualityScore = 70; // Can't validate — assume moderate quality
-          }
-
-          if (qualityScore >= 70) break; // Good enough, stop retrying
-          console.log(
-            `  ⚠️ Attempt ${attempt + 1} scored ${qualityScore}/100 — retrying...`
-          );
-        } catch (err: any) {
-          console.log(`  ❌ Attempt ${attempt + 1} error: ${err.message}`);
-        }
-
-        await new Promise((r) => setTimeout(r, 2000));
-      }
-
-      if (!img || qualityScore < 40) {
-        console.log(
-          `  ⏭️ Skipping /${phoneme}/ ${combo.type} — score ${qualityScore}/100 (min 40)`
+      // ═══ STEP 2: Per-word clip-art (picture-word types only) ═══
+      let illustrations: Map<string, Buffer> | undefined;
+      if (type === 'FIND_CIRCLE') {
+        // Illustrate the answer words (the ones carrying the phoneme). Cached
+        // in S3 per word, so repeat words across sheets cost nothing.
+        const toIllustrate = (content.answers ?? content.items).slice(0, 8);
+        illustrations = await getWordIllustrations(
+          toIllustrate.map((w) => ({ word: w }))
         );
-        continue;
       }
 
-      // ═══ STEP 5: All activities go to PENDING_REVIEW — admin approves via Telegram/dashboard ═══
-      const status = 'PENDING_REVIEW';
+      // ═══ STEP 3: Deterministic PDF render ═══
+      const pdfBytes = await ActivityPDFRenderer.renderActivity(type, {
+        titulo: content.titulo,
+        instrucoes: content.instrucoes,
+        phoneme,
+        difficulty: ageToDifficulty(age),
+        ageRange: ageToRange(age),
+        items: content.items,
+        answers: content.answers,
+        grid: content.grid,
+        crossword: content.crossword,
+        illustrations,
+      });
+      const pdfBuffer = Buffer.from(pdfBytes);
 
-      // ═══ STEP 6: Wrap in branded PDF + upload to S3 ═══
-      try {
-        const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+      // ═══ STEP 4: Upload to S3 (admin approves later via review flow) ═══
+      const key = `activities/${rawPhoneme.toLowerCase()}/${rawType.toLowerCase()}-${topic}-age${age}.pdf`;
+      await uploadToS3(key, pdfBuffer, 'application/pdf');
+      count++;
+      console.log(
+        `  [${count}] /${phoneme}/ ${rawType} ${topic} age${age} — PDF created (${content.items.length} items, ${illustrations?.size ?? 0} illustrations)`
+      );
 
-        // Create branded PDF with the activity image
-        const pdfDoc = await PDFDocument.create();
-        const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-        const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-        const image = await pdfDoc.embedPng(img);
+      // Review notification is sent by the sync-activities route after the
+      // DB row + single-use approvalToken exist.
 
-        // Brand colors
-        const navy = rgb(30 / 255, 41 / 255, 59 / 255);
-        const gray400 = rgb(148 / 255, 163 / 255, 184 / 255);
-
-        // Layout
-        const margin = 40;
-        const headerHeight = 56;
-        const footerHeight = 36;
-        const maxWidth = 595 - margin * 2; // A4 width
-        const scale = Math.min(maxWidth / image.width, 1);
-        const imgWidth = image.width * scale;
-        const imgHeight = image.height * scale;
-        const pageWidth = 595;
-        const pageHeight = imgHeight + headerHeight + footerHeight + margin * 2;
-
-        const page = pdfDoc.addPage([pageWidth, pageHeight]);
-
-        // Header bar
-        page.drawRectangle({
-          x: 0,
-          y: pageHeight - headerHeight,
-          width: pageWidth,
-          height: headerHeight,
-          color: navy,
-        });
-        page.drawText('almanaquedafala.com.br', {
-          x: margin,
-          y: pageHeight - 35,
-          size: 14,
-          font: fontBold,
-          color: rgb(1, 1, 1),
-        });
-
-        const activityTitle = `${combo.type.replace('_', ' ')} — ${combo.topic} (/${phoneme}/)`;
-        page.drawText(activityTitle, {
-          x: margin,
-          y: pageHeight - 50,
-          size: 9,
-          font,
-          color: rgb(0.8, 0.8, 0.8),
-        });
-
-        // Image
-        const imgX = (pageWidth - imgWidth) / 2;
-        const imgY = footerHeight + margin;
-        page.drawImage(image, {
-          x: imgX,
-          y: imgY,
-          width: imgWidth,
-          height: imgHeight,
-        });
-
-        // Footer
-        page.drawRectangle({
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: footerHeight,
-          color: rgb(0.98, 0.98, 0.99),
-        });
-        page.drawLine({
-          start: { x: 0, y: footerHeight },
-          end: { x: pageWidth, y: footerHeight },
-          thickness: 0.5,
-          color: rgb(0.9, 0.9, 0.92),
-        });
-
-        const footerText = `Fonema /${phoneme}/ | ${combo.type.replace('_', ' ')} | Idade: ${combo.age} anos`;
-        page.drawText(footerText, {
-          x: margin,
-          y: 12,
-          size: 8,
-          font,
-          color: gray400,
-        });
-        page.drawText('almanaquedafala.com.br', {
-          x:
-            pageWidth -
-            margin -
-            font.widthOfTextAtSize('almanaquedafala.com.br', 8),
-          y: 12,
-          size: 8,
-          font,
-          color: navy,
-        });
-
-        const pdfBytes = await pdfDoc.save();
-        const pdfBuffer = Buffer.from(pdfBytes);
-
-        const key = `activities/${phoneme}/${combo.type.toLowerCase()}-${combo.topic}-age${combo.age}.pdf`;
-        await uploadToS3(key, pdfBuffer, 'application/pdf');
-        count++;
-        console.log(
-          `  [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — PDF created (score: ${qualityScore}/100)`
-        );
-
-        // Review notification is sent by the sync-activities route after the
-        // DB row + single-use approvalToken exist (the magic link needs the
-        // activity id and token, which don't exist at generation time).
-
-        // Rate limit
-        await new Promise((r) => setTimeout(r, 3000));
-      } catch (err: any) {
-        console.log(`  ❌ /${phoneme}/ ${combo.type}: ${err.message}`);
-      }
+      await new Promise((r) => setTimeout(r, 1500));
+    } catch (err: any) {
+      console.log(`  ❌ /${phoneme}/ ${rawType}: ${err.message}`);
     }
   }
 
@@ -430,6 +234,53 @@ Fonema alvo: /${phoneme}/`;
     `🎨 *${count} atividades geradas!*\nFonemas: ${phonemes.join(', ')}\nAcesse o painel para revisar.`
   );
   console.log(`\n🎉 Done! ${count} activities uploaded to S3.`);
+}
+
+/**
+ * Generate rich "cut & sort" worksheets (one per theme). Content + layout are
+ * deterministic (sortActivity + sortRenderer); the image model only draws the
+ * per-card clip-art. Output matches the professional reference quality.
+ */
+async function generateSortActivities(themes: string[]) {
+  console.log(`\n✂️  Generating sort activities for: ${themes.join(', ')}\n`);
+  let count = 0;
+
+  for (const theme of themes) {
+    try {
+      const activity = await generateSortActivity({
+        theme,
+        age: 6,
+        cardCount: 12,
+      });
+
+      // Per-card clip-art -> data URIs for the HTML renderer (S3-cached).
+      const pngs = await getWordIllustrations(
+        activity.cards.map((c) => ({ word: c.word }))
+      );
+      const images: CardImages = new Map();
+      for (const [word, buf] of pngs) {
+        images.set(word, `data:image/png;base64,${buf.toString('base64')}`);
+      }
+
+      const pdf = await renderSortPdf(activity, images);
+
+      const key = `activities/sort/${theme.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;
+      await uploadToS3(key, pdf, 'application/pdf');
+      count++;
+      console.log(
+        `  [${count}] sort "${theme}" — "${activity.title}" (${activity.cards.length} cards, ${images.size} illustrations)`
+      );
+
+      await new Promise((r) => setTimeout(r, 1500));
+    } catch (err: any) {
+      console.log(`  ❌ sort "${theme}": ${err.message}`);
+    }
+  }
+
+  await sendTelegram(
+    `✂️ *${count} atividades de recortar geradas!*\nTemas: ${themes.join(', ')}\nAcesse o painel para revisar.`
+  );
+  console.log(`\n🎉 Done! ${count} sort activities uploaded to S3.`);
 }
 
 // ─── BLOG ─────────────────────────────────────────────────────
@@ -619,11 +470,17 @@ async function main() {
         ? ALL_PHONEMES
         : arg.split(',').map((p) => p.trim());
     await generateActivities(phonemes);
+  } else if (command === 'sort') {
+    // arg = comma-separated themes, e.g. "animais,alimentos"
+    const themes = arg
+      ? arg.split(',').map((t) => t.trim())
+      : ['animais', 'alimentos', 'objetos'];
+    await generateSortActivities(themes);
   } else if (command === 'blog') {
     await generateBlogPost(arg || undefined);
   } else {
     console.log(
-      'Usage: npx tsx scripts/generate-content.ts [activities|blog] [args]'
+      'Usage: npx tsx scripts/generate-content.ts [activities|sort|blog] [args]'
     );
   }
 }

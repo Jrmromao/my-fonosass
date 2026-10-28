@@ -123,8 +123,8 @@ function validate(
       return validateWordListActivity(obj, {
         type,
         phoneme,
-        minPhonemeWords: 8,
-        minTotalItems: 12,
+        minPhonemeWords: 5,
+        minTotalItems: 9,
         age,
       });
     case 'BOARD_GAME':
