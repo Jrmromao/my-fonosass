@@ -93,6 +93,8 @@ jobs:
             "${{ secrets.APP_URL }}/api/admin/sync-activities" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
             --connect-timeout 10 --max-time 60
+
+  generate-blog:
     if: ${{ github.event.inputs.type == 'blog' || github.event.inputs.type == 'both' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
