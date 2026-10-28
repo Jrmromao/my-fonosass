@@ -118,51 +118,6 @@ async function sendTelegram(message: string) {
   });
 }
 
-async function sendActivityForReview(activity: {
-  imageBuffer: Buffer;
-  phoneme: string;
-  type: string;
-  topic: string;
-  age: number;
-  s3Key: string;
-  s3Url: string;
-}) {
-  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
-
-  const APP_URL =
-    process.env.NEXT_PUBLIC_APP_URL || 'https://www.almanaquedafala.com.br';
-  const approveUrl = `${APP_URL}/api/activities/review?action=approve&key=${encodeURIComponent(activity.s3Key)}`;
-  const rejectUrl = `${APP_URL}/api/activities/review?action=reject&key=${encodeURIComponent(activity.s3Key)}`;
-
-  const formData = new FormData();
-  formData.append('chat_id', TELEGRAM_CHAT);
-  formData.append(
-    'photo',
-    new Blob([activity.imageBuffer], { type: 'image/png' }),
-    'activity.png'
-  );
-  formData.append(
-    'caption',
-    `Nova atividade\n\nFonema: /${activity.phoneme}/\nTipo: ${activity.type}\nTema: ${activity.topic}\nIdade: ${activity.age} anos`
-  );
-  formData.append(
-    'reply_markup',
-    JSON.stringify({
-      inline_keyboard: [
-        [
-          { text: '✅ Aprovar', url: approveUrl },
-          { text: '❌ Rejeitar', url: rejectUrl },
-        ],
-      ],
-    })
-  );
-
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
-    method: 'POST',
-    body: formData,
-  });
-}
-
 async function uploadToS3(
   key: string,
   body: Buffer,
@@ -187,16 +142,16 @@ async function generateActivities(phonemes: string[]) {
   );
   let count = 0;
 
-  for (const phoneme of phonemes) {
-    // Pick random combos for variety
-    const combos = [];
-    for (let i = 0; i < 10; i++) {
-      combos.push({
-        type: ACTIVITY_TYPES[i % ACTIVITY_TYPES.length],
-        topic: TOPICS[i % TOPICS.length],
-        age: AGES[i % AGES.length],
-      });
-    }
+  for (const [phonemeIndex, phoneme] of phonemes.entries()) {
+    // One activity per phoneme. Vary type/topic/age across phonemes so the
+    // batch still covers a range instead of always using the same combo.
+    const combos = [
+      {
+        type: ACTIVITY_TYPES[phonemeIndex % ACTIVITY_TYPES.length],
+        topic: TOPICS[phonemeIndex % TOPICS.length],
+        age: AGES[phonemeIndex % AGES.length],
+      },
+    ];
 
     for (const combo of combos) {
       const style =
@@ -268,7 +223,12 @@ CRITICAL:
 
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          img = await geminiImage(attempt === 0 ? prompt : prompt + '\n\nPREVIOUS ATTEMPT FAILED. Fix: ensure all words are correctly spelled and contain the phoneme.');
+          img = await geminiImage(
+            attempt === 0
+              ? prompt
+              : prompt +
+                  '\n\nPREVIOUS ATTEMPT FAILED. Fix: ensure all words are correctly spelled and contain the phoneme.'
+          );
           if (!img) break;
 
           // ═══ STEP 4: AI Vision validation with confidence scoring ═══
@@ -299,17 +259,25 @@ Fonema alvo: /${phoneme}/`;
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                contents: [{
-                  parts: [
-                    { inlineData: { mimeType: 'image/png', data: img.toString('base64') } },
-                    { text: validationPrompt },
-                  ],
-                }],
+                contents: [
+                  {
+                    parts: [
+                      {
+                        inlineData: {
+                          mimeType: 'image/png',
+                          data: img.toString('base64'),
+                        },
+                      },
+                      { text: validationPrompt },
+                    ],
+                  },
+                ],
               }),
             }
           );
           const valData = await valRes.json();
-          const valText = valData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const valText =
+            valData.candidates?.[0]?.content?.parts?.[0]?.text || '';
           const jsonMatch = valText.match(/\{[\s\S]*\}/);
 
           if (jsonMatch) {
@@ -320,7 +288,9 @@ Fonema alvo: /${phoneme}/`;
           }
 
           if (qualityScore >= 70) break; // Good enough, stop retrying
-          console.log(`  ⚠️ Attempt ${attempt + 1} scored ${qualityScore}/100 — retrying...`);
+          console.log(
+            `  ⚠️ Attempt ${attempt + 1} scored ${qualityScore}/100 — retrying...`
+          );
         } catch (err: any) {
           console.log(`  ❌ Attempt ${attempt + 1} error: ${err.message}`);
         }
@@ -329,7 +299,9 @@ Fonema alvo: /${phoneme}/`;
       }
 
       if (!img || qualityScore < 40) {
-        console.log(`  ⏭️ Skipping /${phoneme}/ ${combo.type} — score ${qualityScore}/100 (min 40)`);
+        console.log(
+          `  ⏭️ Skipping /${phoneme}/ ${combo.type} — score ${qualityScore}/100 (min 40)`
+        );
         continue;
       }
 
@@ -364,48 +336,87 @@ Fonema alvo: /${phoneme}/`;
         const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
         // Header bar
-        page.drawRectangle({ x: 0, y: pageHeight - headerHeight, width: pageWidth, height: headerHeight, color: navy });
-        page.drawText('almanaquedafala.com.br', { x: margin, y: pageHeight - 35, size: 14, font: fontBold, color: rgb(1, 1, 1) });
+        page.drawRectangle({
+          x: 0,
+          y: pageHeight - headerHeight,
+          width: pageWidth,
+          height: headerHeight,
+          color: navy,
+        });
+        page.drawText('almanaquedafala.com.br', {
+          x: margin,
+          y: pageHeight - 35,
+          size: 14,
+          font: fontBold,
+          color: rgb(1, 1, 1),
+        });
 
         const activityTitle = `${combo.type.replace('_', ' ')} — ${combo.topic} (/${phoneme}/)`;
-        page.drawText(activityTitle, { x: margin, y: pageHeight - 50, size: 9, font, color: rgb(0.8, 0.8, 0.8) });
+        page.drawText(activityTitle, {
+          x: margin,
+          y: pageHeight - 50,
+          size: 9,
+          font,
+          color: rgb(0.8, 0.8, 0.8),
+        });
 
         // Image
         const imgX = (pageWidth - imgWidth) / 2;
         const imgY = footerHeight + margin;
-        page.drawImage(image, { x: imgX, y: imgY, width: imgWidth, height: imgHeight });
+        page.drawImage(image, {
+          x: imgX,
+          y: imgY,
+          width: imgWidth,
+          height: imgHeight,
+        });
 
         // Footer
-        page.drawRectangle({ x: 0, y: 0, width: pageWidth, height: footerHeight, color: rgb(0.98, 0.98, 0.99) });
-        page.drawLine({ start: { x: 0, y: footerHeight }, end: { x: pageWidth, y: footerHeight }, thickness: 0.5, color: rgb(0.9, 0.9, 0.92) });
+        page.drawRectangle({
+          x: 0,
+          y: 0,
+          width: pageWidth,
+          height: footerHeight,
+          color: rgb(0.98, 0.98, 0.99),
+        });
+        page.drawLine({
+          start: { x: 0, y: footerHeight },
+          end: { x: pageWidth, y: footerHeight },
+          thickness: 0.5,
+          color: rgb(0.9, 0.9, 0.92),
+        });
 
         const footerText = `Fonema /${phoneme}/ | ${combo.type.replace('_', ' ')} | Idade: ${combo.age} anos`;
-        page.drawText(footerText, { x: margin, y: 12, size: 8, font, color: gray400 });
+        page.drawText(footerText, {
+          x: margin,
+          y: 12,
+          size: 8,
+          font,
+          color: gray400,
+        });
         page.drawText('almanaquedafala.com.br', {
-          x: pageWidth - margin - font.widthOfTextAtSize('almanaquedafala.com.br', 8),
-          y: 12, size: 8, font, color: navy,
+          x:
+            pageWidth -
+            margin -
+            font.widthOfTextAtSize('almanaquedafala.com.br', 8),
+          y: 12,
+          size: 8,
+          font,
+          color: navy,
         });
 
         const pdfBytes = await pdfDoc.save();
         const pdfBuffer = Buffer.from(pdfBytes);
 
         const key = `activities/${phoneme}/${combo.type.toLowerCase()}-${combo.topic}-age${combo.age}.pdf`;
-        const url = await uploadToS3(key, pdfBuffer, 'application/pdf');
+        await uploadToS3(key, pdfBuffer, 'application/pdf');
         count++;
         console.log(
           `  [${count}] /${phoneme}/ ${combo.type} ${combo.topic} age${combo.age} — PDF created (score: ${qualityScore}/100)`
         );
 
-        // Send to Telegram for review with quality score (send PNG for visual preview)
-        await sendActivityForReview({
-          imageBuffer: img,
-          phoneme,
-          type: combo.type,
-          topic: combo.topic,
-          age: combo.age,
-          s3Key: key,
-          s3Url: url,
-        });
+        // Review notification is sent by the sync-activities route after the
+        // DB row + single-use approvalToken exist (the magic link needs the
+        // activity id and token, which don't exist at generation time).
 
         // Rate limit
         await new Promise((r) => setTimeout(r, 3000));
@@ -495,9 +506,17 @@ async function generateBlogPost(topic?: string) {
     const fresh = topics.filter(
       (t) =>
         !existingPosts.some((p: string) => {
-          const topicWords = t.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
-          const postWords = p.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
-          const overlap = topicWords.filter((w: string) => postWords.includes(w)).length;
+          const topicWords = t
+            .toLowerCase()
+            .split(/\s+/)
+            .filter((w: string) => w.length > 3);
+          const postWords = p
+            .toLowerCase()
+            .split(/\s+/)
+            .filter((w: string) => w.length > 3);
+          const overlap = topicWords.filter((w: string) =>
+            postWords.includes(w)
+          ).length;
           return overlap >= 2;
         })
     );

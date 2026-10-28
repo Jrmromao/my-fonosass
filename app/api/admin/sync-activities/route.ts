@@ -1,9 +1,54 @@
 import { prisma } from '@/app/db';
 import { auth } from '@clerk/nextjs/server';
 import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 
 const BUCKET = process.env.AWS_S3_BUCKET_NAME || 'fonosapp';
+
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || 'https://www.almanaquedafala.com.br';
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT = process.env.TELEGRAM_REVIEWER_CHAT_ID;
+
+/**
+ * Notify the reviewer on Telegram with a magic link to the review page.
+ * The link carries the single-use approvalToken, so the reviewer can approve
+ * or reject without logging in. Failures are swallowed — a missing
+ * notification must never fail the sync.
+ */
+async function notifyReviewer(activity: {
+  id: string;
+  name: string;
+  phoneme: string;
+  ageRange: string;
+  approvalToken: string;
+}): Promise<void> {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
+
+  const reviewUrl = `${APP_URL}/dashboard/exercises/review/${activity.id}?token=${activity.approvalToken}`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT,
+        text:
+          `*Nova atividade para revisão*\n\n` +
+          `${activity.name}\n` +
+          `Fonema: /${activity.phoneme}/\n` +
+          `Idade: ${activity.ageRange}`,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[{ text: '👀 Revisar atividade', url: reviewUrl }]],
+        },
+      }),
+    });
+  } catch (err) {
+    console.error('[sync-activities] Telegram notify failed:', err);
+  }
+}
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || 'eu-west-1',
@@ -223,6 +268,8 @@ export async function POST(request: Request) {
       // Quality Gate 2: AI quality check on metadata
       const qualityResult = await runQualityCheck(parsed);
 
+      const approvalToken = randomUUID();
+
       const activity = await prisma.activity.create({
         data: {
           name: parsed.name,
@@ -233,6 +280,7 @@ export async function POST(request: Request) {
           phoneme: parsed.phoneme,
           isPublic: false,
           status: 'PENDING_REVIEW',
+          approvalToken,
           createdById: user.id,
         },
       });
@@ -247,6 +295,15 @@ export async function POST(request: Request) {
           sizeInBytes: 0,
           uploadedById: user.id,
         },
+      });
+
+      // Notify reviewer on Telegram with a token-protected magic link.
+      await notifyReviewer({
+        id: activity.id,
+        name: parsed.name,
+        phoneme: parsed.phoneme,
+        ageRange: parsed.ageRange,
+        approvalToken,
       });
 
       created++;
