@@ -12,6 +12,13 @@ export type ActivityContent = {
   answers?: string[];
   grid?: string[][];
   crossword?: CrosswordPlacement[];
+  /**
+   * Optional decorative clip-art, keyed by UPPERCASE word. Produced by the
+   * illustrator module (one clean, text-free PNG per word). When present, the
+   * picture-word layouts embed these; when absent, they fall back to a plain
+   * labeled box so the sheet is still valid.
+   */
+  illustrations?: Map<string, Buffer | Uint8Array>;
 };
 
 export class ActivityPDFRenderer {
@@ -124,6 +131,85 @@ export class ActivityPDFRenderer {
         color: rgb(0.1, 0.1, 0.3),
       });
     });
+
+    this.y -= Math.ceil(items.length / columns) * cellH + 20;
+  }
+
+  /**
+   * Picture-word grid: a clip-art illustration above each word label. Falls
+   * back to an empty framed box (no image) per item when an illustration is
+   * missing, so a partial set of images still renders a coherent sheet.
+   */
+  async drawIllustratedGrid(
+    items: string[],
+    illustrations: Map<string, Buffer | Uint8Array>,
+    columns = 3
+  ) {
+    const cellW = (this.width - this.margin * 2) / columns;
+    const cellH = 120;
+    const pad = 8;
+
+    // Normalize display casing so AI words (Title Case) and bank words
+    // (UPPERCASE) look consistent on the sheet.
+    const toTitle = (w: string) =>
+      w
+        .toLocaleLowerCase('pt-BR')
+        .replace(
+          /(^|[\s-])([\p{L}])/gu,
+          (_m, sep, ch) => sep + ch.toLocaleUpperCase('pt-BR')
+        );
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const col = i % columns;
+      const row = Math.floor(i / columns);
+      const x = this.margin + col * cellW;
+      const y = this.y - row * cellH;
+
+      // Cell frame
+      this.page.drawRectangle({
+        x: x + 4,
+        y: y - cellH + pad,
+        width: cellW - 8,
+        height: cellH - pad,
+        borderColor: rgb(0.8, 0.8, 0.85),
+        borderWidth: 1,
+        color: rgb(1, 1, 1),
+      });
+
+      const png = illustrations.get(item.toUpperCase());
+      const imgBoxSize = cellH - 44; // leave room for the label below
+      if (png) {
+        try {
+          const embedded = await this.doc.embedPng(png);
+          const scale = Math.min(
+            (cellW - 20) / embedded.width,
+            imgBoxSize / embedded.height
+          );
+          const w = embedded.width * scale;
+          const h = embedded.height * scale;
+          this.page.drawImage(embedded, {
+            x: x + (cellW - w) / 2,
+            y: y - pad - h - 6,
+            width: w,
+            height: h,
+          });
+        } catch {
+          // Corrupt image bytes — leave the box empty, label still prints.
+        }
+      }
+
+      // Word label (always drawn by code — guaranteed correct spelling).
+      const safeItem = toTitle(item).replace(/[^\x20-\x7E\xA0-\xFF]/g, '');
+      const textWidth = this.boldFont.widthOfTextAtSize(safeItem, 12);
+      this.page.drawText(safeItem, {
+        x: x + (cellW - textWidth) / 2,
+        y: y - cellH + pad + 14,
+        size: 12,
+        font: this.boldFont,
+        color: rgb(0.1, 0.1, 0.3),
+      });
+    }
 
     this.y -= Math.ceil(items.length / columns) * cellH + 20;
   }
@@ -355,7 +441,15 @@ export class ActivityPDFRenderer {
     switch (type) {
       case 'WORD_SEARCH':
         if (content.grid) renderer.drawWordSearch(content.grid);
-        renderer.drawWordGrid(content.items, 3);
+        if (content.illustrations && content.illustrations.size > 0) {
+          await renderer.drawIllustratedGrid(
+            content.items,
+            content.illustrations,
+            3
+          );
+        } else {
+          renderer.drawWordGrid(content.items, 3);
+        }
         break;
       case 'BOARD_GAME':
         renderer.drawBoardGamePath(content.items);
@@ -367,7 +461,15 @@ export class ActivityPDFRenderer {
         break;
       case 'FIND_CIRCLE':
       default:
-        renderer.drawWordGrid(content.items, 4);
+        if (content.illustrations && content.illustrations.size > 0) {
+          await renderer.drawIllustratedGrid(
+            content.items,
+            content.illustrations,
+            3
+          );
+        } else {
+          renderer.drawWordGrid(content.items, 4);
+        }
         break;
     }
 
