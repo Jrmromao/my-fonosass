@@ -78,7 +78,7 @@ const getAgeRangeVariant = (ageRange: AgeRange) => {
     TEENAGER:
       'bg-violet-50 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 border border-violet-200 dark:border-violet-800',
     ADULT:
-      'bg-slate-50 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300 border border-slate-200 dark:border-slate-800',
+      'bg-neutral-50 text-neutral-700 dark:bg-neutral-900/40 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800',
   };
 
   // Added 'border' class to all variants for consistency with the gray fallback

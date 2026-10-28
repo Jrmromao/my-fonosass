@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, degrees } from 'pdf-lib';
 import { activityBrand } from './brand';
+import type { CrosswordPlacement } from './validateContent';
 
 export type ActivityContent = {
   titulo: string;
@@ -10,6 +11,7 @@ export type ActivityContent = {
   items: string[];
   answers?: string[];
   grid?: string[][];
+  crossword?: CrosswordPlacement[];
 };
 
 export class ActivityPDFRenderer {
@@ -219,6 +221,82 @@ export class ActivityPDFRenderer {
     this.y -= 30;
   }
 
+  drawCrossword(grid: string[][], placements: CrosswordPlacement[]) {
+    const cellSize = 24;
+    const startX = this.margin + 10;
+
+    // Map of "row,col" -> number for cells that start a word.
+    const numberAt = new Map<string, number>();
+    for (const p of placements) {
+      numberAt.set(`${p.row},${p.col}`, p.number);
+    }
+
+    grid.forEach((row, ri) => {
+      row.forEach((cell, ci) => {
+        if (cell === '') return; // blank (no box)
+        const x = startX + ci * cellSize;
+        const y = this.y - ri * cellSize;
+
+        // Empty box for the child to write the letter.
+        this.page.drawRectangle({
+          x,
+          y: y - cellSize,
+          width: cellSize,
+          height: cellSize,
+          borderColor: rgb(0.6, 0.6, 0.7),
+          borderWidth: 0.8,
+        });
+
+        const num = numberAt.get(`${ri},${ci}`);
+        if (num !== undefined) {
+          this.page.drawText(`${num}`, {
+            x: x + 2,
+            y: y - 9,
+            size: 6,
+            font: this.font,
+            color: rgb(0.4, 0.4, 0.5),
+          });
+        }
+      });
+    });
+
+    this.y -= grid.length * cellSize + 20;
+
+    // Clue lists (Horizontais / Verticais).
+    const across = placements.filter((p) => p.direction === 'across');
+    const down = placements.filter((p) => p.direction === 'down');
+
+    const drawClueSection = (label: string, list: CrosswordPlacement[]) => {
+      if (list.length === 0) return;
+      this.page.drawText(label, {
+        x: this.margin,
+        y: this.y,
+        size: 11,
+        font: this.boldFont,
+        color: rgb(0.2, 0.15, 0.4),
+      });
+      this.y -= 16;
+      for (const p of list) {
+        const clue = `${p.number}. ${p.clue}`.replace(
+          /[^\x20-\x7E\xA0-\xFF]/g,
+          ''
+        );
+        this.page.drawText(clue.slice(0, 90), {
+          x: this.margin + 8,
+          y: this.y,
+          size: 9,
+          font: this.font,
+          color: rgb(0.2, 0.2, 0.3),
+        });
+        this.y -= 13;
+      }
+      this.y -= 6;
+    };
+
+    drawClueSection('Horizontais:', across);
+    drawClueSection('Verticais:', down);
+  }
+
   drawWatermark() {
     const { watermark } = activityBrand;
     const size = 48;
@@ -256,5 +334,43 @@ export class ActivityPDFRenderer {
     this.drawWatermark();
     this.drawFooter();
     return this.doc.save();
+  }
+
+  /**
+   * Orchestrates a full activity render by type. Builds the header,
+   * instructions, the type-specific body, watermark and footer, and returns
+   * the PDF bytes. All layout is produced deterministically here — nothing
+   * about the puzzle structure comes from the AI.
+   */
+  static async renderActivity(
+    type: 'FIND_CIRCLE' | 'WORD_SEARCH' | 'BOARD_GAME' | 'CROSSWORD',
+    content: ActivityContent
+  ): Promise<Uint8Array> {
+    const renderer = new ActivityPDFRenderer();
+    await renderer.init();
+
+    renderer.drawHeader(content.titulo, content.phoneme, content.difficulty);
+    renderer.drawInstructions(content.instrucoes);
+
+    switch (type) {
+      case 'WORD_SEARCH':
+        if (content.grid) renderer.drawWordSearch(content.grid);
+        renderer.drawWordGrid(content.items, 3);
+        break;
+      case 'BOARD_GAME':
+        renderer.drawBoardGamePath(content.items);
+        break;
+      case 'CROSSWORD':
+        if (content.grid && content.crossword) {
+          renderer.drawCrossword(content.grid, content.crossword);
+        }
+        break;
+      case 'FIND_CIRCLE':
+      default:
+        renderer.drawWordGrid(content.items, 4);
+        break;
+    }
+
+    return renderer.render();
   }
 }

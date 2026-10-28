@@ -23,6 +23,28 @@ export default async function ExerciseReviewPage({
 
   // Verify token for unauthenticated access
   const hasValidToken = token && activity.approvalToken === token;
+
+  // After an approve/reject action the token is consumed, so the redirect back
+  // here carries a result flag instead of a valid token — show the outcome.
+  const actionResult = approved || rejected || already;
+
+  // The per-item page is publicly reachable (no Clerk) so Telegram magic links
+  // work. Without a valid token (and no action result) we must not leak the
+  // activity's contents — show a neutral message instead.
+  if (!hasValidToken && !actionResult) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h1 className="text-xl font-bold mb-2">Link inválido ou expirado</h1>
+          <p className="text-gray-600">
+            Este link de revisão não é válido. Verifique o link enviado ou
+            acesse o painel administrativo.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const exerciseData = (() => {
     try {
       return JSON.parse(activity.description);
