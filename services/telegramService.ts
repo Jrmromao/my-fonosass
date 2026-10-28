@@ -16,10 +16,10 @@ export class TelegramService {
     difficulty: string;
     ageRange: string;
     approvalToken: string;
-  }) {
+  }): Promise<boolean | undefined> {
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
       console.warn('Telegram not configured, skipping notification');
-      return;
+      return undefined;
     }
 
     const reviewUrl = `${APP_URL}/dashboard/exercises/review/${exercise.id}?token=${exercise.approvalToken}`;
@@ -35,29 +35,34 @@ Faixa etaria: ${exercise.ageRange}
 
 [Ver exercicio](${reviewUrl})`;
 
-    const response = await fetch(`${this.baseUrl()}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: 'Markdown',
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: 'Aprovar', url: approveUrl },
-              { text: 'Rejeitar', url: rejectUrl },
+    try {
+      const response = await fetch(`${this.baseUrl()}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: 'Aprovar', url: approveUrl },
+                { text: 'Rejeitar', url: rejectUrl },
+              ],
+              [{ text: 'Ver detalhes', url: reviewUrl }],
             ],
-            [{ text: 'Ver detalhes', url: reviewUrl }],
-          ],
-        },
-      }),
-    });
+          },
+        }),
+      });
 
-    if (!response.ok) {
-      console.error('Telegram send failed:', await response.text());
+      if (!response.ok) {
+        console.error('Telegram send failed:', await response.text());
+      }
+
+      return response.ok;
+    } catch (error) {
+      console.error('Telegram send threw:', error);
+      return false;
     }
-
-    return response.ok;
   }
 }

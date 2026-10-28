@@ -6,39 +6,52 @@
 
 ## Colors
 
+The brand color is **coral** (warm salmon-red), implemented as a full ramp in
+`app/globals.css` (`--coral-50` … `--coral-900`) and exposed in Tailwind as
+`coral-50` … `coral-900`. The neutral family is a single navy-tinted ramp
+(`neutral-50` … `neutral-900`). **Never hardcode a hex** (e.g. `bg-[#f97066]`) and
+**never mix `gray-*` and `slate-*`** — always use the `coral-*` / `neutral-*` tokens.
+
 | Token | Value | Usage |
 |-------|-------|-------|
-| Primary | `orange-500` | Buttons, links, active states |
-| Primary hover | `orange-600` | Button hover |
-| Text | `gray-900` | Headings, primary text |
-| Text secondary | `gray-500` | Descriptions, metadata |
-| Text muted | `gray-400` | Timestamps, hints |
+| Primary (brand) | `coral-500` | Buttons, links, active states, accents |
+| Primary hover | `coral-600` | Button / link hover |
+| Primary tint | `coral-50` / `coral-500/10` | Icon chips, subtle highlights |
+| Text | `neutral-900` | Headings, primary text |
+| Text secondary | `neutral-500` | Descriptions, metadata |
+| Text muted | `neutral-400` | Timestamps, hints |
 | Background | `white` | Page background |
-| Background alt | `gray-50` | Alternating sections |
-| Border | `gray-100` | Section dividers, card borders |
-| Sidebar bg | `gray-900` | Dashboard sidebar |
-| Sidebar text | `gray-400` | Sidebar inactive items |
-| Sidebar active | `white` with `white/10` bg | Sidebar active item |
+| Background alt | `neutral-50` | Alternating sections |
+| Border | `neutral-100` / `neutral-200` | Section dividers, card borders |
+| Dark section bg | `neutral-900` | Hero-contrast bands, dashboard sidebar |
+| Brand gradient | `bg-brand-gradient` | Hero band ONLY (controlled, Stripe-style) |
 
 ### Forbidden colors
-- ❌ NO pink, fuchsia, cyan, yellow as UI colors
-- ❌ NO indigo/purple as primary (competitor uses it)
+- ❌ NO hardcoded hex values in classes (`bg-[#...]`) — use `coral-*` / `neutral-*`
+- ❌ NO mixing `gray-*` and `slate-*` — the neutral family is `neutral-*`
+- ❌ NO pink, fuchsia, cyan, yellow, indigo, purple as UI colors
 - ❌ NO multi-color gradients on text
-- ❌ NO `bg-gradient-to-*` on backgrounds (exception: very subtle `from-white to-gray-50`)
+- ❌ NO `bg-gradient-to-*` on backgrounds (exception: `bg-brand-gradient` in the hero only)
 - ✅ Balloons are the ONLY place where multiple bright colors appear
+- ✅ Semantic status colors allowed: green (success), red/`destructive` (error), amber (warning)
 
 ---
 
 ## Typography
 
+Type scale is defined in `tailwind.config.js` (sizes carry tuned line-height and
+negative letter-spacing on larger sizes). Use the standard Tailwind size classes.
+
 | Element | Classes |
 |---------|---------|
-| Page title (h1) | `text-3xl md:text-4xl font-extrabold text-gray-900 font-display` |
-| Section title (h2) | `text-xl font-bold text-gray-900 font-display` |
-| Card title (h3) | `text-base font-semibold text-gray-900` |
-| Body text | `text-sm text-gray-600` or `text-base text-gray-600` |
-| Small/meta | `text-xs text-gray-400` |
-| Dashboard page title | `text-xl font-semibold text-gray-900 font-display` |
+| Page title (h1) | `text-3xl md:text-4xl font-bold text-neutral-900 font-display` |
+| Hero title | `text-4xl md:text-5xl font-bold text-neutral-900 font-display` |
+| Section title (h2) | `text-2xl font-bold text-neutral-900 font-display` |
+| Card title (h3) | `text-base font-semibold text-neutral-900` |
+| Eyebrow / label | `text-xs text-coral-600 font-medium uppercase tracking-wide` |
+| Body text | `text-sm text-neutral-600` or `text-base text-neutral-600` |
+| Small/meta | `text-xs text-neutral-400` |
+| Dashboard page title | `text-xl font-semibold text-neutral-900 font-display` |
 
 ### Font families
 - `font-display` = Nunito (headings only)
@@ -50,16 +63,16 @@
 
 | Type | Classes |
 |------|---------|
-| Primary | `px-5 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-full hover:bg-orange-600` |
-| Secondary | `px-5 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-full hover:bg-gray-50` |
-| Ghost | `text-sm font-medium text-gray-600 hover:text-gray-900` |
-| Danger | `text-sm text-red-600 hover:bg-red-50` |
+| Primary | `bg-coral-500 text-white text-sm font-medium hover:bg-coral-600` + radius |
+| Secondary | `border border-neutral-200 text-neutral-700 text-sm font-medium hover:bg-neutral-50` + radius |
+| Ghost | `text-sm font-medium text-neutral-600 hover:text-neutral-900` |
+| Danger | `text-sm text-destructive hover:bg-destructive/10` |
 
 ### Button rules
-- Always `rounded-full` on landing page
-- Always `rounded-lg` in dashboard
+- Landing page: `rounded-md` (Linear/Stripe-style), dashboard: `rounded-lg`
+- Always add `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2`
 - Never use `shadow-lg` or `shadow-xl` on buttons
-- Never use gradient backgrounds on buttons
+- Never use gradient backgrounds on buttons (gradient is hero-band only)
 
 ---
 
@@ -68,14 +81,14 @@
 ### Landing page
 - Max width: `max-w-5xl` or `max-w-6xl`
 - Section padding: `py-16`
-- Section dividers: `border-t border-gray-100`
-- Background alternation: white → gray-50 → white
+- Section dividers: `border-t border-neutral-100`
+- Background alternation: white → neutral-50 → white (dark bands use `neutral-900`)
 
 ### Dashboard
-- Sidebar: fixed, `w-56` expanded / `w-16` collapsed, `bg-gray-900`
-- Page header: white bg, `border-b border-gray-100`, `px-8 py-6`
-- Content area: `p-8`, `bg-gray-50`
-- Cards: `bg-white border border-gray-200 rounded-xl`
+- Sidebar: fixed, `w-56` expanded / `w-16` collapsed, `bg-neutral-900`
+- Page header: white bg, `border-b border-neutral-100`, `px-8 py-6`
+- Content area: `p-8`, `bg-neutral-50`
+- Cards: `bg-white border border-neutral-200 rounded-xl`
 
 ---
 
@@ -83,26 +96,26 @@
 
 ### Cards
 ```
-bg-white border border-gray-200 rounded-xl p-6
+bg-white border border-neutral-200 rounded-xl p-6
 ```
 - NO `shadow-xl`, only `shadow-sm` if needed on hover
 - NO gradient backgrounds inside cards
 
 ### Tabs (dashboard)
 ```
-TabsList: inline-flex bg-white border border-gray-200 p-1 rounded-lg shadow-sm
-TabsTrigger: px-4 py-2 text-sm rounded-md data-[state=active]:bg-orange-50 data-[state=active]:text-orange-700
+TabsList: inline-flex bg-white border border-neutral-200 p-1 rounded-lg shadow-sm
+TabsTrigger: px-4 py-2 text-sm rounded-md data-[state=active]:bg-coral-50 data-[state=active]:text-coral-700
 ```
 
 ### Badges/Tags
 ```
-px-2.5 py-0.5 bg-gray-100 text-gray-600 rounded text-xs
+px-2.5 py-0.5 bg-neutral-100 text-neutral-600 rounded text-xs
 ```
 - NO colored badges unless semantic (green=success, red=error, amber=warning)
 
 ### Form inputs
 - Use existing shadcn/ui components
-- Add `bg-white border-gray-200` when on gray backgrounds
+- Add `bg-white border-neutral-200` when on neutral backgrounds
 
 ---
 

@@ -225,7 +225,7 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
 
           {/* Newsletter Signup */}
           <section className="mt-12 sm:mt-16 lg:mt-20">
-            <div className="bg-slate-900 rounded-lg p-8 md:p-12 text-center">
+            <div className="bg-neutral-900 rounded-lg p-8 md:p-12 text-center">
               <div className="max-w-xl mx-auto">
                 <h3 className="text-xl font-bold text-white mb-2">
                   Fique por dentro das novidades
@@ -237,9 +237,9 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                   <input
                     type="email"
                     placeholder="O seu email"
-                    className="flex-1 px-4 py-2.5 border border-gray-700 bg-white/5 rounded-md text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f97066]/50"
+                    className="flex-1 px-4 py-2.5 border border-gray-700 bg-white/5 rounded-md text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-coral-500/50"
                   />
-                  <button className="px-5 py-2.5 bg-[#f97066] hover:bg-[#e5645b] text-white rounded-md text-sm font-medium transition-colors">
+                  <button className="px-5 py-2.5 bg-coral-500 hover:bg-coral-600 text-white rounded-md text-sm font-medium transition-colors">
                     Inscrever
                   </button>
                 </div>

@@ -8,7 +8,10 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 const isPublicReviewRoute = createRouteMatcher([
-  '/dashboard/exercises/review(.*)',
+  // Only the per-item review page is public — it is protected by a per-activity
+  // approvalToken passed in the query string. The review *list* page stays
+  // Clerk-protected so the full activity catalog isn't exposed anonymously.
+  '/dashboard/exercises/review/(.+)',
 ]);
 
 const isProtectedAPIRoute = createRouteMatcher([

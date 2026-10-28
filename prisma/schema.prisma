@@ -9,22 +9,23 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  email             String             @unique
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  clerkUserId       String             @unique
-  fullName          String
-  role              UserRole           @default(USER)
-  createdActivities Activity[]
-  subscriptions     Subscription?
-  consentRecords    ConsentRecord[]
-  downloadHistory   DownloadHistory[]
-  downloads         Download[]
-  resourceDownloads ResourceDownload[]
-  resourceRatings   ResourceRating[]
-  resourceViews     ResourceView[]
-  createdResources  Resource[]
+  id                 String             @id @default(cuid())
+  email              String             @unique
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  clerkUserId        String             @unique
+  fullName           String
+  role               UserRole           @default(USER)
+  createdActivities  Activity[]         @relation("ActivityCreator")
+  reviewedActivities Activity[]         @relation("ActivityReviewer")
+  subscriptions      Subscription?
+  consentRecords     ConsentRecord[]
+  downloadHistory    DownloadHistory[]
+  downloads          Download[]
+  resourceDownloads  ResourceDownload[]
+  resourceRatings    ResourceRating[]
+  resourceViews      ResourceView[]
+  createdResources   Resource[]
 
   @@index([createdAt])
   @@index([role])
@@ -39,12 +40,16 @@ model Activity {
   ageRange        AgeRange
   createdById     String
   difficulty      ActivityDifficulty
-  isPublic        Boolean            @default(true)
+  isPublic        Boolean            @default(false)
   type            ActivityType
   phoneme         String             @default("")
-  status          ActivityStatus     @default(PUBLISHED)
+  status          ActivityStatus     @default(DRAFT)
   approvalToken   String?
-  createdBy       User               @relation(fields: [createdById], references: [id])
+  reviewedById    String?
+  reviewedAt      DateTime?
+  reviewFeedback  String?
+  createdBy       User               @relation("ActivityCreator", fields: [createdById], references: [id])
+  reviewedBy      User?              @relation("ActivityReviewer", fields: [reviewedById], references: [id])
   files           ActivityFile[]
   downloadHistory DownloadHistory[]
   categories      ActivityCategory[] @relation("ActivityToActivityCategory")
@@ -55,6 +60,7 @@ model Activity {
   @@index([createdById])
   @@index([name])
   @@index([status])
+  @@index([reviewedById])
 }
 
 model ActivityFile {

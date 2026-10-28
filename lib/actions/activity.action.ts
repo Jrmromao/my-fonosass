@@ -99,6 +99,9 @@ export async function createActivity(formData: FormData) {
           | 'TEENAGER'
           | 'ADULT',
         createdBy: { connect: { clerkUserId: userId } },
+        // New content must enter the review workflow — never auto-publish.
+        status: 'PENDING_REVIEW',
+        isPublic: false,
         categories: {
           connect: {
             id: '216bd108-39d2-4f7e-a6fd-49b2a1b1f2e9',

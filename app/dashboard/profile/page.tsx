@@ -92,11 +92,12 @@ export default function ProfilePage() {
                     <Mail className="h-3.5 w-3.5" />
                     {user?.primaryEmailAddress?.emailAddress}
                   </div>
-                  {formData.specialization && formData.specialization.length > 2 && (
-                    <Badge variant="outline" className="mt-2 text-xs">
-                      {formData.specialization}
-                    </Badge>
-                  )}
+                  {formData.specialization &&
+                    formData.specialization.length > 2 && (
+                      <Badge variant="outline" className="mt-2 text-xs">
+                        {formData.specialization}
+                      </Badge>
+                    )}
                 </div>
               </div>
               <Button
@@ -168,12 +169,8 @@ export default function ProfilePage() {
                   <FileText className="h-4 w-4 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    3
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Downloads restantes
-                  </p>
+                  <p className="text-2xl font-bold text-gray-900">3</p>
+                  <p className="text-xs text-gray-500">Downloads restantes</p>
                 </div>
               </div>
             </CardContent>
@@ -267,8 +264,13 @@ export default function ProfilePage() {
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Plano</span>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">Gratuito</Badge>
-                  <Link href="/#assinatura" className="text-xs text-[#f97066] font-medium hover:underline">
+                  <Badge variant="outline" className="text-xs">
+                    Gratuito
+                  </Badge>
+                  <Link
+                    href="/#assinatura"
+                    className="text-xs text-coral-600 font-medium hover:underline"
+                  >
                     Fazer upgrade
                   </Link>
                 </div>

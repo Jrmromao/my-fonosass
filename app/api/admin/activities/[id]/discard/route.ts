@@ -1,6 +1,11 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/app/db';
-import { auth } from '@clerk/nextjs/server';
+import {
+  assertTransition,
+  errorResponse,
+  requireAdmin,
+  type ActivityStatus,
+} from '@/lib/activities/approval';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -8,21 +13,37 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { dbUserId } = await requireAdmin();
 
     const { id } = await params;
 
+    const activity = await prisma.activity.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+    if (!activity) {
+      return NextResponse.json(
+        { error: 'Activity not found' },
+        { status: 404 }
+      );
+    }
+
+    assertTransition(activity.status as ActivityStatus, 'REJECTED');
+
     await prisma.activity.update({
       where: { id },
-      data: { status: 'REJECTED', isPublic: false, approvalToken: null },
+      data: {
+        status: 'REJECTED',
+        isPublic: false,
+        approvalToken: null,
+        reviewedById: dbUserId,
+        reviewedAt: new Date(),
+      },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Discard error:', error);
-    return NextResponse.json({ error: 'Failed to discard' }, { status: 500 });
+    const { body, status } = errorResponse(error);
+    return NextResponse.json(body, { status });
   }
 }

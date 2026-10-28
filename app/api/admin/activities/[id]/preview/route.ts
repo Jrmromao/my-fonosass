@@ -1,6 +1,6 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/app/db';
-import { auth } from '@clerk/nextjs/server';
+import { errorResponse, requireAdmin } from '@/lib/activities/approval';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,10 +18,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    await requireAdmin();
 
     const { id } = await params;
 
@@ -42,10 +39,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, url, fileType: file.fileType });
   } catch (error) {
-    console.error('Preview error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate preview' },
-      { status: 500 }
-    );
+    const { body, status } = errorResponse(error);
+    return NextResponse.json(body, { status });
   }
 }

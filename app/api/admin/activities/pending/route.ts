@@ -1,14 +1,11 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import { prisma } from '@/app/db';
-import { auth } from '@clerk/nextjs/server';
+import { errorResponse, requireAdmin } from '@/lib/activities/approval';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    await requireAdmin();
 
     const activities = await prisma.activity.findMany({
       where: { status: 'PENDING_REVIEW' },
@@ -29,10 +26,7 @@ export async function GET() {
 
     return NextResponse.json({ success: true, activities });
   } catch (error) {
-    console.error('Fetch pending activities error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch activities' },
-      { status: 500 }
-    );
+    const { body, status } = errorResponse(error);
+    return NextResponse.json(body, { status });
   }
 }
