@@ -179,6 +179,28 @@ function parseKey(key: string) {
     };
   }
 
+  // Categorize-by-attribute worksheets: activities/categorize/<dataset-id>.pdf
+  if (parts[1] === 'categorize') {
+    const filename = parts[2];
+    const ext = filename.split('.').pop() || 'pdf';
+    const slug = filename.replace(/\.[^.]+$/, '');
+    const label = slug
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    return {
+      phoneme: '',
+      age: 6,
+      ageRange: 'CHILD',
+      type: 'COGNITIVE',
+      difficulty: 'BEGINNER',
+      name: `Classificar por Atributo - ${label}`,
+      description: `Atividade de classificar por atributo ("${label}"). A criança recorta os cartões e cola cada um na categoria certa, dizendo o nome em voz alta.`,
+      s3Key: key,
+      fileName: filename,
+      fileType: ext === 'pdf' ? 'application/pdf' : `image/${ext}`,
+    };
+  }
+
   const phoneme = parts[1].toUpperCase();
   const filename = parts[2];
   const ext = filename.split('.').pop() || 'png';
@@ -207,15 +229,17 @@ function parseKey(key: string) {
 }
 
 export async function POST(request: Request) {
-  try {
-    // Auth: either Clerk session (browser) or API key (GitHub Actions)
-    const authHeader = request.headers.get('authorization');
-    const apiKey = authHeader?.replace('Bearer ', '');
+  // Auth: either Clerk session (browser) or API key (GitHub Actions).
+  // Resolved before the try so we can decide how much error detail to expose.
+  const authHeader = request.headers.get('authorization');
+  const apiKey = authHeader?.replace('Bearer ', '');
+  const isMachine = !!apiKey && apiKey === process.env.ADMIN_API_KEY;
 
+  try {
     let user;
 
-    if (apiKey === process.env.ADMIN_API_KEY) {
-      // Machine-to-machine: use first admin user
+    if (isMachine) {
+      // Machine-to-machine (GitHub Actions): use first admin user
       user = await prisma.user.findFirst({ orderBy: { createdAt: 'asc' } });
     } else {
       // Browser: use Clerk session
@@ -339,9 +363,15 @@ export async function POST(request: Request) {
       total: allKeys.length,
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Sync S3 activities error:', error);
     return NextResponse.json(
-      { error: 'Failed to sync activities' },
+      {
+        error: 'Failed to sync activities',
+        // Only reveal the underlying cause to the authenticated machine caller
+        // (GitHub Actions), never to anonymous/browser requests.
+        ...(isMachine ? { detail: message } : {}),
+      },
       { status: 500 }
     );
   }

@@ -56,10 +56,18 @@ jobs:
 
       - name: Sync S3 activities to DB
         run: |
-          curl -s -X POST \
+          response=$(curl -s -w "\n%{http_code}" -X POST \
             "${{ secrets.APP_URL }}/api/admin/sync-activities" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
-            --connect-timeout 10 --max-time 60
+            --connect-timeout 10 --max-time 60)
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          echo "Response: $body"
+          echo "Status: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Sync failed with status $http_code — $body"
+            exit 1
+          fi
 
   generate-sort:
     if: ${{ github.event.inputs.type == 'sort' }}
@@ -90,10 +98,18 @@ jobs:
 
       - name: Sync S3 activities to DB
         run: |
-          curl -s -X POST \
+          response=$(curl -s -w "\n%{http_code}" -X POST \
             "${{ secrets.APP_URL }}/api/admin/sync-activities" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
-            --connect-timeout 10 --max-time 60
+            --connect-timeout 10 --max-time 60)
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+          echo "Response: $body"
+          echo "Status: $http_code"
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Sync failed with status $http_code — $body"
+            exit 1
+          fi
 
   generate-blog:
     if: ${{ github.event.inputs.type == 'blog' || github.event.inputs.type == 'both' || github.event_name == 'schedule' }}
