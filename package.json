@@ -8,6 +8,7 @@
     "dev:seed": "./scripts/seed-dev.sh",
     "dev:no-turbo": "next dev",
     "build": "next build",
+    "vercel-build": "prisma migrate deploy && next build",
     "build:analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
