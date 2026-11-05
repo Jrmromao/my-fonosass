@@ -11,18 +11,30 @@ jobs:
     steps:
       - name: Sync S3 activities to database
         run: |
-          response=$(curl -s -w "\n%{http_code}" -X POST \
-            "${{ secrets.APP_URL }}/api/admin/sync-activities" \
-            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
-            --connect-timeout 10 --max-time 60)
-          
-          http_code=$(echo "$response" | tail -1)
-          body=$(echo "$response" | sed '$d')
-          
-          echo "Response: $body"
-          echo "Status: $http_code"
-          
-          if [ "$http_code" != "200" ]; then
-            echo "::error::Sync failed with status $http_code"
-            exit 1
-          fi
+          # The sync endpoint processes a bounded batch per call (idempotent)
+          # and returns {"hasMore": true} while a backlog remains. Loop until
+          # drained, with a hard cap so a bug can never loop forever.
+          for i in $(seq 1 30); do
+            response=$(curl -s -w "\n%{http_code}" -X POST \
+              "${{ secrets.APP_URL }}/api/admin/sync-activities" \
+              -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+              --connect-timeout 10 --max-time 90)
+
+            http_code=$(echo "$response" | tail -1)
+            body=$(echo "$response" | sed '$d')
+
+            echo "[batch $i] status=$http_code body=$body"
+
+            if [ "$http_code" != "200" ]; then
+              echo "::error::Sync failed with status $http_code — $body"
+              exit 1
+            fi
+
+            if echo "$body" | grep -q '"hasMore":true'; then
+              echo "[batch $i] more remaining, continuing…"
+              sleep 2
+            else
+              echo "Sync complete after $i batch(es)."
+              break
+            fi
+          done

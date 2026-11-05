@@ -56,18 +56,27 @@ jobs:
 
       - name: Sync S3 activities to DB
         run: |
-          response=$(curl -s -w "\n%{http_code}" -X POST \
-            "${{ secrets.APP_URL }}/api/admin/sync-activities" \
-            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
-            --connect-timeout 10 --max-time 60)
-          http_code=$(echo "$response" | tail -1)
-          body=$(echo "$response" | sed '$d')
-          echo "Response: $body"
-          echo "Status: $http_code"
-          if [ "$http_code" != "200" ]; then
-            echo "::error::Sync failed with status $http_code — $body"
-            exit 1
-          fi
+          # Idempotent, batched sync: loop until the endpoint reports no more
+          # pending keys (hasMore=false), with a hard cap against infinite loops.
+          for i in $(seq 1 30); do
+            response=$(curl -s -w "\n%{http_code}" -X POST \
+              "${{ secrets.APP_URL }}/api/admin/sync-activities" \
+              -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+              --connect-timeout 10 --max-time 90)
+            http_code=$(echo "$response" | tail -1)
+            body=$(echo "$response" | sed '$d')
+            echo "[batch $i] status=$http_code body=$body"
+            if [ "$http_code" != "200" ]; then
+              echo "::error::Sync failed with status $http_code — $body"
+              exit 1
+            fi
+            if echo "$body" | grep -q '"hasMore":true'; then
+              sleep 2
+            else
+              echo "Sync complete after $i batch(es)."
+              break
+            fi
+          done
 
   generate-sort:
     if: ${{ github.event.inputs.type == 'sort' }}
@@ -98,18 +107,27 @@ jobs:
 
       - name: Sync S3 activities to DB
         run: |
-          response=$(curl -s -w "\n%{http_code}" -X POST \
-            "${{ secrets.APP_URL }}/api/admin/sync-activities" \
-            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
-            --connect-timeout 10 --max-time 60)
-          http_code=$(echo "$response" | tail -1)
-          body=$(echo "$response" | sed '$d')
-          echo "Response: $body"
-          echo "Status: $http_code"
-          if [ "$http_code" != "200" ]; then
-            echo "::error::Sync failed with status $http_code — $body"
-            exit 1
-          fi
+          # Idempotent, batched sync: loop until the endpoint reports no more
+          # pending keys (hasMore=false), with a hard cap against infinite loops.
+          for i in $(seq 1 30); do
+            response=$(curl -s -w "\n%{http_code}" -X POST \
+              "${{ secrets.APP_URL }}/api/admin/sync-activities" \
+              -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+              --connect-timeout 10 --max-time 90)
+            http_code=$(echo "$response" | tail -1)
+            body=$(echo "$response" | sed '$d')
+            echo "[batch $i] status=$http_code body=$body"
+            if [ "$http_code" != "200" ]; then
+              echo "::error::Sync failed with status $http_code — $body"
+              exit 1
+            fi
+            if echo "$body" | grep -q '"hasMore":true'; then
+              sleep 2
+            else
+              echo "Sync complete after $i batch(es)."
+              break
+            fi
+          done
 
   generate-blog:
     if: ${{ github.event.inputs.type == 'blog' || github.event.inputs.type == 'both' || github.event_name == 'schedule' }}

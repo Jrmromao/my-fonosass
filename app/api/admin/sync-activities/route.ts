@@ -4,6 +4,17 @@ import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 
+// Give the sync room to process a batch without hitting the platform's default
+// function timeout (the cause of the earlier 504). Combined with BATCH_LIMIT
+// below, a single invocation stays well under this.
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
+// Max NEW activities registered per invocation. The route is idempotent
+// (already-synced keys are skipped), so a large backlog is drained across
+// several calls instead of timing out trying to do everything at once.
+const BATCH_LIMIT = 15;
+
 const BUCKET = process.env.AWS_S3_BUCKET_NAME || 'fonosapp';
 
 const APP_URL =
@@ -235,6 +246,12 @@ export async function POST(request: Request) {
   const apiKey = authHeader?.replace('Bearer ', '');
   const isMachine = !!apiKey && apiKey === process.env.ADMIN_API_KEY;
 
+  // The OpenAI metadata quality check adds ~1-3s per activity and already
+  // fails-open (never blocks), so it is OFF by default to keep the request
+  // fast. Opt in with ?qualityCheck=1 when you specifically want it.
+  const url = new URL(request.url);
+  const runQuality = url.searchParams.get('qualityCheck') === '1';
+
   try {
     let user;
 
@@ -280,15 +297,20 @@ export async function POST(request: Request) {
     });
     const existingKeys = new Set(existingFiles.map((f) => f.s3Key));
 
-    let created = 0;
-    let skipped = 0;
-    const errors: string[] = [];
+    // Only the keys not yet registered are candidates for this run.
+    const pendingKeys = allKeys.filter((k) => !existingKeys.has(k));
 
-    for (const key of allKeys) {
-      if (existingKeys.has(key)) {
-        skipped++;
-        continue;
-      }
+    let created = 0;
+    let skipped = existingKeys.size;
+    const errors: string[] = [];
+    // Collected and fired AFTER the DB work so Telegram latency doesn't
+    // serialize inside the create loop.
+    const pendingNotifications: Parameters<typeof notifyReviewer>[0][] = [];
+
+    for (const key of pendingKeys) {
+      // Stop once we've registered a full batch — keeps a single invocation
+      // within maxDuration. Remaining keys are handled by the next call.
+      if (created >= BATCH_LIMIT) break;
 
       const parsed = parseKey(key);
       if (!parsed) {
@@ -296,7 +318,7 @@ export async function POST(request: Request) {
         continue;
       }
 
-      // Quality Gate 1: Dedup — no duplicate phoneme + type + ageRange + theme combo
+      // Quality Gate 1: Dedup — no duplicate phoneme + type + ageRange + name
       const existingActivity = await prisma.activity.findFirst({
         where: {
           phoneme: parsed.phoneme,
@@ -304,6 +326,7 @@ export async function POST(request: Request) {
           ageRange: parsed.ageRange as any,
           name: parsed.name,
         },
+        select: { id: true },
       });
 
       if (existingActivity) {
@@ -311,8 +334,10 @@ export async function POST(request: Request) {
         continue;
       }
 
-      // Quality Gate 2: AI quality check on metadata
-      const qualityResult = await runQualityCheck(parsed);
+      // Quality Gate 2 (optional): AI metadata check. Fails open; off by default.
+      if (runQuality) {
+        await runQualityCheck(parsed);
+      }
 
       const approvalToken = randomUUID();
 
@@ -343,8 +368,7 @@ export async function POST(request: Request) {
         },
       });
 
-      // Notify reviewer on Telegram with a token-protected magic link.
-      await notifyReviewer({
+      pendingNotifications.push({
         id: activity.id,
         name: parsed.name,
         phoneme: parsed.phoneme,
@@ -355,10 +379,20 @@ export async function POST(request: Request) {
       created++;
     }
 
+    // Fire reviewer notifications concurrently (each already swallows errors).
+    await Promise.allSettled(
+      pendingNotifications.map((n) => notifyReviewer(n))
+    );
+
+    const remaining = Math.max(pendingKeys.length - created, 0);
+
     return NextResponse.json({
       success: true,
       created,
       skipped,
+      remaining,
+      // Tell the caller to invoke again until this is 0 (idempotent).
+      hasMore: remaining > 0,
       errors: errors.length > 0 ? errors : undefined,
       total: allKeys.length,
     });
