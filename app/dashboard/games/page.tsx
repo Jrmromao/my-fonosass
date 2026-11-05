@@ -152,11 +152,13 @@ export default function ActivitiesPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Fonema</SelectItem>
-              {filters.phonemes.map((p: string) => (
-                <SelectItem key={p} value={p}>
-                  /{p}/
-                </SelectItem>
-              ))}
+              {filters.phonemes
+                .filter((p: string) => p && p.trim() !== '')
+                .map((p: string) => (
+                  <SelectItem key={p} value={p}>
+                    /{p}/
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
           <Select
@@ -168,11 +170,13 @@ export default function ActivitiesPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tipo</SelectItem>
-              {filters.types.map((t: string) => (
-                <SelectItem key={t} value={t}>
-                  {t}
-                </SelectItem>
-              ))}
+              {filters.types
+                .filter((t: string) => t && t.trim() !== '')
+                .map((t: string) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
           <Select
@@ -186,11 +190,13 @@ export default function ActivitiesPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Dificuldade</SelectItem>
-              {filters.difficulties.map((d: string) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
+              {filters.difficulties
+                .filter((d: string) => d && d.trim() !== '')
+                .map((d: string) => (
+                  <SelectItem key={d} value={d}>
+                    {d}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

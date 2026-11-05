@@ -127,10 +127,15 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
       filters: {
-        phonemes: phonemes.map((p) => p.phoneme).sort(),
-        types: types.map((t) => t.type),
-        difficulties: difficulties.map((d) => d.difficulty),
-        ageRanges: ageRanges.map((a) => a.ageRange),
+        // Strip empty values (e.g. sort/categorize activities have no phoneme)
+        // so they never reach a Radix <SelectItem/>, which throws on value="".
+        phonemes: phonemes
+          .map((p) => p.phoneme)
+          .filter((p): p is string => !!p && p.trim() !== '')
+          .sort(),
+        types: types.map((t) => t.type).filter(Boolean),
+        difficulties: difficulties.map((d) => d.difficulty).filter(Boolean),
+        ageRanges: ageRanges.map((a) => a.ageRange).filter(Boolean),
       },
     });
   } catch (error) {
