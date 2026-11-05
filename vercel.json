@@ -1,4 +1,5 @@
 {
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
   "headers": [
     {
       "source": "/(.*)",
