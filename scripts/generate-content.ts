@@ -8,10 +8,15 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { generateActivityContent } from '../lib/activities/generateContent';
+import { checkCoherence } from '../lib/activities/coherenceGate';
 import { ActivityPDFRenderer } from '../lib/activities/pdfRenderer';
 import { getWordIllustrations } from '../lib/activities/illustrator';
 import { generateSortActivity } from '../lib/activities/sortActivity';
 import { renderSortPdf, type CardImages } from '../lib/activities/sortRenderer';
+import {
+  buildCategorizeActivity,
+  CATEGORIZE_DATASETS,
+} from '../lib/activities/categorizeActivity';
 
 const GEMINI_KEY = process.env.GOOGLE_CLOUD_API_KEY!;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -179,13 +184,39 @@ async function generateActivities(phonemes: string[]) {
     const age = AGES[phonemeIndex % AGES.length];
 
     try {
+      // Target initial position for picture-word sheets (most common clinical
+      // starting point); other types stay position-agnostic for now.
+      const position =
+        type === 'FIND_CIRCLE' ? ('initial' as const) : undefined;
+
       // ═══ STEP 1: Deterministic, validated content (text only) ═══
       const content = await generateActivityContent({
         type,
         phoneme,
         topic,
         age,
+        position,
       });
+
+      // ═══ STEP 1b: Coherence gate — fail closed before anything else ═══
+      // Mirror of the image gate: an incoherent sheet must never reach S3 or a
+      // reviewer. Skip + log + notify, consistent with the rest of the flow.
+      const gate = checkCoherence({
+        type,
+        phoneme,
+        activity: content,
+        age,
+        position,
+      });
+      if (!gate.ok) {
+        console.log(
+          `  🚫 /${phoneme}/ ${rawType}: coerência falhou — ${gate.reasons.join('; ')}`
+        );
+        await sendTelegram(
+          `🚫 *Atividade rejeitada (coerência)*\n/${phoneme}/ ${rawType} ${topic}\n${gate.reasons.join('\n')}`
+        );
+        continue;
+      }
 
       // ═══ STEP 2: Per-word clip-art (picture-word types only) ═══
       let illustrations: Map<string, Buffer> | undefined;
@@ -281,6 +312,53 @@ async function generateSortActivities(themes: string[]) {
     `✂️ *${count} atividades de recortar geradas!*\nTemas: ${themes.join(', ')}\nAcesse o painel para revisar.`
   );
   console.log(`\n🎉 Done! ${count} sort activities uploaded to S3.`);
+}
+
+// ─── CATEGORIZE (semantic sort, Reference A) ──────────────────
+
+/**
+ * Generate categorize-by-attribute worksheets from VETTED datasets (Problem 7).
+ * No LLM in this path — the item→category mapping is hand-curated. Layout
+ * reuses the sort renderer. `ids` are dataset keys (default: all).
+ */
+async function generateCategorizeActivities(ids: string[]) {
+  console.log(`\n🧩 Generating categorize activities for: ${ids.join(', ')}\n`);
+  let count = 0;
+
+  for (const id of ids) {
+    const dataset = CATEGORIZE_DATASETS[id];
+    if (!dataset) {
+      console.log(`  ⏭️ Dataset "${id}" não encontrado — pulando`);
+      continue;
+    }
+    try {
+      const activity = buildCategorizeActivity(dataset);
+
+      const pngs = await getWordIllustrations(
+        activity.cards.map((c) => ({ word: c.word }))
+      );
+      const images: CardImages = new Map();
+      for (const [word, buf] of pngs) {
+        images.set(word, `data:image/png;base64,${buf.toString('base64')}`);
+      }
+
+      const pdf = await renderSortPdf(activity, images);
+      const key = `activities/categorize/${id}.pdf`;
+      await uploadToS3(key, pdf, 'application/pdf');
+      count++;
+      console.log(
+        `  [${count}] categorize "${id}" — "${activity.title}" (${activity.cards.length} cards)`
+      );
+      await new Promise((r) => setTimeout(r, 1500));
+    } catch (err: any) {
+      console.log(`  ❌ categorize "${id}": ${err.message}`);
+    }
+  }
+
+  await sendTelegram(
+    `🧩 *${count} atividades de classificar geradas!*\nConjuntos: ${ids.join(', ')}\nAcesse o painel para revisar.`
+  );
+  console.log(`\n🎉 Done! ${count} categorize activities uploaded to S3.`);
 }
 
 // ─── BLOG ─────────────────────────────────────────────────────
@@ -476,11 +554,17 @@ async function main() {
       ? arg.split(',').map((t) => t.trim())
       : ['animais', 'alimentos', 'objetos'];
     await generateSortActivities(themes);
+  } else if (command === 'categorize') {
+    // arg = comma-separated dataset ids, e.g. "animais-movimento"
+    const ids = arg
+      ? arg.split(',').map((t) => t.trim())
+      : Object.keys(CATEGORIZE_DATASETS);
+    await generateCategorizeActivities(ids);
   } else if (command === 'blog') {
     await generateBlogPost(arg || undefined);
   } else {
     console.log(
-      'Usage: npx tsx scripts/generate-content.ts [activities|sort|blog] [args]'
+      'Usage: npx tsx scripts/generate-content.ts [activities|sort|categorize|blog] [args]'
     );
   }
 }

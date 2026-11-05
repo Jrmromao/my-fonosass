@@ -4,6 +4,8 @@ import {
   isPhonemeKey,
   getBankWords,
   getDistractors,
+  carriesPhoneme,
+  cellDepth,
   type PhonemeKey,
 } from '@/lib/activities/wordBank';
 
@@ -105,6 +107,90 @@ describe('wordBank', () => {
     it('respects the limit', () => {
       const distractors = getDistractors('S', { age: 10, limit: 4 });
       expect(distractors.length).toBeLessThanOrEqual(4);
+    });
+
+    // Problem 1 regression: a distractor must never also score as a correct
+    // answer under the authoritative carriesPhoneme check. Under decision B,
+    // ROSA (sound /z/) does NOT carry /S/, so it is a legitimate distractor —
+    // and crucially the scorer agrees, so the sheet is no longer contradictory.
+    it('every distractor fails carriesPhoneme for the target (S)', () => {
+      for (let i = 0; i < 25; i++) {
+        const distractors = getDistractors('S', { age: 12, limit: 30 });
+        for (const w of distractors) {
+          expect(carriesPhoneme(w, 'S')).toBe(false);
+        }
+      }
+    });
+
+    it('also holds for C/K/G/J overlaps', () => {
+      for (const p of ['K', 'G', 'J'] as const) {
+        const distractors = getDistractors(p, { age: 12, limit: 30 });
+        for (const w of distractors) expect(carriesPhoneme(w, p)).toBe(false);
+      }
+    });
+  });
+
+  describe('carriesPhoneme (single source of truth, decision B)', () => {
+    it('is bank-authoritative for curated phonemes (grapheme ≠ sound)', () => {
+      // ROSA/CASA contain the letter S but the sound is /z/ → NOT /S/.
+      expect(carriesPhoneme('ROSA', 'S')).toBe(false);
+      expect(carriesPhoneme('CASA', 'S')).toBe(false);
+      expect(carriesPhoneme('SAPO', 'S')).toBe(true);
+      expect(carriesPhoneme('PASTA', 'S')).toBe(true);
+    });
+
+    it('separates R-forte from R-fraco', () => {
+      expect(carriesPhoneme('RATO', 'R')).toBe(true);
+      expect(carriesPhoneme('PORTA', 'R')).toBe(false);
+      expect(carriesPhoneme('PORTA', 'r')).toBe(true);
+    });
+
+    it('falls back to the grapheme heuristic for non-curated phonemes', () => {
+      expect(carriesPhoneme('PATO', 'P')).toBe(true);
+      expect(carriesPhoneme('BOLA', 'P')).toBe(false);
+    });
+  });
+
+  describe('position filtering (Problem 2)', () => {
+    it('returns only words where the phoneme is in the target position', () => {
+      const initial = getBankWords('R', { age: 12, position: 'initial' });
+      for (const w of initial) {
+        const entry = WORD_BANK.R.find((e) => e.word === w)!;
+        expect(entry.positions).toContain('initial');
+      }
+      expect(initial).toContain('RATO'); // initial /R/
+      expect(initial).not.toContain('CARRO'); // medial /R/
+    });
+  });
+
+  describe('theme filtering + cellDepth (Problems 3 & 6)', () => {
+    it('can build the "Mercado do S" cell: /S/ initial ∧ alimentos', () => {
+      const foods = getBankWords('S', {
+        age: 12,
+        position: 'initial',
+        theme: 'alimentos',
+      });
+      expect(foods.length).toBeGreaterThanOrEqual(6);
+      expect(foods).toEqual(
+        expect.arrayContaining(['SUCO', 'SAL', 'SALSICHA', 'SALADA'])
+      );
+      // None of them are medial or off-theme.
+      for (const w of foods) {
+        const e = WORD_BANK.S.find((x) => x.word === w)!;
+        expect(e.positions).toContain('initial');
+        expect(e.themes).toContain('alimentos');
+      }
+    });
+
+    it('cellDepth reports enough depth for Mercado do S', () => {
+      expect(
+        cellDepth('S', { position: 'initial', theme: 'alimentos' })
+      ).toBeGreaterThanOrEqual(6);
+    });
+
+    it('cellDepth is 0 for an unfilled cell', () => {
+      expect(cellDepth('LH', { theme: 'transporte' })).toBe(0);
+      expect(cellDepth('ZZZ', {})).toBe(0);
     });
   });
 });

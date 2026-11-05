@@ -15,10 +15,12 @@ export type ActivityType =
   | 'CROSSWORD';
 
 import {
+  carriesPhoneme,
   getBankWords,
   getDistractors,
   isPhonemeKey,
-  isVettedWord,
+  type Position,
+  type Theme,
 } from './wordBank';
 
 export type RawActivity = {
@@ -68,44 +70,15 @@ function normalize(word: string): string {
 /**
  * Does a word contain the target phoneme?
  *
- * When the phoneme is in the curated word bank AND the word is a vetted bank
- * word, we trust that (authoritative). Otherwise we fall back to a heuristic on
- * the written form (pt-BR grapheme mapping, accent-insensitive). The heuristic
- * is intentionally lenient — it catches words clearly unrelated to the phoneme,
- * but is not full phonological analysis, which is why the bank takes priority.
+ * Delegates to `carriesPhoneme` in wordBank — THE single source of truth. For
+ * curated phonemes the vetted bank is authoritative (clinical decision B:
+ * phoneme-sound, not grapheme), so ROSA/CASA do NOT count as /S/; only for
+ * non-curated phonemes does a lenient grapheme heuristic apply. Distractor
+ * selection uses the same function, which is what keeps answers and distractors
+ * from contradicting each other (Problem 1).
  */
 function containsPhoneme(word: string, phoneme: string): boolean {
-  // Authoritative: a vetted bank word is known-correct for its phoneme.
-  if (isVettedWord(word, phoneme)) return true;
-
-  const w = normalize(word);
-  const p = normalize(phoneme);
-
-  // Map a phoneme to the grapheme(s) that can represent it in Portuguese.
-  const graphemes: Record<string, string[]> = {
-    R: ['R', 'RR'],
-    L: ['L'],
-    S: ['S', 'SS', 'C', 'Ç', 'C'],
-    Z: ['Z', 'S'],
-    T: ['T'],
-    D: ['D'],
-    P: ['P'],
-    B: ['B'],
-    F: ['F'],
-    V: ['V'],
-    M: ['M'],
-    N: ['N'],
-    K: ['C', 'QU', 'K'],
-    G: ['G', 'GU'],
-    J: ['J', 'G'],
-    X: ['X', 'CH'],
-    CH: ['CH', 'X'],
-    LH: ['LH'],
-    NH: ['NH'],
-  };
-
-  const candidates = graphemes[p] ?? [p];
-  return candidates.some((g) => w.includes(normalize(g)));
+  return carriesPhoneme(word, phoneme);
 }
 
 function asStringArray(value: unknown): string[] {
@@ -128,6 +101,8 @@ export function validateWordListActivity(
     minPhonemeWords: number;
     minTotalItems: number;
     age?: number;
+    position?: Position;
+    theme?: Theme;
   }
 ): ValidatedActivity {
   const titulo = typeof raw.titulo === 'string' ? raw.titulo.trim() : '';
@@ -154,8 +129,23 @@ export function validateWordListActivity(
 
   // Split the AI's words into phoneme-words and distractors.
   // When the phoneme is curated, containsPhoneme defers to the vetted bank for
-  // known words; unknown words fall through to the heuristic.
-  let phonemeWords = unique.filter((w) => containsPhoneme(w, opts.phoneme));
+  // known words; unknown words fall through to the heuristic. When a position
+  // or theme is targeted, an AI word only counts as a phoneme-word if the bank
+  // vouches for it under that constraint (otherwise we can't trust it fits).
+  const fitsConstraint = (w: string): boolean => {
+    if (!containsPhoneme(w, opts.phoneme)) return false;
+    if (!curated || (!opts.position && !opts.theme)) return true;
+    // Constrained request: only accept words the bank confirms for the cell.
+    return getBankWords(opts.phoneme, {
+      age: 99,
+      position: opts.position,
+      theme: opts.theme,
+    })
+      .map((x) => normalize(x))
+      .includes(normalize(w));
+  };
+
+  let phonemeWords = unique.filter((w) => fitsConstraint(w));
   let distractors = unique.filter((w) => !containsPhoneme(w, opts.phoneme));
 
   // Backfill from the curated bank when the AI didn't supply enough valid
@@ -166,6 +156,8 @@ export function validateWordListActivity(
       age,
       limit: needed,
       exclude: phonemeWords,
+      position: opts.position,
+      theme: opts.theme,
     });
     phonemeWords = [...phonemeWords, ...extra];
   }
@@ -184,6 +176,8 @@ export function validateWordListActivity(
         age,
         limit: distractorsNeeded - distractors.length,
         exclude: [...phonemeWords, ...distractors],
+        position: opts.position,
+        theme: opts.theme,
       });
       distractors = [...distractors, ...extra];
     }

@@ -5,6 +5,7 @@ import {
   validateWordSearchActivity,
   type ValidatedActivity,
 } from './validateContent';
+import { isPhonemeKey, type Position, type Theme } from './wordBank';
 
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
@@ -115,7 +116,9 @@ function validate(
   type: ActivityType,
   raw: unknown,
   phoneme: string,
-  age: number
+  age: number,
+  position?: Position,
+  theme?: Theme
 ): ValidatedActivity {
   const obj = (raw ?? {}) as Record<string, unknown>;
   switch (type) {
@@ -126,6 +129,8 @@ function validate(
         minPhonemeWords: 5,
         minTotalItems: 9,
         age,
+        position,
+        theme,
       });
     case 'BOARD_GAME':
       return validateWordListActivity(obj, {
@@ -134,6 +139,8 @@ function validate(
         minPhonemeWords: 15,
         minTotalItems: 15,
         age,
+        position,
+        theme,
       });
     case 'WORD_SEARCH':
       return validateWordSearchActivity(obj, {
@@ -151,11 +158,35 @@ function validate(
   }
 }
 
+const POSITION_PT: Record<Position, string> = {
+  initial: 'no início',
+  medial: 'no meio',
+  final: 'no fim',
+};
+
+/**
+ * An always-true title/instruction derived only from facts we can guarantee
+ * (phoneme + optional position). Replaces any theme the words don't actually
+ * satisfy — a mismatched label is worse than a neutral one (Problem 3, Part 1).
+ */
+function honestLabels(
+  phoneme: string,
+  position?: Position
+): { titulo: string; instrucoes: string } {
+  const where = position ? ` ${POSITION_PT[position]} das palavras` : '';
+  return {
+    titulo: `Palavras com o som /${phoneme}/${where}`,
+    instrucoes: `Encontre e diga as palavras com o som /${phoneme}/${where}.`,
+  };
+}
+
 export async function generateActivityContent(params: {
   type: ActivityType;
   phoneme: string;
   topic: string;
   age: number;
+  position?: Position;
+  theme?: Theme;
   maxAttempts?: number;
 }): Promise<ValidatedActivity> {
   const prompt = prompts[params.type](params.phoneme, params.topic, params.age);
@@ -165,7 +196,23 @@ export async function generateActivityContent(params: {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const raw = await callGemini(prompt);
-      return validate(params.type, raw, params.phoneme, params.age);
+      const result = validate(
+        params.type,
+        raw,
+        params.phoneme,
+        params.age,
+        params.position,
+        params.theme
+      );
+      // Problem 3, Part 1: for curated phonemes, don't trust the model's themed
+      // title — it may claim a topic the backfilled words don't satisfy. Use a
+      // neutral, always-true label based on phoneme (+ position).
+      if (isPhonemeKey(params.phoneme)) {
+        const honest = honestLabels(params.phoneme, params.position);
+        result.titulo = honest.titulo;
+        result.instrucoes = honest.instrucoes;
+      }
+      return result;
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
       // Only retry on validation/parse failures; a hard API error won't fix

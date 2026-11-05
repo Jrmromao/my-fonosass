@@ -31,14 +31,24 @@ function escapeHtml(s: string): string {
 
 export type CardImages = Map<string, string>; // UPPERCASE word -> data URI
 
+/** Pick a column count that keeps cards/zones readable as the count grows. */
+function columnsFor(count: number, max: number): number {
+  if (count <= 2) return Math.max(count, 1);
+  if (count <= 4) return 2;
+  if (count <= 9) return 3;
+  return Math.min(4, max);
+}
+
 /** Build the full HTML document for a sort activity. */
 export function buildSortHtml(
   activity: SortActivity,
   cardImages: CardImages
 ): string {
   const zoneColor = (i: number) => PALETTE[i % PALETTE.length];
+  const zoneCols = columnsFor(activity.zones.length, 3);
+  const cardCols = columnsFor(activity.cards.length, 4);
 
-  // Destination zones: colored pill + icon, with blank dashed paste-slots.
+  // Destination zones: colored pill + icon, count hint, dashed paste-slots.
   const zonesHtml = activity.zones
     .map((z, i) => {
       const color = zoneColor(i);
@@ -214,9 +224,9 @@ export function buildSortHtml(
 <body>
   <div class="banner"><div class="banner-inner"><h1>${escapeHtml(activity.title)}</h1></div></div>
   <div class="subtitle">${escapeHtml(activity.instructions)}</div>
-  <div class="zones">${zonesHtml}</div>
+  <div class="zones" style="grid-template-columns: repeat(${zoneCols}, 1fr)">${zonesHtml}</div>
   <div class="cut-strip"><span>RECORTE AQUI</span><span>&#9986;</span></div>
-  <div class="cards">${cardsHtml}</div>
+  <div class="cards" style="grid-template-columns: repeat(${cardCols}, 1fr)">${cardsHtml}</div>
   <div class="footer"><span class="star">&#9733;</span> ${escapeHtml(activity.footer)}</div>
   <div class="brand">almanaquedafala.com.br &bull; Exerc&iacute;cio gerado por IA, validado por fonoaudi&oacute;logo</div>
 </body>
