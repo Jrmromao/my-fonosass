@@ -1,5 +1,16 @@
 import { prisma } from '@/app/db';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { notFound } from 'next/navigation';
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || 'eu-west-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  },
+});
+const BUCKET = process.env.AWS_S3_BUCKET_NAME || 'fonosapp';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -18,7 +29,15 @@ export default async function ExerciseReviewPage({
   const { id } = await params;
   const { token, approved, rejected, already } = await searchParams;
 
-  const activity = await prisma.activity.findUnique({ where: { id } });
+  const activity = await prisma.activity.findUnique({
+    where: { id },
+    include: {
+      files: {
+        select: { id: true, name: true, s3Key: true, fileType: true },
+        take: 1,
+      },
+    },
+  });
   if (!activity) notFound();
 
   // Verify token for unauthenticated access
@@ -33,7 +52,7 @@ export default async function ExerciseReviewPage({
   // activity's contents — show a neutral message instead.
   if (!hasValidToken && !actionResult) {
     return (
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow p-6">
           <h1 className="text-xl font-bold mb-2">Link inválido ou expirado</h1>
           <p className="text-gray-600">
@@ -53,8 +72,27 @@ export default async function ExerciseReviewPage({
     }
   })();
 
+  // Presign the actual worksheet so the reviewer sees the real activity, not
+  // just metadata. Only done once access is authorized (valid token/result).
+  const file = activity.files[0];
+  let fileUrl: string | null = null;
+  if (file?.s3Key) {
+    try {
+      fileUrl = await getSignedUrl(
+        s3,
+        new GetObjectCommand({ Bucket: BUCKET, Key: file.s3Key }),
+        { expiresIn: 3600 }
+      );
+    } catch {
+      fileUrl = null;
+    }
+  }
+  const isPdf =
+    file?.fileType === 'application/pdf' ||
+    file?.s3Key?.toLowerCase().endsWith('.pdf');
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6">
       {approved && (
         <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
           Exercício aprovado e publicado com sucesso.
@@ -92,6 +130,44 @@ export default async function ExerciseReviewPage({
             {activity.status === 'REJECTED' && 'Rejeitado'}
             {activity.status === 'DRAFT' && 'Rascunho'}
           </span>
+        </div>
+
+        {/* The actual activity — reviewers must see the real worksheet, not
+            just the metadata, before approving or rejecting. */}
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-700 mb-2">Atividade</h3>
+          {fileUrl ? (
+            isPdf ? (
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <iframe
+                  src={fileUrl}
+                  title={file?.name || 'Atividade'}
+                  className="w-full"
+                  style={{ height: '80vh' }}
+                />
+              </div>
+            ) : (
+              <img
+                src={fileUrl}
+                alt={file?.name || 'Atividade'}
+                className="w-full rounded-lg border border-gray-200"
+              />
+            )
+          ) : (
+            <p className="text-sm text-gray-500">
+              Não foi possível carregar o arquivo da atividade.
+            </p>
+          )}
+          {fileUrl && (
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-2 text-sm text-blue-600 hover:underline"
+            >
+              Abrir em nova aba / Descarregar
+            </a>
+          )}
         </div>
 
         <div className="space-y-4">
