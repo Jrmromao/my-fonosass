@@ -2,7 +2,7 @@
 
 import ResourceFileUpload from '@/components/admin/ResourceFileUpload';
 import { ActivityReviewPanel } from '@/components/dashboard/ActivityReviewPanel';
-import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
+import { AnalyticsPanel } from '@/components/dashboard/AnalyticsPanel';
 import { ActivityManagerPanel } from '@/components/dashboard/ActivityManagerPanel';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -340,11 +340,11 @@ export default function AdminResourcesPage() {
       case 'VIDEO':
         return 'bg-muted text-muted-foreground';
       case 'AUDIO':
-        return 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400';
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-400';
       case 'GUIDE':
-        return 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400';
+        return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300';
       default:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400';
+        return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400';
     }
   };
 
@@ -353,7 +353,9 @@ export default function AdminResourcesPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Carregando...</p>
+          <p className="text-neutral-600 dark:text-neutral-300">
+            Carregando...
+          </p>
         </div>
       </div>
     );
@@ -361,10 +363,10 @@ export default function AdminResourcesPage() {
 
   return (
     <div>
-      <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
         <div className="px-8 py-6 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white font-display">
+            <h1 className="text-xl font-semibold text-neutral-900 dark:text-white font-display">
               Recursos
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
@@ -455,12 +457,12 @@ export default function AdminResourcesPage() {
             {/* Filters */}
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-600" />
                 <Input
                   placeholder="Buscar recursos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white border-gray-200"
+                  className="pl-10 bg-white border-neutral-200"
                 />
               </div>
               <Select value={selectedType} onValueChange={setSelectedType}>
@@ -499,14 +501,14 @@ export default function AdminResourcesPage() {
               {loading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto mb-4"></div>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-neutral-600 dark:text-neutral-300">
                     Carregando recursos...
                   </p>
                 </div>
               ) : filteredResources.length === 0 ? (
                 <Card>
                   <CardContent className="text-center py-8">
-                    <p className="text-gray-600 dark:text-gray-300">
+                    <p className="text-neutral-600 dark:text-neutral-300">
                       Nenhum recurso encontrado.
                     </p>
                   </CardContent>
@@ -524,7 +526,7 @@ export default function AdminResourcesPage() {
                             </div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
-                                <h3 className="font-semibold text-gray-900 dark:text-white">
+                                <h3 className="font-semibold text-neutral-900 dark:text-white">
                                   {resource.title}
                                 </h3>
                                 <Badge
@@ -537,7 +539,7 @@ export default function AdminResourcesPage() {
                                 {resource.isFeatured && (
                                   <Badge
                                     variant="outline"
-                                    className="text-yellow-600 border-yellow-600"
+                                    className="text-amber-600 border-yellow-600"
                                   >
                                     <Star className="h-3 w-3 mr-1" />
                                     Destaque
@@ -552,7 +554,7 @@ export default function AdminResourcesPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                              <p className="text-neutral-600 dark:text-neutral-300 text-sm mb-2">
                                 {resource.description}
                               </p>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -610,7 +612,7 @@ export default function AdminResourcesPage() {
                   {categories.map((category) => (
                     <div key={category} className="p-4 border rounded-lg">
                       <h3 className="font-semibold">{category}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-300">
                         {
                           resources.filter((r) => r.category === category)
                             .length
@@ -625,9 +627,7 @@ export default function AdminResourcesPage() {
           </TabsContent>
 
           <TabsContent value="analytics">
-          <TabsContent value="analytics">
             <AnalyticsPanel />
-          </TabsContent>
           </TabsContent>
         </Tabs>
       </div>

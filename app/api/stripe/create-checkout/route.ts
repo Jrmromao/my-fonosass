@@ -58,8 +58,8 @@ export async function POST(req: Request) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/games?checkout=canceled`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/profile?tab=assinatura&checkout=success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/profile?tab=assinatura&checkout=canceled`,
       metadata: {
         clerkUserId: userId, // Clerk user ID
         userId: user.id, // Your database user ID

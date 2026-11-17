@@ -2,7 +2,8 @@ import { Resend } from 'resend';
 import 'server-only';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.almanaquedafala.com.br';
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || 'https://www.almanaquedafala.com.br';
 
 // ─── Base Template ────────────────────────────────────────────
 
@@ -86,7 +87,7 @@ export class EmailService {
             &bull; Descarregar ate 3 atividades por mes (plano gratuito)<br>
             &bull; Imprimir e usar direto na sessao
           `)}
-          ${button(`${APP_URL}/dashboard/games`, 'Ver atividades')}
+          ${button(`${APP_URL}/dashboard/biblioteca`, 'Ver atividades')}
           <p>Se precisar de algo, e so responder a este email. Estou aqui para ajudar.</p>
           <p style="margin-top: 24px;">Um abraco,<br><strong>Eliane Mota</strong><br><span style="color: #64748b; font-size: 12px;">Fonoaudiologa — Almanaque da Fala</span></p>
         `),

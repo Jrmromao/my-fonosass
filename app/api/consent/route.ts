@@ -1,3 +1,4 @@
+import { getDbUserId } from '@/lib/auth/dbUser';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import {
   ConsentPreferences,
@@ -39,9 +40,14 @@ export async function POST(request: NextRequest) {
       'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
+    const dbUserId = userId ? await getDbUserId(userId) : null;
+    if (!dbUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // Record consent
     const consentRecords = await ConsentService.recordConsent({
-      userId: userId!,
+      userId: dbUserId,
       preferences,
       ipAddress,
       userAgent,
@@ -69,7 +75,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const consentRecords = await ConsentService.getUserConsentStatus(userId);
+    const dbUserId = await getDbUserId(userId);
+    if (!dbUserId) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const consentRecords = await ConsentService.getUserConsentStatus(dbUserId);
 
     return NextResponse.json({
       success: true,

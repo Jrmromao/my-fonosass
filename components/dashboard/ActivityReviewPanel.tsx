@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { phonemeLabel } from '@/lib/activityLabels';
 import { Check, Clock, Eye, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -85,7 +86,7 @@ export function ActivityReviewPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent" />
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-coral-700 border-t-transparent" />
       </div>
     );
   }
@@ -95,13 +96,13 @@ export function ActivityReviewPanel() {
       {/* Left: Activity list */}
       <div className="lg:col-span-1 space-y-1">
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <span className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
             Pendentes ({pending.length})
           </span>
         </div>
 
         {pending.length === 0 && published.length === 0 && (
-          <div className="text-center py-8 text-sm text-gray-400">
+          <div className="text-center py-8 text-sm text-neutral-600">
             Nenhuma atividade para revisar
           </div>
         )}
@@ -112,22 +113,22 @@ export function ActivityReviewPanel() {
             onClick={() => setSelectedId(activity.id)}
             className={`w-full text-left p-3 rounded-lg border transition-all ${
               selectedId === activity.id
-                ? 'border-indigo-200 bg-indigo-50/50 dark:bg-indigo-900/10'
-                : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? 'border-coral-200 bg-coral-50/50 dark:bg-coral-900/10'
+                : 'border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800'
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+              <span className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                 {activity.name}
               </span>
               <Clock className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
             </div>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-gray-500">
-                /{activity.phoneme}/
+              <span className="text-xs text-neutral-600">
+                {phonemeLabel(activity.phoneme)}
               </span>
-              <span className="text-xs text-gray-400">·</span>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-neutral-600">·</span>
+              <span className="text-xs text-neutral-600">
                 {activity.difficulty}
               </span>
             </div>
@@ -137,7 +138,7 @@ export function ActivityReviewPanel() {
         {published.length > 0 && (
           <>
             <div className="flex items-center gap-3 mt-6 mb-2">
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <span className="text-xs font-medium text-neutral-600 uppercase tracking-wide">
                 Publicados ({published.length})
               </span>
             </div>
@@ -147,18 +148,18 @@ export function ActivityReviewPanel() {
                 onClick={() => setSelectedId(activity.id)}
                 className={`w-full text-left p-3 rounded-lg border transition-all ${
                   selectedId === activity.id
-                    ? 'border-indigo-200 bg-indigo-50/50'
-                    : 'border-transparent hover:bg-gray-50'
+                    ? 'border-coral-200 bg-coral-50/50'
+                    : 'border-transparent hover:bg-neutral-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 truncate">
+                  <span className="text-sm font-medium text-neutral-700 truncate">
                     {activity.name}
                   </span>
                   <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
                 </div>
-                <span className="text-xs text-gray-400">
-                  /{activity.phoneme}/
+                <span className="text-xs text-neutral-600">
+                  {phonemeLabel(activity.phoneme)}
                 </span>
               </button>
             ))}
@@ -169,15 +170,15 @@ export function ActivityReviewPanel() {
       {/* Right: Detail view */}
       <div className="lg:col-span-2">
         {selected ? (
-          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
                   {selected.name}
                 </h3>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline" className="text-xs">
-                    /{selected.phoneme}/
+                    {phonemeLabel(selected.phoneme)}
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                     {selected.difficulty}
@@ -249,9 +250,9 @@ export function ActivityReviewPanel() {
 
             {/* AI Correction feedback */}
             {feedbackId === selected.id && (
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-3">
+              <div className="mt-6 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 space-y-3">
                 <textarea
-                  className="w-full p-3 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 resize-none focus:outline-none focus:ring-2 focus:ring-coral-500"
                   rows={3}
                   placeholder="Descreva o que esta errado (ex: erro ortografico no titulo, faixa etaria incorreta...)"
                   value={feedback}
@@ -280,7 +281,7 @@ export function ActivityReviewPanel() {
             )}
           </div>
         ) : (
-          <div className="flex items-center justify-center h-64 text-sm text-gray-400 border border-dashed border-gray-200 rounded-xl">
+          <div className="flex items-center justify-center h-64 text-sm text-neutral-600 border border-dashed border-neutral-200 rounded-xl">
             Selecione uma atividade para visualizar
           </div>
         )}
@@ -304,12 +305,14 @@ function ActivityPreviewImage({ activityId }: { activityId: string }) {
   }, [activityId]);
 
   if (!url)
-    return <div className="w-full h-48 bg-gray-100 rounded-lg animate-pulse" />;
+    return (
+      <div className="w-full h-48 bg-neutral-100 rounded-lg animate-pulse" />
+    );
   return (
     <img
       src={url}
       alt=""
-      className="w-full rounded-lg border border-gray-200"
+      className="w-full rounded-lg border border-neutral-200"
     />
   );
 }
@@ -319,25 +322,25 @@ function ExerciseContent({ description }: { description: string }) {
   try {
     data = JSON.parse(description);
   } catch {
-    return <p className="text-sm text-gray-600">{description}</p>;
+    return <p className="text-sm text-neutral-600">{description}</p>;
   }
 
   return (
     <div className="space-y-4">
       {data.objetivo && typeof data.objetivo === 'string' && (
         <div>
-          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+          <h4 className="text-xs font-medium text-neutral-600 uppercase tracking-wide mb-1">
             Objetivo
           </h4>
-          <p className="text-sm text-gray-700">{data.objetivo}</p>
+          <p className="text-sm text-neutral-700">{data.objetivo}</p>
         </div>
       )}
       {Array.isArray(data.instrucoes) && (
         <div>
-          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+          <h4 className="text-xs font-medium text-neutral-600 uppercase tracking-wide mb-1">
             Instruções
           </h4>
-          <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+          <ol className="list-decimal list-inside space-y-1 text-sm text-neutral-700">
             {data.instrucoes.map((step, i) => (
               <li key={i}>{step}</li>
             ))}
@@ -346,10 +349,10 @@ function ExerciseContent({ description }: { description: string }) {
       )}
       {Array.isArray(data.materiais) && (
         <div>
-          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+          <h4 className="text-xs font-medium text-neutral-600 uppercase tracking-wide mb-1">
             Materiais
           </h4>
-          <ul className="list-disc list-inside text-sm text-gray-700">
+          <ul className="list-disc list-inside text-sm text-neutral-700">
             {data.materiais.map((m, i) => (
               <li key={i}>{m}</li>
             ))}
@@ -358,18 +361,18 @@ function ExerciseContent({ description }: { description: string }) {
       )}
       {data.tempo && typeof data.tempo === 'string' && (
         <div>
-          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+          <h4 className="text-xs font-medium text-neutral-600 uppercase tracking-wide mb-1">
             Tempo
           </h4>
-          <p className="text-sm text-gray-700">{data.tempo}</p>
+          <p className="text-sm text-neutral-700">{data.tempo}</p>
         </div>
       )}
       {data.observacoes && typeof data.observacoes === 'string' && (
         <div>
-          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+          <h4 className="text-xs font-medium text-neutral-600 uppercase tracking-wide mb-1">
             Observações
           </h4>
-          <p className="text-sm text-gray-700">{data.observacoes}</p>
+          <p className="text-sm text-neutral-700">{data.observacoes}</p>
         </div>
       )}
     </div>

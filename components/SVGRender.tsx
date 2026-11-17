@@ -490,7 +490,7 @@ const SVGRender = () => {
               <Button
                 variant="default"
                 className="px-6 py-3 rounded-full bg-gradient-to-r from-pink-500 to-yellow-400 text-white font-medium hover:shadow-lg hover:shadow-pink-500/20 transition-all flex items-center w-full sm:w-auto justify-center gap-1"
-                onClick={() => router.push(`/dashboard/games`)}
+                onClick={() => router.push(`/dashboard/biblioteca`)}
               >
                 <ExternalLink className="h-4 w-4" />
                 View All Activities

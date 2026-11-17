@@ -1,59 +1,198 @@
 'use client';
 
+import { SubscriptionPanel } from '@/components/dashboard/SubscriptionPanel';
+import { PrivacyPanel } from '@/components/settings/PrivacyPanel';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Edit, FileText, Mail, Save, X } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+
+interface ProfileStats {
+  data?: { downloads?: number; subscribed?: boolean; isAdmin?: boolean };
+}
+
+interface Preferences {
+  ageRanges?: string[];
+  phonemes?: string[];
+}
+
+interface Section {
+  value: string;
+  label: string;
+  title: string;
+  description: string;
+}
+
+const GROUPS: { title: string; sections: Section[] }[] = [
+  {
+    title: 'Conta',
+    sections: [
+      {
+        value: 'conta',
+        label: 'Perfil',
+        title: 'Perfil',
+        description: 'Seus dados de acesso e preferências.',
+      },
+      {
+        value: 'assinatura',
+        label: 'Assinatura',
+        title: 'Assinatura',
+        description: 'Seu plano, renovação e forma de pagamento.',
+      },
+    ],
+  },
+  {
+    title: 'Privacidade',
+    sections: [
+      {
+        value: 'privacidade',
+        label: 'Privacidade',
+        title: 'Privacidade',
+        description: 'Suas preferências e seus direitos sobre os seus dados.',
+      },
+    ],
+  },
+];
+
+const SECTIONS = GROUPS.flatMap((g) => g.sections);
 
 export default function ProfilePage() {
-  const { user, isLoaded } = useUser();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ clinic: '', specialization: '' });
+  return (
+    <Suspense fallback={<Skeleton className="m-8 h-48" />}>
+      <ProfileSettings />
+    </Suspense>
+  );
+}
 
-  const { data: stats } = useQuery({
+function ProfileSettings() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requested = searchParams.get('tab');
+  const current = SECTIONS.find((s) => s.value === requested) ?? SECTIONS[0];
+
+  const setSection = (value: string) => {
+    const qs = value === 'conta' ? '' : `?tab=${value}`;
+    router.replace(`/dashboard/profile${qs}`, { scroll: false });
+  };
+
+  return (
+    <div className="h-full">
+      <div className="border-b border-neutral-100 px-6 py-6 md:px-8">
+        <h1 className="text-2xl font-bold text-neutral-900 font-display">
+          Configurações
+        </h1>
+        <p className="mt-1 text-sm text-neutral-600">
+          Gerencie sua conta, assinatura e privacidade.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-6 px-6 py-6 md:flex-row md:gap-10 md:px-8">
+        <nav
+          aria-label="Seções de configurações"
+          className="md:w-52 md:shrink-0 md:border-r md:border-neutral-100 md:pr-6"
+        >
+          {GROUPS.map((group) => (
+            <div key={group.title} className="mb-4 last:mb-0">
+              <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-neutral-600">
+                {group.title}
+              </p>
+              <ul className="flex gap-1 overflow-x-auto md:flex-col">
+                {group.sections.map((section) => {
+                  const active = section.value === current.value;
+                  return (
+                    <li key={section.value} className="shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setSection(section.value)}
+                        aria-current={active ? 'page' : undefined}
+                        className={cn(
+                          'w-full rounded-md px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-900',
+                          active
+                            ? 'bg-neutral-100 font-semibold text-neutral-900'
+                            : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                        )}
+                      >
+                        {section.label}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        <section className="min-w-0 flex-1 max-w-3xl">
+          <h2 className="text-xl font-semibold text-neutral-900 font-display">
+            {current.title}
+          </h2>
+          <p className="mt-1 mb-6 text-sm text-neutral-600">
+            {current.description}
+          </p>
+
+          {current.value === 'conta' && (
+            <AccountSection onSection={setSection} />
+          )}
+          {current.value === 'assinatura' && <SubscriptionPanel />}
+          {current.value === 'privacidade' && <PrivacyPanel />}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function ReadOnlyField({
+  id,
+  label,
+  value,
+  hint,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  hint?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-sm font-medium text-neutral-900">
+        {label}
+      </Label>
+      <Input
+        id={id}
+        value={value}
+        readOnly
+        className="bg-neutral-50 text-neutral-900"
+      />
+      {hint && <p className="text-sm text-neutral-600">{hint}</p>}
+    </div>
+  );
+}
+
+function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
+  const { user, isLoaded } = useUser();
+
+  const { data: stats } = useQuery<ProfileStats>({
     queryKey: ['profile-stats'],
-    queryFn: async (): Promise<{
-      data?: { total?: number; downloads?: number; subscribed?: boolean };
-    }> => {
+    queryFn: async () => {
       const res = await fetch('/api/dashboard/stats');
+      if (!res.ok) throw new Error('Falha ao carregar o perfil');
       return res.json();
     },
     staleTime: 60_000,
   });
 
-  useEffect(() => {
-    if (user?.unsafeMetadata) {
-      setFormData({
-        clinic: (user.unsafeMetadata.clinic as string) || '',
-        specialization: (user.unsafeMetadata.specialization as string) || '',
-      });
-    }
-  }, [user]);
-
-  const handleSave = async () => {
-    await user?.update({
-      unsafeMetadata: { ...user.unsafeMetadata, ...formData },
-    });
-    setIsEditing(false);
-  };
-
   if (!isLoaded) {
-    return (
-      <div className="h-full p-8">
-        <Skeleton className="h-48 w-full rounded-xl" />
-      </div>
-    );
+    return <Skeleton className="h-64 w-full rounded-md" />;
   }
 
+  const name = user?.fullName || 'Usuário';
+  const email = user?.primaryEmailAddress?.emailAddress ?? '';
   const initials =
     user?.fullName
       ?.split(' ')
@@ -62,227 +201,123 @@ export default function ProfilePage() {
       .toUpperCase()
       .slice(0, 2) || 'U';
 
+  const preferences = user?.unsafeMetadata?.preferences as
+    | Preferences
+    | undefined;
+  const hasPreferences =
+    !!preferences &&
+    ((preferences.ageRanges?.length ?? 0) > 0 ||
+      (preferences.phonemes?.length ?? 0) > 0);
+
+  const planLabel = stats?.data?.subscribed
+    ? 'Profissional'
+    : stats?.data?.isAdmin
+      ? 'Administrador'
+      : 'Sem assinatura';
+
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('pt-BR')
+    : '—';
+
   return (
-    <div className="h-full">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-        <div className="px-8 py-6">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white font-display">
-            Meu Perfil
-          </h1>
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-base font-semibold text-neutral-900">
+          Informações gerais
+        </h3>
+        <p className="mb-3 text-sm text-neutral-600">
+          Dados da sua conta no Almanaque da Fala.
+        </p>
+        <div className="space-y-5 rounded-md border border-neutral-200 p-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-14 w-14">
+              <AvatarFallback className="bg-coral-50 text-lg font-semibold text-coral-800">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-base font-semibold text-neutral-900">{name}</p>
+              <p className="text-sm text-neutral-600">{email}</p>
+            </div>
+          </div>
+
+          <ReadOnlyField id="profile-name" label="Nome" value={name} />
+          <ReadOnlyField
+            id="profile-email"
+            label="E-mail"
+            value={email}
+            hint="O e-mail está ligado à sua conta e não pode ser alterado aqui."
+          />
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium text-neutral-900">
+                Plano
+              </Label>
+              <div className="flex h-10 items-center justify-between rounded-md border border-input bg-neutral-50 px-3">
+                <span className="text-sm text-neutral-900">{planLabel}</span>
+                <button
+                  type="button"
+                  onClick={() => onSection('assinatura')}
+                  className="text-sm font-medium text-coral-800 hover:underline"
+                >
+                  {stats?.data?.subscribed ? 'Gerenciar' : 'Ver planos'}
+                </button>
+              </div>
+            </div>
+            <ReadOnlyField
+              id="profile-member-since"
+              label="Membro desde"
+              value={memberSince}
+            />
+          </div>
+
+          <ReadOnlyField
+            id="profile-downloads"
+            label="Atividades baixadas este mês"
+            value={String(stats?.data?.downloads ?? 0)}
+          />
         </div>
       </div>
 
-      <div className="p-8 max-w-3xl">
-        {/* Profile Card */}
-        <Card className="border-gray-200 dark:border-gray-800">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16 border-2 border-gray-100">
-                  <AvatarFallback className="text-lg bg-indigo-50 text-indigo-600 font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {user?.fullName || 'Utilizador'}
-                  </h2>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                    <Mail className="h-3.5 w-3.5" />
-                    {user?.primaryEmailAddress?.emailAddress}
-                  </div>
-                  {formData.specialization &&
-                    formData.specialization.length > 2 && (
-                      <Badge variant="outline" className="mt-2 text-xs">
-                        {formData.specialization}
-                      </Badge>
-                    )}
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                {isEditing ? (
-                  <X className="h-4 w-4" />
-                ) : (
-                  <Edit className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            {/* Edit Form */}
-            {isEditing && (
-              <div className="mt-6 pt-6 border-t border-gray-100 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-xs text-gray-500">Clínica</Label>
-                    <Input
-                      value={formData.clinic}
-                      onChange={(e) =>
-                        setFormData({ ...formData, clinic: e.target.value })
-                      }
-                      placeholder="Nome da clínica"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-gray-500">
-                      Especialização
-                    </Label>
-                    <Input
-                      value={formData.specialization}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          specialization: e.target.value,
-                        })
-                      }
-                      placeholder="Ex: Fonemas e Consciência Fonológica"
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    onClick={handleSave}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    <Save className="h-3.5 w-3.5 mr-1.5" />
-                    Guardar
-                  </Button>
+      {hasPreferences && (
+        <div>
+          <h3 className="text-base font-semibold text-neutral-900">
+            Preferências
+          </h3>
+          <p className="mb-3 text-sm text-neutral-600">
+            O que você escolheu ao começar.
+          </p>
+          <div className="space-y-4 rounded-md border border-neutral-200 p-6">
+            {(preferences?.ageRanges?.length ?? 0) > 0 && (
+              <div>
+                <p className="mb-1.5 text-sm text-neutral-600">
+                  Faixas etárias
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {preferences?.ageRanges?.map((age) => (
+                    <Badge key={age} variant="outline" className="text-xs">
+                      {age}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Usage Stats */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <Card className="border-gray-200 dark:border-gray-800">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">3</p>
-                  <p className="text-xs text-gray-500">Downloads restantes</p>
+            {(preferences?.phonemes?.length ?? 0) > 0 && (
+              <div>
+                <p className="mb-1.5 text-sm text-neutral-600">Fonemas</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {preferences?.phonemes?.map((p) => (
+                    <Badge key={p} variant="outline" className="text-xs">
+                      /{p.toLowerCase()}/
+                    </Badge>
+                  ))}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card className="border-gray-200 dark:border-gray-800">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center">
-                  <Download className="h-4 w-4 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats?.data?.downloads || 0}
-                  </p>
-                  <p className="text-xs text-gray-500">Downloads este mês</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         </div>
-
-        {/* Preferences */}
-        {!!user?.unsafeMetadata?.preferences && (
-          <Card className="border-gray-200 dark:border-gray-800 mt-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-900">
-                Preferências
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {(user.unsafeMetadata.preferences as any)?.ageRanges?.length >
-                  0 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1.5">
-                      Faixas etárias
-                    </p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {(user.unsafeMetadata.preferences as any).ageRanges.map(
-                        (age: string) => (
-                          <Badge
-                            key={age}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {age}
-                          </Badge>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-                {(user.unsafeMetadata.preferences as any)?.phonemes?.length >
-                  0 && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1.5">Fonemas</p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {(user.unsafeMetadata.preferences as any).phonemes.map(
-                        (p: string) => (
-                          <Badge key={p} variant="outline" className="text-xs">
-                            /{p}/
-                          </Badge>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Account Info */}
-        <Card className="border-gray-200 dark:border-gray-800 mt-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-900">
-              Conta
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Membro desde</span>
-                <span className="text-gray-900">
-                  {user?.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString('pt-BR')
-                    : '—'}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500">Plano</span>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {stats?.data?.subscribed
-                      ? 'Profissional'
-                      : 'Sem assinatura'}
-                  </Badge>
-                  {!stats?.data?.subscribed && (
-                    <Link
-                      href="/dashboard/games"
-                      className="text-xs text-coral-800 font-medium hover:underline"
-                    >
-                      Assinar
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </div>
   );
 }

@@ -167,23 +167,23 @@ export default function ResourceFileUpload({
               border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
               ${
                 isDragActive
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500'
+                  ? 'border-coral-700 bg-coral-50 dark:bg-coral-900/20'
+                  : 'border-neutral-300 hover:border-neutral-400 dark:border-neutral-600 dark:hover:border-neutral-500'
               }
               ${isUploading ? 'pointer-events-none opacity-50' : ''}
             `}
           >
             <input {...getInputProps()} />
-            <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <Upload className="h-12 w-12 mx-auto mb-4 text-neutral-600" />
+            <p className="text-lg font-medium text-neutral-900 dark:text-white mb-2">
               {isDragActive
                 ? 'Solte os arquivos aqui'
                 : 'Arraste arquivos ou clique para selecionar'}
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               Máximo {maxFiles} arquivos, até {formatFileSize(maxSize)} cada
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+            <p className="text-xs text-neutral-600 dark:text-neutral-500 mt-1">
               Tipos aceitos: PDF, Vídeo, Áudio, Imagem
             </p>
           </div>
@@ -192,7 +192,7 @@ export default function ResourceFileUpload({
 
       {uploadedFiles.length > 0 && (
         <div className="space-y-2">
-          <h4 className="font-medium text-gray-900 dark:text-white">
+          <h4 className="font-medium text-neutral-900 dark:text-white">
             Arquivos Enviados ({uploadedFiles.length}/{maxFiles})
           </h4>
           {uploadedFiles.map((file) => (
@@ -204,16 +204,16 @@ export default function ResourceFileUpload({
                       {getFileIcon(file.file.type)}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white truncate">
+                      <p className="font-medium text-neutral-900 dark:text-white truncate">
                         {file.file.name}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
                         {formatFileSize(file.file.size)}
                       </p>
                       {file.status === 'uploading' && (
                         <div className="mt-2">
                           <Progress value={file.progress} className="h-2" />
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-neutral-600 mt-1">
                             {file.progress}% enviado
                           </p>
                         </div>

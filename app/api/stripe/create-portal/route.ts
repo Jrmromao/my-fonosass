@@ -31,10 +31,19 @@ export async function POST() {
       );
     }
 
-    // Create portal session
+    // paymentId stores the Stripe *subscription* id (set by the webhook); the
+    // portal needs the customer id, so resolve it from the subscription.
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      user.subscriptions.paymentId
+    );
+    const customerId =
+      typeof stripeSubscription.customer === 'string'
+        ? stripeSubscription.customer
+        : stripeSubscription.customer.id;
+
     const session = await stripe.billingPortal.sessions.create({
-      customer: user.subscriptions.paymentId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+      customer: customerId,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/profile?tab=assinatura`,
     });
 
     return NextResponse.json({ url: session.url });

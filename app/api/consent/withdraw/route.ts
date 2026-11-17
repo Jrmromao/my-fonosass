@@ -1,3 +1,4 @@
+import { getDbUserId } from '@/lib/auth/dbUser';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { ConsentService } from '@/lib/services/consentService';
 import { auth } from '@clerk/nextjs/server';
@@ -18,12 +19,19 @@ export async function POST(request: NextRequest) {
     }
 
     const { userId } = await auth();
+    const dbUserId = userId ? await getDbUserId(userId) : null;
+    if (!dbUserId) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
 
     const body = await request.json();
     const { consentType, reason } = body;
 
     await ConsentService.withdrawConsent(
-      userId!,
+      dbUserId,
       consentType,
       reason || 'Usuário retirou consentimento via painel'
     );

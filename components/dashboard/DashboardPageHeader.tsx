@@ -14,14 +14,14 @@ export function DashboardPageHeader({
   action,
 }: DashboardPageHeaderProps) {
   return (
-    <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+    <div className="border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
       <div className="px-8 py-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white font-display">
+          <h1 className="text-xl font-semibold text-neutral-900 dark:text-white font-display">
             {title}
           </h1>
           {description && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-0.5">
               {description}
             </p>
           )}

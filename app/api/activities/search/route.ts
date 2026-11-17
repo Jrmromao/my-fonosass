@@ -128,7 +128,18 @@ export async function GET(request: NextRequest) {
             /* skip failed thumbnails */
           }
         }
-        return { ...activity, thumbnailUrl, isFreeSample, canDownload };
+        // s3Key stays server-side: the client only needs the file id.
+        const files = activity.files.map(({ id, fileType }) => ({
+          id,
+          fileType,
+        }));
+        return {
+          ...activity,
+          files,
+          thumbnailUrl,
+          isFreeSample,
+          canDownload,
+        };
       })
     );
 

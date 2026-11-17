@@ -145,3 +145,12 @@ export const LANGUAGE_TOPICS: LanguageTopic[] = [
 // Below this many published activities the landing headline talks about the
 // catalog in general instead of quoting a small number.
 export const MIN_ACTIVITIES_TO_SHOW_COUNT = 50;
+
+/** Example word ("[p]ato") for a phoneme code, if the taxonomy has one. */
+export function exampleWordFor(code: string): string | undefined {
+  for (const group of PHONEME_GROUPS) {
+    const entry = group.entries.find((e) => e.code === code);
+    if (entry) return entry.example;
+  }
+  return undefined;
+}

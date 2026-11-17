@@ -4,7 +4,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
 import { APP_NAME } from '@/utils/constants';
 import { useClerk, useUser } from '@clerk/nextjs';
-import { BarChart2, BookOpen, Menu, X } from 'lucide-react';
+import { BarChart2, BookOpen, FolderCog, Menu, User, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -27,43 +27,18 @@ export function Sidebar({ className }: SidebarProps) {
   const userRole = useUserRole();
 
   const sidebarItems = [
-    {
-      title: 'Painel',
-      icon: BarChart2,
-      href: '/dashboard',
-    },
-    {
-      title: 'Atividades',
-      icon: BookOpen,
-      href: '/dashboard/games',
-    },
-    // Admin only items
+    { title: 'Painel', icon: BarChart2, href: '/dashboard' },
+    { title: 'Biblioteca', icon: BookOpen, href: '/dashboard/biblioteca' },
+    // Admin only
     ...(userRole.role === 'ADMIN'
       ? [
           {
             title: 'Recursos',
-            icon: BookOpen,
+            icon: FolderCog,
             href: '/dashboard/resources',
           },
         ]
       : []),
-    // {
-    //     title: "Meus Dados",
-    //     icon: Shield,
-    //     href: "/data-rights",
-    // },
-    // {
-    //     title: "Pacientes",
-    //     icon: Users,
-    //     href: "/dashboard/patient",
-    //     iconPlaceholder: "👥", // Placeholder for custom icon
-    // },
-    // {
-    //     title: "Configurações",
-    //     icon: Settings,
-    //     href: "/dashboard/settings",
-    //     iconPlaceholder: "⚙️", // Placeholder for custom icon
-    // }
   ];
 
   // Handle hydration and resize
@@ -96,13 +71,13 @@ export function Sidebar({ className }: SidebarProps) {
     <Button
       variant="ghost"
       size="icon"
-      className="md:hidden fixed top-4 left-4 z-50 rounded-full bg-white shadow-md hover:bg-gray-100"
+      className="md:hidden fixed top-4 left-4 z-50 rounded-full bg-white shadow-md hover:bg-neutral-100"
       onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
     >
       {isMobileMenuOpen ? (
-        <X className="h-5 w-5 text-gray-700" />
+        <X className="h-5 w-5 text-neutral-700" />
       ) : (
-        <Menu className="h-5 w-5 text-gray-700" />
+        <Menu className="h-5 w-5 text-neutral-700" />
       )}
     </Button>
   );
@@ -114,7 +89,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Mobile overlay */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300"
+          className="md:hidden fixed inset-0 bg-black/30 z-40 transition-opacity duration-300"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
@@ -125,7 +100,7 @@ export function Sidebar({ className }: SidebarProps) {
           'fixed top-0 left-0 z-40 h-screen flex flex-col bg-white border-r border-border transition-all duration-200 overflow-hidden',
           isCollapsed ? 'w-16' : 'w-56',
           isMobileMenuOpen
-            ? 'translate-x-0 shadow-xl'
+            ? 'translate-x-0'
             : '-translate-x-full md:translate-x-0',
           className
         )}
@@ -157,7 +132,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto mr-2 hidden md:flex text-gray-500 hover:text-foreground hover:bg-white/10 rounded-md h-7 w-7 p-0"
+              className="ml-auto mr-2 hidden md:flex text-neutral-600 hover:text-foreground hover:bg-neutral-100 rounded-md h-7 w-7 p-0"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -177,7 +152,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="absolute top-4 -right-3 hidden md:flex text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full w-6 h-6 p-0 shadow-lg border border-gray-200 dark:border-gray-700"
+              className="absolute top-4 -right-3 hidden md:flex text-neutral-600 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full w-6 h-6 p-0 border border-neutral-200 dark:border-neutral-700"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               <svg
@@ -252,7 +227,7 @@ export function Sidebar({ className }: SidebarProps) {
 
                     {/* Tooltip for collapsed state */}
                     {isHydrated && isCollapsed && (
-                      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-foreground text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-neutral-900 dark:bg-neutral-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                         {item.title}
                       </div>
                     )}
@@ -265,7 +240,7 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* User profile section */}
         {user && (
-          <div className="mt-auto border-t border-gray-800/50 p-3 overflow-hidden">
+          <div className="mt-auto border-t border-border p-3 overflow-hidden">
             <div
               className={cn(
                 'flex items-center',

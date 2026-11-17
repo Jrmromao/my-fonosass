@@ -46,8 +46,12 @@ describe('Subscription API Endpoints', () => {
           },
         ],
         mode: 'subscription',
-        success_url: expect.stringContaining('/dashboard'),
-        cancel_url: expect.stringContaining('/dashboard/games'),
+        success_url: expect.stringContaining(
+          '/dashboard/profile?tab=assinatura&checkout=success'
+        ),
+        cancel_url: expect.stringContaining(
+          '/dashboard/profile?tab=assinatura&checkout=canceled'
+        ),
         metadata: {
           clerkUserId: 'clerk-user-1',
           userId: 'user-1',
@@ -146,6 +150,7 @@ describe('Subscription API Endpoints', () => {
           paymentId: 'sub_123',
         },
       });
+      stripe.subscriptions.retrieve.mockResolvedValue({ customer: 'cus_123' });
       stripe.billingPortal.sessions.create.mockResolvedValue({
         url: 'https://billing.stripe.com/session-123',
       });
@@ -164,6 +169,11 @@ describe('Subscription API Endpoints', () => {
       // Assert
       expect(response.status).toBe(200);
       expect(data.url).toBe('https://billing.stripe.com/session-123');
+      // paymentId is a subscription id: the portal must get the customer id.
+      expect(stripe.subscriptions.retrieve).toHaveBeenCalledWith('sub_123');
+      expect(stripe.billingPortal.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({ customer: 'cus_123' })
+      );
     });
 
     it('should return 404 for user without subscription', async () => {

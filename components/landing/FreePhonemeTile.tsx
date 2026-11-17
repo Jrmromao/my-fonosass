@@ -40,7 +40,7 @@ export default function FreePhonemeTile({
   const label = `/${phoneme.toLowerCase()}/`;
   // Free samples are downloaded from the library after signing in; sign-up
   // returns the user there (redirect_url).
-  const libraryHref = `/dashboard/games?phoneme=${encodeURIComponent(phoneme)}`;
+  const libraryHref = `/dashboard/biblioteca?phoneme=${encodeURIComponent(phoneme)}`;
   const downloadHref = isSignedIn
     ? libraryHref
     : `/sign-up?redirect_url=${encodeURIComponent(libraryHref)}`;

@@ -1,17 +1,6 @@
-import DataSubjectRightsDashboard from '@/components/data-subject-rights/DataSubjectRightsDashboard'
-import { auth } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation';
 
-export default async function DataRightsPage() {
-  const { userId } = await auth()
-  
-  if (!userId) {
-    redirect('/sign-in')
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <DataSubjectRightsDashboard />
-    </div>
-  )
+// Moved into Configurações > Privacidade. Kept so old links keep working.
+export default function Page() {
+  redirect('/dashboard/profile?tab=privacidade');
 }

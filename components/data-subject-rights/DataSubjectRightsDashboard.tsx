@@ -1,198 +1,223 @@
-'use client'
+'use client';
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { useToast } from '@/hooks/use-toast'
-import { AlertTriangle, CheckCircle, Clock, Download, Edit3 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Download,
+  Edit3,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ExportRequest {
-  id: string
-  format: string
-  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'EXPIRED'
-  requestedAt: string
-  expiresAt: string
-  downloadUrl?: string
-  downloadCount: number
-  maxDownloads: number
+  id: string;
+  format: string;
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
+  requestedAt: string;
+  expiresAt: string;
+  downloadUrl?: string;
+  downloadCount: number;
+  maxDownloads: number;
 }
 
 interface CorrectionRequest {
-  id: string
-  field: string
-  currentValue?: string
-  requestedValue: string
-  reason: string
-  status: 'PENDING' | 'APPROVED' | 'REJECTED'
-  requestedAt: string
+  id: string;
+  field: string;
+  currentValue?: string;
+  requestedValue: string;
+  reason: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  requestedAt: string;
 }
 
 export default function DataSubjectRightsDashboard() {
-  const { t } = useTranslation()
-  const [exportRequests, setExportRequests] = useState<ExportRequest[]>([])
-  const [correctionRequests, setCorrectionRequests] = useState<CorrectionRequest[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [showCorrectionForm, setShowCorrectionForm] = useState(false)
+  const { t } = useTranslation();
+  const [exportRequests, setExportRequests] = useState<ExportRequest[]>([]);
+  const [correctionRequests, setCorrectionRequests] = useState<
+    CorrectionRequest[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showCorrectionForm, setShowCorrectionForm] = useState(false);
   const [correctionData, setCorrectionData] = useState({
     field: '',
     currentValue: '',
     requestedValue: '',
-    reason: ''
-  })
-  const { toast } = useToast()
+    reason: '',
+  });
+  const { toast } = useToast();
 
   // Load user's data requests
   useEffect(() => {
-    loadExportRequests()
-    loadCorrectionRequests()
-  }, [])
+    loadExportRequests();
+    loadCorrectionRequests();
+  }, []);
 
   const loadExportRequests = async () => {
     try {
-      const response = await fetch('/api/user-data/export-requests')
-      const data = await response.json()
+      const response = await fetch('/api/user-data/export-requests');
+      const data = await response.json();
       if (data.success) {
-        setExportRequests(data.data.exportRequests)
+        setExportRequests(data.data.exportRequests);
       }
     } catch (error) {
-      console.error('Error loading export requests:', error)
+      console.error('Error loading export requests:', error);
     }
-  }
+  };
 
   const loadCorrectionRequests = async () => {
     try {
-      const response = await fetch('/api/user-data/update')
-      const data = await response.json()
+      const response = await fetch('/api/user-data/update');
+      const data = await response.json();
       if (data.success) {
-        setCorrectionRequests(data.data.correctionRequests || [])
+        setCorrectionRequests(data.data.correctionRequests || []);
       }
     } catch (error) {
-      console.error('Error loading correction requests:', error)
+      console.error('Error loading correction requests:', error);
     }
-  }
+  };
 
   const handleDataExport = async (format: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await fetch('/api/user-data/export-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ format, reason: 'Usuário solicitou exportação de dados' })
-      })
-      
-      const data = await response.json()
+        body: JSON.stringify({
+          format,
+          reason: 'Usuário solicitou exportação de dados',
+        }),
+      });
+
+      const data = await response.json();
       if (data.success) {
         toast({
           title: t('dataRights.messages.exportSubmitted'),
           description: t('dataRights.messages.exportSubmittedDesc'),
-        })
-        loadExportRequests()
+        });
+        loadExportRequests();
       } else {
-        throw new Error(data.message || 'Failed to submit export request')
+        throw new Error(data.message || 'Failed to submit export request');
       }
     } catch (error) {
       toast({
         title: 'Erro',
-        description: 'Falha ao enviar solicitação de exportação. Tente novamente.',
-        variant: 'destructive'
-      })
+        description:
+          'Falha ao enviar solicitação de exportação. Tente novamente.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDataCorrection = async () => {
-    if (!correctionData.field || !correctionData.requestedValue || !correctionData.reason) {
+    if (
+      !correctionData.field ||
+      !correctionData.requestedValue ||
+      !correctionData.reason
+    ) {
       toast({
         title: 'Erro de Validação',
         description: 'Por favor, preencha todos os campos obrigatórios.',
-        variant: 'destructive'
-      })
-      return
+        variant: 'destructive',
+      });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await fetch('/api/user-data/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(correctionData)
-      })
-      
-      const data = await response.json()
+        body: JSON.stringify(correctionData),
+      });
+
+      const data = await response.json();
       if (data.success) {
         toast({
           title: 'Solicitação de Correção Enviada',
-          description: 'Sua solicitação de correção de dados foi enviada para análise.',
-        })
-        setShowCorrectionForm(false)
-        setCorrectionData({ field: '', currentValue: '', requestedValue: '', reason: '' })
-        loadCorrectionRequests()
+          description:
+            'Sua solicitação de correção de dados foi enviada para análise.',
+        });
+        setShowCorrectionForm(false);
+        setCorrectionData({
+          field: '',
+          currentValue: '',
+          requestedValue: '',
+          reason: '',
+        });
+        loadCorrectionRequests();
       } else {
-        throw new Error(data.message || 'Failed to submit correction request')
+        throw new Error(data.message || 'Failed to submit correction request');
       }
     } catch (error) {
       toast({
         title: 'Erro',
-        description: 'Falha ao enviar solicitação de correção. Tente novamente.',
-        variant: 'destructive'
-      })
+        description:
+          'Falha ao enviar solicitação de correção. Tente novamente.',
+        variant: 'destructive',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'PENDING':
-        return <Clock className="h-4 w-4 text-yellow-500" />
+        return <Clock className="h-4 w-4 text-amber-500" />;
       case 'FAILED':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
+        return <AlertTriangle className="h-4 w-4 text-red-500" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-500" />
+        return <Clock className="h-4 w-4 text-neutral-600" />;
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      'COMPLETED': 'default',
-      'PENDING': 'secondary',
-      'FAILED': 'destructive',
-      'EXPIRED': 'outline'
-    } as const
+      COMPLETED: 'default',
+      PENDING: 'secondary',
+      FAILED: 'destructive',
+      EXPIRED: 'outline',
+    } as const;
 
     return (
       <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
         {status}
       </Badge>
-    )
-  }
+    );
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Simple Header */}
-      <div className="text-center">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Direitos de Proteção de Dados
-        </h2>
-        <p className="text-sm text-gray-600">
-          Gerencie seus dados pessoais conforme a LGPD
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {/* Data Export Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5 text-blue-600" />
+            <Download className="h-5 w-5 text-neutral-600" />
             Exportar Meus Dados
           </CardTitle>
           <CardDescription>
@@ -201,7 +226,7 @@ export default function DataSubjectRightsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Button 
+            <Button
               onClick={() => handleDataExport('json')}
               disabled={isLoading}
               className="w-full"
@@ -209,7 +234,7 @@ export default function DataSubjectRightsDashboard() {
               <Download className="h-4 w-4 mr-2" />
               JSON
             </Button>
-            <Button 
+            <Button
               onClick={() => handleDataExport('csv')}
               disabled={isLoading}
               variant="outline"
@@ -218,7 +243,7 @@ export default function DataSubjectRightsDashboard() {
               <Download className="h-4 w-4 mr-2" />
               CSV
             </Button>
-            <Button 
+            <Button
               onClick={() => handleDataExport('pdf')}
               disabled={isLoading}
               variant="outline"
@@ -231,15 +256,24 @@ export default function DataSubjectRightsDashboard() {
 
           {exportRequests.length > 0 && (
             <div className="mt-4 space-y-2">
-              <h4 className="text-sm font-medium text-gray-700">Solicitações Recentes</h4>
+              <h4 className="text-sm font-medium text-neutral-700">
+                Solicitações Recentes
+              </h4>
               <div className="space-y-2">
                 {exportRequests.slice(0, 2).map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={request.id}
+                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
+                  >
                     <div className="flex items-center gap-2">
                       {getStatusIcon(request.status)}
-                      <span className="text-sm">{request.format.toUpperCase()}</span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(request.requestedAt).toLocaleDateString('pt-BR')}
+                      <span className="text-sm">
+                        {request.format.toUpperCase()}
+                      </span>
+                      <span className="text-xs text-neutral-600">
+                        {new Date(request.requestedAt).toLocaleDateString(
+                          'pt-BR'
+                        )}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -273,8 +307,10 @@ export default function DataSubjectRightsDashboard() {
         <CardContent>
           {!showCorrectionForm ? (
             <div className="text-center py-4">
-              <p className="text-sm text-gray-600 mb-4">Precisa corrigir alguma informação?</p>
-              <Button 
+              <p className="text-sm text-neutral-600 mb-4">
+                Precisa corrigir alguma informação?
+              </p>
+              <Button
                 onClick={() => setShowCorrectionForm(true)}
                 className="bg-green-600 hover:bg-green-700 text-white"
               >
@@ -286,8 +322,15 @@ export default function DataSubjectRightsDashboard() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="field" className="text-sm font-medium">Campo para Corrigir *</Label>
-                  <Select value={correctionData.field} onValueChange={(value) => setCorrectionData({...correctionData, field: value})}>
+                  <Label htmlFor="field" className="text-sm font-medium">
+                    Campo para Corrigir *
+                  </Label>
+                  <Select
+                    value={correctionData.field}
+                    onValueChange={(value) =>
+                      setCorrectionData({ ...correctionData, field: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o campo" />
                     </SelectTrigger>
@@ -300,49 +343,70 @@ export default function DataSubjectRightsDashboard() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="currentValue" className="text-sm font-medium">Valor Atual</Label>
+                  <Label htmlFor="currentValue" className="text-sm font-medium">
+                    Valor Atual
+                  </Label>
                   <Input
                     id="currentValue"
                     value={correctionData.currentValue}
-                    onChange={(e) => setCorrectionData({...correctionData, currentValue: e.target.value})}
+                    onChange={(e) =>
+                      setCorrectionData({
+                        ...correctionData,
+                        currentValue: e.target.value,
+                      })
+                    }
                     placeholder="Valor atual (opcional)"
                   />
                 </div>
               </div>
-              
+
               <div>
-                <Label htmlFor="requestedValue" className="text-sm font-medium">Valor Corrigido *</Label>
+                <Label htmlFor="requestedValue" className="text-sm font-medium">
+                  Valor Corrigido *
+                </Label>
                 <Input
                   id="requestedValue"
                   value={correctionData.requestedValue}
-                  onChange={(e) => setCorrectionData({...correctionData, requestedValue: e.target.value})}
+                  onChange={(e) =>
+                    setCorrectionData({
+                      ...correctionData,
+                      requestedValue: e.target.value,
+                    })
+                  }
                   placeholder="Digite o valor corrigido"
                   required
                 />
               </div>
-              
+
               <div>
-                <Label htmlFor="reason" className="text-sm font-medium">Motivo *</Label>
+                <Label htmlFor="reason" className="text-sm font-medium">
+                  Motivo *
+                </Label>
                 <Textarea
                   id="reason"
                   value={correctionData.reason}
-                  onChange={(e) => setCorrectionData({...correctionData, reason: e.target.value})}
+                  onChange={(e) =>
+                    setCorrectionData({
+                      ...correctionData,
+                      reason: e.target.value,
+                    })
+                  }
                   placeholder="Explique por que esta correção é necessária"
                   required
                   className="min-h-[80px]"
                 />
               </div>
-              
+
               <div className="flex gap-2">
-                <Button 
-                  onClick={handleDataCorrection} 
+                <Button
+                  onClick={handleDataCorrection}
                   disabled={isLoading}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   {isLoading ? 'Enviando...' : 'Enviar'}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setShowCorrectionForm(false)}
                 >
                   Cancelar
@@ -353,15 +417,22 @@ export default function DataSubjectRightsDashboard() {
 
           {correctionRequests.length > 0 && (
             <div className="mt-4 space-y-2">
-              <h4 className="text-sm font-medium text-gray-700">Solicitações Recentes</h4>
+              <h4 className="text-sm font-medium text-neutral-700">
+                Solicitações Recentes
+              </h4>
               <div className="space-y-2">
                 {correctionRequests.slice(0, 2).map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={request.id}
+                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
+                  >
                     <div className="flex items-center gap-2">
                       <Edit3 className="h-4 w-4 text-green-600" />
                       <span className="text-sm">{request.field}</span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(request.requestedAt).toLocaleDateString('pt-BR')}
+                      <span className="text-xs text-neutral-600">
+                        {new Date(request.requestedAt).toLocaleDateString(
+                          'pt-BR'
+                        )}
                       </span>
                     </div>
                     {getStatusBadge(request.status)}
@@ -373,5 +444,5 @@ export default function DataSubjectRightsDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

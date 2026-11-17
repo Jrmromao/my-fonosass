@@ -1,6 +1,10 @@
-import { ConsentAction, ConsentMethod, ConsentType, LegalBasis, PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/app/db';
+import {
+  ConsentAction,
+  ConsentMethod,
+  ConsentType,
+  LegalBasis,
+} from '@prisma/client';
 
 export interface ConsentPreferences {
   dataProcessing: boolean;
@@ -42,11 +46,19 @@ export class ConsentService {
   /**
    * Record granular consent preferences for a user
    */
-  static async recordConsent(request: ConsentRequest): Promise<ConsentRecord[]> {
-    const { userId, preferences, ipAddress, userAgent, consentMethod = ConsentMethod.GRANULAR } = request;
-    
+  static async recordConsent(
+    request: ConsentRequest
+  ): Promise<ConsentRecord[]> {
+    const {
+      userId,
+      preferences,
+      ipAddress,
+      userAgent,
+      consentMethod = ConsentMethod.GRANULAR,
+    } = request;
+
     const consentRecords: ConsentRecord[] = [];
-    
+
     // Define consent mappings
     const consentMappings = [
       {
@@ -56,7 +68,7 @@ export class ConsentService {
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['personal_data', 'contact_info', 'usage_data'],
         thirdParties: [],
-        retentionPeriod: 730 // 2 years
+        retentionPeriod: 730, // 2 years
       },
       {
         type: ConsentType.MARKETING_COMMUNICATIONS,
@@ -65,7 +77,7 @@ export class ConsentService {
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['contact_info', 'preferences'],
         thirdParties: ['email_service_provider'],
-        retentionPeriod: 365 // 1 year
+        retentionPeriod: 365, // 1 year
       },
       {
         type: ConsentType.ANALYTICS_TRACKING,
@@ -74,16 +86,17 @@ export class ConsentService {
         legalBasis: LegalBasis.LEGITIMATE_INTERESTS,
         dataCategories: ['usage_data', 'device_info'],
         thirdParties: ['google_analytics'],
-        retentionPeriod: 1095 // 3 years
+        retentionPeriod: 1095, // 3 years
       },
       {
         type: ConsentType.THIRD_PARTY_SHARING,
         preference: preferences.thirdPartySharing,
-        purpose: 'Compartilhamento de dados com terceiros para prestação de serviços',
+        purpose:
+          'Compartilhamento de dados com terceiros para prestação de serviços',
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['personal_data', 'usage_data'],
         thirdParties: ['stripe', 'aws', 'clerk'],
-        retentionPeriod: 730 // 2 years
+        retentionPeriod: 730, // 2 years
       },
       {
         type: ConsentType.COOKIES_ESSENTIAL,
@@ -92,7 +105,7 @@ export class ConsentService {
         legalBasis: LegalBasis.LEGITIMATE_INTERESTS,
         dataCategories: ['session_data'],
         thirdParties: [],
-        retentionPeriod: 30 // 30 days
+        retentionPeriod: 30, // 30 days
       },
       {
         type: ConsentType.COOKIES_ANALYTICS,
@@ -101,7 +114,7 @@ export class ConsentService {
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['usage_data', 'device_info'],
         thirdParties: ['google_analytics'],
-        retentionPeriod: 730 // 2 years
+        retentionPeriod: 730, // 2 years
       },
       {
         type: ConsentType.COOKIES_FUNCTIONAL,
@@ -110,7 +123,7 @@ export class ConsentService {
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['preferences', 'settings'],
         thirdParties: [],
-        retentionPeriod: 365 // 1 year
+        retentionPeriod: 365, // 1 year
       },
       {
         type: ConsentType.COOKIES_MARKETING,
@@ -119,7 +132,7 @@ export class ConsentService {
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['preferences', 'behavioral_data'],
         thirdParties: ['google_ads', 'facebook_pixel'],
-        retentionPeriod: 365 // 1 year
+        retentionPeriod: 365, // 1 year
       },
       {
         type: ConsentType.PROFILING,
@@ -128,7 +141,7 @@ export class ConsentService {
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['behavioral_data', 'preferences', 'usage_patterns'],
         thirdParties: [],
-        retentionPeriod: 1095 // 3 years
+        retentionPeriod: 1095, // 3 years
       },
       {
         type: ConsentType.AUTOMATED_DECISION_MAKING,
@@ -137,8 +150,8 @@ export class ConsentService {
         legalBasis: LegalBasis.CONSENT,
         dataCategories: ['behavioral_data', 'usage_data', 'preferences'],
         thirdParties: [],
-        retentionPeriod: 1095 // 3 years
-      }
+        retentionPeriod: 1095, // 3 years
+      },
     ];
 
     // Process each consent type
@@ -146,26 +159,30 @@ export class ConsentService {
       const existingRecord = await prisma.consentRecord.findFirst({
         where: {
           userId,
-          consentType: mapping.type
-        }
+          consentType: mapping.type,
+        },
       });
 
-      const consentRecord = existingRecord 
+      const consentRecord = existingRecord
         ? await prisma.consentRecord.update({
             where: { id: existingRecord.id },
             data: {
               granted: mapping.preference,
               grantedAt: mapping.preference ? new Date() : null,
               withdrawnAt: !mapping.preference ? new Date() : null,
-              expiresAt: mapping.preference ? new Date(Date.now() + mapping.retentionPeriod * 24 * 60 * 60 * 1000) : null,
+              expiresAt: mapping.preference
+                ? new Date(
+                    Date.now() + mapping.retentionPeriod * 24 * 60 * 60 * 1000
+                  )
+                : null,
               ipAddress,
               userAgent,
               consentMethod,
               dataCategories: mapping.dataCategories,
               thirdParties: mapping.thirdParties,
               retentionPeriod: mapping.retentionPeriod,
-              updatedAt: new Date()
-            }
+              updatedAt: new Date(),
+            },
           })
         : await prisma.consentRecord.create({
             data: {
@@ -176,29 +193,35 @@ export class ConsentService {
               granted: mapping.preference,
               grantedAt: mapping.preference ? new Date() : null,
               withdrawnAt: !mapping.preference ? new Date() : null,
-              expiresAt: mapping.preference ? new Date(Date.now() + mapping.retentionPeriod * 24 * 60 * 60 * 1000) : null,
+              expiresAt: mapping.preference
+                ? new Date(
+                    Date.now() + mapping.retentionPeriod * 24 * 60 * 60 * 1000
+                  )
+                : null,
               ipAddress,
               userAgent,
               consentMethod,
               dataCategories: mapping.dataCategories,
               thirdParties: mapping.thirdParties,
-              retentionPeriod: mapping.retentionPeriod
-            }
+              retentionPeriod: mapping.retentionPeriod,
+            },
           });
 
       // Create audit log
       await this.createAuditLog({
         consentRecordId: consentRecord.id,
-        action: mapping.preference ? ConsentAction.GRANTED : ConsentAction.WITHDRAWN,
+        action: mapping.preference
+          ? ConsentAction.GRANTED
+          : ConsentAction.WITHDRAWN,
         newValue: {
           granted: mapping.preference,
           grantedAt: mapping.preference ? new Date() : null,
-          withdrawnAt: !mapping.preference ? new Date() : null
+          withdrawnAt: !mapping.preference ? new Date() : null,
         },
         reason: 'User consent preference updated',
         performedBy: userId,
         ipAddress,
-        userAgent
+        userAgent,
       });
 
       consentRecords.push(consentRecord as ConsentRecord);
@@ -213,7 +236,7 @@ export class ConsentService {
   static async getUserConsentStatus(userId: string): Promise<ConsentRecord[]> {
     return await prisma.consentRecord.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -221,8 +244,8 @@ export class ConsentService {
    * Withdraw specific consent
    */
   static async withdrawConsent(
-    userId: string, 
-    consentType: ConsentType, 
+    userId: string,
+    consentType: ConsentType,
     reason?: string,
     ipAddress?: string,
     userAgent?: string
@@ -231,8 +254,8 @@ export class ConsentService {
       where: {
         userId,
         consentType,
-        granted: true
-      }
+        granted: true,
+      },
     });
 
     if (!consentRecord) {
@@ -245,8 +268,8 @@ export class ConsentService {
         granted: false,
         withdrawnAt: new Date(),
         expiresAt: null,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
 
     // Create audit log
@@ -256,17 +279,17 @@ export class ConsentService {
       previousValue: {
         granted: true,
         grantedAt: consentRecord.grantedAt,
-        withdrawnAt: null
+        withdrawnAt: null,
       },
       newValue: {
         granted: false,
         grantedAt: consentRecord.grantedAt,
-        withdrawnAt: new Date()
+        withdrawnAt: new Date(),
       },
       reason: reason || 'User withdrew consent',
       performedBy: userId,
       ipAddress,
-      userAgent
+      userAgent,
     });
 
     return updatedRecord as ConsentRecord;
@@ -279,35 +302,35 @@ export class ConsentService {
     return await prisma.consentAuditLog.findMany({
       where: {
         consentRecord: {
-          userId
-        }
+          userId,
+        },
       },
       include: {
         consentRecord: {
           select: {
             consentType: true,
-            purpose: true
-          }
-        }
+            purpose: true,
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   /**
    * Check if user has granted specific consent
    */
-  static async hasConsent(userId: string, consentType: ConsentType): Promise<boolean> {
+  static async hasConsent(
+    userId: string,
+    consentType: ConsentType
+  ): Promise<boolean> {
     const consent = await prisma.consentRecord.findFirst({
       where: {
         userId,
         consentType,
         granted: true,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
-      }
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
     });
 
     return !!consent;
@@ -335,15 +358,17 @@ export class ConsentService {
         reason: data.reason,
         performedBy: data.performedBy,
         ipAddress: data.ipAddress,
-        userAgent: data.userAgent
-      }
+        userAgent: data.userAgent,
+      },
     });
   }
 
   /**
    * Get expiring consents (for renewal notifications)
    */
-  static async getExpiringConsents(daysBeforeExpiry: number = 30): Promise<ConsentRecord[]> {
+  static async getExpiringConsents(
+    daysBeforeExpiry: number = 30
+  ): Promise<ConsentRecord[]> {
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + daysBeforeExpiry);
 
@@ -352,17 +377,17 @@ export class ConsentService {
         granted: true,
         expiresAt: {
           lte: expiryDate,
-          gte: new Date()
-        }
+          gte: new Date(),
+        },
       },
       include: {
         user: {
           select: {
             email: true,
-            fullName: true
-          }
-        }
-      }
+            fullName: true,
+          },
+        },
+      },
     });
   }
 
@@ -374,14 +399,14 @@ export class ConsentService {
       where: {
         granted: true,
         expiresAt: {
-          lt: new Date()
-        }
+          lt: new Date(),
+        },
       },
       data: {
         granted: false,
         withdrawnAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
 
     return result.count;

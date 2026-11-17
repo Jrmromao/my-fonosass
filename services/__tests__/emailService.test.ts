@@ -131,7 +131,9 @@ describe('EmailService', () => {
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining('https://test.com/dashboard/games'),
+          html: expect.stringContaining(
+            'https://test.com/dashboard/biblioteca'
+          ),
         })
       );
     });

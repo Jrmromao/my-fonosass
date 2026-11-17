@@ -120,6 +120,9 @@ jest.mock('@/lib/stripe', () => ({
         create: jest.fn(),
       },
     },
+    subscriptions: {
+      retrieve: jest.fn(),
+    },
   },
 }));
 

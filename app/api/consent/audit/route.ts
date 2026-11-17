@@ -1,3 +1,4 @@
+import { getDbUserId } from '@/lib/auth/dbUser';
 import { ConsentService } from '@/lib/services/consentService';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
@@ -5,21 +6,25 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const dbUserId = await getDbUserId(userId);
+    if (!dbUserId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { success: false, message: 'User not found' },
+        { status: 404 }
       );
     }
 
-    const auditTrail = await ConsentService.getConsentAuditTrail(userId);
+    const auditTrail = await ConsentService.getConsentAuditTrail(dbUserId);
 
     return NextResponse.json({
       success: true,
-      auditTrail
+      auditTrail,
     });
-
   } catch (error) {
     console.error('Error fetching consent audit trail:', error);
     return NextResponse.json(

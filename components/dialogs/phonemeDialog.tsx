@@ -263,7 +263,7 @@ function PhonemeDialog({
                 variant="default"
                 style={{ backgroundColor: activeColor }}
                 className={`px-5 py-2.5 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-primary/20 transition-all flex items-center w-full sm:w-auto justify-center gap-1.5 ${activeColor}`}
-                onClick={() => router.push(`/dashboard/games`)}
+                onClick={() => router.push(`/dashboard/biblioteca`)}
               >
                 <ExternalLink className="h-4 w-4" />
                 View All Activities

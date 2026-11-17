@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { phonemeLabel } from '@/lib/activityLabels';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { notFound } from 'next/navigation';
@@ -55,7 +56,7 @@ export default async function ExerciseReviewPage({
       <div className="max-w-4xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow p-6">
           <h1 className="text-xl font-bold mb-2">Link inválido ou expirado</h1>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             Este link de revisão não é válido. Verifique o link enviado ou
             acesse o painel administrativo.
           </p>
@@ -104,7 +105,7 @@ export default async function ExerciseReviewPage({
         </div>
       )}
       {already && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+        <div className="mb-4 p-4 bg-amber-50 border border-yellow-200 rounded-lg text-amber-800">
           Este exercício já foi aprovado anteriormente.
         </div>
       )}
@@ -119,10 +120,10 @@ export default async function ExerciseReviewPage({
               activity.status === 'PUBLISHED'
                 ? 'bg-green-100 text-green-800'
                 : activity.status === 'PENDING_REVIEW'
-                  ? 'bg-yellow-100 text-yellow-800'
+                  ? 'bg-amber-100 text-amber-800'
                   : activity.status === 'REJECTED'
                     ? 'bg-red-100 text-red-800'
-                    : 'bg-gray-100 text-gray-800'
+                    : 'bg-neutral-100 text-neutral-800'
             }`}
           >
             {activity.status === 'PUBLISHED' && 'Publicado'}
@@ -135,10 +136,10 @@ export default async function ExerciseReviewPage({
         {/* The actual activity — reviewers must see the real worksheet, not
             just the metadata, before approving or rejecting. */}
         <div className="mb-6">
-          <h3 className="font-semibold text-gray-700 mb-2">Atividade</h3>
+          <h3 className="font-semibold text-neutral-700 mb-2">Atividade</h3>
           {fileUrl ? (
             isPdf ? (
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="border border-neutral-200 rounded-lg overflow-hidden">
                 <iframe
                   src={fileUrl}
                   title={file?.name || 'Atividade'}
@@ -150,11 +151,11 @@ export default async function ExerciseReviewPage({
               <img
                 src={fileUrl}
                 alt={file?.name || 'Atividade'}
-                className="w-full rounded-lg border border-gray-200"
+                className="w-full rounded-lg border border-neutral-200"
               />
             )
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-neutral-600">
               Não foi possível carregar o arquivo da atividade.
             </p>
           )}
@@ -163,7 +164,7 @@ export default async function ExerciseReviewPage({
               href={fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-2 text-sm text-blue-600 hover:underline"
+              className="inline-block mt-2 text-sm text-coral-800 hover:underline"
             >
               Abrir em nova aba / Descarregar
             </a>
@@ -172,29 +173,31 @@ export default async function ExerciseReviewPage({
 
         <div className="space-y-4">
           <div>
-            <span className="text-sm text-gray-500">Fonema:</span>
-            <span className="ml-2 font-medium">/{activity.phoneme}/</span>
+            <span className="text-sm text-neutral-600">Fonema:</span>
+            <span className="ml-2 font-medium">
+              {phonemeLabel(activity.phoneme)}
+            </span>
           </div>
           <div>
-            <span className="text-sm text-gray-500">Dificuldade:</span>
+            <span className="text-sm text-neutral-600">Dificuldade:</span>
             <span className="ml-2 font-medium">{activity.difficulty}</span>
           </div>
           <div>
-            <span className="text-sm text-gray-500">Faixa etária:</span>
+            <span className="text-sm text-neutral-600">Faixa etária:</span>
             <span className="ml-2 font-medium">{activity.ageRange}</span>
           </div>
 
           {exerciseData.objetivo && (
             <div>
-              <h3 className="font-semibold text-gray-700">Objetivo</h3>
-              <p className="text-gray-600">{exerciseData.objetivo}</p>
+              <h3 className="font-semibold text-neutral-700">Objetivo</h3>
+              <p className="text-neutral-600">{exerciseData.objetivo}</p>
             </div>
           )}
 
           {exerciseData.instrucoes && (
             <div>
-              <h3 className="font-semibold text-gray-700">Instruções</h3>
-              <ol className="list-decimal list-inside space-y-1 text-gray-600">
+              <h3 className="font-semibold text-neutral-700">Instruções</h3>
+              <ol className="list-decimal list-inside space-y-1 text-neutral-600">
                 {exerciseData.instrucoes.map((step: string, i: number) => (
                   <li key={i}>{step}</li>
                 ))}
@@ -204,8 +207,8 @@ export default async function ExerciseReviewPage({
 
           {exerciseData.materiais && (
             <div>
-              <h3 className="font-semibold text-gray-700">Materiais</h3>
-              <ul className="list-disc list-inside text-gray-600">
+              <h3 className="font-semibold text-neutral-700">Materiais</h3>
+              <ul className="list-disc list-inside text-neutral-600">
                 {exerciseData.materiais.map((m: string, i: number) => (
                   <li key={i}>{m}</li>
                 ))}
@@ -215,15 +218,15 @@ export default async function ExerciseReviewPage({
 
           {exerciseData.tempo && (
             <div>
-              <span className="text-sm text-gray-500">Tempo:</span>
+              <span className="text-sm text-neutral-600">Tempo:</span>
               <span className="ml-2">{exerciseData.tempo}</span>
             </div>
           )}
 
           {exerciseData.observacoes && (
             <div>
-              <h3 className="font-semibold text-gray-700">Observações</h3>
-              <p className="text-gray-600">{exerciseData.observacoes}</p>
+              <h3 className="font-semibold text-neutral-700">Observações</h3>
+              <p className="text-neutral-600">{exerciseData.observacoes}</p>
             </div>
           )}
         </div>

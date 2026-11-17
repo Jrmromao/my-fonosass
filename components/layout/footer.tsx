@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { ChevronUp, HelpCircle, LogOut, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 
 const formatUsername = (user: any): string => {
@@ -50,6 +51,7 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -57,7 +59,13 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      // The menu is portaled to <body>, so it is outside menuRef.
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        !panelRef.current?.contains(target)
+      ) {
         setIsMenuOpen(false);
       }
     };
@@ -74,10 +82,10 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
             'justify-center': isCollapsed,
           })}
         >
-          <div className="size-10 rounded-full bg-gray-700 animate-pulse" />
+          <div className="size-10 rounded-full bg-neutral-200 animate-pulse" />
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <div className="h-4 bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 bg-neutral-200 rounded animate-pulse" />
             </div>
           )}
         </div>
@@ -112,7 +120,7 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
     {
       label: 'Ajuda',
       icon: <HelpCircle className="size-4" />,
-      action: createAction('/help'),
+      action: createAction('/contato'),
     },
     {
       label: 'Sair',
@@ -128,7 +136,7 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
       aria-haspopup="true"
       aria-expanded={isMenuOpen}
       className={cn(
-        'flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-white/10',
+        'flex items-center gap-3 w-full p-2 rounded-lg transition-colors hover:bg-neutral-100',
         { 'justify-center': isCollapsed }
       )}
     >
@@ -160,10 +168,12 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
             <h3 className="text-sm font-medium text-foreground truncate">
               {username}
             </h3>
-            <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {userEmail}
+            </p>
           </div>
           <ChevronUp
-            className={cn('size-4 text-gray-500 transition-transform', {
+            className={cn('size-4 text-neutral-600 transition-transform', {
               'rotate-180': isMenuOpen,
             })}
           />
@@ -174,9 +184,10 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
 
   const Menu = (
     <div
+      ref={panelRef}
       role="menu"
       className={cn(
-        'fixed bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700/50 z-[9999] min-w-[240px] transition-all duration-200 ease-in-out',
+        'fixed bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700/50 z-[9999] min-w-[240px] transition-all duration-200 ease-in-out',
         'transform opacity-0 scale-95 pointer-events-none',
         isMenuOpen && 'transform opacity-100 scale-100 pointer-events-auto',
         {
@@ -185,14 +196,14 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
         }
       )}
     >
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+      <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
+        <p className="text-sm font-semibold text-neutral-900 dark:text-white">
           {username}
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+        <p className="text-xs text-neutral-600 dark:text-neutral-400 truncate">
           {userEmail}
         </p>
-        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+        <p className="text-xs text-neutral-600 dark:text-neutral-400 font-medium">
           Almanaque da Fala
         </p>
       </div>
@@ -205,7 +216,7 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
             className={cn(
               'flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors duration-200 text-left',
               {
-                'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800':
+                'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800':
                   item.variant !== 'danger',
                 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20':
                   item.variant === 'danger',
@@ -222,7 +233,8 @@ const Footer = ({ isCollapsed = false }: FooterProps) => {
 
   return (
     <div ref={menuRef} className="relative w-full z-[10000]">
-      {Menu}
+      {/* Portal: the sidebar clips overflow, which cut the menu off. */}
+      {createPortal(Menu, document.body)}
       {AvatarTrigger}
     </div>
   );

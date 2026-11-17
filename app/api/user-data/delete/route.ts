@@ -1,209 +1,126 @@
 import { prisma } from '@/app/db';
-import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
+import { stripe } from '@/lib/stripe';
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
-export async function POST(request: Request) {
+const bodySchema = z.object({ confirmDeletion: z.literal(true) });
+
+const NO_STORE = { 'Cache-Control': 'private, no-store' };
+
+/**
+ * LGPD erasure: cancels the Stripe subscription, deletes the user's rows and
+ * then the Clerk login. Accounts that authored content (admins) are refused:
+ * deleting them would delete the library, so they go through the DPO.
+ */
+export async function POST(request: NextRequest) {
   try {
-    const { userId: clerkUserId } = await auth();
+    const security = await SecurityMiddleware.apply(request, {
+      requireAuth: true,
+      requireCSRF: true,
+      rateLimitType: 'general',
+      validateInput: false,
+    });
+    if (!security.success) return security.response!;
 
+    const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse request body to get confirmation
-    const { confirmDeletion, reason } = await request.json();
-
-    if (!confirmDeletion) {
+    const body = bodySchema.safeParse(await request.json().catch(() => null));
+    if (!body.success) {
       return NextResponse.json(
-        {
-          error: 'Deletion confirmation required',
-          message:
-            'You must confirm the deletion by setting confirmDeletion to true',
-        },
-        { status: 400 }
+        { error: 'Deletion confirmation required' },
+        { status: 400, headers: NO_STORE }
       );
     }
 
-    // Get user from database first to verify existence
     const user = await prisma.user.findUnique({
       where: { clerkUserId },
-      include: {
-        subscriptions: true,
-        downloadHistory: true,
-        createdActivities: {
-          include: {
-            files: true,
+      select: {
+        id: true,
+        role: true,
+        subscriptions: { select: { paymentId: true } },
+        _count: {
+          select: {
+            createdActivities: true,
+            reviewedActivities: true,
+            createdResources: true,
           },
         },
       },
     });
-
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404, headers: NO_STORE }
+      );
     }
 
-    // Create audit log entry before deletion
-    const auditLog = {
-      userId: user.id,
-      clerkUserId: user.clerkUserId,
-      email: user.email,
-      fullName: user.fullName,
-      deletionReason: reason || 'User requested data deletion',
-      deletedAt: new Date().toISOString(),
-      dataDeleted: {
-        userProfile: true,
-        subscription: !!user.subscriptions,
-        downloadHistory: user.downloadHistory.length,
-        createdActivities: user.createdActivities.length,
-        activityFiles: user.createdActivities.reduce(
-          (total, activity) => total + activity.files.length,
-          0
-        ),
-      },
-    };
+    const authoredContent =
+      user._count.createdActivities +
+      user._count.reviewedActivities +
+      user._count.createdResources;
+    if (user.role === 'ADMIN' || authoredContent > 0) {
+      return NextResponse.json(
+        { error: 'ACCOUNT_HAS_CONTENT' },
+        { status: 409, headers: NO_STORE }
+      );
+    }
 
-    // Log the deletion for audit purposes
-
-    // Start transaction for cascading deletion
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Delete download history
-      await tx.downloadHistory.deleteMany({
-        where: { userId: user.id },
-      });
-
-      // 2. Delete activity files for user's created activities
-      for (const activity of user.createdActivities) {
-        await tx.activityFile.deleteMany({
-          where: { activityId: activity.id },
-        });
+    // Stop billing first: if this fails, nothing has been deleted yet.
+    const subscriptionId = user.subscriptions?.paymentId;
+    if (subscriptionId) {
+      try {
+        await stripe.subscriptions.cancel(subscriptionId);
+      } catch (error) {
+        const code = (error as { code?: string }).code;
+        if (code !== 'resource_missing') {
+          console.error('Stripe cancel failed during account deletion:', error);
+          return NextResponse.json(
+            { error: 'BILLING_CANCEL_FAILED' },
+            { status: 502, headers: NO_STORE }
+          );
+        }
       }
-
-      // 3. Delete user's created activities
-      await tx.activity.deleteMany({
-        where: { createdById: user.id },
-      });
-
-      // 4. Delete subscription if exists
-      if (user.subscriptions) {
-        await tx.subscription.delete({
-          where: { userId: user.id },
-        });
-      }
-
-      // 5. Delete download limits if exists
-      await tx.downloadLimit.deleteMany({
-        where: { userId: user.id },
-      });
-
-      // 6. Finally delete the user
-      const deletedUser = await tx.user.delete({
-        where: { id: user.id },
-      });
-
-      return deletedUser;
-    });
-
-    // TODO: In a production environment, you would also need to:
-    // 1. Delete user from Clerk
-    // 2. Delete files from S3
-    // 3. Send deletion confirmation email
-    // 4. Update external systems
-    // 5. Store audit log in secure location
-
-    return NextResponse.json({
-      success: true,
-      message: 'User data successfully deleted',
-      data: {
-        deletedUserId: result.id,
-        deletedAt: new Date().toISOString(),
-        auditLog: auditLog,
-      },
-    });
-  } catch (error) {
-    console.error('Error deleting user data:', error);
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message: 'Failed to delete user data',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// GET endpoint to show what data would be deleted (preview)
-export async function GET() {
-  try {
-    const { userId: clerkUserId } = await auth();
-
-    if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user data summary for preview
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId },
-      include: {
-        subscriptions: true,
-        downloadHistory: true,
-        createdActivities: {
-          include: {
-            files: true,
-          },
-        },
-      },
-    });
+    await prisma.$transaction([
+      prisma.consentAuditLog.deleteMany({
+        where: { consentRecord: { userId: user.id } },
+      }),
+      prisma.consentRecord.deleteMany({ where: { userId: user.id } }),
+      prisma.downloadHistory.deleteMany({ where: { userId: user.id } }),
+      prisma.download.deleteMany({ where: { userId: user.id } }),
+      prisma.downloadLimit.deleteMany({ where: { userId: user.id } }),
+      prisma.resourceDownload.deleteMany({ where: { userId: user.id } }),
+      prisma.resourceView.deleteMany({ where: { userId: user.id } }),
+      prisma.resourceRating.deleteMany({ where: { userId: user.id } }),
+      prisma.dataRetentionLog.deleteMany({ where: { userId: user.id } }),
+      prisma.subscription.deleteMany({ where: { userId: user.id } }),
+      prisma.user.delete({ where: { id: user.id } }),
+    ]);
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // Last step: the login. Data is already gone if this fails.
+    try {
+      const clerk = await clerkClient();
+      await clerk.users.deleteUser(clerkUserId);
+    } catch (error) {
+      console.error('Clerk user deletion failed after data deletion:', error);
+      return NextResponse.json(
+        { error: 'LOGIN_DELETE_FAILED' },
+        { status: 500, headers: NO_STORE }
+      );
     }
 
-    // Calculate data summary
-    const dataSummary = {
-      userProfile: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        createdAt: user.createdAt,
-      },
-      subscription: user.subscriptions
-        ? {
-            tier: user.subscriptions.tier,
-            status: user.subscriptions.status,
-            currentPeriodEnd: user.subscriptions.currentPeriodEnd,
-          }
-        : null,
-      downloadHistory: {
-        count: user.downloadHistory.length,
-        totalSize: user.downloadHistory.reduce(
-          (sum, download) => sum + (download.fileSize || 0),
-          0
-        ),
-      },
-      createdActivities: {
-        count: user.createdActivities.length,
-        totalFiles: user.createdActivities.reduce(
-          (total, activity) => total + activity.files.length,
-          0
-        ),
-      },
-      warning:
-        'This action cannot be undone. All your data will be permanently deleted.',
-    };
-
-    return NextResponse.json({
-      success: true,
-      data: dataSummary,
-    });
+    return NextResponse.json({ success: true }, { headers: NO_STORE });
   } catch (error) {
-    console.error('Error getting deletion preview:', error);
+    console.error('Error deleting account:', error);
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message: 'Failed to get deletion preview',
-      },
-      { status: 500 }
+      { error: 'Internal server error' },
+      { status: 500, headers: NO_STORE }
     );
   }
 }

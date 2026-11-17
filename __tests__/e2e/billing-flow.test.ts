@@ -219,7 +219,7 @@ test.describe('Billing Flow E2E Tests', () => {
     });
 
     // Act
-    await page.goto('/dashboard/games');
+    await page.goto('/dashboard/biblioteca');
     await page.getByText('Download').first().click();
 
     // Assert

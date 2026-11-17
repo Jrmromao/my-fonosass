@@ -19,7 +19,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
 
   test('should display exercises in dashboard games page', async ({ page }) => {
     // Skip auth for testing - go directly to games page
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Should show exercises table
     await expect(
@@ -38,7 +38,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
   test('should show exercise preview when clicking actions', async ({
     page,
   }) => {
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Wait for table to load
     await page.waitForSelector('[data-testid="activities-table"]', {
@@ -65,7 +65,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
   });
 
   test('should filter exercises by phoneme', async ({ page }) => {
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Click on Fonemas tab
     await page.click('text=Fonemas');
@@ -86,7 +86,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
   });
 
   test('should search exercises by name', async ({ page }) => {
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Wait for table to load
     await page.waitForSelector('[data-testid="activities-table"]');
@@ -104,7 +104,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
   });
 
   test('should display exercise categories and types', async ({ page }) => {
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Switch to Types tab
     await page.click('text=Tipos');
@@ -124,7 +124,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
   });
 
   test('should show exercise difficulty badges', async ({ page }) => {
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Wait for table to load
     await page.waitForSelector('[data-testid="activities-table"]');
@@ -153,7 +153,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
   });
 
   test('should display seeded exercise data', async ({ page }) => {
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Wait for data to load
     await page.waitForSelector('[data-testid="activities-table"]');
@@ -168,7 +168,7 @@ test.describe('Week 1 MVP Features - Integration Tests', () => {
   });
 
   test('should handle empty search results gracefully', async ({ page }) => {
-    await page.goto('http://localhost:3000/dashboard/games');
+    await page.goto('http://localhost:3000/dashboard/biblioteca');
 
     // Search for non-existent exercise
     const searchInput = page.locator('input[placeholder*="Buscar"]');

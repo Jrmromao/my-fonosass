@@ -240,7 +240,7 @@ export async function createActivity(formData: FormData) {
     }
 
     revalidatePath('/activities');
-    revalidatePath('/dashboard/games');
+    revalidatePath('/dashboard/biblioteca');
 
     return { success: true, activity };
   } catch (error) {

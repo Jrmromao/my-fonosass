@@ -51,6 +51,17 @@ const nextConfig = {
   // Compression
   compress: true,
 
+  // Old URLs
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/games',
+        destination: '/dashboard/biblioteca',
+        permanent: true,
+      },
+    ];
+  },
+
   // Headers for performance
   async headers() {
     return [

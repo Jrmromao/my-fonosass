@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Bell, Eye, EyeOff, Search } from 'lucide-react';
+import { phonemeLabel } from '@/lib/activityLabels';
 import { useCallback, useEffect, useState } from 'react';
 
 interface Activity {
@@ -101,19 +102,12 @@ export function ActivityManagerPanel() {
 
   const filtered = activities;
 
-
-
-
-
-
-
-
   const phonemes = [...new Set(activities.map((a) => a.phoneme))].sort();
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent" />
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-coral-700 border-t-transparent" />
       </div>
     );
   }
@@ -151,7 +145,7 @@ export function ActivityManagerPanel() {
             <SelectItem value="all">Todos</SelectItem>
             {phonemes.map((p) => (
               <SelectItem key={p} value={p}>
-                /{p}/
+                {phonemeLabel(p)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -185,12 +179,9 @@ export function ActivityManagerPanel() {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {filtered.map((activity) => (
-              <tr
-                key={activity.id}
-                className="hover:bg-muted"
-              >
+              <tr key={activity.id} className="hover:bg-muted">
                 <td className="px-4 py-3">
                   <span className="font-medium text-foreground">
                     {activity.name}
@@ -201,7 +192,7 @@ export function ActivityManagerPanel() {
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant="outline" className="text-xs">
-                    /{activity.phoneme}/
+                    {phonemeLabel(activity.phoneme)}
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
@@ -217,7 +208,7 @@ export function ActivityManagerPanel() {
                           ? 'bg-amber-50 text-amber-700 border-amber-200'
                           : activity.status === 'REJECTED'
                             ? 'bg-red-50 text-red-700 border-red-200'
-                            : 'bg-gray-50 text-muted-foreground border-gray-200'
+                            : 'bg-neutral-50 text-muted-foreground border-neutral-200'
                     }`}
                   >
                     {activity.status === 'PUBLISHED' && 'Publicado'}
@@ -278,10 +269,22 @@ export function ActivityManagerPanel() {
             Página {page} de {pagination.totalPages} ({pagination.total} total)
           </span>
           <div className="flex gap-1">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+            >
               &lt;
             </Button>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={page >= pagination.totalPages} onClick={() => setPage(page + 1)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              disabled={page >= pagination.totalPages}
+              onClick={() => setPage(page + 1)}
+            >
               &gt;
             </Button>
           </div>
@@ -331,7 +334,7 @@ function ActivityPreview({ activity }: { activity: Activity }) {
     <div className="space-y-4">
       {/* Metadata */}
       <div className="flex gap-2 flex-wrap">
-        <Badge variant="outline">/{activity.phoneme}/</Badge>
+        <Badge variant="outline">{phonemeLabel(activity.phoneme)}</Badge>
         <Badge variant="outline">{activity.difficulty}</Badge>
         <Badge variant="outline">{activity.ageRange}</Badge>
         <Badge variant="outline">{activity.type}</Badge>
@@ -357,13 +360,13 @@ function ActivityPreview({ activity }: { activity: Activity }) {
         <div className="space-y-3 text-sm">
           {parsed.objetivo && (
             <div>
-              <span className="font-medium text-gray-700">Objetivo:</span>
+              <span className="font-medium text-neutral-700">Objetivo:</span>
               <p className="text-muted-foreground">{parsed.objetivo}</p>
             </div>
           )}
           {parsed.instrucoes && (
             <div>
-              <span className="font-medium text-gray-700">Instrucoes:</span>
+              <span className="font-medium text-neutral-700">Instrucoes:</span>
               <ol className="list-decimal list-inside mt-1 text-muted-foreground">
                 {parsed.instrucoes.map((s: string, i: number) => (
                   <li key={i}>{s}</li>
@@ -373,8 +376,10 @@ function ActivityPreview({ activity }: { activity: Activity }) {
           )}
           {parsed.materiais && (
             <div>
-              <span className="font-medium text-gray-700">Materiais:</span>
-              <p className="text-muted-foreground">{parsed.materiais.join(', ')}</p>
+              <span className="font-medium text-neutral-700">Materiais:</span>
+              <p className="text-muted-foreground">
+                {parsed.materiais.join(', ')}
+              </p>
             </div>
           )}
         </div>
