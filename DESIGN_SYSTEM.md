@@ -71,7 +71,7 @@ pages with the lavender background so the header matches.
 ### Forbidden colors
 - ❌ NO hardcoded hex values in classes (`bg-[#...]`): use tokens
 - ❌ NO `gray-*` or `slate-*`: the neutral family is `neutral-*`
-- ❌ NO pink, fuchsia, cyan, yellow or indigo as UI colors; violet only as described above
+- ❌ NO pink, fuchsia, cyan or indigo as UI colors; violet and yellow only as described in their scope sections
 - ❌ NO multi-color gradients on text
 - ❌ NO `bg-gradient-to-*` on backgrounds (exception: `bg-brand-gradient` in the hero only)
 - ✅ Activity sheets and balloons are the ONLY places where multiple bright colors appear
@@ -173,11 +173,12 @@ over drawn placeholders.
 
 ### Phoneme library (landing)
 - Taxonomy lives in `lib/phonemes.ts` (`PHONEME_GROUPS`, `LANGUAGE_TOPICS`), defined with Eliane Mota. Rendered by `components/landing/PhonemeLibrary.tsx`.
-- Groups, in order: **Pares surdo e sonoro** (p/b, t/d, f/v, k/g, ch/j, s/z, shown as joined pairs), **Nasais, laterais e vibrantes** (m, n, l, lh, r forte e fraco), **Arquifonema e encontro consonantal** (r and l), and **Linguagem** (cores, animais, alimentos, números), which is a separate topic counted by activity type, not phoneme.
+- Groups, in order: **Pares surdo e sonoro** (p/b, t/d, f/v, k/g, ch/j, s/z, shown as joined pairs), **Nasais, laterais e vibrantes** (m, n, l, lh, R forte, r fraco — the R is split per Eliane, codes `R_FORTE` / `R_FRACO`; legacy `R` activities show as an extra "/r/ forte e fraco" tile until reclassified), **Arquifonema e encontro consonantal** (r and l), and **Linguagem** (cores, animais, alimentos, números), which is a separate topic counted by activity type, not phoneme.
 - Group heading: `font-display text-lg font-bold` with a one-line `text-sm text-neutral-600` description.
 - Always show every entry; phonemes in the DB but not in the taxonomy are appended to the second group so nothing published is hidden.
-- Available entry: white tile, phoneme in `font-mono text-2xl` (category names in `font-display text-lg font-bold`), count below, hover `bg-neutral-900` with white text
-- Unavailable phoneme: `bg-neutral-50`, phoneme in `text-neutral-300`, label "Em breve" in `text-neutral-400`, not clickable
+- Tiles are separate outlined squares (`rounded-md`, `gap-2`; pairs `gap-1.5`). Colors (Eliane's choice, "amarelinho"): available `bg-yellow-100` with `border-yellow-400`; unavailable `bg-white` with `border-neutral-200`, so yellow means "ready to download". **Yellow is allowed only for library tiles**; never for text, buttons or badges.
+- Available entry: phoneme in `font-mono text-2xl` (category names in `font-display text-lg font-bold`), count below, hover `bg-neutral-900` with white text
+- Unavailable entry: phoneme in `text-neutral-400`, label "Em breve" in `text-neutral-400`, not clickable
 - Free phoneme (`FREE_PHONEME` in `lib/pricing.ts`): `bg-coral-50`, `ring-2 ring-inset ring-coral-500`, "Grátis" badge (`bg-coral-700 text-white`), opens the preview modal. Only promoted when it has published activities.
 - Headline quotes counts only above `MIN_ACTIVITIES_TO_SHOW_COUNT`; below that it talks about the catalog in general
 

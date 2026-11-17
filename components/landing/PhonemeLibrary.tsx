@@ -1,4 +1,5 @@
 import {
+  LEGACY_NOTES,
   MIN_ACTIVITIES_TO_SHOW_COUNT,
   PHONEME_GROUPS,
   type PhonemeEntry,
@@ -47,6 +48,7 @@ export default function PhonemeLibrary({
       code: p.phoneme,
       display: `/${p.phoneme.toLowerCase()}/`,
       notation: true,
+      note: LEGACY_NOTES[p.phoneme],
     }));
   const groups = PHONEME_GROUPS.map((g) =>
     g.id === 'outros' ? { ...g, entries: [...g.entries, ...extras] } : g
@@ -107,10 +109,7 @@ export default function PhonemeLibrary({
               {group.pairs ? (
                 <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {chunkPairs(group.entries).map(([a, b]) => (
-                    <li
-                      key={a.code}
-                      className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-neutral-200 bg-neutral-200"
-                    >
+                    <li key={a.code} className="grid grid-cols-2 gap-1.5">
                       {renderEntry(a)}
                       {b && renderEntry(b)}
                     </li>
@@ -118,9 +117,7 @@ export default function PhonemeLibrary({
                 </ul>
               ) : (
                 <ul
-                  className={`grid gap-px overflow-hidden rounded-lg border border-neutral-200 bg-neutral-200 ${columnsFor(
-                    group.entries.length
-                  )}`}
+                  className={`grid gap-2 ${columnsFor(group.entries.length)}`}
                 >
                   {group.entries.map((entry) => (
                     <li key={entry.code}>{renderEntry(entry)}</li>
@@ -135,11 +132,7 @@ export default function PhonemeLibrary({
               title="Linguagem"
               description="Vocabulário e categorias, independente do fonema."
             />
-            <ul
-              className={`grid gap-px overflow-hidden rounded-lg border border-neutral-200 bg-neutral-200 ${columnsFor(
-                languageTopics.length
-              )}`}
-            >
+            <ul className={`grid gap-2 ${columnsFor(languageTopics.length)}`}>
               {languageTopics.map((topic) => (
                 <li key={topic.id}>
                   <Tile
@@ -215,10 +208,10 @@ function Tile({
     return (
       <div
         aria-label={`${label}, em breve`}
-        className="flex h-full flex-col items-start justify-between gap-3 bg-neutral-50 p-4"
+        className="flex h-full flex-col items-start justify-between gap-3 rounded-md border border-neutral-200 bg-white p-4"
       >
         <span>
-          <span className={`block ${labelClass} text-neutral-300`}>
+          <span className={`block ${labelClass} text-neutral-400`}>
             {label}
           </span>
           {note && (
@@ -233,7 +226,7 @@ function Tile({
   return (
     <Link
       href="/sign-up"
-      className="group flex h-full flex-col items-start justify-between gap-6 bg-white p-4 transition-colors hover:bg-neutral-900"
+      className="group flex h-full flex-col items-start justify-between gap-6 rounded-md border border-yellow-400 bg-yellow-100 p-4 transition-colors hover:border-neutral-900 hover:bg-neutral-900"
     >
       <span>
         <span

@@ -56,13 +56,26 @@ export const PHONEME_GROUPS: PhonemeGroup[] = [
   {
     id: 'outros',
     title: 'Nasais, laterais e vibrantes',
-    description: 'Inclui o /r/ forte e o /r/ fraco.',
+    description: 'O R forte e o r fraco têm blocos separados.',
     entries: [
       phoneme('M'),
       phoneme('N'),
       phoneme('L'),
       phoneme('LH'),
-      phoneme('R', 'forte e fraco'),
+      // R split per Eliane: R forte (rato, carro) and r fraco (arara, barata).
+      // Uppercase/lowercase follows clinical convention.
+      {
+        code: 'R_FORTE',
+        display: '/R/',
+        notation: true,
+        note: 'forte: "rato", "carro"',
+      },
+      {
+        code: 'R_FRACO',
+        display: '/r/',
+        notation: true,
+        note: 'fraco: "arara", "barata"',
+      },
     ],
   },
   {
@@ -90,6 +103,14 @@ export const PHONEME_GROUPS: PhonemeGroup[] = [
 export const PHONEMES: string[] = PHONEME_GROUPS.flatMap((g) =>
   g.entries.map((e) => e.code)
 );
+
+/**
+ * Codes still in the DB that the taxonomy replaced. Shown as extra tiles with
+ * this note until each activity is reclassified (e.g. 'R' -> R_FORTE/R_FRACO).
+ */
+export const LEGACY_NOTES: Record<string, string> = {
+  R: 'forte e fraco',
+};
 
 export interface LanguageTopic {
   id: string;

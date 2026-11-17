@@ -48,7 +48,7 @@ export default function FreePhonemeTile({
   );
 
   const tileClass =
-    'group relative flex h-full w-full flex-col items-start justify-between gap-6 bg-coral-50 p-4 text-left ring-2 ring-inset ring-coral-500 transition-colors hover:bg-coral-100 focus-visible:outline-none focus-visible:ring-4';
+    'group relative flex h-full w-full flex-col items-start justify-between gap-6 rounded-md bg-coral-50 p-4 text-left ring-2 ring-inset ring-coral-500 transition-colors hover:bg-coral-100 focus-visible:outline-none focus-visible:ring-4';
 
   // Nothing to preview: fall back to the sign-up link.
   if (activities.length === 0) {
