@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/app/db';
+import { requireAdmin } from '@/lib/activities/approval';
 import PDFService from '@/services/PDFService';
 import S3Service from '@/services/S3Service';
 import { auth } from '@clerk/nextjs/server';
@@ -54,10 +55,13 @@ import path from 'path';
 
 export async function createActivity(formData: FormData) {
   try {
-    // Get user authentication
-    const { userId } = await auth();
-    if (!userId) {
-      return { success: false, error: 'Unauthorized' };
+    // Only admins publish content; everyone else would upload to S3 and fill
+    // the review queue.
+    let userId: string;
+    try {
+      ({ userId } = await requireAdmin());
+    } catch {
+      return { success: false, error: 'Você não tem permissão para isso.' };
     }
 
     // Extract and sanitize data from FormData

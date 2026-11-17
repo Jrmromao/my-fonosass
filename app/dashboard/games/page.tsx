@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useUserRole } from '@/hooks/useUserRole';
 import { getFileDownloadUrl } from '@/lib/actions/file-download.action';
 import { useQuery } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
@@ -33,6 +34,8 @@ import { useCallback, useState, useTransition } from 'react';
 
 export default function ActivitiesPage() {
   const queryClient = useQueryClient();
+  // UI hint only; createActivity is enforced as admin-only on the server.
+  const { role } = useUserRole();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -123,11 +126,13 @@ export default function ActivitiesPage() {
               {pagination.total} atividades
             </p>
           </div>
-          <NewActivityDialog
-            onSuccess={() =>
-              queryClient.invalidateQueries({ queryKey: ['activities'] })
-            }
-          />
+          {role === 'ADMIN' && (
+            <NewActivityDialog
+              onSuccess={() =>
+                queryClient.invalidateQueries({ queryKey: ['activities'] })
+              }
+            />
+          )}
         </div>
 
         {/* Filters */}

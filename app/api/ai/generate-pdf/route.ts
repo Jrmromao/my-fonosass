@@ -1,12 +1,16 @@
-import { auth } from '@clerk/nextjs/server';
+import { errorResponse, requireAdmin } from '@/lib/activities/approval';
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // AI generation costs money and is an internal tool: admins only.
+    let userId: string;
+    try {
+      ({ userId } = await requireAdmin());
+    } catch (error) {
+      const { body, status } = errorResponse(error);
+      return NextResponse.json(body, { status });
     }
 
     const { exercise, metadata } = await request.json();

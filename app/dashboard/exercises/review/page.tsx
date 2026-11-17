@@ -1,7 +1,11 @@
 import { prisma } from '@/app/db';
+import { requireAdminPage } from '@/lib/auth/adminPage';
 import Link from 'next/link';
 
 export default async function ExerciseReviewListPage() {
+  // Lists every activity, including drafts and rejected ones: admins only.
+  await requireAdminPage();
+
   const exercises = await prisma.activity.findMany({
     orderBy: { createdAt: 'desc' },
     select: {

@@ -1,29 +1,27 @@
 'use server';
 
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { prisma } from '@/app/db';
+import { auth } from '@clerk/nextjs/server';
 
 type UserRole = 'ADMIN' | 'USER' | 'GUEST';
 
 /**
- * Server Action to get the current user's role
+ * Server Action to get the current user's role.
+ * Reads the database role, the same source the admin API routes check, so the
+ * menu never shows admin items that the server would then refuse.
  */
 export async function getCurrentUserRole(): Promise<UserRole> {
   try {
-    // Check if user is authenticated
     const { userId } = await auth();
     if (!userId) return 'GUEST';
 
-    // Get the full user object
-    const user = await currentUser();
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { role: true },
+    });
     if (!user) return 'GUEST';
 
-    // Get role from public metadata (stored during user creation or by admin)
-    const metadata = user.privateMetadata;
-    if (metadata && 'role' in metadata) {
-      return metadata.role as UserRole;
-    }
-
-    return 'USER';
+    return user.role === 'ADMIN' ? 'ADMIN' : 'USER';
   } catch (error) {
     console.error('Error getting user role:', error);
     return 'GUEST';

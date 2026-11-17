@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUserRole } from '@/hooks/useUserRole';
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, Download, FileText, TrendingUp } from 'lucide-react';
@@ -12,6 +13,7 @@ import { useEffect } from 'react';
 
 export default function Dashboard() {
   const { user } = useUser();
+  const { role } = useUserRole();
   const router = useRouter();
 
   useEffect(() => {
@@ -64,10 +66,26 @@ export default function Dashboard() {
             ))
           ) : (
             <>
-              <StatCard label="Atividades" value={stats?.data?.total || 0} icon={<FileText className="h-4 w-4" />} />
-              <StatCard label="Fonemas" value={stats?.data?.phonemes || 0} icon={<BookOpen className="h-4 w-4" />} />
-              <StatCard label="Pendentes" value={stats?.data?.pending || 0} icon={<TrendingUp className="h-4 w-4" />} />
-              <StatCard label="Downloads" value={stats?.data?.downloads || 0} icon={<Download className="h-4 w-4" />} />
+              <StatCard
+                label="Atividades"
+                value={stats?.data?.total || 0}
+                icon={<FileText className="h-4 w-4" />}
+              />
+              <StatCard
+                label="Fonemas"
+                value={stats?.data?.phonemes || 0}
+                icon={<BookOpen className="h-4 w-4" />}
+              />
+              <StatCard
+                label="Pendentes"
+                value={stats?.data?.pending || 0}
+                icon={<TrendingUp className="h-4 w-4" />}
+              />
+              <StatCard
+                label="Downloads"
+                value={stats?.data?.downloads || 0}
+                icon={<Download className="h-4 w-4" />}
+              />
             </>
           )}
         </div>
@@ -77,38 +95,69 @@ export default function Dashboard() {
           {/* Recent */}
           <section className="lg:col-span-2 border rounded-md p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Recentes</h2>
-              <Link href="/dashboard/games" className="text-xs text-accent-foreground hover:underline" style={{ color: 'hsl(var(--accent))' }}>
+              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Recentes
+              </h2>
+              <Link
+                href="/dashboard/games"
+                className="text-xs text-accent-foreground hover:underline"
+                style={{ color: 'hsl(var(--accent))' }}
+              >
                 Ver todas
               </Link>
             </div>
             {recent?.data?.length > 0 ? (
               <div className="divide-y divide-border">
                 {recent.data.map((activity: any) => (
-                  <div key={activity.id} className="py-3 flex items-center justify-between">
+                  <div
+                    key={activity.id}
+                    className="py-3 flex items-center justify-between"
+                  >
                     <div>
-                      <p className="text-sm font-medium text-foreground">{activity.name}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {activity.name}
+                      </p>
                       <div className="flex gap-2 mt-1">
-                        <span className="text-xs font-mono text-muted-foreground">/{activity.phoneme}/</span>
-                        <span className="text-xs text-muted-foreground">{activity.difficulty}</span>
+                        <span className="text-xs font-mono text-muted-foreground">
+                          /{activity.phoneme}/
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {activity.difficulty}
+                        </span>
                       </div>
                     </div>
-                    <span className="text-xs text-muted-foreground">{activity.ageRange}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {activity.ageRange}
+                    </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground py-4">Nenhuma atividade ainda.</p>
+              <p className="text-sm text-muted-foreground py-4">
+                Nenhuma atividade ainda.
+              </p>
             )}
           </section>
 
           {/* Quick Actions */}
           <section className="border rounded-md p-6 space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Acesso rápido</h2>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Acesso rápido
+            </h2>
             <div className="space-y-2">
-              <QuickLink href="/dashboard/games" label="Biblioteca de Atividades" />
-              <QuickLink href="/dashboard/ai" label="Gerar Exercício" />
-              <QuickLink href="/dashboard/resources" label="Gerenciar Recursos" />
+              <QuickLink
+                href="/dashboard/games"
+                label="Biblioteca de Atividades"
+              />
+              {role === 'ADMIN' && (
+                <>
+                  <QuickLink href="/dashboard/ai" label="Gerar Exercício" />
+                  <QuickLink
+                    href="/dashboard/resources"
+                    label="Gerenciar Recursos"
+                  />
+                </>
+              )}
               <QuickLink href="/dashboard/profile" label="Meu Perfil" />
             </div>
           </section>
@@ -118,13 +167,25 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+}) {
   return (
     <div className="border rounded-md p-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="text-2xl font-bold font-mono text-foreground mt-1">{value}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">
+            {label}
+          </p>
+          <p className="text-2xl font-bold font-mono text-foreground mt-1">
+            {value}
+          </p>
         </div>
         <div className="text-muted-foreground">{icon}</div>
       </div>

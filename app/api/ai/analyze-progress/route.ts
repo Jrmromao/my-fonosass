@@ -1,5 +1,5 @@
+import { errorResponse, requireAdmin } from '@/lib/activities/approval';
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 
 const progressSchema = z.object({
@@ -11,9 +11,13 @@ const progressSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // AI generation costs money and is an internal tool: admins only.
+    let userId: string;
+    try {
+      ({ userId } = await requireAdmin());
+    } catch (error) {
+      const { body, status } = errorResponse(error);
+      return NextResponse.json(body, { status });
     }
 
     const body = await request.json();
