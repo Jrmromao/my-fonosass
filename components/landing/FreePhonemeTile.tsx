@@ -9,6 +9,7 @@ import {
 import { Download } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import ExampleWord from './ExampleWord';
 
 export interface FreePreviewActivity {
   id: string;
@@ -23,32 +24,52 @@ interface FreePhonemeTileProps {
   phoneme: string;
   count: number;
   activities: FreePreviewActivity[];
+  /** Example word, target sound in brackets, e.g. "[s]apo". */
+  example?: string;
 }
 
 export default function FreePhonemeTile({
   phoneme,
   count,
   activities,
+  example,
 }: FreePhonemeTileProps) {
   const [open, setOpen] = useState(false);
   const label = `/${phoneme.toLowerCase()}/`;
+  const countText = `${count} ${count === 1 ? 'atividade' : 'atividades'}`;
+  const badge = (
+    <span className="rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+      Grátis
+    </span>
+  );
 
   const tileContent = (
     <>
-      <span className="absolute right-2 top-2 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-        Grátis
+      <span className="flex w-full items-start justify-between gap-2">
+        <span className="font-mono text-base font-semibold text-neutral-900">
+          {label}
+        </span>
+        {badge}
       </span>
-      <span className="font-mono text-2xl font-semibold text-neutral-900">
-        {label}
-      </span>
-      <span className="text-xs font-medium text-coral-800">
-        {count} {count === 1 ? 'atividade' : 'atividades'}
+      <span className="flex w-full items-end justify-between gap-2">
+        {example ? (
+          <ExampleWord
+            word={example}
+            className="font-display text-2xl font-bold text-neutral-900"
+            decorationClass="decoration-coral-500"
+          />
+        ) : (
+          <span />
+        )}
+        <span className="shrink-0 text-xs font-medium text-coral-800">
+          {countText}
+        </span>
       </span>
     </>
   );
 
   const tileClass =
-    'group relative flex h-full w-full flex-col items-start justify-between gap-6 rounded-md bg-coral-50 p-4 text-left ring-2 ring-inset ring-coral-500 transition-colors hover:bg-coral-100 focus-visible:outline-none focus-visible:ring-4';
+    'group relative flex h-full w-full flex-col items-start justify-between gap-5 rounded-lg bg-coral-50 p-4 text-left ring-2 ring-inset ring-coral-500 transition-colors hover:bg-coral-100 focus-visible:outline-none focus-visible:ring-4';
 
   // Nothing to preview: fall back to the sign-up link.
   if (activities.length === 0) {

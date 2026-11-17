@@ -6,7 +6,14 @@ import {
 } from '@/lib/phonemes';
 import { FREE_PHONEME } from '@/lib/pricing';
 import Link from 'next/link';
+import ExampleWord from './ExampleWord';
 import FreePhonemeTile, { type FreePreviewActivity } from './FreePhonemeTile';
+
+// Library card colors: light blue fill and border
+// for available entries, coral underline on the target sound. "Em breve"
+// entries are white with grey text. See DESIGN_SYSTEM.md.
+const CARD_CLASS = 'border-2 border-sky-300 bg-sky-100';
+const UNDERLINE_CLASS = 'decoration-coral-500';
 
 export interface PhonemeCount {
   phoneme: string;
@@ -68,6 +75,7 @@ export default function PhonemeLibrary({
           phoneme={entry.code}
           count={count}
           activities={freePreview}
+          example={entry.example}
         />
       );
     }
@@ -76,6 +84,7 @@ export default function PhonemeLibrary({
         label={entry.display}
         notation={entry.notation}
         note={entry.note}
+        example={entry.example}
         count={count}
       />
     );
@@ -181,44 +190,91 @@ function GroupHeading({
 }) {
   return (
     <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
-      <h3 className="font-display text-lg font-bold text-neutral-900">
-        {title}
-      </h3>
+      <h3 className="font-display text-lg font-bold">{title}</h3>
       <p className="text-sm text-neutral-600">{description}</p>
     </div>
   );
 }
 
+// Library card: phoneme small at the top, example word large with the
+// target sound underlined, count or "Em breve" in the corner.
 function Tile({
   label,
   notation,
   note,
+  example,
   count,
 }: {
   label: string;
   notation: boolean;
   note?: string;
+  example?: string;
   count: number;
 }) {
-  const labelClass = notation
-    ? 'font-mono text-2xl font-semibold'
-    : 'font-display text-lg font-bold leading-tight';
+  const available = count > 0;
+  const head = (
+    <span className="flex w-full min-w-0 flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
+      <span
+        className={`${notation ? 'font-mono text-base font-semibold' : 'font-display text-base font-bold leading-tight'} ${
+          available
+            ? 'text-neutral-900 group-hover:text-white'
+            : 'text-neutral-400'
+        }`}
+      >
+        {label}
+        {note && notation && (
+          <span
+            className={`ml-1.5 font-sans text-xs font-normal ${
+              available
+                ? 'text-neutral-600 group-hover:text-neutral-300'
+                : 'text-neutral-400'
+            }`}
+          >
+            {note}
+          </span>
+        )}
+      </span>
+      <span
+        className={`shrink-0 text-xs ${
+          available
+            ? 'text-neutral-600 group-hover:text-neutral-300'
+            : 'text-neutral-400'
+        }`}
+      >
+        {available ? countLabel(count) : 'Em breve'}
+      </span>
+    </span>
+  );
 
-  if (count === 0) {
+  const body = example ? (
+    <ExampleWord
+      word={example}
+      className={`font-display text-2xl font-bold ${
+        available
+          ? 'text-neutral-900 group-hover:text-white'
+          : 'text-neutral-400'
+      }`}
+      decorationClass={available ? UNDERLINE_CLASS : 'decoration-neutral-300'}
+    />
+  ) : // No example word (e.g. Linguagem topics): the note, if any, fills in.
+  note && !notation ? (
+    <span
+      className={`text-xs ${available ? 'text-neutral-600 group-hover:text-neutral-300' : 'text-neutral-400'}`}
+    >
+      {note}
+    </span>
+  ) : null;
+
+  const base = 'flex h-full flex-col justify-between gap-5 rounded-lg p-4';
+
+  if (!available) {
     return (
       <div
         aria-label={`${label}, em breve`}
-        className="flex h-full flex-col items-start justify-between gap-3 rounded-md border border-neutral-200 bg-white p-4"
+        className={`${base} border border-neutral-200 bg-white`}
       >
-        <span>
-          <span className={`block ${labelClass} text-neutral-400`}>
-            {label}
-          </span>
-          {note && (
-            <span className="mt-1 block text-xs text-neutral-400">{note}</span>
-          )}
-        </span>
-        <span className="text-xs text-neutral-400">Em breve</span>
+        {head}
+        {body}
       </div>
     );
   }
@@ -226,23 +282,10 @@ function Tile({
   return (
     <Link
       href="/sign-up"
-      className="group flex h-full flex-col items-start justify-between gap-6 rounded-md border border-yellow-400 bg-yellow-100 p-4 transition-colors hover:border-neutral-900 hover:bg-neutral-900"
+      className={`group ${base} ${CARD_CLASS} transition-colors hover:border-neutral-900 hover:bg-neutral-900`}
     >
-      <span>
-        <span
-          className={`block ${labelClass} text-neutral-900 group-hover:text-white`}
-        >
-          {label}
-        </span>
-        {note && (
-          <span className="mt-1 block text-xs text-neutral-600 group-hover:text-neutral-300">
-            {note}
-          </span>
-        )}
-      </span>
-      <span className="text-xs text-neutral-600 group-hover:text-neutral-300">
-        {countLabel(count)}
-      </span>
+      {head}
+      {body}
     </Link>
   );
 }
@@ -258,10 +301,10 @@ function chunkPairs<T>(items: T[]): [T, T | undefined][] {
 const COLUMNS: Record<number, string> = {
   1: 'grid-cols-1',
   2: 'grid-cols-1 sm:grid-cols-2',
-  3: 'grid-cols-3',
+  3: 'grid-cols-2 sm:grid-cols-3',
   4: 'grid-cols-2 sm:grid-cols-4',
-  5: 'grid-cols-3 sm:grid-cols-5',
-  6: 'grid-cols-3 sm:grid-cols-6',
+  5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5',
+  6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
 };
 
 function columnsFor(count: number): string {

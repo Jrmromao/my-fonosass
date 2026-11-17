@@ -13,6 +13,12 @@ export interface PhonemeEntry {
   notation: boolean;
   /** Optional clarification under the label. */
   note?: string;
+  /**
+   * Example word shown on the library card. The target sound goes in
+   * square brackets and is underlined on screen, e.g. "[p]ato", "pa[lh]aço".
+   * Words to be confirmed by Eliane.
+   */
+  example?: string;
 }
 
 export interface PhonemeGroup {
@@ -24,10 +30,15 @@ export interface PhonemeGroup {
   entries: PhonemeEntry[];
 }
 
-const phoneme = (code: string, note?: string): PhonemeEntry => ({
+const phoneme = (
+  code: string,
+  example?: string,
+  note?: string
+): PhonemeEntry => ({
   code,
   display: `/${code.toLowerCase()}/`,
   notation: true,
+  example,
   note,
 });
 
@@ -39,18 +50,18 @@ export const PHONEME_GROUPS: PhonemeGroup[] = [
       'Fonemas produzidos no mesmo ponto, com e sem vibração das pregas vocais.',
     pairs: true,
     entries: [
-      phoneme('P'),
-      phoneme('B'),
-      phoneme('T'),
-      phoneme('D'),
-      phoneme('F'),
-      phoneme('V'),
-      phoneme('K'),
-      phoneme('G'),
-      phoneme('CH'),
-      phoneme('J'),
-      phoneme('S'),
-      phoneme('Z'),
+      phoneme('P', '[p]ato'),
+      phoneme('B', '[b]ola'),
+      phoneme('T', '[t]atu'),
+      phoneme('D', '[d]ado'),
+      phoneme('F', '[f]aca'),
+      phoneme('V', '[v]aca'),
+      phoneme('K', '[c]asa'),
+      phoneme('G', '[g]ato'),
+      phoneme('CH', '[ch]ave'),
+      phoneme('J', '[j]anela'),
+      phoneme('S', '[s]apo'),
+      phoneme('Z', '[z]ebra'),
     ],
   },
   {
@@ -58,23 +69,25 @@ export const PHONEME_GROUPS: PhonemeGroup[] = [
     title: 'Nasais, laterais e vibrantes',
     description: 'O R forte e o r fraco têm blocos separados.',
     entries: [
-      phoneme('M'),
-      phoneme('N'),
-      phoneme('L'),
-      phoneme('LH'),
+      phoneme('M', '[m]acaco'),
+      phoneme('N', '[n]avio'),
+      phoneme('L', '[l]ua'),
+      phoneme('LH', 'pa[lh]aço'),
       // R split per Eliane: R forte (rato, carro) and r fraco (arara, barata).
       // Uppercase/lowercase follows clinical convention.
       {
         code: 'R_FORTE',
         display: '/R/',
         notation: true,
-        note: 'forte: "rato", "carro"',
+        note: 'forte',
+        example: '[r]ato',
       },
       {
         code: 'R_FRACO',
         display: '/r/',
         notation: true,
-        note: 'fraco: "arara", "barata"',
+        note: 'fraco',
+        example: 'a[r]ara',
       },
     ],
   },
@@ -88,12 +101,14 @@ export const PHONEME_GROUPS: PhonemeGroup[] = [
         display: 'Arquifonema',
         notation: false,
         note: '/r/ e /l/, como em "porta" e "sol"',
+        example: 'po[r]ta',
       },
       {
         code: 'ENC',
         display: 'Encontro consonantal',
         notation: false,
         note: 'com /r/ e /l/, como em "prato" e "planta"',
+        example: '[pr]ato',
       },
     ],
   },

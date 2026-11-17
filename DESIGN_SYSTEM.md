@@ -39,7 +39,8 @@ The brand accent is **coral** (warm salmon-red), implemented as a full ramp in
 | Accent (fills behind white text) | `coral-700`, hover `coral-800` | Primary CTA, "Grátis" badge |
 | Accent (text on light backgrounds) | `coral-800` | Inline highlights such as the free phoneme |
 | Accent tint | `coral-50` / `coral-100` | Highlighted tile backgrounds |
-| Text | `neutral-900` | Headings, primary text |
+| Text | `neutral-900` | Primary text (app, dashboard) |
+| Heading ink (landing) | `violet-950` | Landing page text and headings, from the logo's dark purple |
 | Text secondary | `neutral-600` | Body, descriptions, metadata |
 | Text disabled | `neutral-400` | Disabled/unavailable items only ("Em breve") |
 | Dark button | `neutral-900`, hover `neutral-800` | Secondary primary action (navbar "Assinar", plan CTA) |
@@ -64,14 +65,14 @@ White text on `coral-500` is 2.8:1 and fails WCAG AA (4.5:1). `coral-700` is
 
 ### Lavender scope
 `violet-*` is allowed **only as a landing-page background** (`violet-100`, `violet-50`,
-`border-violet-200`) and, optionally, `violet-950` as heading ink. Do not use violet
+`border-violet-200`) and `violet-950` as the landing page ink. Do not use violet
 for buttons, links, badges or dashboard UI. Use the navbar `tone="lavender"` prop on
 pages with the lavender background so the header matches.
 
 ### Forbidden colors
 - ❌ NO hardcoded hex values in classes (`bg-[#...]`): use tokens
 - ❌ NO `gray-*` or `slate-*`: the neutral family is `neutral-*`
-- ❌ NO pink, fuchsia, cyan or indigo as UI colors; violet and yellow only as described in their scope sections
+- ❌ NO pink, fuchsia, cyan, yellow or indigo as UI colors; violet and sky only as described in their scope sections
 - ❌ NO multi-color gradients on text
 - ❌ NO `bg-gradient-to-*` on backgrounds (exception: `bg-brand-gradient` in the hero only)
 - ✅ Activity sheets and balloons are the ONLY places where multiple bright colors appear
@@ -176,9 +177,10 @@ over drawn placeholders.
 - Groups, in order: **Pares surdo e sonoro** (p/b, t/d, f/v, k/g, ch/j, s/z, shown as joined pairs), **Nasais, laterais e vibrantes** (m, n, l, lh, R forte, r fraco — the R is split per Eliane, codes `R_FORTE` / `R_FRACO`; legacy `R` activities show as an extra "/r/ forte e fraco" tile until reclassified), **Arquifonema e encontro consonantal** (r and l), and **Linguagem** (cores, animais, alimentos, números), which is a separate topic counted by activity type, not phoneme.
 - Group heading: `font-display text-lg font-bold` with a one-line `text-sm text-neutral-600` description.
 - Always show every entry; phonemes in the DB but not in the taxonomy are appended to the second group so nothing published is hidden.
-- Tiles are separate outlined squares (`rounded-md`, `gap-2`; pairs `gap-1.5`). Colors (Eliane's choice, "amarelinho"): available `bg-yellow-100` with `border-yellow-400`; unavailable `bg-white` with `border-neutral-200`, so yellow means "ready to download". **Yellow is allowed only for library tiles**; never for text, buttons or badges.
-- Available entry: phoneme in `font-mono text-2xl` (category names in `font-display text-lg font-bold`), count below, hover `bg-neutral-900` with white text
-- Unavailable entry: phoneme in `text-neutral-400`, label "Em breve" in `text-neutral-400`, not clickable
+- Each entry is a **word card** (`components/landing/PhonemeLibrary.tsx`, `ExampleWord.tsx`): phoneme small at the top (`font-mono text-base`) with the count or "Em breve" on the right, and an example word below (`font-display text-2xl font-bold`) with the target sound underlined (`decoration-[3px]`). Example words live in `lib/phonemes.ts` as `'[p]ato'`, to be confirmed by Eliane.
+- Cards are separate (`rounded-lg`, `gap-2`; pairs `gap-1.5`).
+- Available card (Eliane's choice): `bg-sky-100` with `border-2 border-sky-300`, coral underline (`decoration-coral-500`), hover `bg-neutral-900` with white text. **Sky is allowed only for library cards**; never for text, buttons or badges.
+- Unavailable card: `bg-white` with `border-neutral-200`, label, word and "Em breve" in `text-neutral-400`, grey underline, not clickable. So blue means "ready to download".
 - Free phoneme (`FREE_PHONEME` in `lib/pricing.ts`): `bg-coral-50`, `ring-2 ring-inset ring-coral-500`, "Grátis" badge (`bg-coral-700 text-white`), opens the preview modal. Only promoted when it has published activities.
 - Headline quotes counts only above `MIN_ACTIVITIES_TO_SHOW_COUNT`; below that it talks about the catalog in general
 

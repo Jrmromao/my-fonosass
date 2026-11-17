@@ -42,14 +42,8 @@ const yearlySavings = Math.round(
     100
 );
 
-// Base text color, inherited by headings. Two near-blacks to compare:
-// 'neutral' = navy near-black (neutral-900), 'violet' = purple near-black
-// (violet-950) that ties headings to the lavender background.
-const INK: 'neutral' | 'violet' = 'neutral';
-const INK_CLASS = {
-  neutral: 'text-neutral-900',
-  violet: 'text-violet-950',
-}[INK];
+// Headings inherit the logo's dark purple (violet-950).
+const INK_CLASS = 'text-violet-950';
 
 export default function HomeLanding({
   phonemes,
