@@ -85,8 +85,9 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value:
-              'public, max-age=300, s-maxage=300, stale-while-revalidate=60',
+            // API responses depend on the signed-in user (plan, signed S3
+            // URLs, CSRF token): never let a browser or CDN share them.
+            value: 'private, no-store',
           },
         ],
       },
