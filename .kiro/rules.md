@@ -24,10 +24,10 @@ When generating or modifying Portuguese text, always verify accents and grammar 
 
 - Name: Almanaque da Fala
 - Domain/watermark: almanaquedafala.com.br
-- Primary color: indigo-600
-- Backgrounds: white, gray-50 alternating
-- No multi-color gradients, no decorative blur blobs, no pink-to-yellow
+- Full UI rules (colors, typography, components): see `DESIGN_SYSTEM.md` at the repo root. It is the single source of truth.
+- Summary: navy text (`neutral-900`), coral accent (`coral-700` behind white text), white app backgrounds, light lavender (`violet-100` / `violet-50`) on the landing page only
 - Typography: font-display (Nunito) for headings, font-sans (Inter) for body
+- No multi-color gradients, no decorative blur blobs
 - UI must look hand-crafted, not AI-generated
 
 ## Architecture & Code Quality

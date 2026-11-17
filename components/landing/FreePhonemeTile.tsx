@@ -38,10 +38,10 @@ export default function FreePhonemeTile({
       <span className="absolute right-2 top-2 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
         Grátis
       </span>
-      <span className="font-mono text-2xl font-semibold text-slate-900">
+      <span className="font-mono text-2xl font-semibold text-neutral-900">
         {label}
       </span>
-      <span className="text-xs font-medium text-coral-700">
+      <span className="text-xs font-medium text-coral-800">
         {count} {count === 1 ? 'atividade' : 'atividades'}
       </span>
     </>
@@ -74,11 +74,11 @@ export default function FreePhonemeTile({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl font-bold text-slate-900">
+            <DialogTitle className="font-display text-2xl font-bold text-neutral-900">
               Atividades do {label}, grátis
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm leading-relaxed text-slate-600">
+          <p className="text-sm leading-relaxed text-neutral-600">
             {activities.some((a) => a.imageFileId)
               ? 'Baixe agora, sem cadastro:'
               : activities.length === 1
@@ -92,7 +92,7 @@ export default function FreePhonemeTile({
           <div className="mt-2 grid gap-4 sm:grid-cols-2">
             {activities.map((activity) => (
               <figure key={activity.id}>
-                <div className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-sm border border-slate-200 bg-white">
+                <div className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-sm border border-neutral-200 bg-white">
                   {activity.imageFileId ? (
                     // Plain <img>: the route redirects to a short-lived S3
                     // URL, which next/image would need remotePatterns for.
@@ -105,10 +105,10 @@ export default function FreePhonemeTile({
                     />
                   ) : (
                     <div className="p-6 text-center">
-                      <p className="font-mono text-sm font-semibold text-slate-900">
+                      <p className="font-mono text-sm font-semibold text-neutral-900">
                         {label}
                       </p>
-                      <p className="mt-2 font-display text-xl font-bold text-slate-900">
+                      <p className="mt-2 font-display text-xl font-bold text-neutral-900">
                         {activity.title}
                       </p>
                     </div>
@@ -116,10 +116,10 @@ export default function FreePhonemeTile({
                 </div>
                 <figcaption className="mt-2 flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-neutral-900">
                       {activity.title}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-neutral-600">
                       {activity.ageLabel} · {activity.difficultyLabel}
                     </p>
                   </div>
@@ -127,7 +127,7 @@ export default function FreePhonemeTile({
                     <a
                       href={`/api/free-preview/${activity.imageFileId}?download=1`}
                       download
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-900 transition-colors hover:bg-slate-50"
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-900 transition-colors hover:bg-neutral-50"
                     >
                       <Download size={14} aria-hidden />
                       Baixar
@@ -142,13 +142,13 @@ export default function FreePhonemeTile({
             <Link
               href="#planos"
               onClick={() => setOpen(false)}
-              className="text-center text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-700"
+              className="text-center text-sm font-medium text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-700"
             >
               Ver planos
             </Link>
             <Link
               href="/sign-up"
-              className="rounded-md bg-slate-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+              className="rounded-md bg-neutral-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
             >
               Criar conta e baixar grátis
             </Link>

@@ -2,10 +2,11 @@ import { prisma } from '@/app/db';
 import HomeLanding, {
   type PhonemeCount,
   type SampleActivity,
+  type TopicCount,
 } from '@/components/landing/HomeLanding';
 import { type FreePreviewActivity } from '@/components/landing/FreePhonemeTile';
 import { FREE_PHONEME } from '@/lib/pricing';
-import { PHONEMES } from '@/lib/phonemes';
+import { LANGUAGE_TOPICS, PHONEMES } from '@/lib/phonemes';
 import { ActivityDifficulty, ActivityStatus, AgeRange } from '@prisma/client';
 
 // Catalog numbers change at most a few times a week; refresh hourly.
@@ -34,6 +35,7 @@ function cleanTitle(name: string): string {
 
 async function getCatalog(): Promise<{
   phonemes: PhonemeCount[];
+  languageTopics: TopicCount[];
   samples: SampleActivity[];
   freePreview: FreePreviewActivity[];
   totalActivities: number;
@@ -44,7 +46,7 @@ async function getCatalog(): Promise<{
       phoneme: { not: '' },
     };
 
-    const [grouped, sampleRows, freeRows] = await Promise.all([
+    const [grouped, sampleRows, freeRows, typeGroups] = await Promise.all([
       prisma.activity.groupBy({
         by: ['phoneme'],
         where: published,
@@ -79,7 +81,20 @@ async function getCatalog(): Promise<{
         orderBy: { createdAt: 'asc' },
         take: 20,
       }),
+      prisma.activity.groupBy({
+        by: ['type'],
+        where: { status: ActivityStatus.PUBLISHED },
+        _count: { _all: true },
+      }),
     ]);
+
+    // "Linguagem" topics are counted by activity type, not by phoneme.
+    const typeCounts = new Map(typeGroups.map((t) => [t.type, t._count._all]));
+    const languageTopics: TopicCount[] = LANGUAGE_TOPICS.map((topic) => ({
+      id: topic.id,
+      label: topic.label,
+      count: topic.types.reduce((sum, t) => sum + (typeCounts.get(t) ?? 0), 0),
+    }));
 
     // Modal preview: two free-phoneme activities, preferring ones that have
     // an image file so the visitor sees the real sheet.
@@ -113,6 +128,12 @@ async function getCatalog(): Promise<{
       usedTitles.add(title);
     }
     const picked = [...sampleByPhoneme.values()];
+    // Small catalogs (e.g. production today) may not have three distinct age
+    // ranges; fill the remaining slots with any other activity.
+    for (const row of sampleRows) {
+      if (picked.length >= 3) break;
+      if (!picked.includes(row)) picked.push(row);
+    }
 
     // Always list the full phoneme set (empty ones become "Em breve"), plus
     // any extra phoneme that exists in the DB but not in the canonical list.
@@ -130,6 +151,7 @@ async function getCatalog(): Promise<{
 
     return {
       phonemes,
+      languageTopics,
       freePreview,
       totalActivities: phonemes.reduce((sum, p) => sum + p.count, 0),
       samples: picked.map((a) => ({
@@ -145,6 +167,11 @@ async function getCatalog(): Promise<{
     console.error('[home] failed to load catalog', error);
     return {
       phonemes: PHONEMES.map((phoneme) => ({ phoneme, count: 0 })),
+      languageTopics: LANGUAGE_TOPICS.map((t) => ({
+        id: t.id,
+        label: t.label,
+        count: 0,
+      })),
       samples: [],
       freePreview: [],
       totalActivities: 0,
