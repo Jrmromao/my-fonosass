@@ -5,7 +5,7 @@ import HomeLanding, {
   type TopicCount,
 } from '@/components/landing/HomeLanding';
 import { type FreePreviewActivity } from '@/components/landing/FreePhonemeTile';
-import { FREE_PHONEME } from '@/lib/pricing';
+import { getFreeSamples } from '@/lib/access';
 import { LANGUAGE_TOPICS, PHONEMES } from '@/lib/phonemes';
 import { ActivityDifficulty, ActivityStatus, AgeRange } from '@prisma/client';
 
@@ -65,22 +65,8 @@ async function getCatalog(): Promise<{
         orderBy: { createdAt: 'asc' },
         take: 30,
       }),
-      prisma.activity.findMany({
-        where: { status: ActivityStatus.PUBLISHED, phoneme: FREE_PHONEME },
-        select: {
-          id: true,
-          name: true,
-          ageRange: true,
-          difficulty: true,
-          files: {
-            where: { fileType: { startsWith: 'image/' } },
-            select: { id: true },
-            take: 1,
-          },
-        },
-        orderBy: { createdAt: 'asc' },
-        take: 20,
-      }),
+      // Same free samples the download rules allow (lib/access.ts).
+      getFreeSamples(),
       prisma.activity.groupBy({
         by: ['type'],
         where: { status: ActivityStatus.PUBLISHED },
@@ -96,18 +82,14 @@ async function getCatalog(): Promise<{
       count: topic.types.reduce((sum, t) => sum + (typeCounts.get(t) ?? 0), 0),
     }));
 
-    // Modal preview: two free-phoneme activities, preferring ones that have
-    // an image file so the visitor sees the real sheet.
-    const freePreview: FreePreviewActivity[] = [...freeRows]
-      .sort((a, b) => b.files.length - a.files.length)
-      .slice(0, 2)
-      .map((a) => ({
-        id: a.id,
-        title: cleanTitle(a.name),
-        ageLabel: AGE_LABELS[a.ageRange],
-        difficultyLabel: DIFFICULTY_LABELS[a.difficulty],
-        imageFileId: a.files[0]?.id ?? null,
-      }));
+    // Modal preview: the free samples (downloadable after creating an account).
+    const freePreview: FreePreviewActivity[] = freeRows.map((a) => ({
+      id: a.id,
+      title: cleanTitle(a.name),
+      ageLabel: AGE_LABELS[a.ageRange],
+      difficultyLabel: DIFFICULTY_LABELS[a.difficulty],
+      imageFileId: a.imageFileId,
+    }));
 
     // One sheet per phoneme, each from a different age range and theme, so
     // the hero shows the breadth of the catalog rather than three copies.

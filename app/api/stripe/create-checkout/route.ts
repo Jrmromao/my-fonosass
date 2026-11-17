@@ -2,25 +2,42 @@ import { prisma } from '@/app/db';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const bodySchema = z
+  .object({ interval: z.enum(['monthly', 'yearly']).default('monthly') })
+  .default({ interval: 'monthly' });
 
 export async function POST(req: Request) {
   try {
-    // Get price ID from environment variables
-    const priceId = process.env.STRIPE_MONTHLY_PRICE_ID;
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
+    // Body is optional (older callers send none): defaults to monthly.
+    let json: unknown = undefined;
+    try {
+      const raw = typeof req.text === 'function' ? await req.text() : '';
+      json = raw ? JSON.parse(raw) : undefined;
+    } catch {
+      return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+    }
+    const parsed = bodySchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid interval' }, { status: 400 });
+    }
+
+    const priceId =
+      parsed.data.interval === 'yearly'
+        ? process.env.STRIPE_ANNUAL_PRICE_ID
+        : process.env.STRIPE_MONTHLY_PRICE_ID;
     if (!priceId) {
-      console.error('Missing STRIPE_MONTHLY_PRICE_ID environment variable');
+      console.error(`Missing Stripe price ID for ${parsed.data.interval}`);
       return NextResponse.json(
         { error: 'Server configuration error' },
         { status: 500 }
       );
-    }
-    // Get authenticated user from Clerk
-
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user from your database
@@ -42,7 +59,7 @@ export async function POST(req: Request) {
       ],
       mode: 'subscription',
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/games?checkout=canceled`,
       metadata: {
         clerkUserId: userId, // Clerk user ID
         userId: user.id, // Your database user ID

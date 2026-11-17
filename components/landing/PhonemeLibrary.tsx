@@ -4,6 +4,7 @@ import {
   PHONEME_GROUPS,
   type PhonemeEntry,
 } from '@/lib/phonemes';
+import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
 import { FREE_PHONEME } from '@/lib/pricing';
 import Link from 'next/link';
 import ExampleWord from './ExampleWord';
@@ -61,7 +62,8 @@ export default function PhonemeLibrary({
     g.id === 'outros' ? { ...g, entries: [...g.entries, ...extras] } : g
   );
 
-  const freeAvailable = (counts.get(FREE_PHONEME) ?? 0) > 0;
+  // The free offer exists only when there are free samples to show.
+  const freeAvailable = freePreview.length > 0;
   const hasComingSoon =
     groups.some((g) => g.entries.some((e) => !counts.get(e.code))) ||
     languageTopics.some((t) => t.count === 0);
@@ -69,7 +71,7 @@ export default function PhonemeLibrary({
 
   const renderEntry = (entry: PhonemeEntry) => {
     const count = counts.get(entry.code) ?? 0;
-    if (count > 0 && entry.code === FREE_PHONEME) {
+    if (freeAvailable && entry.code === FREE_PHONEME) {
       return (
         <FreePhonemeTile
           phoneme={entry.code}
@@ -164,8 +166,8 @@ export default function PhonemeLibrary({
             <span className="font-mono font-semibold text-coral-800">
               {freeLabel}
             </span>{' '}
-            para ver exemplos das atividades. Todas as atividades desse fonema
-            são grátis com sua conta; os demais fazem parte da assinatura.
+            para ver {FREE_SAMPLE_COUNT} atividades que você baixa grátis ao
+            criar sua conta. As demais fazem parte da assinatura.
           </p>
         ) : (
           hasComingSoon && (

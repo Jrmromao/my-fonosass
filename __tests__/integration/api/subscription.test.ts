@@ -47,7 +47,7 @@ describe('Subscription API Endpoints', () => {
         ],
         mode: 'subscription',
         success_url: expect.stringContaining('/dashboard'),
-        cancel_url: expect.stringContaining('/settings/billing'),
+        cancel_url: expect.stringContaining('/dashboard/games'),
         metadata: {
           clerkUserId: 'clerk-user-1',
           userId: 'user-1',

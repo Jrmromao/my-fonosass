@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Check, CreditCard } from 'lucide-react';
 import { SubStatus, TierType } from '@prisma/client';
-import { FREE_PLAN, PRO_PLAN } from '@/lib/pricing';
-
-const FREE_FEATURES = FREE_PLAN.features;
+import { PRO_PLAN } from '@/lib/pricing';
 
 const PLAN = {
   ...PRO_PLAN,
@@ -65,36 +63,7 @@ export function SubscriptionPlans() {
       </div>
 
       {/* Plans Grid */}
-      <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-4">
-        {/* Free Plan */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">
-            Gratuito
-          </p>
-          <h3 className="text-lg font-bold text-neutral-900 mb-4">Explorar</h3>
-          <div className="flex items-baseline mb-6">
-            <span className="text-3xl font-bold text-neutral-900">R$0</span>
-            <span className="text-gray-500 ml-1 text-sm">/mês</span>
-          </div>
-          <div className="space-y-3 mb-6 pb-6 border-b border-gray-100">
-            {FREE_FEATURES.map((feature, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <Check
-                  size={14}
-                  className="text-gray-400 mt-0.5 flex-shrink-0"
-                />
-                <span className="text-sm text-gray-600">{feature}</span>
-              </div>
-            ))}
-          </div>
-          <Button
-            className="w-full py-3 rounded-md bg-gray-100 hover:bg-gray-200 text-neutral-900 text-sm font-medium transition-colors"
-            onClick={() => (window.location.href = '/sign-up')}
-          >
-            Criar conta
-          </Button>
-        </div>
-
+      <div className="max-w-md mx-auto">
         {/* Pro Plan */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

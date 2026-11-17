@@ -1,5 +1,6 @@
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
+import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
 import { FREE_PHONEME, PRO_PLAN, formatBRL } from '@/lib/pricing';
 import { ArrowRight, Check } from 'lucide-react';
 import Image from 'next/image';
@@ -54,9 +55,8 @@ export default function HomeLanding({
 }: HomeLandingProps) {
   const freeLabel = `/${FREE_PHONEME.toLowerCase()}/`;
   // The free phoneme is only promoted once it has published activities.
-  const freeAvailable = phonemes.some(
-    (p) => p.phoneme === FREE_PHONEME && p.count > 0
-  );
+  // Free offer: FREE_SAMPLE_COUNT activities of FREE_PHONEME, after sign-up.
+  const freeAvailable = freePreview.length > 0;
   const faqs = buildFaqs(freeAvailable, freeLabel);
 
   return (
@@ -93,7 +93,7 @@ export default function HomeLanding({
               </div>
               <p className="mt-5 text-sm text-neutral-600">
                 {freeAvailable &&
-                  `Todas as atividades do fonema ${freeLabel} são grátis. `}
+                  `${FREE_SAMPLE_COUNT} atividades do fonema ${freeLabel} grátis ao criar sua conta. `}
                 Assinatura a partir de {formatBRL(PRO_PLAN.yearlyPrice / 12)}{' '}
                 por mês no plano anual.
               </p>
@@ -350,7 +350,7 @@ function buildFaqs(freeAvailable: boolean, freeLabel: string) {
       ? [
           {
             question: 'Posso experimentar antes de assinar?',
-            answer: `Sim. Todas as atividades do fonema ${freeLabel} são grátis: basta criar sua conta. Os demais fonemas fazem parte da assinatura.`,
+            answer: `Sim. Ao criar sua conta você baixa grátis ${FREE_SAMPLE_COUNT} atividades do fonema ${freeLabel}, sem cartão de crédito. As demais atividades fazem parte da assinatura.`,
           },
         ]
       : []),

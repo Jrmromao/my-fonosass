@@ -1,119 +1,134 @@
-'use server'
+'use server';
 
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from '@/app/db';
-import { DownloadLimitService } from '@/services/downloadLimitService';
+import { hasActiveSubscription, isFreeSample } from '@/lib/access';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 
-interface GetFileDownloadUrlParams {
-    fileId: string;
-    activityId?: string;
-}
+const paramsSchema = z.object({
+  fileId: z.string().min(1).max(64),
+});
 
-export async function getFileDownloadUrl({ fileId, activityId }: GetFileDownloadUrlParams) {
-    try {
-        const { userId } = await auth();
-        if (!userId) {
-            return { success: false, error: "Unauthorized" };
-        }
-
-        // Check download limits for free users
-        const user = await prisma.user.findUnique({
-            where: { clerkUserId: userId },
-            select: { id: true },
-        });
-
-        if (!user) {
-            return { success: false, error: "User not found" };
-        }
-
-        const isPro = await DownloadLimitService.hasProAccess(user.id);
-        if (!isPro) {
-            const { canDownload, remaining } = await DownloadLimitService.checkDownloadLimit(user.id);
-            if (!canDownload) {
-                return {
-                    success: false,
-                    error: "Limite de downloads atingido. Assine o plano Profissional para downloads ilimitados.",
-                    limitReached: true,
-                    remaining: 0,
-                };
-            }
-        }
-
-        const bucketName = process.env.AWS_S3_BUCKET_NAME;
-        if (!bucketName) {
-            console.error("AWS_S3_BUCKET_NAME environment variable is not set");
-            return { success: false, error: "Server configuration error (bucket name missing)" };
-        }
-
-        // Find the file in the database
-        const file = await prisma.activityFile.findUnique({
-            where: { id: fileId },
-            include: {
-                activity: {
-                    select: {
-                        id: true,
-                        createdById: true,
-                        isPublic: true,
-                    }
-                }
-            }
-        });
-
-        if (!file) {
-            return { success: false, error: "File not found" };
-        }
-
-        // Check permission - user can download if:
-        // const isCreator = file.activity.createdById === userId;
-        // const isPublic = file.activity.isPublic;
-        //
-        // if (!isCreator && !isPublic) {
-        //     return { success: false, error: "You don't have permission to download this file" };
-        // }
-
-        // Initialize S3 client
-        const s3Client = new S3Client({
-            region: process.env.AWS_REGION || 'us-east-1',
-            credentials: {
-                accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-            },
-        });
-
-        // Set content disposition to force download with original filename
-        const contentDisposition = `attachment; filename="${encodeURIComponent(file.name)}"`;
-
-        // Create the command to get the object
-        const command = new GetObjectCommand({
-            Bucket: bucketName,
-            Key: file.s3Key,
-            ResponseContentDisposition: contentDisposition,
-        });
-        
-        // Generate a pre-signed URL that expires in 5 minutes (300 seconds)
-        const signedUrl = await getSignedUrl(s3Client, command, {
-            expiresIn: 300
-        });
-
-        // Record download for limit tracking (free users)
-        if (!isPro) {
-            await DownloadLimitService.recordDownload(user.id, file.activityId, file.name);
-        }
-
-        return {
-            success: true,
-            url: signedUrl,
-            fileName: file.name,
-            fileType: file.fileType,
-            fileSizeInBytes: file.sizeInBytes
-        };
-    } catch (error) {
-        console.error("Error generating presigned URL:", error);
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Failed to generate download URL"
-        };
+export type DownloadResult =
+  | {
+      success: true;
+      url: string;
+      fileName: string;
+      fileType: string;
+      fileSizeInBytes: number;
     }
+  | {
+      success: false;
+      error: string;
+      /** The file exists but needs a subscription (show the upgrade dialog). */
+      requiresSubscription?: true;
+    };
+
+/**
+ * Signed download URL for an activity file. Rules in lib/access.ts:
+ * subscribers and admins get everything published; other signed-in users get
+ * only the free samples.
+ */
+export async function getFileDownloadUrl(input: {
+  fileId: string;
+}): Promise<DownloadResult> {
+  try {
+    const parsed = paramsSchema.safeParse(input);
+    if (!parsed.success) {
+      return { success: false, error: 'Arquivo inválido.' };
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+      return { success: false, error: 'Entre na sua conta para baixar.' };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { id: true, role: true },
+    });
+    if (!user) {
+      return { success: false, error: 'Conta não encontrada.' };
+    }
+
+    const file = await prisma.activityFile.findUnique({
+      where: { id: parsed.data.fileId },
+      select: {
+        name: true,
+        s3Key: true,
+        fileType: true,
+        sizeInBytes: true,
+        activityId: true,
+        activity: { select: { status: true } },
+      },
+    });
+
+    const isAdmin = user.role === 'ADMIN';
+
+    // Unpublished content (drafts, pending, rejected) is only for admins.
+    // Same message as "missing" so ids can't be probed.
+    if (!file || (file.activity.status !== 'PUBLISHED' && !isAdmin)) {
+      return { success: false, error: 'Arquivo não encontrado.' };
+    }
+
+    const allowed =
+      isAdmin ||
+      (await hasActiveSubscription(user.id)) ||
+      (await isFreeSample(file.activityId));
+
+    if (!allowed) {
+      return {
+        success: false,
+        error: 'Assine o plano Profissional para baixar esta atividade.',
+        requiresSubscription: true,
+      };
+    }
+
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+    if (!bucketName) {
+      console.error('AWS_S3_BUCKET_NAME environment variable is not set');
+      return { success: false, error: 'Erro de configuração do servidor.' };
+    }
+
+    const s3Client = new S3Client({
+      region: process.env.AWS_REGION || 'us-east-1',
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+      },
+    });
+
+    const url = await getSignedUrl(
+      s3Client,
+      new GetObjectCommand({
+        Bucket: bucketName,
+        Key: file.s3Key,
+        ResponseContentDisposition: `attachment; filename="${encodeURIComponent(file.name)}"`,
+      }),
+      { expiresIn: 300 }
+    );
+
+    // Download history for the user's own records and analytics.
+    await prisma.downloadHistory.create({
+      data: {
+        userId: user.id,
+        activityId: file.activityId,
+        fileName: file.name,
+        fileSize: file.sizeInBytes,
+      },
+    });
+
+    return {
+      success: true,
+      url,
+      fileName: file.name,
+      fileType: file.fileType,
+      fileSizeInBytes: file.sizeInBytes,
+    };
+  } catch (error) {
+    console.error('Error generating presigned URL:', error);
+    return { success: false, error: 'Não foi possível gerar o download.' };
+  }
 }

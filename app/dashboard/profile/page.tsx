@@ -22,7 +22,7 @@ export default function ProfilePage() {
   const { data: stats } = useQuery({
     queryKey: ['profile-stats'],
     queryFn: async (): Promise<{
-      data?: { total?: number; downloads?: number };
+      data?: { total?: number; downloads?: number; subscribed?: boolean };
     }> => {
       const res = await fetch('/api/dashboard/stats');
       return res.json();
@@ -265,14 +265,18 @@ export default function ProfilePage() {
                 <span className="text-gray-500">Plano</span>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
-                    Gratuito
+                    {stats?.data?.subscribed
+                      ? 'Profissional'
+                      : 'Sem assinatura'}
                   </Badge>
-                  <Link
-                    href="/#assinatura"
-                    className="text-xs text-coral-600 font-medium hover:underline"
-                  >
-                    Fazer upgrade
-                  </Link>
+                  {!stats?.data?.subscribed && (
+                    <Link
+                      href="/dashboard/games"
+                      className="text-xs text-coral-800 font-medium hover:underline"
+                    >
+                      Assinar
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

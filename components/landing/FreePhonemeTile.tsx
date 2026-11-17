@@ -6,7 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Download } from 'lucide-react';
+import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
+import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
 import ExampleWord from './ExampleWord';
@@ -35,11 +36,22 @@ export default function FreePhonemeTile({
   example,
 }: FreePhonemeTileProps) {
   const [open, setOpen] = useState(false);
+  const { isSignedIn } = useAuth();
   const label = `/${phoneme.toLowerCase()}/`;
+  // Free samples are downloaded from the library after signing in; sign-up
+  // returns the user there (redirect_url).
+  const libraryHref = `/dashboard/games?phoneme=${encodeURIComponent(phoneme)}`;
+  const downloadHref = isSignedIn
+    ? libraryHref
+    : `/sign-up?redirect_url=${encodeURIComponent(libraryHref)}`;
+  const sampleWord =
+    activities.length === 1 ? 'uma atividade' : 'duas atividades';
   const countText = `${count} ${count === 1 ? 'atividade' : 'atividades'}`;
+  // The badge says how many are free, so "10 atividades" doesn't read as "all free".
+  const freeCount = Math.min(FREE_SAMPLE_COUNT, count);
   const badge = (
     <span className="rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-      Grátis
+      {freeCount} grátis
     </span>
   );
 
@@ -74,7 +86,7 @@ export default function FreePhonemeTile({
   // Nothing to preview: fall back to the sign-up link.
   if (activities.length === 0) {
     return (
-      <Link href="/sign-up" className={tileClass}>
+      <Link href={downloadHref} className={tileClass}>
         {tileContent}
       </Link>
     );
@@ -96,18 +108,16 @@ export default function FreePhonemeTile({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl font-bold text-neutral-900">
-              Atividades do {label}, grátis
+              {activities.length === 1 ? 'Uma atividade' : 'Duas atividades'} do{' '}
+              {label}, grátis
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm leading-relaxed text-neutral-600">
-            {activities.some((a) => a.imageFileId)
-              ? 'Baixe agora, sem cadastro:'
-              : activities.length === 1
-                ? 'Veja uma'
-                : `Veja ${activities.length === 2 ? 'duas' : activities.length}`}{' '}
-            {activities.some((a) => a.imageFileId)
-              ? `${activities.length === 1 ? 'uma' : 'duas'} das ${count} atividades do fonema ${label}. Crie sua conta para baixar as outras.`
-              : `das ${count} atividades do fonema ${label}. Crie sua conta para baixar todas, prontas para imprimir.`}
+            Veja {sampleWord} do fonema {label}.{' '}
+            {isSignedIn
+              ? 'Elas estão liberadas para você na biblioteca.'
+              : 'Crie sua conta grátis para baixar e imprimir.'}{' '}
+            As outras atividades fazem parte da assinatura.
           </p>
 
           <div className="mt-2 grid gap-4 sm:grid-cols-2">
@@ -144,16 +154,6 @@ export default function FreePhonemeTile({
                       {activity.ageLabel} · {activity.difficultyLabel}
                     </p>
                   </div>
-                  {activity.imageFileId && (
-                    <a
-                      href={`/api/free-preview/${activity.imageFileId}?download=1`}
-                      download
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-900 transition-colors hover:bg-neutral-50"
-                    >
-                      <Download size={14} aria-hidden />
-                      Baixar
-                    </a>
-                  )}
                 </figcaption>
               </figure>
             ))}
@@ -168,10 +168,12 @@ export default function FreePhonemeTile({
               Ver planos
             </Link>
             <Link
-              href="/sign-up"
+              href={downloadHref}
               className="rounded-md bg-neutral-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
             >
-              Criar conta e baixar grátis
+              {isSignedIn
+                ? 'Baixar na biblioteca'
+                : 'Criar conta e baixar grátis'}
             </Link>
           </div>
         </DialogContent>

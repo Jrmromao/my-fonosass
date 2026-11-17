@@ -13,6 +13,7 @@ jest.mock('@/app/db', () => ({
     downloadLimit: { findUnique: jest.fn() },
     downloadHistory: { count: jest.fn() },
     user: { findUnique: jest.fn() },
+    subscription: { findUnique: jest.fn() },
   },
 }));
 
@@ -37,7 +38,9 @@ describe('Activities Search API', () => {
 
     const { GET } = await import('@/app/api/activities/search/route');
     const request = new Request('http://localhost:3000/api/activities/search');
-    (request as any).nextUrl = new URL('http://localhost:3000/api/activities/search');
+    (request as any).nextUrl = new URL(
+      'http://localhost:3000/api/activities/search'
+    );
     const response = await GET(request as any);
     const data = await response.json();
 
@@ -51,7 +54,16 @@ describe('Activities Search API', () => {
 
     auth.mockResolvedValue({ userId: 'clerk-1' });
     prisma.activity.findMany.mockResolvedValue([
-      { id: '1', name: 'Test Activity', phoneme: 'P', type: 'SPEECH', difficulty: 'BEGINNER', ageRange: 'CHILD', createdAt: new Date(), files: [] },
+      {
+        id: '1',
+        name: 'Test Activity',
+        phoneme: 'P',
+        type: 'SPEECH',
+        difficulty: 'BEGINNER',
+        ageRange: 'CHILD',
+        createdAt: new Date(),
+        files: [],
+      },
     ]);
     prisma.activity.count.mockResolvedValue(1);
 
@@ -78,7 +90,9 @@ describe('Activities Search API', () => {
     prisma.activity.count.mockResolvedValue(0);
 
     const { GET } = await import('@/app/api/activities/search/route');
-    const url = new URL('http://localhost:3000/api/activities/search?phoneme=R');
+    const url = new URL(
+      'http://localhost:3000/api/activities/search?phoneme=R'
+    );
     const request = new Request(url.toString());
     (request as any).nextUrl = url;
     await GET(request as any);
@@ -99,7 +113,9 @@ describe('Activities Search API', () => {
     prisma.activity.count.mockResolvedValue(0);
 
     const { GET } = await import('@/app/api/activities/search/route');
-    const url = new URL('http://localhost:3000/api/activities/search?search=animais');
+    const url = new URL(
+      'http://localhost:3000/api/activities/search?search=animais'
+    );
     const request = new Request(url.toString());
     (request as any).nextUrl = url;
     await GET(request as any);
@@ -108,7 +124,9 @@ describe('Activities Search API', () => {
       expect.objectContaining({
         where: expect.objectContaining({
           OR: expect.arrayContaining([
-            expect.objectContaining({ name: { contains: 'animais', mode: 'insensitive' } }),
+            expect.objectContaining({
+              name: { contains: 'animais', mode: 'insensitive' },
+            }),
           ]),
         }),
       })
@@ -124,7 +142,9 @@ describe('Activities Search API', () => {
     prisma.activity.count.mockResolvedValue(50);
 
     const { GET } = await import('@/app/api/activities/search/route');
-    const url = new URL('http://localhost:3000/api/activities/search?page=3&limit=10');
+    const url = new URL(
+      'http://localhost:3000/api/activities/search?page=3&limit=10'
+    );
     const request = new Request(url.toString());
     (request as any).nextUrl = url;
     const response = await GET(request as any);
@@ -162,10 +182,18 @@ describe('Dashboard Stats API', () => {
 
     auth.mockResolvedValue({ userId: 'clerk-1' });
     prisma.activity.count.mockResolvedValue(100);
-    prisma.activity.findMany.mockResolvedValue([{ phoneme: 'P' }, { phoneme: 'R' }, { phoneme: 'S' }]);
+    prisma.activity.findMany.mockResolvedValue([
+      { phoneme: 'P' },
+      { phoneme: 'R' },
+      { phoneme: 'S' },
+    ]);
     prisma.downloadHistory.count.mockResolvedValue(5);
     prisma.user.findUnique.mockResolvedValue({ id: 'user-1' });
-    prisma.downloadLimit.findUnique.mockResolvedValue({ userId: 'user-1', downloads: 2, resetDate: new Date() });
+    prisma.subscription.findUnique.mockResolvedValue({
+      status: 'ACTIVE',
+      tier: 'PRO',
+      currentPeriodEnd: null,
+    });
 
     const { GET } = await import('@/app/api/dashboard/stats/route');
     const response = await GET();
@@ -176,6 +204,10 @@ describe('Dashboard Stats API', () => {
     expect(data.data.total).toBe(100);
     expect(data.data.phonemes).toBe(3);
     expect(data.data.downloads).toBe(5);
-    expect(data.data.remaining).toBe(1);
+    expect(data.data.subscribed).toBe(true);
+    // Per-user downloads (regression: used to count everyone's).
+    expect(prisma.downloadHistory.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({ userId: 'user-1' }),
+    });
   });
 });

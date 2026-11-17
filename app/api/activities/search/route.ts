@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { getFreeSamples, hasActiveSubscription } from '@/lib/access';
 import { auth } from '@clerk/nextjs/server';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -21,6 +22,18 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // The "thumbnail" is a signed URL to the original file, so it is only
+    // sent to users allowed to download it (subscribers, admins, free samples).
+    // Others see the card without an image. TODO: real low-res previews.
+    const viewer = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { id: true, role: true },
+    });
+    const canDownloadAll =
+      !!viewer &&
+      (viewer.role === 'ADMIN' || (await hasActiveSubscription(viewer.id)));
+    const freeSampleIds = new Set((await getFreeSamples()).map((s) => s.id));
 
     const url = request.nextUrl;
     const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
@@ -101,8 +114,10 @@ export async function GET(request: NextRequest) {
     const activitiesWithThumbnails = await Promise.all(
       activities.map(async (activity) => {
         const file = activity.files[0];
+        const isFreeSample = freeSampleIds.has(activity.id);
+        const canDownload = canDownloadAll || isFreeSample;
         let thumbnailUrl = null;
-        if (file?.s3Key) {
+        if (canDownload && file?.s3Key) {
           try {
             const command = new GetObjectCommand({
               Bucket: BUCKET,
@@ -113,13 +128,14 @@ export async function GET(request: NextRequest) {
             /* skip failed thumbnails */
           }
         }
-        return { ...activity, thumbnailUrl };
+        return { ...activity, thumbnailUrl, isFreeSample, canDownload };
       })
     );
 
     return NextResponse.json({
       success: true,
       data: activitiesWithThumbnails,
+      viewer: { canDownloadAll },
       pagination: {
         page,
         limit,

@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { hasActiveSubscription } from '@/lib/access';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
@@ -12,36 +13,29 @@ export async function GET() {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const [total, phonemes, pending, downloads] = await Promise.all([
-      prisma.activity.count({ where: { status: 'PUBLISHED' } }),
-      prisma.activity.findMany({
-        where: { status: 'PUBLISHED' },
-        select: { phoneme: true },
-        distinct: ['phoneme'],
-      }),
-      prisma.activity.count({ where: { status: 'PENDING_REVIEW' } }),
-      prisma.downloadHistory.count({
-        where: { downloadedAt: { gte: startOfMonth } },
-      }),
-    ]);
-
-    // Get user's remaining downloads
     const user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
       select: { id: true },
     });
 
-    let remaining = 3;
-    if (user) {
-      const limit = await prisma.downloadLimit.findUnique({
-        where: { userId: user.id },
-      });
-      if (limit) {
-        const daysSinceReset = Math.floor((now.getTime() - limit.resetDate.getTime()) / (1000 * 60 * 60 * 24));
-        const currentDownloads = daysSinceReset >= 30 ? 0 : limit.downloads;
-        remaining = Math.max(0, 3 - currentDownloads);
-      }
-    }
+    const [total, phonemes, pending, downloads, subscribed] = await Promise.all(
+      [
+        prisma.activity.count({ where: { status: 'PUBLISHED' } }),
+        prisma.activity.findMany({
+          where: { status: 'PUBLISHED' },
+          select: { phoneme: true },
+          distinct: ['phoneme'],
+        }),
+        prisma.activity.count({ where: { status: 'PENDING_REVIEW' } }),
+        // The signed-in user's own downloads this month (was: everyone's).
+        user
+          ? prisma.downloadHistory.count({
+              where: { userId: user.id, downloadedAt: { gte: startOfMonth } },
+            })
+          : Promise.resolve(0),
+        user ? hasActiveSubscription(user.id) : Promise.resolve(false),
+      ]
+    );
 
     return NextResponse.json({
       success: true,
@@ -50,7 +44,7 @@ export async function GET() {
         phonemes: phonemes.length,
         pending,
         downloads,
-        remaining,
+        subscribed,
       },
     });
   } catch (error) {

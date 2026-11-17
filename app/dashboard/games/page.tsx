@@ -19,6 +19,15 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useUserRole } from '@/hooks/useUserRole';
+import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
+import {
+  AGE_LABELS,
+  DIFFICULTY_LABELS,
+  TYPE_LABELS,
+  label,
+  phonemeLabel,
+} from '@/lib/activityLabels';
+import { FREE_PHONEME, PRO_PLAN, formatBRL } from '@/lib/pricing';
 import { getFileDownloadUrl } from '@/lib/actions/file-download.action';
 import { useQuery } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
@@ -26,6 +35,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Lock,
   MoreHorizontal,
   Search,
 } from 'lucide-react';
@@ -50,7 +60,11 @@ export default function ActivitiesPage() {
   const debouncedSearch = useDebounce(searchInput, 400);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [previewActivity, setPreviewActivity] = useState<any>(null);
-  const [limitReached, setLimitReached] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<
+    'monthly' | 'yearly' | null
+  >(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const updateParams = useCallback(
@@ -89,6 +103,8 @@ export default function ActivitiesPage() {
   });
 
   const activities = data?.data || [];
+  // Unknown until loaded: avoid flashing the upsell banner for subscribers.
+  const canDownloadAll: boolean | undefined = data?.viewer?.canDownloadAll;
   const pagination = data?.pagination || { page: 1, total: 0, totalPages: 1 };
   const filters = data?.filters || {
     phonemes: [],
@@ -105,12 +121,33 @@ export default function ActivitiesPage() {
         a.href = result.url;
         a.download = name;
         a.click();
-      } else if ((result as any).limitReached) {
-        setLimitReached(true);
+      } else if (!result.success && result.requiresSubscription) {
+        setUpgradeOpen(true);
       }
     } finally {
       setDownloadingId(null);
     }
+  };
+
+  const startCheckout = async (interval: 'monthly' | 'yearly') => {
+    setCheckoutLoading(interval);
+    setCheckoutError(null);
+    try {
+      const res = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interval }),
+      });
+      const json = await res.json();
+      if (res.ok && json.url) {
+        window.location.href = json.url;
+        return;
+      }
+      setCheckoutError('Não foi possível abrir o pagamento. Tente novamente.');
+    } catch {
+      setCheckoutError('Não foi possível abrir o pagamento. Tente novamente.');
+    }
+    setCheckoutLoading(null);
   };
 
   return (
@@ -134,6 +171,23 @@ export default function ActivitiesPage() {
             />
           )}
         </div>
+
+        {canDownloadAll === false && (
+          <div className="mx-6 mb-3 flex flex-col gap-2 rounded-md border border-coral-200 bg-coral-50 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-neutral-700">
+              Você pode baixar grátis {FREE_SAMPLE_COUNT} atividades do{' '}
+              {phonemeLabel(FREE_PHONEME)}. Assine para baixar toda a
+              biblioteca.
+            </p>
+            <Button
+              size="sm"
+              className="h-8 shrink-0 bg-coral-700 hover:bg-coral-800 text-white text-xs font-semibold"
+              onClick={() => setUpgradeOpen(true)}
+            >
+              Ver planos
+            </Button>
+          </div>
+        )}
 
         {/* Filters */}
         <div className="px-6 pb-3 flex items-center gap-2">
@@ -161,7 +215,7 @@ export default function ActivitiesPage() {
                 .filter((p: string) => p && p.trim() !== '')
                 .map((p: string) => (
                   <SelectItem key={p} value={p}>
-                    /{p}/
+                    {phonemeLabel(p)}
                   </SelectItem>
                 ))}
             </SelectContent>
@@ -254,31 +308,51 @@ export default function ActivitiesPage() {
                     <span className="text-sm text-foreground">
                       {activity.name}
                     </span>
+                    {activity.isFreeSample && canDownloadAll === false && (
+                      <span className="ml-2 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                        Grátis
+                      </span>
+                    )}
                   </td>
                   <td className="py-3">
                     <span className="text-xs font-mono text-muted-foreground">
-                      /{activity.phoneme}/
+                      {phonemeLabel(activity.phoneme)}
                     </span>
                   </td>
                   <td className="py-3">
                     <span className="text-xs text-muted-foreground">
-                      {activity.type}
+                      {label(TYPE_LABELS, activity.type)}
                     </span>
                   </td>
                   <td className="py-3">
                     <span className="text-xs text-muted-foreground">
-                      {activity.difficulty}
+                      {label(DIFFICULTY_LABELS, activity.difficulty)}
                     </span>
                   </td>
                   <td className="py-3">
                     <span className="text-xs text-muted-foreground">
-                      {activity.ageRange}
+                      {label(AGE_LABELS, activity.ageRange)}
                     </span>
                   </td>
                   <td className="py-3 text-right">
-                    {activity.files?.[0] && (
+                    {activity.files?.[0] && !activity.canDownload && (
                       <button
-                        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        className="p-1 rounded hover:bg-neutral-100 transition-colors"
+                        aria-label="Assinar para baixar"
+                        title="Assinar para baixar"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setUpgradeOpen(true);
+                        }}
+                      >
+                        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                      </button>
+                    )}
+                    {activity.files?.[0] && activity.canDownload && (
+                      <button
+                        className="p-1 rounded hover:bg-neutral-100 transition-colors"
+                        aria-label="Baixar"
+                        title="Baixar"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDownload(
@@ -289,7 +363,7 @@ export default function ActivitiesPage() {
                         disabled={downloadingId === activity.files[0].id}
                       >
                         {downloadingId === activity.files[0].id ? (
-                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600" />
                         ) : (
                           <Download className="h-3.5 w-3.5 text-muted-foreground" />
                         )}
@@ -346,25 +420,46 @@ export default function ActivitiesPage() {
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                {previewActivity.thumbnailUrl && (
+                {previewActivity.thumbnailUrl ? (
                   <img
                     src={previewActivity.thumbnailUrl}
                     alt=""
-                    className="w-full rounded border border-gray-200"
+                    className="w-full rounded border border-neutral-200"
                   />
+                ) : (
+                  <div className="flex h-40 items-center justify-center rounded border border-dashed border-neutral-300 bg-neutral-50 text-sm text-neutral-600">
+                    <Lock className="mr-2 h-4 w-4" aria-hidden />
+                    Prévia disponível para assinantes
+                  </div>
                 )}
-                <div className="flex gap-3 text-xs text-muted-foreground">
-                  <span className="font-mono">/{previewActivity.phoneme}/</span>
-                  <span>{previewActivity.type}</span>
-                  <span>{previewActivity.difficulty}</span>
-                  <span>{previewActivity.ageRange}</span>
+                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                  <span className="font-mono">
+                    {phonemeLabel(previewActivity.phoneme)}
+                  </span>
+                  <span>{label(TYPE_LABELS, previewActivity.type)}</span>
+                  <span>
+                    {label(DIFFICULTY_LABELS, previewActivity.difficulty)}
+                  </span>
+                  <span>{label(AGE_LABELS, previewActivity.ageRange)}</span>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-neutral-600">
                   {previewActivity.description}
                 </p>
-                {previewActivity.files?.[0] && (
+                {previewActivity.files?.[0] && !previewActivity.canDownload && (
                   <Button
-                    className="w-full bg-black hover:bg-gray-800 text-white text-sm h-9"
+                    className="w-full bg-coral-700 hover:bg-coral-800 text-white text-sm h-9"
+                    onClick={() => {
+                      setPreviewActivity(null);
+                      setUpgradeOpen(true);
+                    }}
+                  >
+                    <Lock className="h-3.5 w-3.5 mr-2" aria-hidden />
+                    Assinar para baixar
+                  </Button>
+                )}
+                {previewActivity.files?.[0] && previewActivity.canDownload && (
+                  <Button
+                    className="w-full bg-neutral-900 hover:bg-neutral-800 text-white text-sm h-9"
                     onClick={() =>
                       handleDownload(
                         previewActivity.files[0].id,
@@ -374,7 +469,7 @@ export default function ActivitiesPage() {
                     disabled={downloadingId === previewActivity.files[0].id}
                   >
                     <Download className="h-3.5 w-3.5 mr-2" />
-                    Descarregar
+                    Baixar
                   </Button>
                 )}
               </div>
@@ -383,34 +478,48 @@ export default function ActivitiesPage() {
         </DialogContent>
       </Dialog>
       {/* Upgrade Dialog */}
-      <Dialog open={limitReached} onOpenChange={setLimitReached}>
+      <Dialog
+        open={upgradeOpen}
+        onOpenChange={(o) => {
+          setUpgradeOpen(o);
+          if (!o) setCheckoutError(null);
+        }}
+      >
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">
-              Limite de downloads atingido
+              Assine para baixar toda a biblioteca
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Você atingiu o limite de 3 downloads gratuitos este mês. Assine o
-              plano Profissional para downloads ilimitados.
+              Com o plano {PRO_PLAN.name} você baixa todas as atividades, com
+              novidades toda semana. Cancele quando quiser.
             </p>
-            <div className="flex gap-2">
+            {checkoutError && (
+              <p className="text-sm text-destructive" role="alert">
+                {checkoutError}
+              </p>
+            )}
+            <div className="space-y-2">
               <Button
-                className="flex-1 bg-coral-500 hover:bg-coral-600 text-white text-sm"
-                onClick={() => {
-                  setLimitReached(false);
-                  router.push('/#assinatura');
-                }}
+                className="w-full h-10 bg-coral-700 hover:bg-coral-800 text-white text-sm font-semibold"
+                disabled={checkoutLoading !== null}
+                onClick={() => startCheckout('monthly')}
               >
-                Ver planos
+                {checkoutLoading === 'monthly'
+                  ? 'Abrindo pagamento...'
+                  : `Mensal: ${formatBRL(PRO_PLAN.monthlyPrice)}/mês`}
               </Button>
               <Button
-                variant="ghost"
-                className="text-sm text-muted-foreground"
-                onClick={() => setLimitReached(false)}
+                variant="outline"
+                className="w-full h-10 border-neutral-300 text-sm font-semibold"
+                disabled={checkoutLoading !== null}
+                onClick={() => startCheckout('yearly')}
               >
-                Fechar
+                {checkoutLoading === 'yearly'
+                  ? 'Abrindo pagamento...'
+                  : `Anual: ${formatBRL(PRO_PLAN.yearlyPrice)}/ano`}
               </Button>
             </div>
           </div>
