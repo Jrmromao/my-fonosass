@@ -1,5 +1,6 @@
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
+import { MIN_ACTIVITIES_TO_SHOW_COUNT } from '@/lib/phonemes';
 import { FREE_PHONEME, PRO_PLAN, formatBRL } from '@/lib/pricing';
 import { ArrowRight, Check } from 'lucide-react';
 import Image from 'next/image';
@@ -42,22 +43,37 @@ const yearlySavings = Math.round(
     100
 );
 
+// Base text color, inherited by headings. Testing two near-blacks:
+// 'slate' = navy near-black (#0f172a), 'indigo' = purple near-black (#1e1b4b)
+// that ties headings to the lavender background. Flip to compare.
+const INK: 'slate' | 'indigo' = 'slate';
+const INK_CLASS = { slate: 'text-slate-900', indigo: 'text-indigo-950' }[INK];
+
 export default function HomeLanding({
   phonemes,
   samples,
   freePreview,
   totalActivities,
 }: HomeLandingProps) {
+  const freeLabel = `/${FREE_PHONEME.toLowerCase()}/`;
+  // The free phoneme is only promoted once it has published activities.
+  const freeAvailable = phonemes.some(
+    (p) => p.phoneme === FREE_PHONEME && p.count > 0
+  );
+  const availableCount = phonemes.filter((p) => p.count > 0).length;
+  const hasComingSoon = phonemes.some((p) => p.count === 0);
+  const faqs = buildFaqs(freeAvailable, freeLabel);
+
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <SharedNavbar />
+    <div className={`min-h-screen bg-violet-100 ${INK_CLASS}`}>
+      <SharedNavbar tone="lavender" />
 
       <main id="main-content">
         {/* Hero */}
         <section className="pt-28 pb-20 md:pt-36 md:pb-28">
           <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-12 gap-14 items-center">
             <div className="lg:col-span-7">
-              <h1 className="font-display text-[2.6rem] md:text-6xl font-extrabold leading-[1.02] tracking-tight">
+              <h1 className="font-display text-[2.1rem] md:text-[3.25rem] font-bold leading-[1.08]">
                 Atividades de fonoaudiologia infantil, organizadas por fonema.
               </h1>
               <p className="mt-6 text-lg text-slate-600 leading-relaxed max-w-[34rem]">
@@ -67,7 +83,7 @@ export default function HomeLanding({
               <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
                 <Link
                   href="#planos"
-                  className="inline-flex items-center gap-2 rounded-md bg-coral-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-coral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2"
+                  className="inline-flex items-center gap-2 rounded-md bg-coral-700 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-coral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
                 >
                   Ver planos <ArrowRight size={16} aria-hidden />
                 </Link>
@@ -75,13 +91,16 @@ export default function HomeLanding({
                   href="#biblioteca"
                   className="text-sm font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-700"
                 >
-                  Experimentar o /{FREE_PHONEME.toLowerCase()}/ grátis
+                  {freeAvailable
+                    ? `Experimentar o ${freeLabel} grátis`
+                    : 'Ver a biblioteca'}
                 </Link>
               </div>
               <p className="mt-5 text-sm text-slate-500">
-                Todas as atividades do fonema /{FREE_PHONEME.toLowerCase()}/ são
-                grátis. Assinatura a partir de{' '}
-                {formatBRL(PRO_PLAN.yearlyPrice / 12)} por mês no plano anual.
+                {freeAvailable &&
+                  `Todas as atividades do fonema ${freeLabel} são grátis. `}
+                Assinatura a partir de {formatBRL(PRO_PLAN.yearlyPrice / 12)}{' '}
+                por mês no plano anual.
               </p>
             </div>
 
@@ -94,14 +113,14 @@ export default function HomeLanding({
         {/* Library preview */}
         <section
           id="biblioteca"
-          className="border-t border-slate-100 bg-slate-50 py-20"
+          className="border-t border-violet-200 bg-violet-50 py-20"
         >
           <div className="max-w-6xl mx-auto px-6">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
               <h2 className="font-display text-3xl font-bold max-w-md leading-tight">
-                {phonemes.length > 0
-                  ? `${phonemes.length} fonemas, ${totalActivities} atividades prontas.`
-                  : 'Uma biblioteca organizada por fonema.'}
+                {totalActivities >= MIN_ACTIVITIES_TO_SHOW_COUNT
+                  ? `${availableCount} fonemas, ${totalActivities} atividades prontas.`
+                  : `${phonemes.length} fonemas, novas atividades toda semana.`}
               </h2>
               <p className="text-slate-600 max-w-sm text-sm leading-relaxed">
                 Cada fonema tem atividades para pré-escolares, crianças em idade
@@ -111,7 +130,19 @@ export default function HomeLanding({
 
             <ul className="grid grid-cols-4 sm:grid-cols-8 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
               {phonemes.map((p) =>
-                p.phoneme === FREE_PHONEME ? (
+                p.count === 0 ? (
+                  <li key={p.phoneme}>
+                    <div
+                      aria-label={`Fonema /${p.phoneme.toLowerCase()}/, em breve`}
+                      className="flex h-full flex-col items-start justify-between gap-6 bg-slate-50 p-4"
+                    >
+                      <span className="font-mono text-2xl font-semibold text-slate-300">
+                        /{p.phoneme.toLowerCase()}/
+                      </span>
+                      <span className="text-xs text-slate-400">Em breve</span>
+                    </div>
+                  </li>
+                ) : p.phoneme === FREE_PHONEME ? (
                   <li key={p.phoneme}>
                     <FreePhonemeTile
                       phoneme={p.phoneme}
@@ -136,17 +167,28 @@ export default function HomeLanding({
                 )
               )}
             </ul>
-            <p className="mt-4 text-sm text-slate-600">
-              <span className="font-semibold text-slate-900">
-                Experimente grátis:
-              </span>{' '}
-              clique no{' '}
-              <span className="font-mono font-semibold text-coral-700">
-                /{FREE_PHONEME.toLowerCase()}/
-              </span>{' '}
-              para ver exemplos das atividades. Todas as atividades desse fonema
-              são grátis com sua conta; os demais fazem parte da assinatura.
-            </p>
+            {freeAvailable ? (
+              <p className="mt-4 text-sm text-slate-600">
+                <span className="font-semibold text-slate-900">
+                  Experimente grátis:
+                </span>{' '}
+                clique no{' '}
+                <span className="font-mono font-semibold text-coral-700">
+                  {freeLabel}
+                </span>{' '}
+                para ver exemplos das atividades. Todas as atividades desse
+                fonema são grátis com sua conta; os demais fazem parte da
+                assinatura.
+              </p>
+            ) : (
+              hasComingSoon && (
+                <p className="mt-4 text-sm text-slate-600">
+                  Os fonemas marcados como &ldquo;Em breve&rdquo; estão em
+                  produção e entram na biblioteca nas próximas semanas, sem
+                  custo extra para assinantes.
+                </p>
+              )
+            )}
           </div>
         </section>
 
@@ -195,7 +237,7 @@ export default function HomeLanding({
         {/* Pricing */}
         <section
           id="planos"
-          className="border-t border-slate-100 bg-slate-50 py-20"
+          className="border-t border-violet-200 bg-violet-50 py-20"
         >
           <div className="max-w-4xl mx-auto px-6">
             <h2 className="font-display text-3xl font-bold">
@@ -371,29 +413,35 @@ function SheetStack({ samples }: { samples: SampleActivity[] }) {
   );
 }
 
-const faqs = [
-  {
-    question: 'Quem cria os materiais?',
-    answer:
-      'Todas as atividades são criadas e revisadas por fonoaudióloga com experiência clínica em atendimento infantil. Nada é publicado sem revisão.',
-  },
-  {
-    question: 'Para quais idades são as atividades?',
-    answer:
-      'Há atividades para pré-escolares, crianças em idade escolar e adolescentes, em três níveis de dificuldade: iniciante, intermediário e avançado.',
-  },
-  {
-    question: 'Posso experimentar antes de assinar?',
-    answer: `Sim. Todas as atividades do fonema /${FREE_PHONEME.toLowerCase()}/ são grátis: basta criar sua conta. Os demais fonemas fazem parte da assinatura.`,
-  },
-  {
-    question: 'O que está incluído na assinatura?',
-    answer:
-      'Acesso a todas as atividades da biblioteca, com downloads ilimitados prontos para impressão. Novas atividades são adicionadas toda semana sem custo extra.',
-  },
-  {
-    question: 'Posso cancelar a assinatura?',
-    answer:
-      'Sim, a qualquer momento e sem multa. O acesso continua ativo até o fim do período já pago.',
-  },
-];
+function buildFaqs(freeAvailable: boolean, freeLabel: string) {
+  return [
+    {
+      question: 'Quem cria os materiais?',
+      answer:
+        'Todas as atividades são criadas e revisadas por fonoaudióloga com experiência clínica em atendimento infantil. Nada é publicado sem revisão.',
+    },
+    {
+      question: 'Para quais idades são as atividades?',
+      answer:
+        'Há atividades para pré-escolares, crianças em idade escolar e adolescentes, em três níveis de dificuldade: iniciante, intermediário e avançado.',
+    },
+    ...(freeAvailable
+      ? [
+          {
+            question: 'Posso experimentar antes de assinar?',
+            answer: `Sim. Todas as atividades do fonema ${freeLabel} são grátis: basta criar sua conta. Os demais fonemas fazem parte da assinatura.`,
+          },
+        ]
+      : []),
+    {
+      question: 'O que está incluído na assinatura?',
+      answer:
+        'Acesso a todas as atividades da biblioteca, com downloads ilimitados prontos para impressão. Novas atividades são adicionadas toda semana sem custo extra.',
+    },
+    {
+      question: 'Posso cancelar a assinatura?',
+      answer:
+        'Sim, a qualquer momento e sem multa. O acesso continua ativo até o fim do período já pago.',
+    },
+  ];
+}

@@ -5,6 +5,7 @@ import HomeLanding, {
 } from '@/components/landing/HomeLanding';
 import { type FreePreviewActivity } from '@/components/landing/FreePhonemeTile';
 import { FREE_PHONEME } from '@/lib/pricing';
+import { PHONEMES } from '@/lib/phonemes';
 import { ActivityDifficulty, ActivityStatus, AgeRange } from '@prisma/client';
 
 // Catalog numbers change at most a few times a week; refresh hourly.
@@ -51,7 +52,7 @@ async function getCatalog(): Promise<{
         orderBy: { phoneme: 'asc' },
       }),
       prisma.activity.findMany({
-        where: { ...published, phoneme: { in: ['R', 'S', 'L'] } },
+        where: published,
         select: {
           id: true,
           name: true,
@@ -113,10 +114,19 @@ async function getCatalog(): Promise<{
     }
     const picked = [...sampleByPhoneme.values()];
 
-    const phonemes = grouped.map((g) => ({
-      phoneme: g.phoneme,
-      count: g._count._all,
-    }));
+    // Always list the full phoneme set (empty ones become "Em breve"), plus
+    // any extra phoneme that exists in the DB but not in the canonical list.
+    const counts = new Map(grouped.map((g) => [g.phoneme, g._count._all]));
+    const known = new Set<string>(PHONEMES);
+    const phonemes: PhonemeCount[] = [
+      ...PHONEMES.map((phoneme) => ({
+        phoneme,
+        count: counts.get(phoneme) ?? 0,
+      })),
+      ...grouped
+        .filter((g) => !known.has(g.phoneme))
+        .map((g) => ({ phoneme: g.phoneme, count: g._count._all })),
+    ];
 
     return {
       phonemes,
@@ -133,7 +143,12 @@ async function getCatalog(): Promise<{
   } catch (error) {
     // Landing must render even if the DB is unreachable (e.g. during build).
     console.error('[home] failed to load catalog', error);
-    return { phonemes: [], samples: [], freePreview: [], totalActivities: 0 };
+    return {
+      phonemes: PHONEMES.map((phoneme) => ({ phoneme, count: 0 })),
+      samples: [],
+      freePreview: [],
+      totalActivities: 0,
+    };
   }
 }
 

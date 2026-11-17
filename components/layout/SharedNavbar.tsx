@@ -10,7 +10,20 @@ interface SharedNavbarProps {
   scrolled?: boolean;
   showWaitingList?: boolean;
   className?: string;
+  /** Background tone; 'lavender' matches the landing page background. */
+  tone?: 'white' | 'lavender';
 }
+
+const TONE_CLASSES = {
+  white: {
+    scrolled: 'bg-white/95 backdrop-blur-md shadow-sm',
+    top: 'bg-white/50 backdrop-blur-sm',
+  },
+  lavender: {
+    scrolled: 'bg-violet-100/95 backdrop-blur-md shadow-sm',
+    top: 'bg-violet-100',
+  },
+} as const;
 
 const NAV_ITEMS = [
   { href: '/#biblioteca', label: 'Biblioteca' },
@@ -23,6 +36,7 @@ export default function SharedNavbar({
   scrolled = false,
   showWaitingList = false,
   className = '',
+  tone = 'white',
 }: SharedNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(scrolled);
@@ -38,7 +52,7 @@ export default function SharedNavbar({
     <header
       className={`fixed left-0 right-0 z-50 transition-all duration-200 ${
         showWaitingList ? 'top-16' : 'top-0'
-      } ${hasScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-white/50 backdrop-blur-sm'} ${className}`}
+      } ${hasScrolled ? TONE_CLASSES[tone].scrolled : TONE_CLASSES[tone].top} ${className}`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-18">

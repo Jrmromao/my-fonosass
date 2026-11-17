@@ -35,7 +35,7 @@ export default function FreePhonemeTile({
 
   const tileContent = (
     <>
-      <span className="absolute right-2 top-2 rounded-sm bg-coral-500 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+      <span className="absolute right-2 top-2 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
         Grátis
       </span>
       <span className="font-mono text-2xl font-semibold text-slate-900">
