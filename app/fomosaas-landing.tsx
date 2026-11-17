@@ -212,11 +212,11 @@ export default function FomosaasLanding({
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-600">
-                  EL
+                  EM
                 </div>
                 <div>
                   <p className="text-sm font-medium text-neutral-900">
-                    Eliane Lourenço
+                    Eliane Mota
                   </p>
                   <p className="text-xs text-neutral-400">
                     Fonoaudióloga Clínica

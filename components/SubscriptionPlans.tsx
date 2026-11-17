@@ -4,29 +4,14 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Check, CreditCard } from 'lucide-react';
 import { SubStatus, TierType } from '@prisma/client';
-import Link from 'next/link';
+import { FREE_PLAN, PRO_PLAN } from '@/lib/pricing';
 
-// Define your price IDs from Stripe
-const FREE_FEATURES = [
-  '3 downloads por mês',
-  'Acesso à biblioteca de fonemas',
-  'Visualização de atividades',
-];
+const FREE_FEATURES = FREE_PLAN.features;
 
 const PLAN = {
-  name: 'Profissional',
-  description: 'Para fonoaudiólogos trabalhando com exercícios de fonemas',
-  features: [
-    'Acesso a todos os exercícios de fonemas',
-    'Biblioteca completa de recursos',
-    'Material para imprimir',
-    'Materiais de referência estendidos',
-    'Suporte por email prioritário',
-  ],
+  ...PRO_PLAN,
   monthlyPriceId: process.env.STRIPE_MONTLY_PRICE_ID as string,
   yearlyPriceId: process.env.STRIPE_ANNUAL_PRICE_ID as string,
-  monthlyPrice: 39.9,
-  yearlyPrice: 399.9,
 };
 
 export function SubscriptionPlans() {

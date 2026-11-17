@@ -29,16 +29,16 @@ const nunito = Nunito({
 
 export const metadata = {
   title: {
-    default: 'Almanaque da Fala - Solução Completa para Fonoaudiólogos',
+    default: 'Almanaque da Fala | Atividades de fonoaudiologia por fonema',
     template: '%s | Almanaque da Fala',
   },
   description:
-    'Plataforma SaaS completa para fonoaudiólogos brasileiros. Gerencie pacientes, agendamentos, prontuários e exercícios terapêuticos em conformidade com LGPD e CFFa.',
+    'Biblioteca de atividades imprimíveis para fonoaudiólogos que atendem crianças. Organizadas por fonema, faixa etária e dificuldade, criadas e revisadas por fonoaudióloga.',
   keywords: [
     'fonoaudiologia',
     'fonoaudiólogo',
-    'SaaS',
-    'prontuários',
+    'atividades fonoaudiologia',
+    'exercícios por fonema',
     'exercícios fonoaudiológicos',
     'terapia da fala',
     'Brasil',
@@ -62,9 +62,9 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: 'Almanaque da Fala - Solução Completa para Fonoaudiólogos',
+    title: 'Almanaque da Fala | Atividades de fonoaudiologia por fonema',
     description:
-      'Plataforma SaaS completa para fonoaudiólogos brasileiros. Gerencie pacientes, agendamentos, prontuários e exercícios terapêuticos.',
+      'Atividades imprimíveis para fonoaudiólogos que atendem crianças, organizadas por fonema e faixa etária.',
     url: 'https://www.almanaquedafala.com.br',
     siteName: 'Almanaque da Fala',
     locale: 'pt_BR',
@@ -80,9 +80,9 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Almanaque da Fala - Solução Completa para Fonoaudiólogos',
+    title: 'Almanaque da Fala | Atividades de fonoaudiologia por fonema',
     description:
-      'Plataforma SaaS completa para fonoaudiólogos brasileiros. Gerencie pacientes, agendamentos e prontuários.',
+      'Atividades imprimíveis para fonoaudiólogos que atendem crianças, organizadas por fonema e faixa etária.',
     images: ['/og-image.png'],
     creator: '@almanaquedafala',
   },
@@ -101,7 +101,7 @@ export const metadata = {
     google: process.env.GOOGLE_SITE_VERIFICATION,
   },
   category: 'healthcare',
-  classification: 'Speech Therapy Software',
+  classification: 'Fonoaudiologia',
   referrer: 'origin-when-cross-origin',
 };
 
@@ -114,22 +114,6 @@ export default function RootLayout({
     <ClerkProvider localization={ptBR}>
       <html lang="pt-BR" suppressHydrationWarning>
         <head>
-          {/* Preload critical resources */}
-          <link
-            rel="preload"
-            href="/fonts/inter.woff2"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
-          <link
-            rel="preload"
-            href="/fonts/inter.woff"
-            as="font"
-            type="font/woff"
-            crossOrigin="anonymous"
-          />
-
           {/* DNS prefetch for external domains */}
           <link rel="dns-prefetch" href="//www.googletagmanager.com" />
           <link rel="dns-prefetch" href="//va.vercel-scripts.com" />
@@ -177,7 +161,7 @@ export default function RootLayout({
                 '@type': 'SoftwareApplication',
                 name: 'Almanaque da Fala',
                 description:
-                  'Plataforma SaaS completa para fonoaudiólogos brasileiros',
+                  'Atividades imprimíveis de fonoaudiologia infantil, organizadas por fonema',
                 url: 'https://www.almanaquedafala.com.br',
                 applicationCategory: 'HealthApplication',
                 operatingSystem: 'Web',
@@ -215,12 +199,12 @@ export default function RootLayout({
             <Analytics />
           </Providers>
           <SpeedInsights />
-          
+
           <WebVitals
             analyticsId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
             debug={process.env.NODE_ENV === 'development'}
           />
-          
+
           {/* <PerformanceMonitor /> */}
         </body>
       </html>

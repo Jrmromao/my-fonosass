@@ -12,6 +12,13 @@ interface SharedNavbarProps {
   className?: string;
 }
 
+const NAV_ITEMS = [
+  { href: '/#biblioteca', label: 'Biblioteca' },
+  { href: '/#planos', label: 'Planos' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/contato', label: 'Contato' },
+];
+
 export default function SharedNavbar({
   scrolled = false,
   showWaitingList = false,
@@ -53,12 +60,7 @@ export default function SharedNavbar({
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {[
-              { href: '/blog', label: 'Blog' },
-              { href: '/recursos-gratuitos', label: 'Recursos' },
-              { href: '/faq', label: 'FAQ' },
-              { href: '/contato', label: 'Contato' },
-            ].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -86,9 +88,9 @@ export default function SharedNavbar({
                   </Link>
                   <Link
                     href="/sign-up"
-                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-full hover:bg-indigo-700 transition-colors shadow-sm"
+                    className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 transition-colors"
                   >
-                    Começar grátis
+                    Assinar
                   </Link>
                 </>
               )}
@@ -110,12 +112,7 @@ export default function SharedNavbar({
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <div className="px-4 py-3 space-y-1">
-            {[
-              { href: '/blog', label: 'Blog' },
-              { href: '/recursos-gratuitos', label: 'Recursos' },
-              { href: '/faq', label: 'FAQ' },
-              { href: '/contato', label: 'Contato' },
-            ].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -145,10 +142,10 @@ export default function SharedNavbar({
                   </Link>
                   <Link
                     href="/sign-up"
-                    className="block mx-3 px-4 py-2.5 text-center bg-indigo-600 text-white text-sm font-medium rounded-full hover:bg-indigo-700"
+                    className="block mx-3 px-4 py-2.5 text-center bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Começar grátis
+                    Assinar
                   </Link>
                 </>
               )}
