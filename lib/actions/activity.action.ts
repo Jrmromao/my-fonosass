@@ -6,12 +6,7 @@ import PDFService from '@/services/PDFService';
 import S3Service from '@/services/S3Service';
 import { auth } from '@clerk/nextjs/server';
 import { findCategory } from '@/lib/activityCategories';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  label,
-  phonemeLabel,
-} from '@/lib/activityLabels';
+import { isWatermarkableImage, watermarkImage } from '@/lib/images/watermark';
 import { PHONEMES } from '@/lib/phonemes';
 import {
   $Enums,
@@ -169,10 +164,15 @@ export async function createActivity(formData: FormData) {
           return { success: false, error: rateLimitCheck.error };
         }
 
-        // Load the app logo
+        // Watermark: the app logo (trimmed, transparent background).
         let logoBuffer: Buffer;
         try {
-          const logoPath = path.join(process.cwd(), 'public', 'logo.png'); // Adjust path as needed
+          const logoPath = path.join(
+            process.cwd(),
+            'public',
+            'images',
+            'logo-trimmed.png'
+          );
           logoBuffer = await fs.readFile(logoPath);
         } catch (error) {
           console.error('Error loading logo:', error);
@@ -209,44 +209,40 @@ export async function createActivity(formData: FormData) {
               s3Result = await pdfService.watermarkAndUploadPDF(
                 buffer,
                 logoBuffer,
-                'almanaquedafala.com.br',
-                `${activity.id}/${safeFilename}`,
-                {
-                  logoScale: 0.5,
-                  tileSpacing: 150,
-                  logoOpacity: 0.2,
-                  logoRotation: 30,
-                }
+                `${activity.id}/${safeFilename}`
               );
-            } else if (file.type.startsWith('image/')) {
-              const imgType = file.type === 'image/jpeg' ? 'jpg' : 'png';
-              const pdfFilename = safeFilename.replace(/\.[^.]+$/, '.pdf');
-              s3Result = await pdfService.createBrandedPDF(
+            } else if (isWatermarkableImage(file.type)) {
+              // Images stay images (previews and free samples need them),
+              // with the logo burned in.
+              const watermarked = await watermarkImage(
                 buffer,
-                imgType,
-                {
-                  title: name,
-                  subject: category.requiresPhoneme
-                    ? `Fonema ${phonemeLabel(phoneme)}`
-                    : category.label,
-                  difficulty: label(DIFFICULTY_LABELS, difficulty),
-                  ageRange: label(AGE_LABELS, ageRange),
-                },
-                `${activity.id}/${pdfFilename}`
+                logoBuffer,
+                file.type
               );
-              // Override file metadata for the DB record
+              s3Result = await s3Service.uploadFile(
+                `${activity.id}/${safeFilename}`,
+                watermarked,
+                file.type
+              );
               await prisma.activityFile.create({
                 data: {
                   activityId: activity.id,
-                  name: pdfFilename,
-                  s3Key: `${activity.id}/${pdfFilename}`,
+                  name: safeFilename,
+                  s3Key: `${activity.id}/${safeFilename}`,
                   s3Url: s3Result.Location || '',
-                  fileType: 'application/pdf',
-                  sizeInBytes: buffer.length,
+                  fileType: file.type,
+                  sizeInBytes: watermarked.length,
                   uploadedById: user.id,
                 },
               });
               continue; // Skip the generic activityFile.create below
+            } else if (file.type.startsWith('image/')) {
+              // GIF/WebP etc. can't be watermarked here: never publish them
+              // without the logo.
+              return {
+                success: false,
+                error: 'Envie imagens em PNG ou JPG.',
+              };
             } else {
               s3Result = await s3Service.uploadFile(
                 `${activity.id}/${safeFilename}`,

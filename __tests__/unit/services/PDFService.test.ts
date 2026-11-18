@@ -1,251 +1,116 @@
-//@ts-ignore
-import PDFService from '@/services/PDFService';
-import React from 'react';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { PDFDocument } from 'pdf-lib';
+import sharp from 'sharp';
 
-// Mock S3Service
-const mockUploadFile = jest.fn();
+const mockUploadFile = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 jest.mock('@/services/S3Service', () => ({
   __esModule: true,
-  default: {
-    getInstance: jest.fn(() => ({
-      uploadFile: mockUploadFile,
-    })),
-  },
+  default: { getInstance: () => ({ uploadFile: mockUploadFile }) },
 }));
 
-// Mock @react-pdf/renderer
-jest.mock('@react-pdf/renderer', () => ({
-  pdf: jest.fn(),
-  Document: ({ children }: { children: React.ReactNode }) => children,
-  Page: ({ children }: { children: React.ReactNode }) => children,
-  Text: ({ children }: { children: React.ReactNode }) => children,
-  View: ({ children }: { children: React.ReactNode }) => children,
-  Image: ({ src }: { src: string }) => src,
-  StyleSheet: {
-    create: jest.fn((styles) => styles),
-  },
-  Font: {
-    register: jest.fn(),
-  },
-}));
+import PDFService, {
+  WATERMARK,
+  buildWatermarkedPDF,
+  drawLogoWatermark,
+} from '@/services/PDFService';
 
-// Mock pdf-lib
-jest.mock('pdf-lib', () => ({
-  PDFDocument: {
-    create: jest.fn(() => ({
-      addPage: jest.fn(),
-      getPageCount: jest.fn(() => 1),
-      save: jest.fn(() => Promise.resolve(new Uint8Array([1, 2, 3, 4]))),
-    })),
-    load: jest.fn(() =>
-      Promise.resolve({
-        addPage: jest.fn(),
-        getPageCount: jest.fn(() => 1),
-        save: jest.fn(() => Promise.resolve(new Uint8Array([1, 2, 3, 4]))),
-        embedPng: jest.fn(() => ({
-          scale: jest.fn(() => ({ width: 100, height: 100 })),
-        })),
-        embedFont: jest.fn(() => ({})),
-        getPages: jest.fn(() => [
-          {
-            getSize: jest.fn(() => ({ width: 800, height: 600 })),
-            drawImage: jest.fn(),
-            drawText: jest.fn(),
-          },
-        ]),
-      })
-    ),
-  },
-  rgb: jest.fn(() => ({ r: 0, g: 0, b: 0 })),
-  StandardFonts: {
-    Helvetica: 'Helvetica',
-  },
-}));
+// Real pdf-lib: small fixtures generated in memory. Converted to this
+// realm's Uint8Array: jsdom's differs from Node's Buffer and pdf-lib checks it.
+const bytes = (b: Uint8Array) => Uint8Array.from(b);
+const png = async (w: number, h: number, color = '#ff8800') =>
+  bytes(
+    await sharp({
+      create: { width: w, height: h, channels: 4, background: color },
+    })
+      .png()
+      .toBuffer()
+  );
 
-describe('PDFService', () => {
-  let pdfService: PDFService;
+const pdfWithPages = async (n: number) => {
+  const doc = await PDFDocument.create();
+  for (let i = 0; i < n; i++) doc.addPage([595, 842]);
+  return bytes(await doc.save());
+};
 
-  beforeEach(() => {
-    pdfService = PDFService.getInstance();
-    jest.clearAllMocks();
+describe('drawLogoWatermark', () => {
+  const page = () => ({ drawImage: jest.fn() });
+  const logo = { width: 338, height: 269 } as never;
+
+  it('tiles the logo inside the area, subtle and rotated', () => {
+    const p = page();
+    drawLogoWatermark(p as never, logo, {
+      x: 0,
+      y: 0,
+      width: 595,
+      height: 842,
+    });
+
+    expect(p.drawImage.mock.calls.length).toBeGreaterThanOrEqual(6);
+    for (const [, opts] of p.drawImage.mock.calls as [unknown, any][]) {
+      expect(opts.opacity).toBe(WATERMARK.opacity);
+      expect(opts.width).toBe(WATERMARK.logoWidth);
+      expect(opts.x).toBeGreaterThanOrEqual(0);
+      expect(opts.x + opts.width).toBeLessThanOrEqual(595);
+      expect(opts.y + opts.height).toBeLessThanOrEqual(842);
+    }
   });
 
-  describe('watermarkAndUploadPDF', () => {
-    it('should watermark and upload PDF successfully', async () => {
-      const inputPDF = new Uint8Array([1, 2, 3, 4]);
-      const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'Almanaque da Fala';
-      const key = 'test.pdf';
+  it('draws nothing when the area is smaller than one tile', () => {
+    const p = page();
+    drawLogoWatermark(p as never, logo, { x: 0, y: 0, width: 50, height: 50 });
+    expect(p.drawImage).not.toHaveBeenCalled();
+  });
+});
 
-      const mockS3Response = { ETag: 'test-etag', Location: 'test-location' };
-      mockUploadFile.mockResolvedValue(mockS3Response);
+describe('PDF builders (real pdf-lib)', () => {
+  it('watermarks every page of an uploaded PDF and keeps the page count', async () => {
+    const out = await buildWatermarkedPDF(
+      await pdfWithPages(3),
+      await png(338, 269)
+    );
+    const doc = await PDFDocument.load(out);
+    expect(doc.getPageCount()).toBe(3);
+  });
 
-      const result = await pdfService.watermarkAndUploadPDF(
-        inputPDF,
-        watermarkLogo,
-        watermarkText,
-        key
-      );
+  it('rejects a file that is not a PDF', async () => {
+    await expect(
+      buildWatermarkedPDF(
+        bytes(Uint8Array.from([110, 111, 116, 32, 112, 100, 102])),
+        await png(10, 10)
+      )
+    ).rejects.toBeTruthy();
+  });
+});
 
-      expect(result).toEqual(mockS3Response);
-      expect(mockUploadFile).toHaveBeenCalledWith(
-        key,
-        expect.any(Uint8Array),
-        'application/pdf'
-      );
-    });
+describe('PDFService uploads', () => {
+  const service = PDFService.getInstance();
 
-    it('should handle watermark errors', async () => {
-      const inputPDF = new Uint8Array([1, 2, 3, 4]);
-      const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'Almanaque da Fala';
-      const key = 'test.pdf';
+  beforeEach(() => {
+    mockUploadFile.mockReset();
+    mockUploadFile.mockResolvedValue({ Location: 'https://s3/x.pdf' });
+  });
 
-      // Mock PDFDocument.load to throw an error
-      const { PDFDocument } = require('pdf-lib');
-      PDFDocument.load.mockRejectedValue(new Error('PDF load failed'));
+  it('uploads the watermarked PDF as application/pdf', async () => {
+    await service.watermarkAndUploadPDF(
+      await pdfWithPages(1),
+      await png(338, 269),
+      'act-1/sheet.pdf'
+    );
+    expect(mockUploadFile).toHaveBeenCalledWith(
+      'act-1/sheet.pdf',
+      expect.any(Uint8Array),
+      'application/pdf'
+    );
+  });
 
-      await expect(
-        pdfService.watermarkAndUploadPDF(
-          inputPDF,
-          watermarkLogo,
-          watermarkText,
-          key
-        )
-      ).rejects.toThrow(
-        'Failed to watermark and upload PDF with key test.pdf: PDF load failed'
-      );
-    });
-
-    it('should handle S3 upload errors', async () => {
-      const inputPDF = new Uint8Array([1, 2, 3, 4]);
-      const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'Almanaque da Fala';
-      const key = 'test.pdf';
-
-      // Reset PDFDocument.load to success for this test
-      const { PDFDocument } = require('pdf-lib');
-      PDFDocument.load.mockResolvedValue({
-        addPage: jest.fn(),
-        getPageCount: jest.fn(() => 1),
-        save: jest.fn(() => Promise.resolve(new Uint8Array([1, 2, 3, 4]))),
-        embedPng: jest.fn(() => ({
-          scale: jest.fn(() => ({ width: 100, height: 100 })),
-        })),
-        embedFont: jest.fn(() => ({})),
-        getPages: jest.fn(() => [
-          {
-            getSize: jest.fn(() => ({ width: 800, height: 600 })),
-            drawImage: jest.fn(),
-            drawText: jest.fn(),
-          },
-        ]),
-      });
-
-      mockUploadFile.mockRejectedValue(new Error('S3 upload failed'));
-
-      await expect(
-        pdfService.watermarkAndUploadPDF(
-          inputPDF,
-          watermarkLogo,
-          watermarkText,
-          key
-        )
-      ).rejects.toThrow(
-        'Failed to watermark and upload PDF with key test.pdf: S3 upload failed'
-      );
-    });
-
-    it('should work without text watermark', async () => {
-      const inputPDF = new Uint8Array([1, 2, 3, 4]);
-      const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const key = 'test.pdf';
-
-      // Reset PDFDocument.load to success for this test
-      const { PDFDocument } = require('pdf-lib');
-      PDFDocument.load.mockResolvedValue({
-        addPage: jest.fn(),
-        getPageCount: jest.fn(() => 1),
-        save: jest.fn(() => Promise.resolve(new Uint8Array([1, 2, 3, 4]))),
-        embedPng: jest.fn(() => ({
-          scale: jest.fn(() => ({ width: 100, height: 100 })),
-        })),
-        embedFont: jest.fn(() => ({})),
-        getPages: jest.fn(() => [
-          {
-            getSize: jest.fn(() => ({ width: 800, height: 600 })),
-            drawImage: jest.fn(),
-            drawText: jest.fn(),
-          },
-        ]),
-      });
-
-      const mockS3Response = { ETag: 'test-etag', Location: 'test-location' };
-      mockUploadFile.mockResolvedValue(mockS3Response);
-
-      const result = await pdfService.watermarkAndUploadPDF(
-        inputPDF,
-        watermarkLogo,
-        null,
-        key
-      );
-
-      expect(result).toEqual(mockS3Response);
-      expect(mockUploadFile).toHaveBeenCalledWith(
-        key,
-        expect.any(Uint8Array),
-        'application/pdf'
-      );
-    });
-
-    it('should use custom options', async () => {
-      const inputPDF = new Uint8Array([1, 2, 3, 4]);
-      const watermarkLogo = new Uint8Array([5, 6, 7, 8]);
-      const watermarkText = 'Almanaque da Fala';
-      const key = 'test.pdf';
-      const options = {
-        logoScale: 0.2,
-        tileSpacing: 150,
-        logoOpacity: 0.5,
-        logoRotation: 30,
-      };
-
-      // Reset PDFDocument.load to success for this test
-      const { PDFDocument } = require('pdf-lib');
-      PDFDocument.load.mockResolvedValue({
-        addPage: jest.fn(),
-        getPageCount: jest.fn(() => 1),
-        save: jest.fn(() => Promise.resolve(new Uint8Array([1, 2, 3, 4]))),
-        embedPng: jest.fn(() => ({
-          scale: jest.fn(() => ({ width: 100, height: 100 })),
-        })),
-        embedFont: jest.fn(() => ({})),
-        getPages: jest.fn(() => [
-          {
-            getSize: jest.fn(() => ({ width: 800, height: 600 })),
-            drawImage: jest.fn(),
-            drawText: jest.fn(),
-          },
-        ]),
-      });
-
-      const mockS3Response = { ETag: 'test-etag', Location: 'test-location' };
-      mockUploadFile.mockResolvedValue(mockS3Response);
-
-      const result = await pdfService.watermarkAndUploadPDF(
-        inputPDF,
-        watermarkLogo,
-        watermarkText,
-        key,
-        options
-      );
-
-      expect(result).toEqual(mockS3Response);
-      expect(mockUploadFile).toHaveBeenCalledWith(
-        key,
-        expect.any(Uint8Array),
-        'application/pdf'
-      );
-    });
+  it('reports S3 failures with the key', async () => {
+    mockUploadFile.mockRejectedValue(new Error('S3 down'));
+    await expect(
+      service.watermarkAndUploadPDF(
+        await pdfWithPages(1),
+        await png(338, 269),
+        'act-1/sheet.pdf'
+      )
+    ).rejects.toThrow(/act-1\/sheet\.pdf.*S3 down/);
   });
 });

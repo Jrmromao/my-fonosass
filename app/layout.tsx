@@ -135,7 +135,7 @@ export default function RootLayout({
             content="default"
           />
           <meta name="apple-mobile-web-app-title" content="Almanaque da Fala" />
-          <link rel="apple-touch-icon" href="/logo.png" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
           {/* Google Site Verification */}
           <meta

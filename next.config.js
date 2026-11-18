@@ -5,6 +5,16 @@ const nextConfig = {
     root: __dirname,
   },
 
+  // Files read with fs at runtime are not traced into the serverless bundle
+  // automatically. Activity uploads (server action on /dashboard pages) need
+  // the watermark logo and the footer font.
+  outputFileTracingIncludes: {
+    '/dashboard/**': [
+      './public/images/logo-trimmed.png',
+      './assets/fonts/Inter-Medium.ttf',
+    ],
+  },
+
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
