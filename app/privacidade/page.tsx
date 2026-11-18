@@ -1,370 +1,312 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
-  Shield,
-  Users,
-  Database,
-  Lock,
-  Eye,
-  Trash2,
-  Download,
-  Edit,
-  AlertCircle,
-} from 'lucide-react';
+  ControllerInfo,
+  LegalPage,
+  MailLink,
+  Section,
+} from '@/components/legal/LegalPage';
+import { COMPANY } from '@/lib/legal/company';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+
+// Describes only what the code does today. When data handling changes
+// (new provider, new data, new purpose), update this page and
+// LEGAL_LAST_UPDATED in lib/legal/company.ts.
+
+export const metadata: Metadata = {
+  title: 'Política de Privacidade',
+  description:
+    'Quais dados o Almanaque da Fala coleta, por que, com quem compartilha e como você exerce seus direitos pela LGPD.',
+  alternates: { canonical: '/privacidade' },
+};
+
+const PROVIDERS: { name: string; purpose: string; where: string }[] = [
+  {
+    name: 'Clerk',
+    purpose: 'Login e conta (nome, email, senha, login com Google).',
+    where: 'Estados Unidos',
+  },
+  {
+    name: 'Cloudflare Turnstile (via Clerk)',
+    purpose:
+      'Verificação contra robôs ao criar conta (endereço IP e dados do navegador).',
+    where: 'Estados Unidos e rede global',
+  },
+  {
+    name: 'Stripe',
+    purpose:
+      'Pagamento da assinatura. Os dados do cartão vão direto para o Stripe; não passam pelos nossos servidores.',
+    where: 'Estados Unidos',
+  },
+  {
+    name: 'Supabase',
+    purpose: 'Banco de dados (conta, assinatura, downloads, consentimentos).',
+    where: 'Irlanda (União Europeia)',
+  },
+  {
+    name: 'Vercel',
+    purpose:
+      'Hospedagem do site e medições de desempenho e de visitas agregadas, sem cookies.',
+    where: 'Irlanda e rede global',
+  },
+  {
+    name: 'Amazon Web Services (S3)',
+    purpose:
+      'Armazenamento dos arquivos das atividades e das inscrições na lista de espera.',
+    where: 'Estados Unidos',
+  },
+  {
+    name: 'Resend',
+    purpose:
+      'Envio dos emails do serviço (boas-vindas, confirmação e cancelamento da assinatura).',
+    where: 'Estados Unidos',
+  },
+  {
+    name: 'Google',
+    purpose:
+      'Login com Google (se você escolher) e Google Analytics (somente se você aceitar).',
+    where: 'Estados Unidos',
+  },
+];
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Política de Privacidade
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Almanaque da Fala - Almanaque da Fala
-          </p>
-          <Badge variant="outline" className="mt-2">
-            Última atualização: 15 de dezembro de 2024
-          </Badge>
+    <LegalPage
+      title="Política de Privacidade"
+      current="/privacidade"
+      intro={
+        <p>
+          Esta política explica quais dados pessoais o {COMPANY.brandName}{' '}
+          trata, para quê, com quem eles são compartilhados e como você exerce
+          seus direitos, conforme a Lei Geral de Proteção de Dados (Lei nº
+          13.709/2018, LGPD).
+        </p>
+      }
+    >
+      <Section id="controlador" title="1. Quem é o responsável">
+        <p>
+          O {COMPANY.brandName} é uma biblioteca de atividades de fonoaudiologia
+          para imprimir, voltada a fonoaudiólogos. O responsável pelo tratamento
+          dos seus dados (controlador) é:
+        </p>
+        <ControllerInfo />
+      </Section>
+
+      <Section id="dados" title="2. Quais dados tratamos">
+        <ul>
+          <li>
+            <strong>Conta:</strong> nome, sobrenome e email. A senha é guardada
+            pelo Clerk, nosso provedor de login; nós não temos acesso a ela. Se
+            você entrar com o Google, recebemos o nome e o email da sua conta
+            Google.
+          </li>
+          <li>
+            <strong>Assinatura:</strong> plano, situação (ativa, pendente,
+            cancelada) e datas do período pago. Não recebemos nem guardamos os
+            dados do seu cartão.
+          </li>
+          <li>
+            <strong>Uso da biblioteca:</strong> quais atividades você baixou e
+            quando.
+          </li>
+          <li>
+            <strong>Suas escolhas de privacidade:</strong> os consentimentos que
+            você deu ou retirou, com data, endereço IP e navegador, para
+            comprovar a escolha.
+          </li>
+          <li>
+            <strong>Lista de espera:</strong> se você se inscrever na página de
+            recursos gratuitos, seu email e o endereço IP da inscrição.
+          </li>
+          <li>
+            <strong>Dados técnicos:</strong> endereço IP e dados do navegador
+            usados para segurança (por exemplo, limitar tentativas abusivas) e
+            nos registros técnicos da hospedagem.
+          </li>
+        </ul>
+        <p>
+          <strong>Não tratamos dados de pacientes.</strong> O serviço não tem
+          prontuários nem cadastro de pacientes, e as atividades não contêm
+          dados de crianças. Não envie dados de pacientes por nenhum canal do
+          serviço.
+        </p>
+      </Section>
+
+      <Section
+        id="finalidades"
+        title="3. Para que usamos e com qual base legal"
+      >
+        <ul>
+          <li>
+            <strong>
+              Criar e manter sua conta, liberar o acesso às atividades e cobrar
+              a assinatura:
+            </strong>{' '}
+            execução do contrato com você (art. 7º, V, da LGPD).
+          </li>
+          <li>
+            <strong>Enviar emails do serviço</strong> (boas-vindas, assinatura
+            confirmada ou cancelada): execução do contrato (art. 7º, V).
+          </li>
+          <li>
+            <strong>Guardar registros de pagamento:</strong> cumprimento de
+            obrigação legal, como a fiscal (art. 7º, II).
+          </li>
+          <li>
+            <strong>
+              Segurança, prevenção de fraude e de abuso, e estatísticas de uso
+              sem identificação
+            </strong>{' '}
+            (quantas vezes cada atividade foi baixada por mês): legítimo
+            interesse (art. 7º, IX).
+          </li>
+          <li>
+            <strong>
+              Google Analytics, emails de novidades e lista de espera:
+            </strong>{' '}
+            somente com o seu consentimento (art. 7º, I), que você pode retirar
+            a qualquer momento.
+          </li>
+        </ul>
+        <p>
+          Não vendemos seus dados e não os usamos para publicidade de terceiros.
+        </p>
+      </Section>
+
+      <Section id="compartilhamento" title="4. Com quem compartilhamos">
+        <p>
+          Usamos os fornecedores abaixo para operar o serviço. Eles tratam os
+          dados em nosso nome e apenas para a finalidade indicada.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[32rem] text-left text-sm">
+            <thead>
+              <tr className="border-b border-neutral-200 dark:border-neutral-800">
+                <th className="py-2 pr-4 font-semibold">Fornecedor</th>
+                <th className="py-2 pr-4 font-semibold">Para quê</th>
+                <th className="py-2 font-semibold">Onde</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PROVIDERS.map((p) => (
+                <tr
+                  key={p.name}
+                  className="border-b border-neutral-100 align-top dark:border-neutral-900"
+                >
+                  <td className="py-2 pr-4 font-medium">{p.name}</td>
+                  <td className="py-2 pr-4">{p.purpose}</td>
+                  <td className="py-2">{p.where}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+        <p>
+          Também podemos compartilhar dados quando a lei ou uma ordem judicial
+          exigir.
+        </p>
+      </Section>
 
-        {/* Company Info */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-blue-600" />
-              Informações da Empresa
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white">
-                  Controlador dos Dados
-                </h4>
-                <p className="text-gray-600 dark:text-gray-300">
-                  <strong>Razão Social:</strong> Almanaque da Fala Tecnologia
-                  Ltda.
-                  <br />
-                  <strong>CNPJ:</strong> 12.345.678/0001-90
-                  <br />
-                  <strong>Endereço:</strong> Rua das Flores, 123, Sala 456
-                  <br />
-                  São Paulo - SP, CEP: 01234-567
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white">
-                  Contato
-                </h4>
-                <p className="text-gray-600 dark:text-gray-300">
-                  <strong>E-mail:</strong> privacidade@almanaquedafala.com.br
-                  <br />
-                  <strong>Telefone:</strong> (11) 99999-9999
-                  <br />
-                  <strong>Site:</strong> www.almanaquedafala.com.br
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <Section id="transferencia" title="5. Transferência internacional">
+        <p>
+          Como mostra a tabela acima, parte dos dados é tratada fora do Brasil,
+          nos Estados Unidos e na União Europeia. Essas transferências são
+          necessárias para executar o contrato com você (art. 33, IX, da LGPD)
+          ou, no caso do Google Analytics, dependem do seu consentimento
+          específico (art. 33, VIII). Os fornecedores tratam os dados segundo
+          seus próprios compromissos contratuais de proteção de dados.
+        </p>
+      </Section>
 
-        {/* DPO Info */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-600" />
-              Encarregado de Dados (DPO)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-              <p className="text-gray-800 dark:text-gray-200">
-                <strong>Nome:</strong> Dr. Carlos Silva
-                <br />
-                <strong>E-mail:</strong> dpo@almanaquedafala.com.br
-                <br />
-                <strong>Telefone:</strong> (11) 88888-8888
-                <br />
-                <strong>Horário de atendimento:</strong> Segunda a sexta, das 9h
-                às 18h
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <Section id="retencao" title="6. Por quanto tempo guardamos">
+        <ul>
+          <li>
+            Os dados da conta, da assinatura, dos downloads e dos consentimentos
+            ficam guardados enquanto a sua conta existir.
+          </li>
+          <li>
+            Quando você exclui a conta, esses dados são apagados e seu login é
+            removido do Clerk. A assinatura ativa é cancelada na hora.
+          </li>
+          <li>
+            Ficam apenas dados que não identificam você: a contagem mensal de
+            downloads por atividade e o registro de que uma conta foi excluída
+            (data e se tinha assinatura).
+          </li>
+          <li>
+            Os registros de pagamento ficam com o Stripe pelo prazo exigido pela
+            legislação fiscal.
+          </li>
+          <li>
+            As inscrições na lista de espera ficam guardadas até você pedir a
+            remoção pelo email abaixo.
+          </li>
+        </ul>
+      </Section>
 
-        {/* Data Collection */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-purple-600" />
-              Dados Pessoais Coletados
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="border-l-4 border-blue-500 pl-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                    Dados de Identificação
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Nome completo, e-mail, telefone, CPF (quando necessário)
-                  </p>
-                  <Badge variant="secondary" className="mt-2">
-                    Consentimento + Contrato
-                  </Badge>
-                </div>
+      <Section id="direitos" title="7. Seus direitos">
+        <p>
+          Você pode confirmar se tratamos seus dados, acessá-los, corrigi-los,
+          levá-los para outro serviço, pedir a exclusão, retirar consentimentos
+          e mais. Veja a lista completa e como pedir em{' '}
+          <Link href="/lgpd">Seus direitos (LGPD)</Link>.
+        </p>
+        <p>
+          Com a conta aberta, em <strong>Perfil → Privacidade</strong>, você
+          mesmo baixa uma cópia dos seus dados, exclui a conta e muda suas
+          preferências. Para o resto, escreva para{' '}
+          <MailLink email={COMPANY.privacyEmail} />. Respondemos em{' '}
+          {COMPANY.privacyResponseTime.toLowerCase()}.
+        </p>
+      </Section>
 
-                <div className="border-l-4 border-green-500 pl-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                    Dados Profissionais
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Título profissional, especialidade, registro no CFFa
-                  </p>
-                  <Badge variant="secondary" className="mt-2">
-                    Execução de Contrato
-                  </Badge>
-                </div>
-              </div>
+      <Section id="cookies" title="8. Cookies">
+        <p>
+          Usamos apenas os cookies necessários para o login funcionar. O Google
+          Analytics só é carregado se você aceitar. Detalhes em{' '}
+          <Link href="/cookies">Política de Cookies</Link>.
+        </p>
+      </Section>
 
-              <div className="space-y-4">
-                <div className="border-l-4 border-red-500 pl-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                    Dados de Pacientes
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Nome, data de nascimento, histórico médico, dados de saúde
-                  </p>
-                  <Badge variant="destructive" className="mt-2">
-                    Consentimento Específico
-                  </Badge>
-                </div>
+      <Section id="seguranca" title="9. Segurança">
+        <p>
+          Todo o tráfego usa conexão criptografada (HTTPS). O acesso aos dados é
+          restrito a quem precisa deles para operar o serviço. Senhas ficam com
+          o provedor de login e dados de cartão com o Stripe, nunca conosco. Se
+          ocorrer um incidente de segurança que possa causar risco ou dano
+          relevante, avisaremos você e a ANPD, como exige a LGPD.
+        </p>
+      </Section>
 
-                <div className="border-l-4 border-yellow-500 pl-4">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                    Dados de Navegação
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Endereço IP, cookies, logs de acesso, dados de uso
-                  </p>
-                  <Badge variant="outline" className="mt-2">
-                    Legítimo Interesse
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <Section id="publico" title="10. Público do serviço">
+        <p>
+          O serviço é destinado a profissionais e estudantes de fonoaudiologia
+          maiores de 18 anos. Não é feito para crianças, e não coletamos dados
+          de crianças.
+        </p>
+      </Section>
 
-        {/* Data Subject Rights */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5 text-indigo-600" />
-              Seus Direitos (Art. 18 da LGPD)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <Eye className="h-5 w-5 text-blue-600 mt-1" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Confirmação e Acesso
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Confirmar a existência de tratamento e acessar seus dados
-                    </p>
-                  </div>
-                </div>
+      <Section id="alteracoes" title="11. Alterações desta política">
+        <p>
+          Quando esta política mudar, atualizaremos a data no topo da página. Se
+          a mudança for relevante para você, avisaremos também por email.
+        </p>
+      </Section>
 
-                <div className="flex items-start gap-3">
-                  <Edit className="h-5 w-5 text-green-600 mt-1" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Correção
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Corrigir dados incompletos, inexatos ou desatualizados
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Trash2 className="h-5 w-5 text-red-600 mt-1" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Eliminação
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Eliminar dados tratados com consentimento
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <Download className="h-5 w-5 text-purple-600 mt-1" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Portabilidade
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Solicitar portabilidade dos dados
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-orange-600 mt-1" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Informações
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Obter informações sobre compartilhamento
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Lock className="h-5 w-5 text-gray-600 mt-1" />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">
-                      Revogação
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Revogar consentimento a qualquer momento
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Como exercer seus direitos:</strong> Envie um e-mail
-                para dpo@almanaquedafala.com.br com sua solicitação.
-                Responderemos em até 15 dias úteis.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security Measures */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-green-600" />
-              Segurança dos Dados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <Lock className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Criptografia
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  AES-256 para dados em repouso e TLS 1.2+ para dados em
-                  trânsito
-                </p>
-              </div>
-
-              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <Users className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Controle de Acesso
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Controle baseado em funções e autenticação multifator
-                </p>
-              </div>
-
-              <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <Database className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Monitoramento
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Monitoramento de segurança 24/7 e auditorias regulares
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Information */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
-              Contato e Reclamações
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Encarregado de Dados (DPO)
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <strong>E-mail:</strong> dpo@almanaquedafala.com.br
-                  <br />
-                  <strong>Telefone:</strong> (11) 88888-8888
-                  <br />
-                  <strong>Horário:</strong> Segunda a sexta, 9h às 18h
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  ANPD
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <strong>Site:</strong> www.gov.br/anpd
-                  <br />
-                  <strong>E-mail:</strong> anpd@anpd.gov.br
-                  <br />
-                  <strong>Telefone:</strong> (61) 2027-6400
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  CFFa
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <strong>Site:</strong> www.fonoaudiologia.org.br
-                  <br />
-                  <strong>E-mail:</strong> cffa@fonoaudiologia.org.br
-                  <br />
-                  <strong>Telefone:</strong> (11) 3017-8888
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
-          <p>
-            Esta Política de Privacidade foi elaborada em conformidade com a Lei
-            Geral de Proteção de Dados (Lei 13.709/2018).
-          </p>
-          <p className="mt-2">
-            <strong>Almanaque da Fala Tecnologia Ltda.</strong> | CNPJ:
-            12.345.678/0001-90 | São Paulo, 15 de dezembro de 2024
-          </p>
-        </div>
-      </div>
-    </div>
+      <Section id="contato" title="12. Contato e ANPD">
+        <p>
+          Dúvidas e pedidos sobre privacidade:{' '}
+          <MailLink email={COMPANY.privacyEmail} />. Você também pode reclamar à
+          Autoridade Nacional de Proteção de Dados (ANPD), em{' '}
+          <a
+            href="https://www.gov.br/anpd"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            gov.br/anpd
+          </a>
+          .
+        </p>
+      </Section>
+    </LegalPage>
   );
 }

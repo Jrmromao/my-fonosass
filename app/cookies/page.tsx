@@ -1,480 +1,180 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Cookie,
-  Settings,
-  Shield,
-  BarChart3,
-  Target,
-  AlertCircle,
-} from 'lucide-react';
+import { AnalyticsChoiceControl } from '@/components/cookies/AnalyticsChoiceControl';
+import { LegalPage, MailLink, Section } from '@/components/legal/LegalPage';
+import { COMPANY } from '@/lib/legal/company';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+
+// Lists only what the site really stores in the browser. Keep in sync with
+// lib/cookieConsent.ts, components/GoogleAnalytics.tsx, lib/auth/viewAs.ts
+// and any new localStorage key.
+
+export const metadata: Metadata = {
+  title: 'Política de Cookies',
+  description:
+    'Quais cookies e dados de navegador o Almanaque da Fala usa e como mudar sua escolha sobre o Google Analytics.',
+  alternates: { canonical: '/cookies' },
+};
+
+type Row = { name: string; who: string; purpose: string; duration: string };
+
+const ESSENTIAL: Row[] = [
+  {
+    name: '__session, __client_uat, __client (e variações com sufixo)',
+    who: 'Clerk (login)',
+    purpose: 'Manter você conectado e proteger a sessão.',
+    duration: 'Enquanto a sessão durar',
+  },
+  {
+    name: 'Dados da verificação contra robôs',
+    who: 'Cloudflare Turnstile (via Clerk)',
+    purpose: 'Confirmar que quem cria a conta é uma pessoa.',
+    duration: 'Durante a verificação',
+  },
+  {
+    name: 'almanaque_ver_como',
+    who: 'Almanaque da Fala',
+    purpose:
+      'Só para administradores: ver o site como um assinante ou um usuário sem assinatura.',
+    duration: '8 horas',
+  },
+];
+
+const ANALYTICS: Row[] = [
+  {
+    name: '_ga, _ga_<ID>',
+    who: 'Google Analytics',
+    purpose: 'Contar visitas e entender como o site é usado.',
+    duration: 'Até 2 anos',
+  },
+];
+
+const STORAGE: Row[] = [
+  {
+    name: 'almanaque:analytics-consent',
+    who: 'Almanaque da Fala',
+    purpose: 'Lembrar se você aceitou ou recusou o Google Analytics.',
+    duration: 'Até você limpar os dados do navegador',
+  },
+  {
+    name: 'almanaque:library-view',
+    who: 'Almanaque da Fala',
+    purpose: 'Lembrar se você prefere a biblioteca em grade ou em lista.',
+    duration: 'Até você limpar os dados do navegador',
+  },
+  {
+    name: 'exitIntentShown',
+    who: 'Almanaque da Fala',
+    purpose: 'Não repetir o aviso do blog na mesma visita.',
+    duration: 'Até fechar a aba',
+  },
+];
+
+function CookieTable({ rows }: { rows: Row[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[36rem] text-left text-sm">
+        <thead>
+          <tr className="border-b border-neutral-200 dark:border-neutral-800">
+            <th className="py-2 pr-4 font-semibold">Nome</th>
+            <th className="py-2 pr-4 font-semibold">De quem</th>
+            <th className="py-2 pr-4 font-semibold">Para quê</th>
+            <th className="py-2 font-semibold">Duração</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr
+              key={r.name}
+              className="border-b border-neutral-100 align-top dark:border-neutral-900"
+            >
+              <td className="py-2 pr-4 font-mono text-xs">{r.name}</td>
+              <td className="py-2 pr-4">{r.who}</td>
+              <td className="py-2 pr-4">{r.purpose}</td>
+              <td className="py-2">{r.duration}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function CookiePolicyPage() {
+  const analyticsEnabled = Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Política de Cookies
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Almanaque da Fala - Almanaque da Fala
-          </p>
-          <Badge variant="outline" className="mt-2">
-            Última atualização: 15 de dezembro de 2024
-          </Badge>
-        </div>
+    <LegalPage
+      title="Política de Cookies"
+      current="/cookies"
+      intro={
+        <p>
+          Cookies são pequenos arquivos que o site guarda no seu navegador. Aqui
+          estão todos os que o {COMPANY.brandName} usa, e outros dados que
+          guardamos no navegador, com o motivo de cada um.
+        </p>
+      }
+    >
+      <Section id="sua-escolha" title="Sua escolha sobre o Google Analytics">
+        <p>
+          O único recurso que depende do seu consentimento é o Google Analytics.
+          Ele só é carregado se você aceitar. Se você recusar ou mudar de ideia,
+          ele é desligado e os cookies dele são apagados.
+        </p>
+        <AnalyticsChoiceControl enabled={analyticsEnabled} />
+        <p>
+          A escolha vale para este navegador. Com a conta aberta, você também
+          pode mudá-la em <strong>Perfil → Privacidade</strong>.
+        </p>
+      </Section>
 
-        {/* What are Cookies */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Cookie className="h-5 w-5 text-orange-600" />O que são Cookies?
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Cookies são pequenos arquivos de texto armazenados no seu
-              dispositivo quando você visita nosso site. Eles nos ajudam a
-              melhorar sua experiência, personalizar conteúdo e analisar como
-              você usa nossos serviços.
-            </p>
-            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-              <p className="text-sm text-orange-800 dark:text-orange-200">
-                <strong>Importante:</strong> Você pode controlar e gerenciar
-                cookies através das configurações do seu navegador ou usando
-                nosso painel de preferências de cookies.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <Section id="essenciais" title="Cookies essenciais">
+        <p>
+          Necessários para o login e a segurança. Funcionam sem consentimento,
+          porque o site não funciona sem eles.
+        </p>
+        <CookieTable rows={ESSENTIAL} />
+      </Section>
 
-        {/* Types of Cookies */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-blue-600" />
-              Tipos de Cookies que Utilizamos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="border-l-4 border-green-500 pl-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-green-600" />
-                  Cookies Essenciais
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  Necessários para o funcionamento básico do site e segurança.
-                </p>
-                <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                  <li>• Autenticação de usuários</li>
-                  <li>• Prevenção de fraudes</li>
-                  <li>• Carregamento de páginas</li>
-                  <li>• Preferências de idioma</li>
-                </ul>
-                <Badge variant="secondary" className="mt-2">
-                  Sempre Ativo
-                </Badge>
-              </div>
+      <Section id="analise" title="Cookies de análise (só com consentimento)">
+        <CookieTable rows={ANALYTICS} />
+      </Section>
 
-              <div className="border-l-4 border-blue-500 pl-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-blue-600" />
-                  Cookies Analíticos
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  Coletam informações sobre como você usa nosso site.
-                </p>
-                <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                  <li>• Páginas visitadas</li>
-                  <li>• Tempo de permanência</li>
-                  <li>• Origem do tráfego</li>
-                  <li>• Erros encontrados</li>
-                </ul>
-                <Badge variant="outline" className="mt-2">
-                  Opcional
-                </Badge>
-              </div>
+      <Section id="navegador" title="Outros dados guardados no navegador">
+        <p>
+          Não são cookies e não saem do seu navegador. Guardam só preferências
+          do site.
+        </p>
+        <CookieTable rows={STORAGE} />
+      </Section>
 
-              <div className="border-l-4 border-purple-500 pl-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <Settings className="h-4 w-4 text-purple-600" />
-                  Cookies Funcionais
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  Melhoram a funcionalidade e personalização do site.
-                </p>
-                <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                  <li>• Preferências de interface</li>
-                  <li>• Configurações de tema</li>
-                  <li>• Lembretes de login</li>
-                  <li>• Configurações de notificação</li>
-                </ul>
-                <Badge variant="outline" className="mt-2">
-                  Opcional
-                </Badge>
-              </div>
+      <Section id="sem-cookies" title="Medição sem cookies">
+        <p>
+          A Vercel, nossa hospedagem, mede o desempenho das páginas e conta
+          visitas de forma agregada, sem cookies e sem identificar você.
+        </p>
+      </Section>
 
-              <div className="border-l-4 border-red-500 pl-4">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <Target className="h-4 w-4 text-red-600" />
-                  Cookies de Marketing
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                  Usados para exibir anúncios relevantes e medir campanhas.
-                </p>
-                <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                  <li>• Anúncios personalizados</li>
-                  <li>• Medição de campanhas</li>
-                  <li>• Remarketing</li>
-                  <li>• Redes sociais</li>
-                </ul>
-                <Badge variant="outline" className="mt-2">
-                  Opcional
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <Section id="terceiros" title="Páginas de terceiros">
+        <p>
+          O pagamento acontece na página do Stripe e o login com Google na
+          página do Google. Os cookies dessas páginas seguem as políticas desses
+          serviços.
+        </p>
+      </Section>
 
-        {/* Cookie Details Table */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-indigo-600" />
-              Detalhes dos Cookies Utilizados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
-                      Nome
-                    </th>
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
-                      Tipo
-                    </th>
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
-                      Finalidade
-                    </th>
-                    <th className="text-left py-2 font-semibold text-gray-900 dark:text-white">
-                      Duração
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-gray-600 dark:text-gray-300">
-                  <tr className="border-b">
-                    <td className="py-2 font-mono text-xs">session_id</td>
-                    <td className="py-2">Essencial</td>
-                    <td className="py-2">Manter sessão do usuário</td>
-                    <td className="py-2">Sessão</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 font-mono text-xs">auth_token</td>
-                    <td className="py-2">Essencial</td>
-                    <td className="py-2">Autenticação segura</td>
-                    <td className="py-2">30 dias</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 font-mono text-xs">_ga</td>
-                    <td className="py-2">Analítico</td>
-                    <td className="py-2">Google Analytics</td>
-                    <td className="py-2">2 anos</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 font-mono text-xs">_gid</td>
-                    <td className="py-2">Analítico</td>
-                    <td className="py-2">Google Analytics</td>
-                    <td className="py-2">24 horas</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 font-mono text-xs">preferences</td>
-                    <td className="py-2">Funcional</td>
-                    <td className="py-2">Preferências do usuário</td>
-                    <td className="py-2">1 ano</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 font-mono text-xs">theme</td>
-                    <td className="py-2">Funcional</td>
-                    <td className="py-2">Tema da interface</td>
-                    <td className="py-2">1 ano</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 font-mono text-xs">marketing</td>
-                    <td className="py-2">Marketing</td>
-                    <td className="py-2">Anúncios personalizados</td>
-                    <td className="py-2">90 dias</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+      <Section id="navegador-config" title="Como apagar cookies">
+        <p>
+          Você pode apagar ou bloquear cookies nas configurações do navegador.
+          Se bloquear os essenciais, não será possível entrar na conta.
+        </p>
+      </Section>
 
-        {/* Third Party Cookies */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-600" />
-              Cookies de Terceiros
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Utilizamos serviços de terceiros que podem definir cookies em seu
-              dispositivo:
-            </p>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Google Analytics
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Análise de tráfego e comportamento dos usuários
-                  </p>
-                  <a
-                    href="https://policies.google.com/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Política de Privacidade do Google
-                  </a>
-                </div>
-
-                <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Clerk
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Autenticação e gerenciamento de usuários
-                  </p>
-                  <a
-                    href="https://clerk.com/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Política de Privacidade do Clerk
-                  </a>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    Stripe
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Processamento de pagamentos
-                  </p>
-                  <a
-                    href="https://stripe.com/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Política de Privacidade do Stripe
-                  </a>
-                </div>
-
-                <div className="border rounded-lg p-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    AWS
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Armazenamento e infraestrutura
-                  </p>
-                  <a
-                    href="https://aws.amazon.com/privacy/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Política de Privacidade da AWS
-                  </a>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* How to Manage Cookies */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-green-600" />
-              Como Gerenciar Cookies
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                Painel de Preferências
-              </h4>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Você pode gerenciar suas preferências de cookies usando nosso
-                painel interativo:
-              </p>
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  <strong>Painel de Cookies:</strong> Clique no botão
-                  "Configurar Cookies" no rodapé do site para ajustar suas
-                  preferências a qualquer momento.
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                Configurações do Navegador
-              </h4>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-                    Chrome
-                  </h5>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Configurações → Privacidade e segurança → Cookies e outros
-                    dados do site
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-                    Firefox
-                  </h5>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Opções → Privacidade e Segurança → Cookies e dados do site
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-                    Safari
-                  </h5>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Preferências → Privacidade → Gerenciar dados do site
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-medium text-gray-900 dark:text-white mb-2">
-                    Edge
-                  </h5>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Configurações → Cookies e permissões do site → Cookies e
-                    dados armazenados
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Impact of Disabling Cookies */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-600" />
-              Impacto de Desabilitar Cookies
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                  Cookies Essenciais
-                </h4>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span>Site pode não funcionar corretamente</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span>Impossibilidade de fazer login</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span>Perda de preferências básicas</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                  Cookies Opcionais
-                </h4>
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span>Experiência menos personalizada</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span>Análises limitadas de uso</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span>Anúncios menos relevantes</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Information */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-blue-600" />
-              Contato e Dúvidas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Contato Geral
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <strong>E-mail:</strong> contato@almanaquedafala.com.br
-                  <br />
-                  <strong>Telefone:</strong> (11) 99999-9999
-                </p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Encarregado de Dados (DPO)
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  <strong>E-mail:</strong> dpo@almanaquedafala.com.br
-                  <br />
-                  <strong>Telefone:</strong> (11) 88888-8888
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-8">
-          <p>
-            Esta Política de Cookies foi elaborada em conformidade com a Lei
-            Geral de Proteção de Dados (Lei 13.709/2018).
-          </p>
-          <p className="mt-2">
-            <strong>Almanaque da Fala Tecnologia Ltda.</strong> | CNPJ:
-            12.345.678/0001-90 | São Paulo, 15 de dezembro de 2024
-          </p>
-        </div>
-      </div>
-    </div>
+      <Section id="contato" title="Dúvidas">
+        <p>
+          Escreva para <MailLink email={COMPANY.privacyEmail} />. Veja também a{' '}
+          <Link href="/privacidade">Política de Privacidade</Link>.
+        </p>
+      </Section>
+    </LegalPage>
   );
 }
