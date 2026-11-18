@@ -140,7 +140,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "~19.1.10",
-    "react-dropzone": "^14.3.8",
+    "react-dropzone": "^20.2.0",
     "react-hook-form": "^7.55.0",
     "react-i18next": "^15.7.3",
     "resend": "^6.1.0",
