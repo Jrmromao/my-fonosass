@@ -1,3 +1,4 @@
+import CookiePreferencesLink from '@/components/cookies/CookiePreferencesLink';
 import Link from 'next/link';
 
 export default function LandingFooter() {
@@ -97,6 +98,11 @@ export default function LandingFooter() {
                   Cookies
                 </Link>
               </li>
+              {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+                <li>
+                  <CookiePreferencesLink className="text-sm text-gray-500 hover:text-gray-900 transition-colors" />
+                </li>
+              )}
             </ul>
           </div>
 

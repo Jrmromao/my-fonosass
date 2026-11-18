@@ -1,4 +1,5 @@
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import AnalyticsConsentBanner from '@/components/cookies/AnalyticsConsentBanner';
 import { Providers } from '@/components/Providers';
 import AccessibilityAudit from '@/components/accessibility/AccessibilityAudit';
 import WebVitals from '@/components/analytics/WebVitals';
@@ -115,12 +116,10 @@ export default function RootLayout({
       <html lang="pt-BR" suppressHydrationWarning>
         <head>
           {/* DNS prefetch for external domains */}
-          <link rel="dns-prefetch" href="//www.googletagmanager.com" />
           <link rel="dns-prefetch" href="//va.vercel-scripts.com" />
           <link rel="dns-prefetch" href="//clerk.accounts.dev" />
 
           {/* Preconnect to external domains */}
-          <link rel="preconnect" href="https://www.googletagmanager.com" />
           <link rel="preconnect" href="https://va.vercel-scripts.com" />
           <link rel="preconnect" href="https://clerk.accounts.dev" />
 
@@ -189,9 +188,12 @@ export default function RootLayout({
           </a>
 
           {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-            <GoogleAnalytics
-              GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
-            />
+            <>
+              <GoogleAnalytics
+                GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}
+              />
+              <AnalyticsConsentBanner />
+            </>
           )}
           <Providers>
             <StructuredData type="website" />

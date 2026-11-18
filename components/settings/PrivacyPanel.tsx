@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useCSRF } from '@/hooks/useCSRF';
+import { useAnalyticsConsent, writeConsent } from '@/lib/cookieConsent';
 import {
   DELETE_CONFIRMATION_WORD,
   DPO_EMAIL,
@@ -90,6 +91,8 @@ function Row({
 export function PrivacyPanel() {
   const queryClient = useQueryClient();
   const { csrfToken } = useCSRF();
+  const analyticsConsent = useAnalyticsConsent();
+  const hasAnalytics = !!process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   const [marketingSaving, setMarketingSaving] = useState(false);
   const [marketingError, setMarketingError] = useState<string | null>(null);
@@ -220,6 +223,24 @@ export function PrivacyPanel() {
             />
           }
         />
+        {hasAnalytics && (
+          <Row
+            id="pref-analytics"
+            title="Análise de uso"
+            description="Google Analytics, para entendermos como o site é usado. Vale para este navegador."
+            control={
+              <Switch
+                id="pref-analytics"
+                checked={analyticsConsent === 'granted'}
+                disabled={analyticsConsent === 'loading'}
+                onCheckedChange={(on) =>
+                  writeConsent(on ? 'granted' : 'denied')
+                }
+                aria-describedby="pref-analytics-desc"
+              />
+            }
+          />
+        )}
         <Row
           id="pref-marketing"
           title="Novidades por e-mail"
