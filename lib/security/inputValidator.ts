@@ -4,32 +4,39 @@ import { z } from 'zod';
 export class InputValidator {
   // Common validation schemas
   static readonly schemas = {
-    email: z.string()
+    email: z
+      .string()
       .email('Invalid email format')
       .min(1, 'Email is required')
       .max(254, 'Email too long')
-      .transform(email => email.toLowerCase().trim()),
+      .transform((email) => email.toLowerCase().trim()),
 
-    password: z.string()
+    password: z
+      .string()
       .min(8, 'Password must be at least 8 characters')
       .max(128, 'Password too long')
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
-        'Password must contain uppercase, lowercase, number and special character'),
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+        'Password must contain uppercase, lowercase, number and special character'
+      ),
 
-    name: z.string()
+    name: z
+      .string()
       .min(1, 'Name is required')
       .max(100, 'Name too long')
       .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, 'Name contains invalid characters')
-      .transform(name => this.sanitizeString(name)),
+      .transform((name) => this.sanitizeString(name)),
 
-    phone: z.string()
+    phone: z
+      .string()
       .regex(/^\+?[\d\s\-\(\)]+$/, 'Invalid phone number format')
-      .transform(phone => phone.replace(/\D/g, '')), // Remove non-digits
+      .transform((phone) => phone.replace(/\D/g, '')), // Remove non-digits
 
-    url: z.string()
+    url: z
+      .string()
       .url('Invalid URL format')
       .max(2048, 'URL too long')
-      .refine(url => {
+      .refine((url) => {
         try {
           const parsed = new URL(url);
           return ['http:', 'https:'].includes(parsed.protocol);
@@ -39,29 +46,36 @@ export class InputValidator {
       }, 'Invalid URL protocol'),
 
     file: z.object({
-      name: z.string()
+      name: z
+        .string()
         .min(1, 'File name is required')
         .max(255, 'File name too long')
         .regex(/^[a-zA-Z0-9._-]+$/, 'Invalid file name characters'),
-      size: z.number()
+      size: z
+        .number()
         .min(1, 'File size must be greater than 0')
         .max(50 * 1024 * 1024, 'File size too large (max 50MB)'),
-      type: z.string()
+      type: z
+        .string()
         .min(1, 'File type is required')
-        .refine(type => this.isAllowedFileType(type), 'File type not allowed')
+        .refine(
+          (type) => this.isAllowedFileType(type),
+          'File type not allowed'
+        ),
     }),
 
-    searchQuery: z.string()
+    searchQuery: z
+      .string()
       .min(1, 'Search query is required')
       .max(200, 'Search query too long')
-      .transform(query => this.sanitizeString(query)),
+      .transform((query) => this.sanitizeString(query)),
 
     pagination: z.object({
       page: z.number().int().min(1).max(1000).default(1),
       limit: z.number().int().min(1).max(100).default(20),
       sortBy: z.string().max(50).optional(),
-      sortOrder: z.enum(['asc', 'desc']).default('desc')
-    })
+      sortOrder: z.enum(['asc', 'desc']).default('desc'),
+    }),
   };
 
   // Sanitize string input to prevent XSS and injection attacks
@@ -83,9 +97,9 @@ export class InputValidator {
     if (typeof obj !== 'object' || obj === null) {
       return obj;
     }
-    
+
     const sanitized = {} as T;
-    
+
     for (const [key, value] of Object.entries(obj as Record<string, any>)) {
       if (typeof value === 'string') {
         (sanitized as any)[key] = this.sanitizeString(value);
@@ -95,7 +109,7 @@ export class InputValidator {
         (sanitized as any)[key] = value;
       }
     }
-    
+
     return sanitized;
   }
 
@@ -108,7 +122,7 @@ export class InputValidator {
       'image/gif',
       'image/webp',
       'image/svg+xml',
-      
+
       // Documents
       'application/pdf',
       'application/msword',
@@ -117,29 +131,29 @@ export class InputValidator {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'application/vnd.ms-powerpoint',
       'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      
+
       // Text
       'text/plain',
       'text/csv',
       'text/rtf',
-      
+
       // Audio
       'audio/mpeg',
       'audio/wav',
       'audio/ogg',
       'audio/mp4',
-      
+
       // Video
       'video/mp4',
       'video/avi',
       'video/mov',
       'video/wmv',
       'video/webm',
-      
+
       // Archives
       'application/zip',
       'application/x-rar-compressed',
-      'application/x-7z-compressed'
+      'application/x-7z-compressed',
     ];
 
     return allowedTypes.includes(mimeType);
@@ -165,25 +179,34 @@ export class InputValidator {
     }
 
     // Check for suspicious file extensions
-    const suspiciousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.vbs', '.js'];
-    const hasSuspiciousExtension = suspiciousExtensions.some(ext => 
+    const suspiciousExtensions = [
+      '.exe',
+      '.bat',
+      '.cmd',
+      '.scr',
+      '.pif',
+      '.com',
+      '.vbs',
+      '.js',
+    ];
+    const hasSuspiciousExtension = suspiciousExtensions.some((ext) =>
       file.name.toLowerCase().endsWith(ext)
     );
-    
+
     if (hasSuspiciousExtension) {
       errors.push('File extension is not allowed for security reasons');
     }
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
   // Validate SQL query parameters to prevent injection
   static validateSQLParams(params: Record<string, any>): Record<string, any> {
     const sanitized: Record<string, any> = {};
-    
+
     for (const [key, value] of Object.entries(params)) {
       if (typeof value === 'string') {
         // Remove potential SQL injection patterns
@@ -201,13 +224,13 @@ export class InputValidator {
           .replace(/create/gi, '') // Remove CREATE
           .replace(/alter/gi, '') // Remove ALTER
           .trim();
-        
+
         sanitized[key] = sanitizedValue;
       } else {
         sanitized[key] = value;
       }
     }
-    
+
     return sanitized;
   }
 
@@ -224,34 +247,38 @@ export class InputValidator {
   // Validate URL parameters
   static validateURLParams(params: URLSearchParams): Record<string, string> {
     const validated: Record<string, string> = {};
-    
+
     for (const [key, value] of params.entries()) {
       // Only allow alphanumeric keys
       if (!/^[a-zA-Z0-9_-]+$/.test(key)) {
         continue;
       }
-      
+
       // Sanitize value
       const sanitizedValue = this.sanitizeString(value);
       if (sanitizedValue.length > 0) {
         validated[key] = sanitizedValue;
       }
     }
-    
+
     return validated;
   }
 
   // Create validation middleware for API routes
   static createValidationMiddleware<T>(schema: z.ZodSchema<T>) {
-    return async (req: Request): Promise<{ data: T; error?: never } | { data?: never; error: string }> => {
+    return async (
+      req: Request
+    ): Promise<
+      { data: T; error?: never } | { data?: never; error: string }
+    > => {
       try {
         const body = await req.json();
         const data = schema.parse(body);
         return { data: this.sanitizeObject(data) as T };
       } catch (error) {
         if (error instanceof z.ZodError) {
-          const errorMessage = error.errors
-            .map(err => `${err.path.join('.')}: ${err.message}`)
+          const errorMessage = error.issues
+            .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
             .join(', ');
           return { error: `Validation error: ${errorMessage}` };
         }

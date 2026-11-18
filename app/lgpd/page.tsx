@@ -19,7 +19,7 @@ const RIGHTS: { right: string; how: string }[] = [
   },
   {
     right: 'Corrigir dados incompletos, errados ou desatualizados',
-    how: 'Por email. Você confere seus dados atuais em Perfil.',
+    how: 'Na sua conta: Perfil → Privacidade → Corrigir dados (ou por email). Você confere seus dados atuais em Perfil.',
   },
   {
     right: 'Portabilidade (levar seus dados para outro serviço)',

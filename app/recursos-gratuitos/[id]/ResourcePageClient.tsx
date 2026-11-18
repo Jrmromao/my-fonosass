@@ -1,5 +1,6 @@
 'use client';
 
+import { sanitizeHtml } from '@/lib/security/sanitizeHtml';
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
@@ -226,47 +227,49 @@ export default function ResourcePageClient({
                     prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm
                     prose-pre:bg-gray-100 prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto"
                   dangerouslySetInnerHTML={{
-                    __html: resource.content
-                      .replace(
-                        /^# (.*$)/gim,
-                        '<h1 class="text-3xl font-bold text-gray-900 mb-6 mt-8 border-b border-pink-200 pb-3">$1</h1>'
-                      )
-                      .replace(
-                        /^## (.*$)/gim,
-                        '<h2 class="text-2xl font-semibold text-gray-800 mb-4 mt-8 border-b border-gray-200 pb-2">$1</h2>'
-                      )
-                      .replace(
-                        /^### (.*$)/gim,
-                        '<h3 class="text-xl font-medium text-gray-800 mb-3 mt-6">$1</h3>'
-                      )
-                      .replace(
-                        /^- (.*$)/gim,
-                        '<li class="text-gray-700 leading-relaxed mb-1">$1</li>'
-                      )
-                      .replace(
-                        /^\d+\. (.*$)/gim,
-                        '<li class="text-gray-700 leading-relaxed mb-1">$1</li>'
-                      )
-                      .replace(
-                        /\*\*(.*?)\*\*/g,
-                        '<strong class="font-semibold text-gray-900">$1</strong>'
-                      )
-                      .replace(
-                        /\*(.*?)\*/g,
-                        '<em class="italic text-gray-800">$1</em>'
-                      )
-                      .replace(
-                        /\n\n/g,
-                        '</p><p class="text-gray-700 leading-relaxed mb-4">'
-                      )
-                      .replace(
-                        /^(?!<[h|l]|<div|<table)/gm,
-                        '<p class="text-gray-700 leading-relaxed mb-4">'
-                      )
-                      .replace(
-                        /<p class="text-gray-700 leading-relaxed mb-4"><\/p>/g,
-                        ''
-                      ),
+                    __html: sanitizeHtml(
+                      resource.content
+                        .replace(
+                          /^# (.*$)/gim,
+                          '<h1 class="text-3xl font-bold text-gray-900 mb-6 mt-8 border-b border-pink-200 pb-3">$1</h1>'
+                        )
+                        .replace(
+                          /^## (.*$)/gim,
+                          '<h2 class="text-2xl font-semibold text-gray-800 mb-4 mt-8 border-b border-gray-200 pb-2">$1</h2>'
+                        )
+                        .replace(
+                          /^### (.*$)/gim,
+                          '<h3 class="text-xl font-medium text-gray-800 mb-3 mt-6">$1</h3>'
+                        )
+                        .replace(
+                          /^- (.*$)/gim,
+                          '<li class="text-gray-700 leading-relaxed mb-1">$1</li>'
+                        )
+                        .replace(
+                          /^\d+\. (.*$)/gim,
+                          '<li class="text-gray-700 leading-relaxed mb-1">$1</li>'
+                        )
+                        .replace(
+                          /\*\*(.*?)\*\*/g,
+                          '<strong class="font-semibold text-gray-900">$1</strong>'
+                        )
+                        .replace(
+                          /\*(.*?)\*/g,
+                          '<em class="italic text-gray-800">$1</em>'
+                        )
+                        .replace(
+                          /\n\n/g,
+                          '</p><p class="text-gray-700 leading-relaxed mb-4">'
+                        )
+                        .replace(
+                          /^(?!<[h|l]|<div|<table)/gm,
+                          '<p class="text-gray-700 leading-relaxed mb-4">'
+                        )
+                        .replace(
+                          /<p class="text-gray-700 leading-relaxed mb-4"><\/p>/g,
+                          ''
+                        )
+                    ),
                   }}
                 />
               </div>

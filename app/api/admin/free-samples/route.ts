@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { prisma } from '@/app/db';
 import { FREE_SAMPLE_COUNT, getFreeSamplesForMonth } from '@/lib/access';
 import { errorResponse, requireAdmin } from '@/lib/activities/approval';
+import { AuditAction, recordAudit } from '@/lib/audit/audit';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { monthBucket } from '@/lib/stats/downloadStats';
 import { refreshPublicCatalogPages } from '@/lib/cache/publicPages';
@@ -103,6 +104,15 @@ export async function PUT(request: NextRequest) {
       }),
     ]);
     refreshPages();
+    await recordAudit({
+      action: AuditAction.FREE_SAMPLES_SET,
+      actorType: 'ADMIN',
+      actorId: g.admin.dbUserId,
+      targetType: 'FreeSampleSelection',
+      targetId: month.toISOString().slice(0, 7),
+      request,
+      metadata: { count: body.data.activityIds.length },
+    });
 
     return NextResponse.json(
       { success: true, data: await getFreeSamplesForMonth(month) },
@@ -128,6 +138,14 @@ export async function DELETE(request: NextRequest) {
 
     await prisma.freeSampleSelection.deleteMany({ where: { month } });
     refreshPages();
+    await recordAudit({
+      action: AuditAction.FREE_SAMPLES_CLEAR,
+      actorType: 'ADMIN',
+      actorId: g.admin.dbUserId,
+      targetType: 'FreeSampleSelection',
+      targetId: month.toISOString().slice(0, 7),
+      request,
+    });
 
     return NextResponse.json(
       { success: true, data: await getFreeSamplesForMonth(month) },

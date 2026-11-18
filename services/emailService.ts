@@ -292,4 +292,53 @@ export class EmailService {
       console.error('Download limit reached email failed:', error);
     }
   }
+
+  /** Tells the DPO a correction request is waiting (LGPD: answer within 15 days). */
+  static async sendCorrectionRequestToDpo(input: {
+    dpoEmail: string;
+    userEmail: string;
+    userName: string;
+    description: string;
+    requestId: string;
+  }) {
+    await sendFromEliane('Correction request (DPO)', {
+      to: input.dpoEmail,
+      subject: 'Nova solicitação de correção de dados (LGPD)',
+      html: baseTemplate(`
+        <p>Nova solicitação de correção de dados.</p>
+        ${infoBox(
+          `<strong>${escapeHtml(input.userName)}</strong> (${escapeHtml(input.userEmail)})<br><br>${escapeHtml(input.description).replace(/\n/g, '<br>')}`
+        )}
+        <p>Responda pelo painel de administração (solicitações de correção). Prazo legal: 15 dias.</p>
+        <p style="color: #64748b; font-size: 12px;">Protocolo: ${escapeHtml(input.requestId)}</p>
+      `),
+    });
+  }
+
+  /** Tells the user their correction request was answered. */
+  static async sendCorrectionRequestAnswered(input: {
+    userEmail: string;
+    userName: string;
+    status: 'RESOLVED' | 'REJECTED';
+    resolutionNote: string;
+  }) {
+    const firstName = escapeHtml(input.userName.trim().split(/\s+/)[0] || '');
+    await sendFromEliane('Correction request (user)', {
+      to: input.userEmail,
+      subject:
+        input.status === 'RESOLVED'
+          ? 'Sua solicitação de correção foi atendida'
+          : 'Resposta à sua solicitação de correção',
+      html: baseTemplate(`
+        <p>Olá${firstName ? ` ${firstName}` : ''},</p>
+        <p>${
+          input.status === 'RESOLVED'
+            ? 'Atendemos a sua solicitação de correção de dados.'
+            : 'Analisamos a sua solicitação de correção de dados e não foi possível atendê-la como pedido.'
+        }</p>
+        ${infoBox(escapeHtml(input.resolutionNote).replace(/\n/g, '<br>'))}
+        <p style="color: #64748b; font-size: 12px;">Dúvidas? Responda este email.</p>
+      `),
+    });
+  }
 }

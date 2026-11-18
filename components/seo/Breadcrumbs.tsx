@@ -1,5 +1,6 @@
 'use client';
 
+import { safeJsonLd } from '@/lib/security/jsonLd';
 import { ChevronRight, Home } from 'lucide-react';
 import Link from 'next/link';
 import Script from 'next/script';
@@ -35,7 +36,7 @@ export default function Breadcrumbs({
         id="breadcrumb-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbSchema),
+          __html: safeJsonLd(breadcrumbSchema),
         }}
       />
       <nav

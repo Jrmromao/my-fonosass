@@ -55,6 +55,7 @@ const NextRequest = MockNextRequest;
 // Mock Clerk
 jest.mock('@clerk/nextjs/server', () => ({
   auth: jest.fn(),
+  clerkClient: jest.fn(),
 }));
 
 // Mock Prisma
@@ -255,12 +256,23 @@ describe('/api/user/profile', () => {
   });
 
   describe('PUT /api/user/profile', () => {
+    const mockUpdateClerkUser = jest.fn();
+
+    beforeEach(() => {
+      mockUpdateClerkUser.mockReset().mockResolvedValue({});
+      require('@clerk/nextjs/server').clerkClient.mockResolvedValue({
+        users: { updateUser: mockUpdateClerkUser },
+      });
+      mockPrisma.user.findUnique.mockResolvedValue({
+        email: 'test@example.com',
+      });
+    });
+
     it('should update user profile successfully', async () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
       mockPrisma.user.update.mockResolvedValue({
         ...mockUser,
         fullName: 'Updated Name',
-        email: 'updated@example.com',
       });
 
       const request = new NextRequest(
@@ -269,7 +281,7 @@ describe('/api/user/profile', () => {
           method: 'PUT',
           body: JSON.stringify({
             fullName: 'Updated Name',
-            email: 'updated@example.com',
+            email: 'test@example.com',
           }),
           headers: {
             'Content-Type': 'application/json',
@@ -287,7 +299,7 @@ describe('/api/user/profile', () => {
         data: {
           user: {
             id: 'user_123',
-            email: 'updated@example.com',
+            email: 'test@example.com',
             fullName: 'Updated Name',
             role: 'USER',
             updatedAt: '2024-01-01T00:00:00.000Z',
@@ -296,10 +308,7 @@ describe('/api/user/profile', () => {
       });
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
         where: { clerkUserId: 'user_123' },
-        data: {
-          fullName: 'Updated Name',
-          email: 'updated@example.com',
-        },
+        data: { fullName: 'Updated Name' },
         select: {
           id: true,
           email: true,
@@ -336,7 +345,7 @@ describe('/api/user/profile', () => {
       });
     });
 
-    it('should return 500 when request body is invalid', async () => {
+    it('should return 400 when request body is invalid', async () => {
       mockAuth.mockResolvedValue({ userId: 'user_123' });
 
       const request = new NextRequest(
@@ -353,11 +362,9 @@ describe('/api/user/profile', () => {
       const response = await PUT(request);
       const data = await response.json();
 
-      expect(response.status).toBe(500);
-      expect(data).toEqual({
-        error: 'Failed to update profile',
-        timestamp: expect.any(String),
-      });
+      expect(response.status).toBe(400);
+      expect(data.error).toBe('Invalid fullName');
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
     });
 
     it('should handle database errors during update', async () => {
@@ -370,7 +377,7 @@ describe('/api/user/profile', () => {
           method: 'PUT',
           body: JSON.stringify({
             fullName: 'Updated Name',
-            email: 'valid@example.com',
+            email: 'test@example.com',
           }),
           headers: {
             'Content-Type': 'application/json',

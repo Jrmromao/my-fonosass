@@ -24,6 +24,10 @@ jest.mock('react-i18next', () => ({
 }));
 
 // Mock useCSRF hook
+jest.mock('@clerk/nextjs', () => ({
+  useClerk: () => ({ openUserProfile: jest.fn() }),
+}));
+
 jest.mock('@/hooks/useCSRF', () => ({
   useCSRF: () => ({
     fetchCSRFToken: jest.fn().mockResolvedValue('mock-csrf-token'),
@@ -242,10 +246,7 @@ describe('UserProfile Component', () => {
           'Content-Type': 'application/json',
           'X-CSRF-Token': 'mock-csrf-token',
         },
-        body: JSON.stringify({
-          fullName: 'Updated Name',
-          email: 'test@example.com',
-        }),
+        body: JSON.stringify({ fullName: 'Updated Name' }),
       });
     });
 

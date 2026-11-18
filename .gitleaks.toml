@@ -1,0 +1,11 @@
+# Extends the default ruleset; only silences known false positives.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholders and test fixtures"
+paths = [
+  '''(^|/)docs/''',          # curl examples with placeholder tokens
+  '''(^|/)__tests__/''',     # test fixtures
+  '''(^|/)\.github/workflows/ci\.yml$''', # dummy, well-formed Clerk publishable key
+]

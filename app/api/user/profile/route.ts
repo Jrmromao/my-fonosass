@@ -1,5 +1,11 @@
 import { prisma } from '@/app/db';
 import { CacheManager, QueryCache } from '@/lib/performance/cacheManager';
+import {
+  EMAIL_CHANGE_VIA_CLERK,
+  fullNameSchema,
+  isEmailChange,
+  updateOwnName,
+} from '@/lib/account/updateName';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
@@ -171,45 +177,29 @@ export const PUT = async (request: NextRequest) => {
       );
     }
 
-    const body = await request.json();
-    const { fullName, email } = body;
-
-    // Validate input
-    if (
-      !fullName ||
-      typeof fullName !== 'string' ||
-      fullName.trim().length < 2 ||
-      fullName.trim().length > 100
-    ) {
+    const body = await request.json().catch(() => null);
+    const parsedName = fullNameSchema.safeParse(body?.fullName);
+    if (!parsedName.success) {
       return SecurityMiddleware.createErrorResponse('Invalid fullName', 400);
     }
 
-    if (
-      !email ||
-      typeof email !== 'string' ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ) {
+    // Email changes go through Clerk (verified). Echoing the current email
+    // back is fine (older clients send the whole form).
+    const current = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { email: true },
+    });
+    if (!current) {
+      return SecurityMiddleware.createErrorResponse('User not found', 404);
+    }
+    if (isEmailChange(body?.email, current.email)) {
       return SecurityMiddleware.createErrorResponse(
-        'Invalid email format',
+        EMAIL_CHANGE_VIA_CLERK,
         400
       );
     }
 
-    // Update user profile
-    const updatedUser = await prisma.user.update({
-      where: { clerkUserId: userId },
-      data: {
-        fullName: fullName.trim(),
-        email: email.trim().toLowerCase(),
-      },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        role: true,
-        updatedAt: true,
-      },
-    });
+    const updatedUser = await updateOwnName(userId, parsedName.data);
 
     // Invalidate caches after successful update
     await QueryCache.invalidate(`user:profile:${userId}`);

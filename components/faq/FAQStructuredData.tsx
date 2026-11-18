@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/security/jsonLd';
 import Script from 'next/script';
 
 interface FAQStructuredDataProps {
@@ -29,7 +30,7 @@ export default function FAQStructuredData({ faqs }: FAQStructuredDataProps) {
       id="faq-structured-data"
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(structuredData),
+        __html: safeJsonLd(structuredData),
       }}
     />
   );

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useCSRF } from '@/hooks/useCSRF';
 import { useAnalyticsConsent, writeConsent } from '@/lib/cookieConsent';
 import {
@@ -101,6 +102,13 @@ export function PrivacyPanel() {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
+  const [correction, setCorrection] = useState('');
+  const [correctionSending, setCorrectionSending] = useState(false);
+  const [correctionMsg, setCorrectionMsg] = useState<{
+    ok: boolean;
+    text: string;
+  } | null>(null);
+
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -169,6 +177,40 @@ export function PrivacyPanel() {
       setExportError('Não foi possível baixar os seus dados. Tente novamente.');
     } finally {
       setExporting(false);
+    }
+  };
+
+  const sendCorrection = async () => {
+    setCorrectionSending(true);
+    setCorrectionMsg(null);
+    try {
+      const res = await fetch('/api/user-data/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken ?? '',
+        },
+        body: JSON.stringify({ description: correction }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) {
+        throw new Error(typeof json.error === 'string' ? json.error : '');
+      }
+      setCorrection('');
+      setCorrectionMsg({
+        ok: true,
+        text: `Pedido enviado. Respondemos por email. Prazo: ${PRIVACY_RESPONSE_TIME.toLowerCase()}.`,
+      });
+    } catch (error) {
+      setCorrectionMsg({
+        ok: false,
+        text:
+          error instanceof Error && error.message
+            ? error.message
+            : 'Não foi possível enviar o pedido. Tente novamente.',
+      });
+    } finally {
+      setCorrectionSending(false);
     }
   };
 
@@ -281,6 +323,44 @@ export function PrivacyPanel() {
             {exportError && (
               <p role="alert" className="mt-2 text-sm text-destructive">
                 {exportError}
+              </p>
+            )}
+          </div>
+
+          <div className="border-t border-neutral-200 pt-6">
+            <p className="text-sm font-medium text-neutral-900">
+              Corrigir dados
+            </p>
+            <p className="mt-0.5 mb-3 text-sm text-neutral-600">
+              Algum dado seu está errado ou desatualizado? Conte o que precisa
+              mudar. Para mudar o email da conta, use o menu da sua foto
+              (Gerenciar conta).
+            </p>
+            <Label htmlFor="correction" className="sr-only">
+              O que precisa ser corrigido
+            </Label>
+            <Textarea
+              id="correction"
+              value={correction}
+              onChange={(e) => setCorrection(e.target.value)}
+              maxLength={1000}
+              placeholder="Diga qual informação está errada e qual é o valor correto"
+              className="min-h-[88px]"
+            />
+            <Button
+              variant="outline"
+              className="mt-3 h-10 border-neutral-300 text-sm font-semibold"
+              onClick={sendCorrection}
+              disabled={correctionSending || correction.trim().length < 10}
+            >
+              {correctionSending ? 'Enviando...' : 'Enviar pedido'}
+            </Button>
+            {correctionMsg && (
+              <p
+                role={correctionMsg.ok ? 'status' : 'alert'}
+                className={`mt-2 text-sm ${correctionMsg.ok ? 'text-neutral-700' : 'text-destructive'}`}
+              >
+                {correctionMsg.text}
               </p>
             )}
           </div>

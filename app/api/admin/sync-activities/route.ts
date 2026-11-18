@@ -1,5 +1,7 @@
 import { prisma } from '@/app/db';
-import { auth } from '@clerk/nextjs/server';
+import { AuthzError, requireAdmin } from '@/lib/activities/approval';
+import { AuditAction, recordAudit } from '@/lib/audit/audit';
+import { safeEqual } from '@/lib/security/safeCompare';
 import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
@@ -243,8 +245,8 @@ export async function POST(request: Request) {
   // Auth: either Clerk session (browser) or API key (GitHub Actions).
   // Resolved before the try so we can decide how much error detail to expose.
   const authHeader = request.headers.get('authorization');
-  const apiKey = authHeader?.replace('Bearer ', '');
-  const isMachine = !!apiKey && apiKey === process.env.ADMIN_API_KEY;
+  const apiKey = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const isMachine = safeEqual(apiKey, process.env.ADMIN_API_KEY);
 
   // The OpenAI metadata quality check adds ~1-3s per activity and already
   // fails-open (never blocks), so it is OFF by default to keep the request
@@ -256,15 +258,15 @@ export async function POST(request: Request) {
     let user;
 
     if (isMachine) {
-      // Machine-to-machine (GitHub Actions): use first admin user
-      user = await prisma.user.findFirst({ orderBy: { createdAt: 'asc' } });
+      // Machine-to-machine (GitHub Actions): attribute to the oldest ADMIN.
+      user = await prisma.user.findFirst({
+        where: { role: 'ADMIN' },
+        orderBy: { createdAt: 'asc' },
+      });
     } else {
-      // Browser: use Clerk session
-      const { userId } = await auth();
-      if (!userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-      user = await prisma.user.findUnique({ where: { clerkUserId: userId } });
+      // Browser: Clerk session AND ADMIN role (throws AuthzError 401/403).
+      const { dbUserId } = await requireAdmin();
+      user = await prisma.user.findUnique({ where: { id: dbUserId } });
     }
 
     if (!user) {
@@ -386,6 +388,14 @@ export async function POST(request: Request) {
 
     const remaining = Math.max(pendingKeys.length - created, 0);
 
+    await recordAudit({
+      action: AuditAction.ACTIVITIES_SYNC,
+      actorType: isMachine ? 'MACHINE' : 'ADMIN',
+      actorId: user.id,
+      request,
+      metadata: { created, skipped, remaining },
+    });
+
     return NextResponse.json({
       success: true,
       created,
@@ -397,6 +407,12 @@ export async function POST(request: Request) {
       total: allKeys.length,
     });
   } catch (error) {
+    if (error instanceof AuthzError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status }
+      );
+    }
     const message = error instanceof Error ? error.message : String(error);
     console.error('Sync S3 activities error:', error);
     return NextResponse.json(

@@ -1,16 +1,14 @@
 import { prisma } from '@/app/db';
-import { auth } from '@clerk/nextjs/server';
+import { guardAdmin } from '@/lib/activities/approval';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const denied = await guardAdmin();
+  if (denied) return denied;
 
+  try {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -40,7 +38,9 @@ export async function GET() {
       prisma.activity.count({ where: { createdAt: { gte: startOfWeek } } }),
       prisma.activity.count({ where: { status: 'PENDING_REVIEW' } }),
       // Downloads (aggregate — no personal data)
-      prisma.downloadHistory.count({ where: { downloadedAt: { gte: startOfMonth } } }),
+      prisma.downloadHistory.count({
+        where: { downloadedAt: { gte: startOfMonth } },
+      }),
       prisma.downloadHistory.count({
         where: { downloadedAt: { gte: startOfLastMonth, lt: startOfMonth } },
       }),
@@ -62,16 +62,21 @@ export async function GET() {
 
     // Get activity names for top downloads
     const topActivityIds = topActivities.map((t) => t.activityId);
-    const topActivityNames = topActivityIds.length > 0
-      ? await prisma.activity.findMany({
-          where: { id: { in: topActivityIds } },
-          select: { id: true, name: true, phoneme: true },
-        })
-      : [];
+    const topActivityNames =
+      topActivityIds.length > 0
+        ? await prisma.activity.findMany({
+            where: { id: { in: topActivityIds } },
+            select: { id: true, name: true, phoneme: true },
+          })
+        : [];
 
-    const downloadGrowth = downloadsLastMonth > 0
-      ? Math.round(((downloadsThisMonth - downloadsLastMonth) / downloadsLastMonth) * 100)
-      : 0;
+    const downloadGrowth =
+      downloadsLastMonth > 0
+        ? Math.round(
+            ((downloadsThisMonth - downloadsLastMonth) / downloadsLastMonth) *
+              100
+          )
+        : 0;
 
     return NextResponse.json({
       success: true,
@@ -81,7 +86,8 @@ export async function GET() {
           thisMonth: usersThisMonth,
           pro: proUsers,
           free: totalUsers - proUsers,
-          conversionRate: totalUsers > 0 ? Math.round((proUsers / totalUsers) * 100) : 0,
+          conversionRate:
+            totalUsers > 0 ? Math.round((proUsers / totalUsers) * 100) : 0,
         },
         library: {
           total: totalActivities,
@@ -93,8 +99,14 @@ export async function GET() {
           lastMonth: downloadsLastMonth,
           growth: downloadGrowth,
           topActivities: topActivities.map((t) => {
-            const activity = topActivityNames.find((a) => a.id === t.activityId);
-            return { name: activity?.name || 'Unknown', phoneme: activity?.phoneme, count: t._count.activityId };
+            const activity = topActivityNames.find(
+              (a) => a.id === t.activityId
+            );
+            return {
+              name: activity?.name || 'Unknown',
+              phoneme: activity?.phoneme,
+              count: t._count.activityId,
+            };
           }),
         },
         phonemes: phonemeDistribution.map((p) => ({
@@ -105,6 +117,9 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Analytics error:', error);
-    return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch analytics' },
+      { status: 500 }
+    );
   }
 }

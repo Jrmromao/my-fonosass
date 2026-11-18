@@ -1,7 +1,8 @@
 import { prisma } from '@/app/db';
 import { generateResourcePDF } from '@/lib/pdfGenerator';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
-import { auth } from '@clerk/nextjs/server';
+import { getResourceViewer } from '@/lib/resources/access';
+import { getClientIp } from '@/lib/security/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const GET = async (
@@ -18,23 +19,13 @@ export const GET = async (
       );
     }
 
-    // Get user info (optional for free downloads)
-    const { userId } = await auth();
-    let user = null;
+    // Who is asking (anonymous allowed for free resources)
+    const viewer = await getResourceViewer();
+    const user = viewer.userId ? { id: viewer.userId } : null;
 
-    if (userId) {
-      user = await prisma.user.findUnique({
-        where: { clerkUserId: userId },
-        select: { id: true },
-      });
-    }
-
-    // Get client info
-    const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
+    const ipAddress = getClientIp(request);
+    const userAgent =
+      request.headers.get('user-agent')?.slice(0, 255) || 'unknown';
 
     // Check if resource exists and is published (support both ID and slug)
     const resource = await prisma.resource.findFirst({
@@ -62,10 +53,12 @@ export const GET = async (
     }
 
     // Check if user has permission to download (if not free)
-    if (!resource.isFree && !user) {
+    if (!resource.isFree && !viewer.canAccessPremium) {
       return SecurityMiddleware.createErrorResponse(
-        'Authentication required for premium resources',
-        401
+        user
+          ? 'Active subscription required for premium resources'
+          : 'Authentication required for premium resources',
+        user ? 403 : 401
       );
     }
 
@@ -116,16 +109,13 @@ export const GET = async (
     } catch (pdfError) {
       console.error('Error generating PDF:', pdfError);
 
-      // Fallback: return error message
-      return new NextResponse(
-        `Error generating PDF: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`,
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'text/plain',
-          },
-        }
-      );
+      // Generic message only; details stay in the server log.
+      return new NextResponse('Error generating PDF', {
+        status: 500,
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+      });
     }
   } catch (error) {
     console.error('Error serving PDF file:', error);

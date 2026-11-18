@@ -1,7 +1,7 @@
 'use client';
 
 import '@/lib/i18n'; // Initialize i18n
-import { ThemeProvider } from '@/components/theme-provider';
+import '@/lib/zodConfig'; // zod without eval (CSP)
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -19,8 +19,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </ThemeProvider>
+    // No ThemeProvider: the app is light-only (nothing calls useTheme and no
+    // CSS targets the class it added), and it rendered an inline script on
+    // every page that the signed-in area's nonce CSP would block.
+    // components/theme-provider.tsx is kept if theming is added later.
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }

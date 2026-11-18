@@ -1,5 +1,7 @@
 'use client';
 
+import '@/lib/zodConfig'; // before any schema is built: no eval probe (CSP)
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
