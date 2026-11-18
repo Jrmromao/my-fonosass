@@ -9,6 +9,8 @@ jest.mock('@clerk/nextjs/server', () => ({ auth: jest.fn() }));
 
 jest.mock('@/app/db', () => ({
   prisma: {
+    // No admin choice for the month: automatic rotation (lib/access.ts).
+    freeSampleSelection: { findMany: jest.fn(async () => []) },
     user: { findUnique: jest.fn() },
     activityFile: { findUnique: jest.fn() },
     activity: { findMany: jest.fn() },

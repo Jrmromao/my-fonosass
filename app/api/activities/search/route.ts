@@ -1,6 +1,7 @@
 import { prisma } from '@/app/db';
+import { getEffectiveAccess } from '@/lib/auth/viewAs';
 import { getOrCreateDbUser } from '@/lib/auth/dbUser';
-import { getFreeSamples, hasActiveSubscription } from '@/lib/access';
+import { getFreeSamples } from '@/lib/access';
 import { auth } from '@clerk/nextjs/server';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -28,9 +29,9 @@ export async function GET(request: NextRequest) {
     // sent to users allowed to download it (subscribers, admins, free samples).
     // Others see the card without an image. TODO: real low-res previews.
     const viewer = await getOrCreateDbUser(userId);
-    const canDownloadAll =
-      !!viewer &&
-      (viewer.role === 'ADMIN' || (await hasActiveSubscription(viewer.id)));
+    // Effective access ("Ver como" lets admins test as a user).
+    const access = viewer ? await getEffectiveAccess(viewer) : null;
+    const canDownloadAll = !!access && (access.isAdmin || access.subscribed);
     const freeSampleIds = new Set((await getFreeSamples()).map((s) => s.id));
 
     const url = request.nextUrl;

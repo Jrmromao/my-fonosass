@@ -4,11 +4,13 @@ import {
   PHONEME_GROUPS,
   type PhonemeEntry,
 } from '@/lib/phonemes';
-import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
-import { FREE_PHONEME } from '@/lib/pricing';
 import Link from 'next/link';
 import ExampleWord from './ExampleWord';
-import FreePhonemeTile, { type FreePreviewActivity } from './FreePhonemeTile';
+import { freeOfferText } from '@/lib/freeOffer';
+import FreePhonemeTile, {
+  FreeSamplesButton,
+  type FreePreviewActivity,
+} from './FreePhonemeTile';
 
 // Library card colors: light blue fill and border
 // for available entries, coral underline on the target sound. "Em breve"
@@ -67,11 +69,14 @@ export default function PhonemeLibrary({
   const hasComingSoon =
     groups.some((g) => g.entries.some((e) => !counts.get(e.code))) ||
     languageTopics.some((t) => t.count === 0);
-  const freeLabel = `/${FREE_PHONEME.toLowerCase()}/`;
+  // Tiles of the phonemes in this month's free list are highlighted.
+  const freePhonemes = new Set(
+    freePreview.map((a) => a.phoneme).filter(Boolean)
+  );
 
   const renderEntry = (entry: PhonemeEntry) => {
     const count = counts.get(entry.code) ?? 0;
-    if (freeAvailable && entry.code === FREE_PHONEME) {
+    if (freeAvailable && freePhonemes.has(entry.code)) {
       return (
         <FreePhonemeTile
           phoneme={entry.code}
@@ -162,12 +167,14 @@ export default function PhonemeLibrary({
             <span className="font-semibold text-neutral-900">
               Experimente grátis:
             </span>{' '}
-            clique no{' '}
-            <span className="font-mono font-semibold text-coral-800">
-              {freeLabel}
-            </span>{' '}
-            para ver {FREE_SAMPLE_COUNT} atividades que você baixa grátis ao
-            criar sua conta. As demais fazem parte da assinatura.
+            {freeOfferText(freePreview)} para quem cria uma conta.{' '}
+            <FreeSamplesButton
+              activities={freePreview}
+              className="font-semibold text-coral-800 underline underline-offset-4"
+            >
+              Ver as atividades
+            </FreeSamplesButton>
+            . As demais fazem parte da assinatura.
           </p>
         ) : (
           hasComingSoon && (

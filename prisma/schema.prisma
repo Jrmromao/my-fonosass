@@ -32,28 +32,29 @@ model User {
 }
 
 model Activity {
-  id              String                 @id @default(cuid())
-  name            String
-  description     String
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  ageRange        AgeRange
-  createdById     String
-  difficulty      ActivityDifficulty
-  isPublic        Boolean                @default(false)
-  type            ActivityType
-  phoneme         String                 @default("")
-  status          ActivityStatus         @default(DRAFT)
-  approvalToken   String?
-  reviewedById    String?
-  reviewedAt      DateTime?
-  reviewFeedback  String?
-  createdBy       User                   @relation("ActivityCreator", fields: [createdById], references: [id])
-  reviewedBy      User?                  @relation("ActivityReviewer", fields: [reviewedById], references: [id])
-  files           ActivityFile[]
-  downloadHistory DownloadHistory[]
-  categories      ActivityCategory[]     @relation("ActivityToActivityCategory")
-  downloadStats   ActivityDownloadStat[]
+  id                   String                 @id @default(cuid())
+  name                 String
+  description          String
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  ageRange             AgeRange
+  createdById          String
+  difficulty           ActivityDifficulty
+  isPublic             Boolean                @default(false)
+  type                 ActivityType
+  phoneme              String                 @default("")
+  status               ActivityStatus         @default(DRAFT)
+  approvalToken        String?
+  reviewedById         String?
+  reviewedAt           DateTime?
+  reviewFeedback       String?
+  createdBy            User                   @relation("ActivityCreator", fields: [createdById], references: [id])
+  reviewedBy           User?                  @relation("ActivityReviewer", fields: [reviewedById], references: [id])
+  files                ActivityFile[]
+  downloadHistory      DownloadHistory[]
+  categories           ActivityCategory[]     @relation("ActivityToActivityCategory")
+  downloadStats        ActivityDownloadStat[]
+  freeSampleSelections FreeSampleSelection[]
 
   @@index([isPublic, createdAt])
   @@index([type, difficulty])
@@ -537,4 +538,21 @@ model AccountDeletion {
 
   @@index([deletedAt])
   @@map("account_deletions")
+}
+
+/// Admin choice of the free activities for a month (overrides the automatic
+/// monthly rotation). No rows for a month = automatic rotation.
+model FreeSampleSelection {
+  id          String   @id @default(cuid())
+  /// First day of the month, 00:00 UTC.
+  month       DateTime
+  position    Int
+  activityId  String
+  createdById String?
+  createdAt   DateTime @default(now())
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([month, position])
+  @@unique([month, activityId])
+  @@map("free_sample_selections")
 }

@@ -1,7 +1,7 @@
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
-import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
-import { FREE_PHONEME, PRO_PLAN, formatBRL } from '@/lib/pricing';
+import { freeOfferText } from '@/lib/freeOffer';
+import { PRO_PLAN, formatBRL } from '@/lib/pricing';
 import { ArrowRight, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -53,11 +53,13 @@ export default function HomeLanding({
   freePreview,
   totalActivities,
 }: HomeLandingProps) {
-  const freeLabel = `/${FREE_PHONEME.toLowerCase()}/`;
+  // "2 atividades do fonema /s/ grátis" (default) or "2 atividades grátis"
+  // when an admin chose other activities for the month.
+  const freeText = freeOfferText(freePreview);
   // The free phoneme is only promoted once it has published activities.
-  // Free offer: FREE_SAMPLE_COUNT activities of FREE_PHONEME, after sign-up.
+  // Free offer: this month's free activities, after creating an account.
   const freeAvailable = freePreview.length > 0;
-  const faqs = buildFaqs(freeAvailable, freeLabel);
+  const faqs = buildFaqs(freeAvailable, freeText);
 
   return (
     <div className={`min-h-screen bg-violet-100 ${INK_CLASS}`}>
@@ -87,20 +89,25 @@ export default function HomeLanding({
                   className="text-sm font-medium text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-700"
                 >
                   {freeAvailable
-                    ? `Experimentar o ${freeLabel} grátis`
+                    ? 'Ver as atividades grátis'
                     : 'Ver a biblioteca'}
                 </Link>
               </div>
               <p className="mt-5 text-sm text-neutral-600">
-                {freeAvailable &&
-                  `${FREE_SAMPLE_COUNT} atividades do fonema ${freeLabel} grátis ao criar sua conta. `}
-                Assinatura a partir de {formatBRL(PRO_PLAN.yearlyPrice / 12)}{' '}
+                {freeAvailable && `${freeText} ao criar sua conta. `}
+                Assinatura a partir de {formatBRL(
+                  PRO_PLAN.yearlyPrice / 12
+                )}{' '}
                 por mês no plano anual.
               </p>
             </div>
 
             <div className="lg:col-span-5">
-              <SheetStack samples={samples} />
+              {freePreview.some((a) => a.imageFileId) ? (
+                <FreeSheetStack activities={freePreview} />
+              ) : (
+                <SheetStack samples={samples} />
+              )}
             </div>
           </div>
         </section>
@@ -281,8 +288,39 @@ function PlanFeatures({ features }: { features: readonly string[] }) {
   );
 }
 
+// Hero with the real images of the free activities (the only ones that can
+// be shown publicly, see /api/free-preview). Two sheets, overlapping.
+function FreeSheetStack({ activities }: { activities: FreePreviewActivity[] }) {
+  const shown = activities.filter((a) => a.imageFileId).slice(0, 2);
+  const placements = [
+    'left-0 top-6 rotate-[-4deg]',
+    'right-0 top-24 rotate-[3deg]',
+  ];
+  return (
+    <div className="relative mx-auto h-[24rem] sm:h-[30rem] max-w-lg">
+      {shown.map((a, i) => (
+        <figure
+          key={a.id}
+          className={`absolute w-[62%] overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.25)] ${placements[i]}`}
+          style={{ zIndex: i + 1 }}
+        >
+          <img
+            src={`/api/free-preview/${a.imageFileId}`}
+            alt={`Atividade grátis: ${a.title}, ${a.subject}`}
+            className="block w-full"
+            loading={i === 0 ? 'eager' : 'lazy'}
+          />
+          <span className="absolute left-2 top-2 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+            Grátis
+          </span>
+        </figure>
+      ))}
+    </div>
+  );
+}
+
 // Typographic stand-in for printed activity sheets, built from real catalog
-// entries. Replace with real thumbnails once curated preview images exist.
+// entries. Used only while there are no free activities with an image.
 function SheetStack({ samples }: { samples: SampleActivity[] }) {
   if (samples.length === 0) return null;
 
@@ -334,7 +372,7 @@ function SheetStack({ samples }: { samples: SampleActivity[] }) {
   );
 }
 
-function buildFaqs(freeAvailable: boolean, freeLabel: string) {
+function buildFaqs(freeAvailable: boolean, freeText: string) {
   return [
     {
       question: 'Quem cria os materiais?',
@@ -350,7 +388,7 @@ function buildFaqs(freeAvailable: boolean, freeLabel: string) {
       ? [
           {
             question: 'Posso experimentar antes de assinar?',
-            answer: `Sim. Ao criar sua conta você baixa grátis ${FREE_SAMPLE_COUNT} atividades do fonema ${freeLabel}, sem cartão de crédito. As demais atividades fazem parte da assinatura.`,
+            answer: `Sim. Com uma conta grátis você baixa ${freeText}, sem cartão de crédito. As demais atividades fazem parte da assinatura.`,
           },
         ]
       : []),

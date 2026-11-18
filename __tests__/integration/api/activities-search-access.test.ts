@@ -7,6 +7,8 @@ jest.mock('@clerk/nextjs/server', () => ({ auth: jest.fn() }));
 
 jest.mock('@/app/db', () => ({
   prisma: {
+    // No admin choice for the month: automatic rotation (lib/access.ts).
+    freeSampleSelection: { findMany: jest.fn(async () => []) },
     activity: { findMany: jest.fn(), count: jest.fn() },
     user: { findUnique: jest.fn() },
     subscription: { findUnique: jest.fn() },
@@ -44,19 +46,27 @@ const search = async (subscription: unknown) => {
   prisma.user.findUnique.mockResolvedValue({ id: 'u1', role: 'USER' });
   prisma.subscription.findUnique.mockResolvedValue(subscription);
   prisma.activity.count.mockResolvedValue(2);
-  // 1st findMany: free samples; 2nd: the listing; the rest: filter options.
+  // Free samples (lib/access.ts): the /s/ default (ids only) and the
+  // details of those ids; then the listing and the filter options.
+  const freeRow = {
+    id: 'act-free',
+    name: 'Grátis',
+    phoneme: 'S',
+    type: 'SPEECH',
+    ageRange: 'PRESCHOOL',
+    difficulty: 'BEGINNER',
+    files: [{ id: 'f2' }],
+  };
   prisma.activity.findMany.mockImplementation(async (args: unknown) => {
-    const a = args as { where?: { phoneme?: string }; take?: number };
-    if (a.where?.phoneme === 'S' && a.take === 2) {
-      return [
-        {
-          id: 'act-free',
-          name: 'Grátis',
-          ageRange: 'PRESCHOOL',
-          difficulty: 'BEGINNER',
-          files: [{ id: 'f2' }],
-        },
-      ];
+    const a = args as {
+      where?: { id?: { in?: string[] } };
+      select?: Record<string, unknown>;
+      take?: number;
+    };
+    if (a.where?.id?.in) return [freeRow];
+    // Default free samples: /s/ ids only.
+    if (a.select && Object.keys(a.select).length === 1 && a.select.id) {
+      return [{ id: 'act-free' }];
     }
     if (a.take !== undefined) return listed;
     return [];

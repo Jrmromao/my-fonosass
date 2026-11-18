@@ -1,6 +1,6 @@
 import { prisma } from '@/app/db';
+import { getEffectiveAccess } from '@/lib/auth/viewAs';
 import { getOrCreateDbUser } from '@/lib/auth/dbUser';
-import { hasActiveSubscription } from '@/lib/access';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -30,13 +30,14 @@ export async function GET() {
       );
     }
 
-    const [subscription, active] = await Promise.all([
+    const [subscription, access] = await Promise.all([
       prisma.subscription.findUnique({
         where: { userId: user.id },
         select: { status: true, currentPeriodEnd: true, paymentId: true },
       }),
-      hasActiveSubscription(user.id),
+      getEffectiveAccess(user),
     ]);
+    const active = access.subscribed;
 
     let cancelAtPeriodEnd = false;
     if (active && subscription?.paymentId) {
@@ -55,7 +56,8 @@ export async function GET() {
         success: true,
         data: {
           subscribed: active,
-          isAdmin: user.role === 'ADMIN',
+          isAdmin: access.isAdmin,
+          viewAs: access.viewAs,
           status: subscription?.status ?? null,
           currentPeriodEnd: subscription?.currentPeriodEnd ?? null,
           cancelAtPeriodEnd,

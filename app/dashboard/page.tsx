@@ -9,7 +9,6 @@ import {
 } from '@/lib/activityLabels';
 import type { LibraryResponse } from '@/lib/activityLibrary';
 import { libraryHref } from '@/lib/libraryUrl';
-import { FREE_PHONEME } from '@/lib/pricing';
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -203,10 +202,7 @@ export default function Dashboard() {
                 label="Biblioteca de atividades"
               />
               {s && !s.subscribed && !isAdmin && (
-                <QuickLink
-                  href={libraryHref({ phoneme: FREE_PHONEME })}
-                  label={`Amostras grátis do ${phonemeLabel(FREE_PHONEME)}`}
-                />
+                <QuickLink href={libraryHref()} label="Atividades grátis" />
               )}
               <QuickLink
                 href="/dashboard/profile?tab=assinatura"

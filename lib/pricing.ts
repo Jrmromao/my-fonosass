@@ -13,10 +13,6 @@ export const PRO_PLAN = {
   ],
 } as const;
 
-// Phoneme of the free samples (see FREE_SAMPLE_COUNT in lib/access-constants).
-// Must match Activity.phoneme values in the DB (uppercase, e.g. 'S').
-export const FREE_PHONEME = 'S';
-
 export function formatBRL(value: number): string {
   return value.toLocaleString('pt-BR', {
     style: 'currency',

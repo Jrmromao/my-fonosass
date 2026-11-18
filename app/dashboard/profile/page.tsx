@@ -1,7 +1,9 @@
 'use client';
 
 import { SubscriptionPanel } from '@/components/dashboard/SubscriptionPanel';
+import { AdminPanel } from '@/components/settings/AdminPanel';
 import { PrivacyPanel } from '@/components/settings/PrivacyPanel';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -60,7 +62,19 @@ const GROUPS: { title: string; sections: Section[] }[] = [
   },
 ];
 
-const SECTIONS = GROUPS.flatMap((g) => g.sections);
+// Admin only (menu role, which "Ver como" downgrades; the APIs check the
+// real role on the server).
+const ADMIN_GROUP = {
+  title: 'Administração',
+  sections: [
+    {
+      value: 'administracao',
+      label: 'Administração',
+      title: 'Administração',
+      description: 'Ferramentas de teste e atividades grátis do mês.',
+    },
+  ],
+};
 
 export default function ProfilePage() {
   return (
@@ -74,7 +88,11 @@ function ProfileSettings() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requested = searchParams.get('tab');
-  const current = SECTIONS.find((s) => s.value === requested) ?? SECTIONS[0];
+  const { role } = useUserRole();
+  const isAdmin = role === 'ADMIN';
+  const groups = isAdmin ? [...GROUPS, ADMIN_GROUP] : GROUPS;
+  const visible = groups.flatMap((g) => g.sections);
+  const current = visible.find((s) => s.value === requested) ?? visible[0];
 
   const setSection = (value: string) => {
     const qs = value === 'conta' ? '' : `?tab=${value}`;
@@ -97,7 +115,7 @@ function ProfileSettings() {
           aria-label="Seções de configurações"
           className="md:w-52 md:shrink-0 md:border-r md:border-neutral-100 md:pr-6"
         >
-          {GROUPS.map((group) => (
+          {groups.map((group) => (
             <div key={group.title} className="mb-4 last:mb-0">
               <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-neutral-600">
                 {group.title}
@@ -141,6 +159,7 @@ function ProfileSettings() {
           )}
           {current.value === 'assinatura' && <SubscriptionPanel />}
           {current.value === 'privacidade' && <PrivacyPanel />}
+          {current.value === 'administracao' && isAdmin && <AdminPanel />}
         </section>
       </div>
     </div>

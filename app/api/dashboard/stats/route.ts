@@ -1,6 +1,6 @@
 import { prisma } from '@/app/db';
+import { getEffectiveAccess } from '@/lib/auth/viewAs';
 import { getOrCreateDbUser } from '@/lib/auth/dbUser';
-import { hasActiveSubscription } from '@/lib/access';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
@@ -17,7 +17,8 @@ export async function GET() {
     const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const user = await getOrCreateDbUser(userId);
-    const isAdmin = user?.role === 'ADMIN';
+    const access = user ? await getEffectiveAccess(user) : null;
+    const isAdmin = !!access?.isAdmin;
 
     const [total, phonemes, pending, downloads, subscribed, newThisWeek] =
       await Promise.all([
@@ -37,7 +38,7 @@ export async function GET() {
               where: { userId: user.id, downloadedAt: { gte: startOfMonth } },
             })
           : Promise.resolve(0),
-        user ? hasActiveSubscription(user.id) : Promise.resolve(false),
+        Promise.resolve(!!access?.subscribed),
         prisma.activity.count({
           where: { status: 'PUBLISHED', createdAt: { gte: startOfWeek } },
         }),

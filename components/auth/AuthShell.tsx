@@ -1,3 +1,5 @@
+import { getFreeSamples, type FreeSample } from '@/lib/access';
+import { AGE_LABELS, label, subjectLabel } from '@/lib/activityLabels';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -94,7 +96,25 @@ export default function AuthShell({
   );
 }
 
-function BrandPanel() {
+/** This month's first free activity, or null (the panel then shows a
+ * placeholder sheet). Never breaks the auth page if the database fails. */
+async function showcaseSample(): Promise<FreeSample | null> {
+  try {
+    return (await getFreeSamples())[0] ?? null;
+  } catch (error) {
+    console.error('AuthShell: free samples unavailable', error);
+    return null;
+  }
+}
+
+/** "Fonema /s/" for /x/ notation; named entries and categories as is. */
+function captionSubject(sample: FreeSample): string {
+  const subject = subjectLabel(sample.phoneme, sample.type);
+  return subject.startsWith('/') ? `Fonema ${subject}` : subject;
+}
+
+async function BrandPanel() {
+  const sample = await showcaseSample();
   return (
     <aside className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen flex-col justify-between overflow-hidden bg-violet-100 px-12 py-10">
       <Link href="/" className="flex items-center gap-3 self-start">
@@ -110,37 +130,56 @@ function BrandPanel() {
       </Link>
 
       <div className="mx-auto w-full max-w-md">
-        {/* Placeholder sheet. Replace with an image of one of our own
-            activities (never third-party material). */}
-        <div className="flex justify-center" aria-hidden>
-          <div className="w-52 xl:w-60 rotate-[-3deg] rounded-sm border border-neutral-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.25)]">
-            <div className="flex items-center justify-between text-[11px] text-neutral-600">
-              <span className="font-mono text-sm font-semibold text-neutral-900">
-                /s/
-              </span>
-              <span>Pré-escolar</span>
+        {sample ? (
+          // This month's free activity (same list as downloads and the
+          // landing page), so the panel shows real material.
+          <figure className="flex flex-col items-center">
+            <div className="w-56 xl:w-64 rotate-[-3deg] overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.25)]">
+              <img
+                src={`/api/free-preview/${sample.imageFileId}`}
+                alt={`Atividade ${sample.name}`}
+                className="block w-full"
+              />
             </div>
-            <p className="mt-4 font-display text-lg font-bold leading-tight text-neutral-900">
-              Atividade de exemplo
-            </p>
-            <p className="text-xs text-neutral-600">Iniciante</p>
-            <div className="mt-5 grid grid-cols-3 gap-2">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="aspect-square rounded border border-dashed border-neutral-300"
-                />
-              ))}
+            <figcaption className="mt-5 text-center text-sm text-neutral-600">
+              <span className="font-semibold text-coral-800">
+                Grátis com sua conta:
+              </span>{' '}
+              {captionSubject(sample)} · {label(AGE_LABELS, sample.ageRange)}
+            </figcaption>
+          </figure>
+        ) : (
+          // No free activity yet: placeholder sheet.
+          <div className="flex justify-center" aria-hidden>
+            <div className="w-52 xl:w-60 rotate-[-3deg] rounded-sm border border-neutral-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.25)]">
+              <div className="flex items-center justify-between text-[11px] text-neutral-600">
+                <span className="font-mono text-sm font-semibold text-neutral-900">
+                  /s/
+                </span>
+                <span>Pré-escolar</span>
+              </div>
+              <p className="mt-4 font-display text-lg font-bold leading-tight text-neutral-900">
+                Atividade de exemplo
+              </p>
+              <p className="text-xs text-neutral-600">Iniciante</p>
+              <div className="mt-5 grid grid-cols-3 gap-2">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded border border-dashed border-neutral-300"
+                  />
+                ))}
+              </div>
+              <div className="mt-4 space-y-2">
+                <div className="h-px bg-neutral-200" />
+                <div className="h-px bg-neutral-200" />
+              </div>
+              <p className="mt-4 text-[10px] text-neutral-400">
+                almanaquedafala.com.br
+              </p>
             </div>
-            <div className="mt-4 space-y-2">
-              <div className="h-px bg-neutral-200" />
-              <div className="h-px bg-neutral-200" />
-            </div>
-            <p className="mt-4 text-[10px] text-neutral-400">
-              almanaquedafala.com.br
-            </p>
           </div>
-        </div>
+        )}
 
         <p className="mt-10 font-display text-2xl font-bold leading-snug">
           Atividades de fonoaudiologia infantil, organizadas por fonema.

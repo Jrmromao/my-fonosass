@@ -1,7 +1,8 @@
 import { prisma } from '@/app/db';
+import { getEffectiveAccess } from '@/lib/auth/viewAs';
 import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { recordAnonymousDownload } from '@/lib/stats/downloadStats';
-import { hasActiveSubscription, isFreeSample } from '@/lib/access';
+import { isFreeSample } from '@/lib/access';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
@@ -80,7 +81,9 @@ export async function resolveFileDownload(input: {
       },
     });
 
-    const isAdmin = user.role === 'ADMIN';
+    // Effective access: "Ver como" lets admins test as a user.
+    const access = await getEffectiveAccess(user);
+    const isAdmin = access.isAdmin;
 
     // Unpublished content (drafts, pending, rejected) is only for admins.
     // Same message as "missing" so ids can't be probed.
@@ -93,9 +96,7 @@ export async function resolveFileDownload(input: {
     }
 
     const allowed =
-      isAdmin ||
-      (await hasActiveSubscription(user.id)) ||
-      (await isFreeSample(file.activityId));
+      isAdmin || access.subscribed || (await isFreeSample(file.activityId));
 
     if (!allowed) {
       return {

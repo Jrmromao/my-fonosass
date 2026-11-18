@@ -6,6 +6,7 @@ import HomeLanding, {
 } from '@/components/landing/HomeLanding';
 import { type FreePreviewActivity } from '@/components/landing/FreePhonemeTile';
 import { getFreeSamples } from '@/lib/access';
+import { TYPE_LABELS, label, phonemeLabel } from '@/lib/activityLabels';
 import { LANGUAGE_TOPICS, PHONEMES } from '@/lib/phonemes';
 import { ActivityDifficulty, ActivityStatus, AgeRange } from '@prisma/client';
 
@@ -65,7 +66,8 @@ async function getCatalog(): Promise<{
         orderBy: { createdAt: 'asc' },
         take: 30,
       }),
-      // Same free samples the download rules allow (lib/access.ts).
+      // This month's free samples, the same the download rules allow
+      // (lib/access.ts). Refreshed when an admin changes them.
       getFreeSamples(),
       prisma.activity.groupBy({
         by: ['type'],
@@ -86,6 +88,10 @@ async function getCatalog(): Promise<{
     const freePreview: FreePreviewActivity[] = freeRows.map((a) => ({
       id: a.id,
       title: cleanTitle(a.name),
+      phoneme: a.phoneme,
+      subject: a.phoneme
+        ? `Fonema ${phonemeLabel(a.phoneme)}`
+        : label(TYPE_LABELS, a.type),
       ageLabel: AGE_LABELS[a.ageRange],
       difficultyLabel: DIFFICULTY_LABELS[a.difficulty],
       imageFileId: a.imageFileId,

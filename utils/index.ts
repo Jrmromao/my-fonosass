@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/app/db';
+import { getEffectiveIsAdmin } from '@/lib/auth/viewAs';
 import { auth } from '@clerk/nextjs/server';
 
 type UserRole = 'ADMIN' | 'USER' | 'GUEST';
@@ -21,7 +22,8 @@ export async function getCurrentUserRole(): Promise<UserRole> {
     });
     if (!user) return 'GUEST';
 
-    return user.role === 'ADMIN' ? 'ADMIN' : 'USER';
+    // Menu role: an admin testing with "Ver como" sees the user menu.
+    return (await getEffectiveIsAdmin(user)) ? 'ADMIN' : 'USER';
   } catch (error) {
     console.error('Error getting user role:', error);
     return 'GUEST';

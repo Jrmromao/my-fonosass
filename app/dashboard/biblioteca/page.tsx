@@ -47,7 +47,6 @@ import {
   parseLibraryParams,
 } from '@/lib/libraryUrl';
 import { PHONEME_GROUPS } from '@/lib/phonemes';
-import { FREE_PHONEME } from '@/lib/pricing';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ChevronLeft,
@@ -266,9 +265,8 @@ export default function LibraryPage() {
         {canDownloadAll === false && (
           <div className="mx-6 mb-3 flex flex-col gap-2 rounded-md border border-coral-200 bg-coral-50 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
             <p className="text-neutral-700">
-              Você pode baixar grátis {FREE_SAMPLE_COUNT} atividades do{' '}
-              {phonemeLabel(FREE_PHONEME)}. Assine para baixar toda a
-              biblioteca.
+              Este mês você baixa grátis as {FREE_SAMPLE_COUNT} atividades com o
+              selo &ldquo;Grátis&rdquo;. Assine para baixar toda a biblioteca.
             </p>
             <Button
               size="sm"
