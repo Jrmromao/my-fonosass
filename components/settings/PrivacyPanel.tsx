@@ -39,6 +39,7 @@ interface SubscriptionInfo {
 const DELETE_ERRORS: Record<string, string> = {
   ACCOUNT_HAS_CONTENT: `Sua conta tem conteúdo publicado e não pode ser excluída por aqui. Escreva para ${DPO_EMAIL}.`,
   BILLING_CANCEL_FAILED: `Não conseguimos cancelar a sua assinatura, então nada foi excluído. Tente de novo ou escreva para ${DPO_EMAIL}.`,
+  DELETION_FLAG_FAILED: `Não foi possível iniciar a exclusão agora, então nada foi excluído. Tente de novo ou escreva para ${DPO_EMAIL}.`,
   LOGIN_DELETE_FAILED: `Seus dados foram excluídos, mas o seu login ainda existe. Escreva para ${DPO_EMAIL} para concluir.`,
 };
 
@@ -313,7 +314,7 @@ export function PrivacyPanel() {
           />
           <LegalRow
             term="Retenção"
-            detail="Guardamos seus dados enquanto a conta existir. Ao excluí-la, eles são apagados. Registros de pagamento podem ser mantidos pelo prazo que a lei exige."
+            detail="Guardamos seus dados enquanto a conta existir. Ao excluí-la, eles são apagados. Mantemos apenas estatísticas anônimas, como o total de downloads de cada atividade por mês, que não identificam ninguém. Registros de pagamento ficam com o processador de pagamentos pelo prazo que a lei exige."
           />
           <LegalRow
             term="Correção de dados"
@@ -359,7 +360,8 @@ export function PrivacyPanel() {
               <div className="space-y-2 text-sm text-neutral-600">
                 <p>
                   Vamos apagar a sua conta, o histórico de downloads e as suas
-                  preferências. Você perde o acesso na hora.
+                  preferências. Você perde o acesso na hora. Só mantemos
+                  contagens anônimas de downloads, que não identificam você.
                 </p>
                 {subscription?.data?.subscribed && (
                   <p className="font-medium text-neutral-900">

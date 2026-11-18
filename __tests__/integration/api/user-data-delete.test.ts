@@ -1,10 +1,17 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 const mockDeleteUser = jest.fn<(id: string) => Promise<unknown>>();
+const mockUpdateMetadata =
+  jest.fn<(id: string, params: unknown) => Promise<unknown>>();
 
 jest.mock('@clerk/nextjs/server', () => ({
   auth: jest.fn(),
-  clerkClient: jest.fn(async () => ({ users: { deleteUser: mockDeleteUser } })),
+  clerkClient: jest.fn(async () => ({
+    users: {
+      deleteUser: mockDeleteUser,
+      updateUserMetadata: mockUpdateMetadata,
+    },
+  })),
 }));
 jest.mock('@/lib/security/securityMiddleware', () => ({
   SecurityMiddleware: { apply: jest.fn() },
@@ -27,6 +34,7 @@ jest.mock('@/app/db', () => {
       resourceRating: model(),
       dataRetentionLog: model(),
       subscription: model(),
+      accountDeletion: { create: jest.fn() },
       $transaction: jest.fn(),
     },
   };
@@ -66,6 +74,7 @@ describe('POST /api/user-data/delete', () => {
     m().prisma.$transaction.mockResolvedValue([]);
     m().stripe.subscriptions.cancel.mockResolvedValue({});
     mockDeleteUser.mockResolvedValue({});
+    mockUpdateMetadata.mockResolvedValue({});
   });
 
   it('returns the security response when CSRF fails', async () => {
@@ -113,6 +122,45 @@ describe('POST /api/user-data/delete', () => {
       Object.assign(new Error('gone'), { code: 'resource_missing' })
     );
     expect((await call()).status).toBe(200);
+  });
+
+  it('flags the Clerk user before deleting and logs the deletion anonymously', async () => {
+    const res = await call();
+    expect(res.status).toBe(200);
+    expect(mockUpdateMetadata).toHaveBeenCalledWith('clerk-1', {
+      privateMetadata: { deletionRequestedAt: expect.any(String) },
+    });
+    // Flag is set before the data is erased.
+    expect(mockUpdateMetadata.mock.invocationCallOrder[0]).toBeLessThan(
+      m().prisma.$transaction.mock.invocationCallOrder[0]
+    );
+    expect(m().prisma.accountDeletion.create).toHaveBeenCalledWith({
+      data: { hadSubscription: true },
+    });
+    // The anonymous record carries no identity.
+    const logged = JSON.stringify(
+      m().prisma.accountDeletion.create.mock.calls[0][0]
+    );
+    expect(logged).not.toMatch(/u1|clerk-1|@/);
+  });
+
+  it('deletes nothing when the Clerk flag cannot be set', async () => {
+    mockUpdateMetadata.mockRejectedValueOnce(new Error('clerk down'));
+    const res = await call();
+    expect(res.status).toBe(502);
+    expect((await res.json()).error).toBe('DELETION_FLAG_FAILED');
+    expect(m().stripe.subscriptions.cancel).not.toHaveBeenCalled();
+    expect(m().prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('clears the flag when the Stripe cancellation fails', async () => {
+    m().stripe.subscriptions.cancel.mockRejectedValue(
+      Object.assign(new Error('boom'), { code: 'api_error' })
+    );
+    await call();
+    expect(mockUpdateMetadata).toHaveBeenLastCalledWith('clerk-1', {
+      privateMetadata: { deletionRequestedAt: null },
+    });
   });
 
   it('reports a login failure after the data is gone', async () => {

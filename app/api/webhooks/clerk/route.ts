@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { DELETION_FLAG } from '@/lib/auth/dbUser';
 import { Webhook } from 'svix';
 import { WebhookEvent, clerkClient } from '@clerk/nextjs/server';
 import { Prisma } from '@prisma/client';
@@ -299,6 +300,8 @@ async function processWebhook(req: Request): Promise<NextResponse> {
           );
         }
 
+        if (evt.data.private_metadata?.[DELETION_FLAG]) break;
+
         await createOrUpdateUser(id, primaryEmail, first_name, last_name);
 
         // Send welcome email
@@ -335,6 +338,10 @@ async function processWebhook(req: Request): Promise<NextResponse> {
             { status: 400 }
           );
         }
+
+        // Account being erased (user-data/delete sets this flag, which is
+        // itself what triggers this event): never recreate the row.
+        if (evt.data.private_metadata?.[DELETION_FLAG]) break;
 
         await createOrUpdateUser(id, primaryEmail, first_name, last_name);
         break;

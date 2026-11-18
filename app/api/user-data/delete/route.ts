@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { DELETION_FLAG } from '@/lib/auth/dbUser';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { stripe } from '@/lib/stripe';
 import { auth, clerkClient } from '@clerk/nextjs/server';
@@ -10,8 +11,9 @@ const bodySchema = z.object({ confirmDeletion: z.literal(true) });
 const NO_STORE = { 'Cache-Control': 'private, no-store' };
 
 /**
- * LGPD erasure: cancels the Stripe subscription, deletes the user's rows and
- * then the Clerk login. Accounts that authored content (admins) are refused:
+ * LGPD erasure: flags the Clerk user, cancels the Stripe subscription,
+ * deletes the user's rows (keeping only anonymous counters and an anonymous
+ * deletion record) and then the Clerk login. Accounts that authored content (admins) are refused:
  * deleting them would delete the library, so they go through the DPO.
  */
 export async function POST(request: NextRequest) {
@@ -70,7 +72,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Stop billing first: if this fails, nothing has been deleted yet.
+    const clerk = await clerkClient();
+
+    // 1. Flag the Clerk user before touching data, so nothing can recreate
+    //    the row while (or after) it is erased: neither getOrCreateDbUser nor
+    //    the webhook's user.updated, which this very call triggers.
+    try {
+      await clerk.users.updateUserMetadata(clerkUserId, {
+        privateMetadata: { [DELETION_FLAG]: new Date().toISOString() },
+      });
+    } catch (error) {
+      console.error('Could not flag Clerk user for deletion:', error);
+      return NextResponse.json(
+        { error: 'DELETION_FLAG_FAILED' },
+        { status: 502, headers: NO_STORE }
+      );
+    }
+    const unflag = async () => {
+      try {
+        await clerk.users.updateUserMetadata(clerkUserId, {
+          privateMetadata: { [DELETION_FLAG]: null },
+        });
+      } catch (error) {
+        console.error('Could not clear the deletion flag:', error);
+      }
+    };
+
+    // 2. Stop billing: if this fails, nothing has been deleted yet.
     const subscriptionId = user.subscriptions?.paymentId;
     if (subscriptionId) {
       try {
@@ -79,6 +107,7 @@ export async function POST(request: NextRequest) {
         const code = (error as { code?: string }).code;
         if (code !== 'resource_missing') {
           console.error('Stripe cancel failed during account deletion:', error);
+          await unflag();
           return NextResponse.json(
             { error: 'BILLING_CANCEL_FAILED' },
             { status: 502, headers: NO_STORE }
@@ -87,6 +116,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 3. Erase every row tied to the user, in one transaction.
     await prisma.$transaction([
       prisma.consentAuditLog.deleteMany({
         where: { consentRecord: { userId: user.id } },
@@ -101,11 +131,17 @@ export async function POST(request: NextRequest) {
       prisma.dataRetentionLog.deleteMany({ where: { userId: user.id } }),
       prisma.subscription.deleteMany({ where: { userId: user.id } }),
       prisma.user.delete({ where: { id: user.id } }),
+      // Anonymous proof of the deletion (no id, email or name).
+      prisma.accountDeletion.create({
+        data: { hadSubscription: !!subscriptionId },
+      }),
     ]);
+    // Anonymous monthly download counters (ActivityDownloadStat) are kept:
+    // they never referenced the user.
 
-    // Last step: the login. Data is already gone if this fails.
+    // 4. Last step: the login. Data is already gone if this fails; the flag
+    //    stops it from being recreated until support finishes the deletion.
     try {
-      const clerk = await clerkClient();
       await clerk.users.deleteUser(clerkUserId);
     } catch (error) {
       console.error('Clerk user deletion failed after data deletion:', error);

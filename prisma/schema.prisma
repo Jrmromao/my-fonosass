@@ -32,27 +32,28 @@ model User {
 }
 
 model Activity {
-  id              String             @id @default(cuid())
+  id              String                 @id @default(cuid())
   name            String
   description     String
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
   ageRange        AgeRange
   createdById     String
   difficulty      ActivityDifficulty
-  isPublic        Boolean            @default(false)
+  isPublic        Boolean                @default(false)
   type            ActivityType
-  phoneme         String             @default("")
-  status          ActivityStatus     @default(DRAFT)
+  phoneme         String                 @default("")
+  status          ActivityStatus         @default(DRAFT)
   approvalToken   String?
   reviewedById    String?
   reviewedAt      DateTime?
   reviewFeedback  String?
-  createdBy       User               @relation("ActivityCreator", fields: [createdById], references: [id])
-  reviewedBy      User?              @relation("ActivityReviewer", fields: [reviewedById], references: [id])
+  createdBy       User                   @relation("ActivityCreator", fields: [createdById], references: [id])
+  reviewedBy      User?                  @relation("ActivityReviewer", fields: [reviewedById], references: [id])
   files           ActivityFile[]
   downloadHistory DownloadHistory[]
-  categories      ActivityCategory[] @relation("ActivityToActivityCategory")
+  categories      ActivityCategory[]     @relation("ActivityToActivityCategory")
+  downloadStats   ActivityDownloadStat[]
 
   @@index([isPublic, createdAt])
   @@index([type, difficulty])
@@ -509,4 +510,31 @@ enum ResourceType {
   WORKSHEET
   IMAGE
   INTERACTIVE
+}
+
+/// Anonymous download counts per activity and month (no user link, LGPD
+/// Art. 12). Incremented on every download, so reports survive account
+/// deletion, which erases the per-user DownloadHistory.
+model ActivityDownloadStat {
+  id         String   @id @default(cuid())
+  activityId String
+  /// First day of the month, 00:00 UTC.
+  month      DateTime
+  count      Int      @default(0)
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, month])
+  @@index([month])
+  @@map("activity_download_stats")
+}
+
+/// One row per deleted account, with no identifying data: proof that the
+/// deletion was carried out, and a count for reporting.
+model AccountDeletion {
+  id              String   @id @default(cuid())
+  deletedAt       DateTime @default(now())
+  hadSubscription Boolean  @default(false)
+
+  @@index([deletedAt])
+  @@map("account_deletions")
 }

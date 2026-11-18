@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { hasActiveSubscription } from '@/lib/access';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@clerk/nextjs/server';
@@ -21,10 +22,7 @@ export async function GET() {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: userId },
-      select: { id: true, role: true },
-    });
+    const user = await getOrCreateDbUser(userId);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'User not found' },

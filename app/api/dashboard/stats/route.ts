@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { hasActiveSubscription } from '@/lib/access';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -15,10 +16,7 @@ export async function GET() {
 
     const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: userId },
-      select: { id: true, role: true },
-    });
+    const user = await getOrCreateDbUser(userId);
     const isAdmin = user?.role === 'ADMIN';
 
     const [total, phonemes, pending, downloads, subscribed, newThisWeek] =

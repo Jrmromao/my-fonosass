@@ -9,6 +9,7 @@ jest.mock('@/app/db', () => ({
     activity: { findMany: jest.fn() },
     subscription: { findUnique: jest.fn() },
     downloadHistory: { create: jest.fn() },
+    activityDownloadStat: { upsert: jest.fn() },
   },
 }));
 
@@ -88,6 +89,7 @@ describe('POST /api/files/[fileId]/download', () => {
     expect(res.status).toBe(403);
     expect(json.requiresSubscription).toBe(true);
     expect(mocks().prisma.downloadHistory.create).not.toHaveBeenCalled();
+    expect(mocks().prisma.activityDownloadStat.upsert).not.toHaveBeenCalled();
   });
 
   it('returns 404 when the file does not exist', async () => {
@@ -105,5 +107,11 @@ describe('POST /api/files/[fileId]/download', () => {
     expect(json.data.url).toBe('https://s3.example.com/signed-url');
     expect(res.headers.get('Cache-Control')).toBe('private, no-store');
     expect(mocks().prisma.downloadHistory.create).toHaveBeenCalled();
+    // Anonymous monthly counter, kept after account deletion.
+    expect(mocks().prisma.activityDownloadStat.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ activityId: 'act-paid', count: 1 }),
+      })
+    );
   });
 });

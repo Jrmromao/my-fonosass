@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { getFreeSamples, hasActiveSubscription } from '@/lib/access';
 import { auth } from '@clerk/nextjs/server';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -26,10 +27,7 @@ export async function GET(request: NextRequest) {
     // The "thumbnail" is a signed URL to the original file, so it is only
     // sent to users allowed to download it (subscribers, admins, free samples).
     // Others see the card without an image. TODO: real low-res previews.
-    const viewer = await prisma.user.findUnique({
-      where: { clerkUserId: userId },
-      select: { id: true, role: true },
-    });
+    const viewer = await getOrCreateDbUser(userId);
     const canDownloadAll =
       !!viewer &&
       (viewer.role === 'ADMIN' || (await hasActiveSubscription(viewer.id)));

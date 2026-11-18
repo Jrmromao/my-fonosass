@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { stripe } from '@/lib/stripe';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -41,9 +42,8 @@ export async function POST(req: Request) {
     }
 
     // Get user from your database
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: userId },
-    });
+    // Creates the row if the Clerk webhook missed this account.
+    const user = await getOrCreateDbUser(userId);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

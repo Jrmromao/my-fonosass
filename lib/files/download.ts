@@ -1,4 +1,6 @@
 import { prisma } from '@/app/db';
+import { getOrCreateDbUser } from '@/lib/auth/dbUser';
+import { recordAnonymousDownload } from '@/lib/stats/downloadStats';
 import { hasActiveSubscription, isFreeSample } from '@/lib/access';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -57,10 +59,7 @@ export async function resolveFileDownload(input: {
       };
     }
 
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId: userId },
-      select: { id: true, role: true },
-    });
+    const user = await getOrCreateDbUser(userId);
     if (!user) {
       return {
         success: false,
@@ -135,7 +134,8 @@ export async function resolveFileDownload(input: {
       { expiresIn: 300 }
     );
 
-    // Download history for the user's own records and analytics.
+    // Per-user history (the user's own records and LGPD export; erased with
+    // the account) and an anonymous monthly counter (kept for reporting).
     await prisma.downloadHistory.create({
       data: {
         userId: user.id,
@@ -144,6 +144,7 @@ export async function resolveFileDownload(input: {
         fileSize: file.sizeInBytes,
       },
     });
+    await recordAnonymousDownload(file.activityId);
 
     return {
       success: true,

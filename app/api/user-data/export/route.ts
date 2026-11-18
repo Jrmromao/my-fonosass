@@ -1,4 +1,5 @@
 import { prisma } from '@/app/db';
+import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
@@ -13,6 +14,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Make sure the row exists (webhook may have missed it), then load it.
+    await getOrCreateDbUser(clerkUserId);
     const user = await prisma.user.findUnique({
       where: { clerkUserId },
       include: {
