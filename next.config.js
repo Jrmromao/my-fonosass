@@ -84,7 +84,7 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; media-src 'self' blob: data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.clerk.accounts.dev https://challenges.cloudflare.com https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://api.openai.com https://texttospeech.googleapis.com https://*.clerk.accounts.dev https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com; worker-src 'self' blob:;",
+              "default-src 'self'; media-src 'self' blob: data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.clerk.accounts.dev https://challenges.cloudflare.com https://www.googletagmanager.com https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://api.openai.com https://texttospeech.googleapis.com https://*.clerk.accounts.dev https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.ingest.de.sentry.io; frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com; worker-src 'self' blob:;",
           },
           {
             key: 'X-DNS-Prefetch-Control',
@@ -128,4 +128,16 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+const { withSentryConfig } = require('@sentry/nextjs/config');
+
+// Sentry: server, edge and (consent-gated) browser error reporting.
+// No tunnel route, no replay. The browser posts to the EU ingest host (see CSP).
+// Source maps upload only when SENTRY_AUTH_TOKEN is set (Vercel build).
+module.exports = withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  telemetry: false,
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+});
