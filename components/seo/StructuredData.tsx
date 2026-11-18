@@ -1,3 +1,4 @@
+import { COMPANY } from '@/lib/legal/company';
 import Script from 'next/script';
 
 interface StructuredDataProps {
@@ -16,7 +17,7 @@ export default function StructuredData({
       url: 'https://almanaquedafala.com.br',
       logo: 'https://almanaquedafala.com.br/logo.png',
       description:
-        'Plataforma SaaS completa para fonoaudiólogos brasileiros. Gerencie pacientes, agendamentos, prontuários e exercícios terapêuticos.',
+        'Biblioteca de atividades de fonoaudiologia para imprimir, organizadas por fonema, para fonoaudiólogos.',
       foundingDate: '2024',
       areaServed: {
         '@type': 'Country',
@@ -56,7 +57,8 @@ export default function StructuredData({
         name: 'Almanaque da Fala',
         alternateName: 'Almanaque da Fala',
         url: 'https://www.almanaquedafala.com.br',
-        description: 'Plataforma SaaS completa para fonoaudiólogos brasileiros',
+        description:
+          'Atividades de fonoaudiologia para imprimir, organizadas por fonema',
         inLanguage: 'pt-BR',
         isAccessibleForFree: false,
         potentialAction: {
@@ -84,29 +86,9 @@ export default function StructuredData({
           ],
           contactPoint: {
             '@type': 'ContactPoint',
-            telephone: '+55-11-99999-9999',
+            email: COMPANY.contactEmail,
             contactType: 'customer service',
             availableLanguage: 'Portuguese',
-          },
-        },
-        application: {
-          '@type': 'SoftwareApplication',
-          name: 'Almanaque da Fala',
-          applicationCategory: 'HealthApplication',
-          operatingSystem: 'Web Browser',
-          offers: {
-            '@type': 'Offer',
-            price: '29.90',
-            priceCurrency: 'BRL',
-            priceValidUntil: '2025-12-31',
-            availability: 'https://schema.org/InStock',
-          },
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: '4.8',
-            reviewCount: '127',
-            bestRating: '5',
-            worstRating: '1',
           },
         },
       };
