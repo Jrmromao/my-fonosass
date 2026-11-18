@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import 'server-only';
 import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
 import { phonemeLabel } from '@/lib/activityLabels';
-import { FREE_PHONEME } from '@/lib/pricing';
+import { formatBRL, FREE_PHONEME } from '@/lib/pricing';
 import { EMAIL_LOGO_BASE64, EMAIL_LOGO_CID } from './emailLogo';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -20,6 +20,46 @@ function escapeHtml(value: string) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+/** "Olá, Ana!" from a full name; "Olá!" when there is no name. */
+function greeting(userName: string) {
+  const firstName = escapeHtml(userName.trim().split(/\s+/)[0] || '');
+  return `<p>Olá${firstName ? `, ${firstName}` : ''}!</p>`;
+}
+
+const SIGNATURE = `<p style="margin-top: 24px;">Um abraço,<br><strong>Eliane Mota</strong><br><span style="color: #64748b; font-size: 12px;">Fonoaudióloga, Almanaque da Fala</span></p>`;
+
+/** DD/MM/AAAA in Brasília time. */
+function formatDateBR(date: Date) {
+  return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+}
+
+/** Send from Eliane with the shared logo; logs Resend errors, never throws. */
+async function sendFromEliane(
+  label: string,
+  message: { to: string; subject: string; html: string }
+) {
+  try {
+    const { error } = await resend.emails.send({
+      from: WELCOME_FROM,
+      ...(REPLY_TO ? { replyTo: REPLY_TO } : {}),
+      attachments: LOGO_ATTACHMENTS,
+      ...message,
+    });
+    // The Resend SDK returns failures in `error` instead of throwing.
+    if (error) console.error(`${label} email failed:`, error);
+  } catch (error) {
+    console.error(`${label} email failed:`, error);
+  }
+}
+
+export interface SubscriptionEmailPlan {
+  /** Price in BRL, e.g. 39.9 */
+  amount: number;
+  interval: 'month' | 'year';
+  /** Next renewal date. */
+  renewsAt: Date;
 }
 
 // ─── Base Template ────────────────────────────────────────────
@@ -147,6 +187,62 @@ export class EmailService {
     } catch (error) {
       console.error('Welcome email failed:', error);
     }
+  }
+
+  /** Sent once when a checkout creates the Profissional subscription. */
+  static async sendSubscriptionConfirmed(
+    userEmail: string,
+    userName: string,
+    plan: SubscriptionEmailPlan
+  ) {
+    const period = plan.interval === 'year' ? 'anual' : 'mensal';
+    const per = plan.interval === 'year' ? 'ano' : 'mês';
+    await sendFromEliane('Subscription confirmed', {
+      to: userEmail,
+      subject: 'Sua assinatura do Almanaque da Fala está ativa',
+      html: baseTemplate(`
+        ${greeting(userName)}
+        <p>Obrigada por assinar o Almanaque da Fala! Agora a biblioteca inteira é sua: todas as atividades, de todos os fonemas, prontas para baixar e imprimir.</p>
+        ${infoBox(`
+          <strong>Sua assinatura</strong><br><br>
+          Plano Profissional ${period}: ${formatBRL(plan.amount)}/${per}<br>
+          Próxima renovação: ${formatDateBR(plan.renewsAt)}
+        `)}
+        <p>Toda semana eu adiciono materiais novos, e eles já entram no seu plano.</p>
+        ${button(`${APP_URL}/dashboard/biblioteca`, 'Abrir a biblioteca')}
+        <p style="color: #64748b; font-size: 12px;">Você pode ver os recibos, trocar o cartão ou cancelar quando quiser em <a href="${APP_URL}/dashboard/profile?tab=assinatura" style="color: #64748b;">Minha assinatura</a>.</p>
+        <p>Qualquer dúvida, é só responder a este e-mail.</p>
+        ${SIGNATURE}
+      `),
+    });
+  }
+
+  /**
+   * Sent when a subscription is cancelled.
+   * - accessUntil set: cancelled at period end, access continues until then.
+   * - accessUntil null: subscription has already ended (e.g. unpaid).
+   */
+  static async sendSubscriptionCancelled(
+    userEmail: string,
+    userName: string,
+    accessUntil: Date | null
+  ) {
+    const status = accessUntil
+      ? `<p>Confirmamos o cancelamento da sua assinatura. Você continua com acesso a toda a biblioteca até <strong>${formatDateBR(accessUntil)}</strong>, e não haverá novas cobranças.</p>`
+      : `<p>Sua assinatura do plano Profissional foi encerrada e não haverá novas cobranças.</p>`;
+    await sendFromEliane('Subscription cancelled', {
+      to: userEmail,
+      subject: 'Sua assinatura foi cancelada',
+      html: baseTemplate(`
+        ${greeting(userName)}
+        ${status}
+        <p>Sua conta continua ativa. ${accessUntil ? 'Depois dessa data, você' : 'Você'} ainda pode baixar grátis as ${FREE_SAMPLE_COUNT} atividades do fonema ${phonemeLabel(FREE_PHONEME)}.</p>
+        <p>Se quiser voltar, é só assinar de novo. Tudo continua no mesmo lugar.</p>
+        ${button(`${APP_URL}/dashboard/profile?tab=assinatura`, 'Ver minha assinatura')}
+        <p>Se puder, me conte por que cancelou respondendo a este e-mail. Isso me ajuda muito a melhorar o Almanaque.</p>
+        ${SIGNATURE}
+      `),
+    });
   }
 
   static async sendDownloadLimitWarning(
