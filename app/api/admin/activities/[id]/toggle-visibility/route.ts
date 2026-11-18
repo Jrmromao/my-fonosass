@@ -32,36 +32,49 @@ export async function POST(
 
     const activity = await prisma.activity.findUnique({
       where: { id },
-      select: { id: true, status: true },
+      select: { id: true, status: true, reviewedAt: true },
     });
     if (!activity) {
       return NextResponse.json(
-        { error: 'Activity not found' },
+        { error: 'Atividade não encontrada.' },
         { status: 404 }
       );
     }
 
-    // Visibility toggle only moves between PUBLISHED and DRAFT. It must never
-    // be a way to publish something that hasn't passed review.
+    const status = activity.status as ActivityStatus;
     const target: ActivityStatus = isPublic ? 'PUBLISHED' : 'DRAFT';
-    if (
-      isPublic &&
-      activity.status !== 'PUBLISHED' &&
-      activity.status !== 'DRAFT'
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            'Só é possível publicar atividades revisadas (status DRAFT ou PUBLISHED).',
-        },
-        { status: 409 }
-      );
+
+    if (isPublic) {
+      // Visibility may only bring back something that already passed review:
+      // a PUBLISHED activity, or a DRAFT that was approved and then hidden
+      // (reviewedAt is set on approval). New content must go through
+      // approve, never through this toggle.
+      const wasApproved = status === 'DRAFT' && activity.reviewedAt !== null;
+      if (status !== 'PUBLISHED' && !wasApproved) {
+        return NextResponse.json(
+          {
+            error:
+              'Esta atividade ainda não foi aprovada. Use "Aprovar" para publicá-la.',
+          },
+          { status: 409 }
+        );
+      }
+    } else {
+      // Hiding: PUBLISHED -> DRAFT (or a no-op when already DRAFT).
+      assertTransition(status, target);
     }
-    assertTransition(activity.status as ActivityStatus, target);
 
     await prisma.activity.update({
       where: { id },
-      data: { isPublic, status: target },
+      data: {
+        isPublic,
+        status: target,
+        // Hiding something that was live: keep proof it passed review, so it
+        // can be shown again. Older published rows predate reviewedAt.
+        ...(!isPublic && status === 'PUBLISHED' && activity.reviewedAt === null
+          ? { reviewedAt: new Date() }
+          : {}),
+      },
     });
 
     return NextResponse.json({ success: true });

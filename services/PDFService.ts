@@ -179,7 +179,8 @@ class PDFService {
     imageType: 'png' | 'jpg',
     metadata: {
       title: string;
-      phoneme: string;
+      /** Footer subject, already formatted (e.g. "Fonema /s/", "Cores"). */
+      subject: string;
       difficulty: string;
       ageRange: string;
     },
@@ -265,7 +266,7 @@ class PDFService {
         color: rgb(243 / 255, 244 / 255, 246 / 255),
       });
 
-      const footerText = `Fonema /${metadata.phoneme}/ | ${metadata.difficulty} | ${metadata.ageRange}`;
+      const footerText = `${metadata.subject} | ${metadata.difficulty} | ${metadata.ageRange}`;
       page.drawText(footerText, {
         x: margin,
         y: 14,

@@ -58,6 +58,89 @@ describe('createActivity', () => {
     expect(result.success).toBe(false);
     expect(prisma.activity.create).not.toHaveBeenCalled();
   });
+
+  const validForm = (overrides: Record<string, string> = {}) => {
+    const fd = new FormData();
+    const fields = {
+      name: 'Caça-palavras: animais',
+      description: 'Encontre as palavras com o fonema.',
+      category: 'fonema',
+      phoneme: 'R_FORTE',
+      difficulty: 'BEGINNER',
+      ageRange: 'PRESCHOOL',
+      ...overrides,
+    };
+    Object.entries(fields).forEach(([k, v]) => fd.set(k, v));
+    return fd;
+  };
+
+  it('should reject a phoneme outside the library taxonomy', async () => {
+    signedInAs('ADMIN');
+    const { prisma } = require('@/app/db');
+    const { createActivity } = await import('@/lib/actions/activity.action');
+
+    const result = await createActivity(validForm({ phoneme: 'TH' }));
+
+    expect(result.success).toBe(false);
+    expect(prisma.activity.create).not.toHaveBeenCalled();
+  });
+
+  it('should create without connecting a hardcoded category', async () => {
+    signedInAs('ADMIN');
+    const { prisma } = require('@/app/db');
+    prisma.activity.create.mockResolvedValue({ id: 'act-1' });
+    const { createActivity } = await import('@/lib/actions/activity.action');
+
+    const result = await createActivity(validForm());
+
+    expect(result.success).toBe(true);
+    const data = prisma.activity.create.mock.calls[0][0].data;
+    expect(data.phoneme).toBe('R_FORTE');
+    expect(data.status).toBe('PENDING_REVIEW');
+    expect(data.type).toBe('SPEECH');
+    expect(data.categories).toBeUndefined();
+  });
+
+  it('should require a phoneme for the Fonema category', async () => {
+    signedInAs('ADMIN');
+    const { prisma } = require('@/app/db');
+    const { createActivity } = await import('@/lib/actions/activity.action');
+
+    const result = await createActivity(validForm({ phoneme: '' }));
+
+    expect(result).toMatchObject({
+      success: false,
+      error: 'Escolha o fonema da atividade.',
+    });
+    expect(prisma.activity.create).not.toHaveBeenCalled();
+  });
+
+  it('should store other categories by type, without a phoneme', async () => {
+    signedInAs('ADMIN');
+    const { prisma } = require('@/app/db');
+    prisma.activity.create.mockResolvedValue({ id: 'act-2' });
+    const { createActivity } = await import('@/lib/actions/activity.action');
+
+    const result = await createActivity(
+      validForm({ category: 'alfabeto', phoneme: 'S' })
+    );
+
+    expect(result.success).toBe(true);
+    const data = prisma.activity.create.mock.calls[0][0].data;
+    expect(data.type).toBe('ALPHABET');
+    expect(data.phoneme).toBe('');
+  });
+
+  it('should reject an unknown category', async () => {
+    signedInAs('ADMIN');
+    const { prisma } = require('@/app/db');
+    const { createActivity } = await import('@/lib/actions/activity.action');
+
+    const result = await createActivity(validForm({ category: 'xyz' }));
+
+    expect(result.success).toBe(false);
+    expect(prisma.activity.create).not.toHaveBeenCalled();
+  });
 });
 
 describe('getCurrentUserRole', () => {

@@ -5,7 +5,20 @@ import { requireAdmin } from '@/lib/activities/approval';
 import PDFService from '@/services/PDFService';
 import S3Service from '@/services/S3Service';
 import { auth } from '@clerk/nextjs/server';
-import { $Enums, ActivityDifficulty, AgeRange } from '@prisma/client';
+import { findCategory } from '@/lib/activityCategories';
+import {
+  AGE_LABELS,
+  DIFFICULTY_LABELS,
+  label,
+  phonemeLabel,
+} from '@/lib/activityLabels';
+import { PHONEMES } from '@/lib/phonemes';
+import {
+  $Enums,
+  ActivityDifficulty,
+  ActivityType as ActivityTypeEnum,
+  AgeRange,
+} from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import ActivityType = $Enums.ActivityType;
@@ -67,10 +80,38 @@ export async function createActivity(formData: FormData) {
     // Extract and sanitize data from FormData
     const name = sanitizeInput(formData.get('name') as string, 100);
     const description = sanitizeHtml(formData.get('description') as string);
-    const type = (formData.get('type') as string) || 'OTHER';
-    const difficulty = (formData.get('difficulty') as string) || 'BEGINNER';
-    const ageRange = (formData.get('ageRange') as string) || 'ADULT';
-    const phoneme = sanitizeInput(formData.get('phoneme') as string, 50);
+    const category = findCategory(formData.get('category') as string);
+    const difficulty = (formData.get('difficulty') as string) || '';
+    const ageRange = (formData.get('ageRange') as string) || '';
+    const rawPhoneme = sanitizeInput(
+      (formData.get('phoneme') as string) || '',
+      50
+    );
+
+    if (!category) {
+      return { success: false, error: 'Escolha a categoria da atividade.' };
+    }
+    // Only "Fonema" activities carry a phoneme; the others are found by type.
+    const phoneme = category.requiresPhoneme ? rawPhoneme : '';
+    if (category.requiresPhoneme && !PHONEMES.includes(phoneme)) {
+      return { success: false, error: 'Escolha o fonema da atividade.' };
+    }
+    const type = category.type;
+
+    // Enum fields come from <select>s but must still be checked server-side.
+    const enums = z
+      .object({
+        type: z.nativeEnum(ActivityTypeEnum),
+        difficulty: z.nativeEnum(ActivityDifficulty),
+        ageRange: z.nativeEnum(AgeRange),
+      })
+      .safeParse({ type, difficulty, ageRange });
+    if (!enums.success) {
+      return {
+        success: false,
+        error: 'Escolha a dificuldade e a faixa etária.',
+      };
+    }
 
     // Validate required fields
     if (!name || name.length < 3) {
@@ -106,11 +147,6 @@ export async function createActivity(formData: FormData) {
         // New content must enter the review workflow — never auto-publish.
         status: 'PENDING_REVIEW',
         isPublic: false,
-        categories: {
-          connect: {
-            id: '216bd108-39d2-4f7e-a6fd-49b2a1b1f2e9',
-          },
-        },
       },
     });
 
@@ -190,9 +226,11 @@ export async function createActivity(formData: FormData) {
                 imgType,
                 {
                   title: name,
-                  phoneme,
-                  difficulty,
-                  ageRange,
+                  subject: category.requiresPhoneme
+                    ? `Fonema ${phonemeLabel(phoneme)}`
+                    : category.label,
+                  difficulty: label(DIFFICULTY_LABELS, difficulty),
+                  ageRange: label(AGE_LABELS, ageRange),
                 },
                 `${activity.id}/${pdfFilename}`
               );

@@ -16,8 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Bell, Eye, EyeOff, Search } from 'lucide-react';
-import { phonemeLabel } from '@/lib/activityLabels';
+import { Bell, Check, Eye, EyeOff, Search } from 'lucide-react';
+import { phonemeLabel, subjectLabel } from '@/lib/activityLabels';
 import { useCallback, useEffect, useState } from 'react';
 
 interface Activity {
@@ -42,6 +42,7 @@ export function ActivityManagerPanel() {
   const [phonemeFilter, setPhonemeFilter] = useState('all');
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [notifying, setNotifying] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
@@ -71,26 +72,51 @@ export function ActivityManagerPanel() {
     loadActivities();
   }, [loadActivities]);
 
-  const toggleVisibility = async (id: string, currentlyPublic: boolean) => {
+  // Only update the row after the server confirms; it refuses e.g. to
+  // publish an activity that has not been through review.
+  const runAction = async (
+    id: string,
+    url: string,
+    init: RequestInit,
+    next: Pick<Activity, 'status' | 'isPublic'>
+  ) => {
     setToggling(id);
-    await fetch(`/api/admin/activities/${id}/toggle-visibility`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isPublic: !currentlyPublic }),
-    });
-    setActivities((prev) =>
-      prev.map((a) =>
-        a.id === id
-          ? {
-              ...a,
-              isPublic: !currentlyPublic,
-              status: !currentlyPublic ? 'PUBLISHED' : 'DRAFT',
-            }
-          : a
-      )
-    );
-    setToggling(null);
+    setActionError(null);
+    try {
+      const res = await fetch(url, { method: 'POST', ...init });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setActionError(json.error || 'Não foi possível concluir a ação.');
+        return;
+      }
+      setActivities((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, ...next } : a))
+      );
+    } catch {
+      setActionError('Não foi possível concluir a ação. Tente novamente.');
+    } finally {
+      setToggling(null);
+    }
   };
+
+  const approve = (id: string) =>
+    runAction(
+      id,
+      `/api/admin/activities/${id}/approve`,
+      {},
+      { status: 'PUBLISHED', isPublic: true }
+    );
+
+  const setVisibility = (id: string, isPublic: boolean) =>
+    runAction(
+      id,
+      `/api/admin/activities/${id}/toggle-visibility`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublic }),
+      },
+      { status: isPublic ? 'PUBLISHED' : 'DRAFT', isPublic }
+    );
 
   const notifyReview = async (id: string) => {
     setNotifying(id);
@@ -102,7 +128,11 @@ export function ActivityManagerPanel() {
 
   const filtered = activities;
 
-  const phonemes = [...new Set(activities.map((a) => a.phoneme))].sort();
+  // Non-phoneme categories (Linguagem, Cores...) store phoneme = ''. Radix
+  // throws on <SelectItem value="">, so leave those out of the filter.
+  const phonemes = [
+    ...new Set(activities.map((a) => a.phoneme).filter(Boolean)),
+  ].sort();
 
   if (loading) {
     return (
@@ -114,6 +144,14 @@ export function ActivityManagerPanel() {
 
   return (
     <div className="space-y-4">
+      {actionError && (
+        <p
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800"
+        >
+          {actionError}
+        </p>
+      )}
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
@@ -192,7 +230,7 @@ export function ActivityManagerPanel() {
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant="outline" className="text-xs">
-                    {phonemeLabel(activity.phoneme)}
+                    {subjectLabel(activity.phoneme, activity.type)}
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
@@ -228,22 +266,47 @@ export function ActivityManagerPanel() {
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      onClick={() =>
-                        toggleVisibility(activity.id, activity.isPublic)
-                      }
-                      disabled={toggling === activity.id}
-                      title={activity.isPublic ? 'Ocultar' : 'Mostrar'}
-                    >
-                      {activity.isPublic ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-emerald-600" />
-                      )}
-                    </Button>
+                    {activity.status === 'PENDING_REVIEW' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-emerald-200 px-2 text-xs text-emerald-800 hover:bg-emerald-50"
+                        onClick={() => approve(activity.id)}
+                        disabled={toggling === activity.id}
+                        title="Aprovar e publicar"
+                      >
+                        <Check className="mr-1 h-4 w-4" aria-hidden />
+                        Aprovar
+                      </Button>
+                    )}
+                    {(activity.status === 'PUBLISHED' ||
+                      activity.status === 'DRAFT') && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={() =>
+                          setVisibility(activity.id, !activity.isPublic)
+                        }
+                        disabled={toggling === activity.id}
+                        title={
+                          activity.isPublic
+                            ? 'Ocultar da biblioteca'
+                            : 'Publicar na biblioteca'
+                        }
+                        aria-label={
+                          activity.isPublic
+                            ? 'Ocultar da biblioteca'
+                            : 'Publicar na biblioteca'
+                        }
+                      >
+                        {activity.isPublic ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-emerald-600" />
+                        )}
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="ghost"
@@ -334,7 +397,9 @@ function ActivityPreview({ activity }: { activity: Activity }) {
     <div className="space-y-4">
       {/* Metadata */}
       <div className="flex gap-2 flex-wrap">
-        <Badge variant="outline">{phonemeLabel(activity.phoneme)}</Badge>
+        <Badge variant="outline">
+          {subjectLabel(activity.phoneme, activity.type)}
+        </Badge>
         <Badge variant="outline">{activity.difficulty}</Badge>
         <Badge variant="outline">{activity.ageRange}</Badge>
         <Badge variant="outline">{activity.type}</Badge>

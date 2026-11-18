@@ -92,23 +92,46 @@ export const PHONEME_GROUPS: PhonemeGroup[] = [
     ],
   },
   {
-    id: 'posicoes',
-    title: 'Arquifonema e encontro consonantal',
-    description: '/r/ e /l/ no fim da sílaba e depois de outra consoante.',
+    id: 'arquifonema',
+    title: 'Arquifonema',
+    description: '/S/ e /R/ no fim da sílaba.',
     entries: [
+      // Split per Eliane: /S/ (pasta) and /R/ (porta). Uppercase between
+      // slashes is the clinical notation for arquifonema.
       {
-        code: 'ARQ',
-        display: 'Arquifonema',
+        code: 'ARQ_S',
+        display: 'Arquifonema /S/',
         notation: false,
-        note: '/r/ e /l/, como em "porta" e "sol"',
-        example: 'po[r]ta',
+        note: 'como em "pasta" e "lápis"',
+        example: 'pa[s]ta',
       },
       {
-        code: 'ENC',
-        display: 'Encontro consonantal',
+        code: 'ARQ_R',
+        display: 'Arquifonema /R/',
         notation: false,
-        note: 'com /r/ e /l/, como em "prato" e "planta"',
+        note: 'como em "porta" e "mar"',
+        example: 'po[r]ta',
+      },
+    ],
+  },
+  {
+    id: 'encontro',
+    title: 'Encontro consonantal',
+    description: '/r/ e /l/ depois de outra consoante, na mesma sílaba.',
+    entries: [
+      {
+        code: 'ENC_R',
+        display: 'Encontro com /r/',
+        notation: false,
+        note: 'como em "prato" e "bruxa"',
         example: '[pr]ato',
+      },
+      {
+        code: 'ENC_L',
+        display: 'Encontro com /l/',
+        notation: false,
+        note: 'como em "planta" e "bloco"',
+        example: '[pl]anta',
       },
     ],
   },

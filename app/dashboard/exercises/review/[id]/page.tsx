@@ -1,5 +1,5 @@
 import { prisma } from '@/app/db';
-import { phonemeLabel } from '@/lib/activityLabels';
+import { phonemeLabel, subjectLabel } from '@/lib/activityLabels';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { notFound } from 'next/navigation';
@@ -173,9 +173,11 @@ export default async function ExerciseReviewPage({
 
         <div className="space-y-4">
           <div>
-            <span className="text-sm text-neutral-600">Fonema:</span>
+            <span className="text-sm text-neutral-600">
+              {activity.phoneme ? 'Fonema:' : 'Categoria:'}
+            </span>
             <span className="ml-2 font-medium">
-              {phonemeLabel(activity.phoneme)}
+              {subjectLabel(activity.phoneme, activity.type)}
             </span>
           </div>
           <div>

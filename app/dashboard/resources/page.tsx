@@ -60,8 +60,22 @@ const RESOURCE_TYPES = [
   { value: 'INTERACTIVE', label: 'Interativo', icon: Zap },
 ];
 
+const TAB_VALUES = [
+  'activities',
+  'resources',
+  'review',
+  'categories',
+  'analytics',
+];
+
 export default function AdminResourcesPage() {
   const { role, isLoading } = useUserRole();
+  // ?tab=review opens Revisão directly (link shown after creating an activity).
+  const [tab, setTab] = useState('activities');
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('tab');
+    if (requested && TAB_VALUES.includes(requested)) setTab(requested);
+  }, []);
   const [resources, setResources] = useState<Resource[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +134,8 @@ export default function AdminResourcesPage() {
   const loadCategories = useCallback(async () => {
     try {
       const data = await resourcesService.getCategories();
-      setCategories(data);
+      // Empty names would become <SelectItem value="">, which Radix rejects.
+      setCategories(data.filter((c) => c && c.trim() !== ''));
     } catch (error) {
       console.error('Error loading categories:', error);
     }
@@ -411,7 +426,7 @@ export default function AdminResourcesPage() {
       </div>
 
       <div className="p-8">
-        <Tabs defaultValue="activities" className="space-y-6">
+        <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="inline-flex bg-muted p-1 rounded-md">
             <TabsTrigger
               value="activities"

@@ -8,6 +8,9 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // Activity uploads go through a server action (default limit 1 MB).
+    // Vercel caps request bodies at 4.5 MB, so this is the real ceiling.
+    serverActions: { bodySizeLimit: '4mb' },
   },
 
   // Image optimization

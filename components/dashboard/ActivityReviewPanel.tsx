@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { phonemeLabel } from '@/lib/activityLabels';
+import { phonemeLabel, subjectLabel } from '@/lib/activityLabels';
 import { Check, Clock, Eye, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -10,6 +10,7 @@ interface PendingActivity {
   id: string;
   name: string;
   phoneme: string;
+  type: string;
   difficulty: string;
   ageRange: string;
   status: string;
@@ -44,19 +45,34 @@ export function ActivityReviewPanel() {
     loadActivities();
   }, [loadActivities]);
 
-  const handleApprove = async (id: string) => {
-    await fetch(`/api/admin/activities/${id}/approve`, { method: 'POST' });
-    setActivities((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: 'PUBLISHED' } : a))
-    );
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  // Update the list only after the server confirms the change.
+  const review = async (
+    id: string,
+    action: 'approve' | 'discard',
+    status: 'PUBLISHED' | 'REJECTED'
+  ) => {
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/admin/activities/${id}/${action}`, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setActionError(json.error || 'Não foi possível concluir a ação.');
+        return;
+      }
+      setActivities((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, status } : a))
+      );
+    } catch {
+      setActionError('Não foi possível concluir a ação. Tente novamente.');
+    }
   };
 
-  const handleReject = async (id: string) => {
-    await fetch(`/api/admin/activities/${id}/discard`, { method: 'POST' });
-    setActivities((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: 'REJECTED' } : a))
-    );
-  };
+  const handleApprove = (id: string) => review(id, 'approve', 'PUBLISHED');
+  const handleReject = (id: string) => review(id, 'discard', 'REJECTED');
 
   const handleCorrectWithAI = async (id: string) => {
     if (!feedback.trim()) return;
@@ -125,7 +141,7 @@ export function ActivityReviewPanel() {
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-neutral-600">
-                {phonemeLabel(activity.phoneme)}
+                {subjectLabel(activity.phoneme, activity.type)}
               </span>
               <span className="text-xs text-neutral-600">·</span>
               <span className="text-xs text-neutral-600">
@@ -159,7 +175,7 @@ export function ActivityReviewPanel() {
                   <Check className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
                 </div>
                 <span className="text-xs text-neutral-600">
-                  {phonemeLabel(activity.phoneme)}
+                  {subjectLabel(activity.phoneme, activity.type)}
                 </span>
               </button>
             ))}
@@ -169,6 +185,14 @@ export function ActivityReviewPanel() {
 
       {/* Right: Detail view */}
       <div className="lg:col-span-2">
+        {actionError && (
+          <p
+            role="alert"
+            className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800"
+          >
+            {actionError}
+          </p>
+        )}
         {selected ? (
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6">
             <div className="flex items-start justify-between mb-6">
@@ -178,7 +202,7 @@ export function ActivityReviewPanel() {
                 </h3>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline" className="text-xs">
-                    {phonemeLabel(selected.phoneme)}
+                    {subjectLabel(selected.phoneme, selected.type)}
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                     {selected.difficulty}
