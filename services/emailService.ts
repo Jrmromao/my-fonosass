@@ -1,8 +1,11 @@
 import { Resend } from 'resend';
 import 'server-only';
-import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
+import {
+  FREE_DEFAULT_PHONEME,
+  FREE_SAMPLE_COUNT,
+} from '@/lib/access-constants';
 import { phonemeLabel } from '@/lib/activityLabels';
-import { formatBRL, FREE_PHONEME } from '@/lib/pricing';
+import { formatBRL } from '@/lib/pricing';
 import { EMAIL_LOGO_BASE64, EMAIL_LOGO_CID } from './emailLogo';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -173,7 +176,7 @@ export class EmailService {
           ${infoBox(`
             <strong>O que você pode fazer agora:</strong><br><br>
             &bull; Explorar a biblioteca por fonema<br>
-            &bull; Baixar grátis ${FREE_SAMPLE_COUNT} atividades do fonema ${phonemeLabel(FREE_PHONEME)}<br>
+            &bull; Baixar grátis ${FREE_SAMPLE_COUNT} atividades do fonema ${phonemeLabel(FREE_DEFAULT_PHONEME)}<br>
             &bull; Imprimir e usar direto na sessão
           `)}
           <p>Para baixar toda a biblioteca, é só assinar o plano Profissional quando quiser.</p>
@@ -236,7 +239,7 @@ export class EmailService {
       html: baseTemplate(`
         ${greeting(userName)}
         ${status}
-        <p>Sua conta continua ativa. ${accessUntil ? 'Depois dessa data, você' : 'Você'} ainda pode baixar grátis as ${FREE_SAMPLE_COUNT} atividades do fonema ${phonemeLabel(FREE_PHONEME)}.</p>
+        <p>Sua conta continua ativa. ${accessUntil ? 'Depois dessa data, você' : 'Você'} ainda pode baixar grátis as ${FREE_SAMPLE_COUNT} atividades do fonema ${phonemeLabel(FREE_DEFAULT_PHONEME)}.</p>
         <p>Se quiser voltar, é só assinar de novo. Tudo continua no mesmo lugar.</p>
         ${button(`${APP_URL}/dashboard/profile?tab=assinatura`, 'Ver minha assinatura')}
         <p>Se puder, me conte por que cancelou respondendo a este e-mail. Isso me ajuda muito a melhorar o Almanaque.</p>
