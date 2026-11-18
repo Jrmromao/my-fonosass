@@ -9,23 +9,27 @@ import { ptBR } from '@clerk/localizations';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Inter, Nunito } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-const inter = Inter({
-  subsets: ['latin'],
+// Self-hosted (app/fonts, latin subset, variable weight; both SIL OFL).
+// next/font/google downloads from Google at build time, and a bad response
+// from Google failed a production build. Local files make builds offline.
+const inter = localFont({
+  src: './fonts/inter-latin-variable.woff2',
+  weight: '300 700',
   display: 'swap',
   preload: true,
   fallback: ['system-ui', 'arial'],
   variable: '--font-inter',
-  weight: ['300', '400', '500', '600', '700'],
 });
 
-const nunito = Nunito({
-  subsets: ['latin'],
+const nunito = localFont({
+  src: './fonts/nunito-latin-variable.woff2',
+  weight: '400 800',
   display: 'swap',
+  fallback: ['system-ui', 'arial'],
   variable: '--font-nunito',
-  weight: ['400', '600', '700', '800'],
 });
 
 export const metadata = {
