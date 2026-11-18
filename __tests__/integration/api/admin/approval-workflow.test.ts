@@ -12,8 +12,21 @@ jest.mock('@/app/db', () => ({
       findMany: jest.fn(),
       update: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
+
+const ADMIN_DB_ID = 'db-admin-1';
+
+/** Authenticate as an ADMIN user (requireAdmin looks the user up in the DB). */
+function mockAdmin() {
+  const { auth } = require('@clerk/nextjs/server');
+  const { prisma } = require('@/app/db');
+  auth.mockResolvedValue({ userId: 'clerk-user-1' });
+  prisma.user.findUnique.mockResolvedValue({ id: ADMIN_DB_ID, role: 'ADMIN' });
+}
 
 describe('Activity Approval Workflow', () => {
   beforeEach(() => {
@@ -34,10 +47,9 @@ describe('Activity Approval Workflow', () => {
     });
 
     it('should return pending activities when authenticated', async () => {
-      const { auth } = require('@clerk/nextjs/server');
       const { prisma } = require('@/app/db');
 
-      auth.mockResolvedValue({ userId: 'clerk-user-1' });
+      mockAdmin();
       prisma.activity.findMany.mockResolvedValue([
         {
           id: 'act-1',
@@ -84,10 +96,9 @@ describe('Activity Approval Workflow', () => {
     });
 
     it('should return 404 when activity does not exist', async () => {
-      const { auth } = require('@clerk/nextjs/server');
       const { prisma } = require('@/app/db');
 
-      auth.mockResolvedValue({ userId: 'clerk-user-1' });
+      mockAdmin();
       prisma.activity.findUnique.mockResolvedValue(null);
 
       const { POST } = await import(
@@ -108,10 +119,9 @@ describe('Activity Approval Workflow', () => {
     });
 
     it('should publish activity when approved', async () => {
-      const { auth } = require('@clerk/nextjs/server');
       const { prisma } = require('@/app/db');
 
-      auth.mockResolvedValue({ userId: 'clerk-user-1' });
+      mockAdmin();
       prisma.activity.findUnique.mockResolvedValue({
         id: 'act-1',
         status: 'PENDING_REVIEW',
@@ -140,17 +150,26 @@ describe('Activity Approval Workflow', () => {
       expect(data.success).toBe(true);
       expect(prisma.activity.update).toHaveBeenCalledWith({
         where: { id: 'act-1' },
-        data: { status: 'PUBLISHED', isPublic: true, approvalToken: null },
+        data: {
+          status: 'PUBLISHED',
+          isPublic: true,
+          approvalToken: null,
+          reviewedById: ADMIN_DB_ID,
+          reviewedAt: expect.any(Date),
+        },
       });
     });
   });
 
   describe('POST /api/admin/activities/[id]/discard', () => {
     it('should reject activity when discarded', async () => {
-      const { auth } = require('@clerk/nextjs/server');
       const { prisma } = require('@/app/db');
 
-      auth.mockResolvedValue({ userId: 'clerk-user-1' });
+      mockAdmin();
+      prisma.activity.findUnique.mockResolvedValue({
+        id: 'act-1',
+        status: 'PENDING_REVIEW',
+      });
       prisma.activity.update.mockResolvedValue({
         id: 'act-1',
         status: 'REJECTED',
@@ -174,15 +193,20 @@ describe('Activity Approval Workflow', () => {
       expect(data.success).toBe(true);
       expect(prisma.activity.update).toHaveBeenCalledWith({
         where: { id: 'act-1' },
-        data: { status: 'REJECTED', isPublic: false, approvalToken: null },
+        data: {
+          status: 'REJECTED',
+          isPublic: false,
+          approvalToken: null,
+          reviewedById: ADMIN_DB_ID,
+          reviewedAt: expect.any(Date),
+        },
       });
     });
   });
 
   describe('POST /api/admin/activities/[id]/reject-with-feedback', () => {
     it('should return 400 when feedback is too short', async () => {
-      const { auth } = require('@clerk/nextjs/server');
-      auth.mockResolvedValue({ userId: 'clerk-user-1' });
+      mockAdmin();
 
       const { POST } = await import(
         '@/app/api/admin/activities/[id]/reject-with-feedback/route'
@@ -201,14 +225,13 @@ describe('Activity Approval Workflow', () => {
       const data = await response.json();
 
       expect(response.status).toBe(400);
-      expect(data.error).toContain('5 characters');
+      expect(data.error).toContain('5 e 2000');
     });
 
     it('should return 404 when activity does not exist', async () => {
-      const { auth } = require('@clerk/nextjs/server');
       const { prisma } = require('@/app/db');
 
-      auth.mockResolvedValue({ userId: 'clerk-user-1' });
+      mockAdmin();
       prisma.activity.findUnique.mockResolvedValue(null);
 
       const { POST } = await import(

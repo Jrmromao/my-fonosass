@@ -110,9 +110,9 @@ describe('Blog Functionality - Basic Tests', () => {
       const dateObj = new Date(date);
 
       expect(dateObj).toBeInstanceOf(Date);
-      expect(dateObj.getFullYear()).toBe(2024);
-      expect(dateObj.getMonth()).toBe(0); // January is 0
-      expect(dateObj.getDate()).toBe(20);
+      expect(dateObj.getUTCFullYear()).toBe(2024);
+      expect(dateObj.getUTCMonth()).toBe(0); // January is 0
+      expect(dateObj.getUTCDate()).toBe(20);
     });
 
     it('should handle invalid dates', () => {
