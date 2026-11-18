@@ -42,6 +42,29 @@ When generating or modifying Portuguese text, always verify accents and grammar 
 ### Database
 - ALL schema changes via Prisma migrations only (`yarn prisma migrate dev --name <desc>`)
 - Never use `db push`, never edit migration files, never apply SQL directly
+
+#### Production migrations (automatic) — expand/contract rule
+- Migrations are applied by the Vercel **production** build (`vercel.json` →
+  `scripts/vercel-migrate.mjs` → `prisma migrate deploy`). Preview and local
+  builds skip it, because Preview shares the production database.
+- They run **before** the new code is live, while the previous deployment is
+  still serving traffic. So **every migration must work with the code that is
+  currently in production** (backward compatible):
+  - ✅ In one release: add a table, add a nullable column or one with a
+    default, add an enum value, add an index.
+  - ❌ Never in the same release as the code change: drop or rename a
+    column/table/enum value, make a column NOT NULL without a default, change
+    a column type.
+  - Removing or renaming takes **two deploys**: (1) ship code that no longer
+    uses the old column (for a rename: add the new one, write both, read the
+    new one); (2) in a later deploy, the migration that drops the old one.
+- A failed migration fails the build; the current deployment stays live.
+- Known issue: `prisma migrate dev` cannot replay
+  `20241223175000_add_content_to_resources` on the shadow database (P1014).
+  Until the history is fixed, generate the SQL with
+  `npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script`
+  (read-only), save it as `prisma/migrations/<YYYYMMDD>_<name>/migration.sql`,
+  review it, then apply locally with `npx prisma migrate deploy`.
 - Use proper indexes for filtered/sorted columns
 - Singleton pattern for services (`getInstance()`)
 

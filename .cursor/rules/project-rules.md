@@ -104,6 +104,13 @@ npx prisma generate
 npx prisma generate
 ```
 
+### Production migrations run automatically
+The Vercel production build applies migrations (`scripts/vercel-migrate.mjs`)
+before the new code is live. Every migration must be backward compatible with
+the code currently in production: add freely; drop/rename only in a later
+deploy, after the code stops using it. Full rule and the `migrate dev`
+workaround: `.kiro/rules.md` → Database → "Production migrations".
+
 ### 🚨 FORBIDDEN PRISMA COMMANDS:
 - ❌ **NEVER use**: `npx prisma db push` - Bypasses migration history
 - ❌ **NEVER use**: `prisma db push` - Can cause data loss
