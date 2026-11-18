@@ -64,7 +64,7 @@ const PROVIDERS: { name: string; purpose: string; where: string }[] = [
     name: 'Sentry',
     purpose:
       'Relatórios de erros do site e do navegador (mensagem do erro, trecho do código e tipo de navegador), com emails, CPF e telefones removidos antes do envio.',
-    where: 'Estados Unidos',
+    where: 'Alemanha (União Europeia)',
   },
   {
     name: 'Google',

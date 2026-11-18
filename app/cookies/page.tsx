@@ -154,9 +154,9 @@ export default function CookiePolicyPage() {
           &quot;?&quot;. Removemos emails, CPF e telefones antes do envio. O
           Sentry não grava cookies nem dados no seu navegador, mas, como em
           qualquer conexão, pode receber o seu endereço IP. Os dados ficam
-          armazenados nos Estados Unidos. Nossos servidores também enviam avisos
-          de erro ao Sentry, sem dados pessoais, para mantermos o site
-          funcionando.
+          armazenados na União Europeia (Alemanha). Nossos servidores também
+          enviam avisos de erro ao Sentry, sem dados pessoais, para mantermos o
+          site funcionando.
         </p>
       </Section>
 
