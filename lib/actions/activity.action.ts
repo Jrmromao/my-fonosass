@@ -15,6 +15,7 @@ import {
   AgeRange,
 } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { refreshPublicCatalogPages } from '@/lib/cache/publicPages';
 import { z } from 'zod';
 import ActivityType = $Enums.ActivityType;
 
@@ -536,6 +537,7 @@ export async function deleteActivity(id: string) {
     });
 
     revalidatePath('/activities');
+    refreshPublicCatalogPages();
     return { success: true };
   } catch (error) {
     console.error('Error deleting activity:', error);

@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { prisma } from '@/app/db';
+import { refreshPublicCatalogPages } from '@/lib/cache/publicPages';
 import {
   assertTransition,
   errorResponse,
@@ -263,6 +264,7 @@ REGRAS:
       },
     });
 
+    refreshPublicCatalogPages();
     return NextResponse.json({ success: true, corrected: correctedData });
   } catch (error) {
     const { body, status } = errorResponse(error);

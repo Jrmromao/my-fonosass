@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 jest.mock('@clerk/nextjs/server', () => ({ auth: jest.fn() }));
+// next/cache needs the Next.js runtime; only check that pages are refreshed.
+jest.mock('@/lib/cache/publicPages', () => ({
+  refreshPublicCatalogPages: jest.fn(),
+}));
 jest.mock('@/app/db', () => ({
   prisma: {
     user: { findUnique: jest.fn() },
@@ -49,6 +53,9 @@ describe('POST /api/admin/activities/[id]/toggle-visibility', () => {
         data: expect.objectContaining({ isPublic: true, status: 'PUBLISHED' }),
       })
     );
+    expect(
+      require('@/lib/cache/publicPages').refreshPublicCatalogPages
+    ).toHaveBeenCalledTimes(1);
   });
 
   it('refuses to publish a draft that was never approved', async () => {

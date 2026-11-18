@@ -5,6 +5,11 @@ jest.mock('@clerk/nextjs/server', () => ({
   auth: jest.fn(),
 }));
 
+// next/cache needs the Next.js runtime; only check that pages are refreshed.
+jest.mock('@/lib/cache/publicPages', () => ({
+  refreshPublicCatalogPages: jest.fn(),
+}));
+
 jest.mock('@/app/db', () => ({
   prisma: {
     activity: {
@@ -158,6 +163,10 @@ describe('Activity Approval Workflow', () => {
           reviewedAt: expect.any(Date),
         },
       });
+      // The landing shows published /s/ activities as free samples: it must
+      // be refreshed, not kept in its hourly cache.
+      const { refreshPublicCatalogPages } = require('@/lib/cache/publicPages');
+      expect(refreshPublicCatalogPages).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { prisma } from '@/app/db';
+import { refreshPublicCatalogPages } from '@/lib/cache/publicPages';
 import {
   assertTransition,
   type ActivityStatus,
@@ -65,6 +66,7 @@ export async function GET(
       return NextResponse.redirect(reviewUrl);
     }
 
+    refreshPublicCatalogPages();
     reviewUrl.searchParams.set('rejected', '1');
     return NextResponse.redirect(reviewUrl);
   } catch (error) {

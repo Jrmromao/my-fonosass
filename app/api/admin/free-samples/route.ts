@@ -4,7 +4,7 @@ import { FREE_SAMPLE_COUNT, getFreeSamplesForMonth } from '@/lib/access';
 import { errorResponse, requireAdmin } from '@/lib/activities/approval';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { monthBucket } from '@/lib/stats/downloadStats';
-import { revalidatePath } from 'next/cache';
+import { refreshPublicCatalogPages } from '@/lib/cache/publicPages';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -28,11 +28,7 @@ const fail = (error: string, status: number) =>
   NextResponse.json({ success: false, error }, { status, headers: NO_STORE });
 
 // Pages that show the free samples: refresh them after a change.
-function refreshPages() {
-  revalidatePath('/');
-  revalidatePath('/sign-in/[[...sign-in]]', 'page');
-  revalidatePath('/sign-up/[[...sign-up]]', 'page');
-}
+const refreshPages = refreshPublicCatalogPages;
 
 async function guard(request: NextRequest, csrf: boolean) {
   if (csrf) {
