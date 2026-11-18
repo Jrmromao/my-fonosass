@@ -6,6 +6,10 @@ import {
   ActivityRow,
   type ActivityItemProps,
 } from '@/components/library/ActivityItems';
+import {
+  PrintableInstructions,
+  printInstructions,
+} from '@/components/library/PrintableInstructions';
 import { NewActivityDialog } from '@/components/dialogs/new-activity-dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,6 +59,7 @@ import {
   LayoutGrid,
   List,
   Lock,
+  Printer,
   Search,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -590,9 +595,19 @@ export default function LibraryPage() {
                   </span>
                   <span>{label(AGE_LABELS, previewActivity.ageRange)}</span>
                 </div>
-                <p className="text-sm text-neutral-600">
+                <p className="whitespace-pre-line text-sm text-neutral-600">
                   {previewActivity.description}
                 </p>
+                {previewActivity.description.trim() && (
+                  <Button
+                    variant="outline"
+                    className="w-full h-10 border-neutral-300 text-sm font-semibold"
+                    onClick={printInstructions}
+                  >
+                    <Printer className="h-4 w-4 mr-2" aria-hidden />
+                    Imprimir instruções
+                  </Button>
+                )}
                 {previewActivity.files[0] && !previewActivity.canDownload && (
                   <Button
                     className="w-full bg-coral-700 hover:bg-coral-800 text-white text-sm h-10"
@@ -625,6 +640,8 @@ export default function LibraryPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {previewActivity && <PrintableInstructions activity={previewActivity} />}
 
       <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>

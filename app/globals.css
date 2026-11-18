@@ -288,3 +288,21 @@ body {
     color: hsl(var(--foreground));
   }
 }
+
+/* Printed activity instructions (components/library/PrintableInstructions).
+   While printing, only the sheet is shown: every other child of <body> (the
+   app, the open dialog, toasts) is hidden. */
+@media print {
+  body.printing-instructions > *:not(.print-instructions) {
+    display: none !important;
+  }
+  body.printing-instructions > .print-instructions {
+    display: block !important;
+  }
+  body.printing-instructions {
+    background: #fff !important;
+  }
+}
+@page {
+  margin: 18mm;
+}

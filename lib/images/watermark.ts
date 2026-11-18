@@ -1,3 +1,4 @@
+import { copyrightText } from '@/lib/copyright';
 import path from 'path';
 import sharp from 'sharp';
 
@@ -38,9 +39,7 @@ export const IMAGE_FOOTER = {
   color: '#52525b', // neutral-600
 };
 
-export function copyrightText(year = new Date().getFullYear()): string {
-  return `© ${year} Almanaque da Fala · Todos os direitos reservados · almanaquedafala.com.br`;
-}
+export { copyrightText };
 
 /** The copyright line rendered as a transparent PNG, at most `maxWidth`. */
 async function renderFooterText(
