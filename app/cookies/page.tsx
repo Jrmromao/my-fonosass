@@ -11,7 +11,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Política de Cookies',
   description:
-    'Quais cookies e dados de navegador o Almanaque da Fala usa e como mudar sua escolha sobre o Google Analytics.',
+    'Quais cookies e dados de navegador o Almanaque da Fala usa e como mudar sua escolha sobre análise de uso e relatórios de erros.',
   alternates: { canonical: '/cookies' },
 };
 
@@ -52,7 +52,8 @@ const STORAGE: Row[] = [
   {
     name: 'almanaque:analytics-consent',
     who: 'Almanaque da Fala',
-    purpose: 'Lembrar se você aceitou ou recusou o Google Analytics.',
+    purpose:
+      'Lembrar se você aceitou ou recusou o Google Analytics e os relatórios de erros.',
     duration: 'Até você limpar os dados do navegador',
   },
   {
@@ -100,7 +101,9 @@ function CookieTable({ rows }: { rows: Row[] }) {
 }
 
 export default function CookiePolicyPage() {
-  const analyticsEnabled = Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID);
+  const analyticsEnabled =
+    Boolean(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) ||
+    Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
 
   return (
     <LegalPage
@@ -114,11 +117,15 @@ export default function CookiePolicyPage() {
         </p>
       }
     >
-      <Section id="sua-escolha" title="Sua escolha sobre o Google Analytics">
+      <Section
+        id="sua-escolha"
+        title="Sua escolha sobre análise e relatórios de erros"
+      >
         <p>
-          O único recurso que depende do seu consentimento é o Google Analytics.
-          Ele só é carregado se você aceitar. Se você recusar ou mudar de ideia,
-          ele é desligado e os cookies dele são apagados.
+          Dois recursos dependem do seu consentimento: o Google Analytics e os
+          relatórios de erros do navegador (Sentry). Eles só são carregados se
+          você aceitar. Se você recusar ou mudar de ideia, eles são desligados e
+          os cookies do Google Analytics são apagados.
         </p>
         <AnalyticsChoiceControl enabled={analyticsEnabled} />
         <p>
@@ -137,6 +144,20 @@ export default function CookiePolicyPage() {
 
       <Section id="analise" title="Cookies de análise (só com consentimento)">
         <CookieTable rows={ANALYTICS} />
+      </Section>
+
+      <Section id="erros" title="Relatórios de erros (só com consentimento)">
+        <p>
+          Se você aceitar, o navegador envia ao Sentry um aviso quando uma
+          página quebra: a mensagem do erro, o trecho do código que falhou, o
+          tipo de navegador e o endereço da página sem o que vem depois do
+          &quot;?&quot;. Removemos emails, CPF e telefones antes do envio. O
+          Sentry não grava cookies nem dados no seu navegador, mas, como em
+          qualquer conexão, pode receber o seu endereço IP. Os dados ficam
+          armazenados nos Estados Unidos. Nossos servidores também enviam avisos
+          de erro ao Sentry, sem dados pessoais, para mantermos o site
+          funcionando.
+        </p>
       </Section>
 
       <Section id="navegador" title="Outros dados guardados no navegador">

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAnalyticsConsent, writeConsent } from '@/lib/cookieConsent';
 
 /**
- * Lets anyone (signed in or not) see and change the Google Analytics choice
+ * Lets anyone (signed in or not) see and change the analytics and error-report choice
  * made in the banner. Withdrawing must be as easy as accepting (LGPD art. 8,
  * § 5º). Shown on /cookies.
  */
@@ -14,18 +14,19 @@ export function AnalyticsChoiceControl({ enabled }: { enabled: boolean }) {
   if (!enabled) {
     return (
       <p className="rounded-md border border-neutral-200 p-4 text-sm dark:border-neutral-800">
-        O Google Analytics está desativado neste site no momento.
+        A análise de uso e os relatórios de erros estão desativados neste site
+        no momento.
       </p>
     );
   }
 
   const status =
     consent === 'granted'
-      ? 'Você aceitou o Google Analytics neste navegador.'
+      ? 'Você aceitou a análise de uso e os relatórios de erros neste navegador.'
       : consent === 'denied'
-        ? 'Você recusou o Google Analytics neste navegador.'
+        ? 'Você recusou a análise de uso e os relatórios de erros neste navegador.'
         : consent === 'unset'
-          ? 'Você ainda não escolheu. O Google Analytics fica desligado até você aceitar.'
+          ? 'Você ainda não escolheu. A análise de uso e os relatórios de erros ficam desligados até você aceitar.'
           : 'Carregando sua escolha...';
 
   return (

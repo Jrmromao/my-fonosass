@@ -93,7 +93,9 @@ export function PrivacyPanel() {
   const queryClient = useQueryClient();
   const { csrfToken } = useCSRF();
   const analyticsConsent = useAnalyticsConsent();
-  const hasAnalytics = !!process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const hasAnalytics =
+    !!process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
+    !!process.env.NEXT_PUBLIC_SENTRY_DSN;
 
   const [marketingSaving, setMarketingSaving] = useState(false);
   const [marketingError, setMarketingError] = useState<string | null>(null);
@@ -228,7 +230,7 @@ export function PrivacyPanel() {
           <Row
             id="pref-analytics"
             title="Análise de uso"
-            description="Google Analytics, para entendermos como o site é usado. Vale para este navegador."
+            description="Google Analytics (como o site é usado) e Sentry (relatórios de erros do navegador). Vale para este navegador."
             control={
               <Switch
                 id="pref-analytics"
