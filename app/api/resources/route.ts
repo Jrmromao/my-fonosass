@@ -1,5 +1,6 @@
 import { prisma } from '@/app/db';
 import { QueryCache, withCaching } from '@/lib/performance/cacheManager';
+import { getResourceViewer, hasSessionCookie } from '@/lib/resources/access';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
@@ -14,14 +15,22 @@ export const GET = withCaching(
 
       // Parse query parameters
       const url = new URL(request.url);
-      const search = url.searchParams.get('search') || '';
+      const search = (url.searchParams.get('search') || '').slice(0, 100);
       const type = url.searchParams.get('type') || '';
       const category = url.searchParams.get('category') || '';
       const ageGroup = url.searchParams.get('ageGroup') || '';
       const isFree = url.searchParams.get('isFree');
       const isFeatured = url.searchParams.get('isFeatured');
-      const limit = parseInt(url.searchParams.get('limit') || '0');
-      const offset = parseInt(url.searchParams.get('offset') || '0');
+      // Bounded pagination: 0/invalid limit means "up to MAX_LIMIT".
+      const MAX_LIMIT = 200;
+      const rawLimit = parseInt(url.searchParams.get('limit') || '0', 10);
+      const limit =
+        Number.isFinite(rawLimit) && rawLimit > 0
+          ? Math.min(rawLimit, MAX_LIMIT)
+          : MAX_LIMIT;
+      const rawOffset = parseInt(url.searchParams.get('offset') || '0', 10);
+      const offset =
+        Number.isFinite(rawOffset) && rawOffset > 0 ? rawOffset : 0;
 
       // Build where clause
       const where: any = {
@@ -96,7 +105,7 @@ export const GET = withCaching(
               { downloadCount: 'desc' },
               { createdAt: 'desc' },
             ],
-            take: limit > 0 ? limit : undefined,
+            take: limit,
             skip: offset,
           });
         },
@@ -106,14 +115,22 @@ export const GET = withCaching(
       // Get total count for pagination
       const totalCount = await prisma.resource.count({ where });
 
+      const { isAdmin } = await getResourceViewer();
+
       return SecurityMiddleware.createSecureResponse({
         success: true,
-        data: resources,
+        // Premium file URLs only for admins (dashboard editing). Everyone
+        // else downloads premium files through the gated routes.
+        data: isAdmin
+          ? resources
+          : resources.map((r) =>
+              r.isFree ? r : { ...r, downloadUrl: null, viewUrl: null }
+            ),
         pagination: {
           total: totalCount,
-          limit: limit || totalCount,
+          limit,
           offset,
-          hasMore: offset + (limit || totalCount) < totalCount,
+          hasMore: offset + limit < totalCount,
         },
         cached: true,
       });
@@ -131,10 +148,8 @@ export const GET = withCaching(
       const url = new URL(req.url);
       return `resources:${url.searchParams.toString()}`;
     },
-    skipCache: (req) => {
-      const url = new URL(req.url);
-      return url.searchParams.has('nocache') || url.searchParams.has('refresh');
-    },
+    // Only anonymous (identical, stripped) responses are shared via cache.
+    skipCache: hasSessionCookie,
   }
 );
 

@@ -122,7 +122,8 @@ export async function watermarkImage(
   const stepY = Math.round(th * (1 + IMAGE_WATERMARK.gapY));
 
   // Staggered grid, kept fully inside the image.
-  const overlays: sharp.OverlayOptions[] = [];
+  // Derived from the API so it works across sharp typings (0.34 / 0.35).
+  const overlays: Parameters<ReturnType<typeof sharp>['composite']>[0] = [];
   let row = 0;
   for (let top = Math.round(th / 3); top + th <= height; top += stepY, row++) {
     const offset = row % 2 === 0 ? 0 : Math.round(stepX / 2);

@@ -21,6 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { useClerk } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -87,6 +88,7 @@ export function UserProfile() {
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const { fetchCSRFToken } = useCSRF();
+  const { openUserProfile } = useClerk();
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -146,15 +148,10 @@ export function UserProfile() {
       errors.fullName = 'Nome deve ter no máximo 100 caracteres';
     }
 
-    // Validate email
-    if (!editForm.email.trim()) {
-      errors.email = 'Email é obrigatório';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) {
-      errors.email = 'Email deve ter um formato válido';
-    }
+    // Email is read-only here (changed through Clerk's account settings).
 
     setFormErrors(errors);
-    return !errors.fullName && !errors.email;
+    return !errors.fullName;
   };
 
   const handleEdit = () => {
@@ -190,7 +187,7 @@ export function UserProfile() {
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers,
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({ fullName: editForm.fullName }),
       });
 
       const result = await response.json();
@@ -203,7 +200,6 @@ export function UserProfile() {
                 user: {
                   ...prev.user,
                   fullName: editForm.fullName,
-                  email: editForm.email,
                 },
               }
             : null
@@ -452,23 +448,20 @@ export function UserProfile() {
                           id="email"
                           type="email"
                           value={editForm.email}
-                          onChange={(e) => {
-                            setEditForm((prev) => ({
-                              ...prev,
-                              email: e.target.value,
-                            }));
-                            if (formErrors.email) {
-                              setFormErrors((prev) => ({ ...prev, email: '' }));
-                            }
-                          }}
-                          placeholder="Digite seu email"
-                          className={formErrors.email ? 'border-red-500' : ''}
+                          readOnly
+                          disabled
                         />
-                        {formErrors.email && (
-                          <p className="text-sm text-red-500">
-                            {formErrors.email}
-                          </p>
-                        )}
+                        <p className="text-xs text-neutral-600">
+                          O email é alterado em{' '}
+                          <button
+                            type="button"
+                            className="underline"
+                            onClick={() => openUserProfile()}
+                          >
+                            Gerenciar conta
+                          </button>
+                          , onde o novo endereço é verificado.
+                        </p>
                       </div>
                       <div className="flex gap-2">
                         <Button

@@ -2,34 +2,28 @@ import { ErrorTracker } from '@/lib/monitoring/errorTracker';
 import { PerformanceMonitor } from '@/lib/monitoring/performanceMonitor';
 import { getRateLimitStatus } from '@/lib/security/rateLimiter';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
-import { auth } from '@clerk/nextjs/server';
+import { guardAdmin, guardAdminActor } from '@/lib/activities/approval';
+import { AuditAction, recordAudit } from '@/lib/audit/audit';
 import { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
+  const denied = await guardAdmin();
+  if (denied) return denied;
+
   try {
-    // Require admin authentication
-    const { userId } = await auth();
-    if (!userId) {
-      return SecurityMiddleware.createErrorResponse('Authentication required', 401);
-    }
-
-    // TODO: Add admin role check here
-    // For now, we'll allow any authenticated user to access monitoring
-    // In production, you should check if the user has admin privileges
-
     // Get error statistics
     const errorStats = ErrorTracker.getErrorStats();
-    
+
     // Get performance statistics
     const performanceStats = PerformanceMonitor.getPerformanceStats();
-    
+
     // Get rate limiting statistics
     const rateLimitStats = {
       general: getRateLimitStatus('general'),
       auth: getRateLimitStatus('auth'),
       userCreation: getRateLimitStatus('userCreation'),
       fileUpload: getRateLimitStatus('fileUpload'),
-      payment: getRateLimitStatus('payment')
+      payment: getRateLimitStatus('payment'),
     };
 
     // Get system information
@@ -40,7 +34,7 @@ export async function GET(request: NextRequest) {
       uptime: process.uptime(),
       memoryUsage: process.memoryUsage(),
       cpuUsage: process.cpuUsage(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     // Calculate health score
@@ -50,20 +44,19 @@ export async function GET(request: NextRequest) {
       health: {
         score: healthScore,
         status: getHealthStatus(healthScore),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       errors: errorStats,
       performance: performanceStats,
       rateLimiting: rateLimitStats,
-      system: systemInfo
+      system: systemInfo,
     };
 
     return SecurityMiddleware.createSecureResponse(monitoringData);
-
   } catch (error) {
     ErrorTracker.logAPIError(error as Error, request, {
       category: 'api',
-      severity: 'high'
+      severity: 'high',
     });
 
     return SecurityMiddleware.createErrorResponse(
@@ -74,34 +67,55 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Require admin authentication
-    const { userId } = await auth();
-    if (!userId) {
-      return SecurityMiddleware.createErrorResponse('Authentication required', 401);
-    }
+  const admin = await guardAdminActor();
+  if ('response' in admin) return admin.response;
 
+  try {
     const body = await request.json();
     const { action } = body;
 
     switch (action) {
       case 'clear-errors':
+        // Clearing monitoring data erases evidence: always leave a trail.
+        await recordAudit({
+          action: AuditAction.MONITORING_CLEAR,
+          actorType: 'ADMIN',
+          actorId: admin.dbUserId,
+          request,
+          metadata: { scope: 'clear-errors' },
+        });
         ErrorTracker.clearErrors();
-        return SecurityMiddleware.createSecureResponse({ 
-          message: 'Error logs cleared successfully' 
+        return SecurityMiddleware.createSecureResponse({
+          message: 'Error logs cleared successfully',
         });
 
       case 'clear-metrics':
+        // Clearing monitoring data erases evidence: always leave a trail.
+        await recordAudit({
+          action: AuditAction.MONITORING_CLEAR,
+          actorType: 'ADMIN',
+          actorId: admin.dbUserId,
+          request,
+          metadata: { scope: 'clear-metrics' },
+        });
         PerformanceMonitor.clearMetrics();
-        return SecurityMiddleware.createSecureResponse({ 
-          message: 'Performance metrics cleared successfully' 
+        return SecurityMiddleware.createSecureResponse({
+          message: 'Performance metrics cleared successfully',
         });
 
       case 'clear-all':
+        // Clearing monitoring data erases evidence: always leave a trail.
+        await recordAudit({
+          action: AuditAction.MONITORING_CLEAR,
+          actorType: 'ADMIN',
+          actorId: admin.dbUserId,
+          request,
+          metadata: { scope: 'clear-all' },
+        });
         ErrorTracker.clearErrors();
         PerformanceMonitor.clearMetrics();
-        return SecurityMiddleware.createSecureResponse({ 
-          message: 'All monitoring data cleared successfully' 
+        return SecurityMiddleware.createSecureResponse({
+          message: 'All monitoring data cleared successfully',
         });
 
       default:
@@ -110,11 +124,10 @@ export async function POST(request: NextRequest) {
           400
         );
     }
-
   } catch (error) {
     ErrorTracker.logAPIError(error as Error, request, {
       category: 'api',
-      severity: 'medium'
+      severity: 'medium',
     });
 
     return SecurityMiddleware.createErrorResponse(
@@ -134,9 +147,9 @@ function calculateHealthScore(errorStats: any, performanceStats: any): number {
   const lowErrors = errorStats.bySeverity.low || 0;
 
   score -= criticalErrors * 20; // -20 points per critical error
-  score -= highErrors * 10;     // -10 points per high error
-  score -= mediumErrors * 5;    // -5 points per medium error
-  score -= lowErrors * 1;       // -1 point per low error
+  score -= highErrors * 10; // -10 points per high error
+  score -= mediumErrors * 5; // -5 points per medium error
+  score -= lowErrors * 1; // -1 point per low error
 
   // Deduct points for performance issues
   if (performanceStats.averageResponseTime > 2000) {

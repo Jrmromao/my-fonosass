@@ -36,6 +36,16 @@ export function Sidebar({ className }: SidebarProps) {
             icon: FolderCog,
             href: '/dashboard/resources',
           },
+          {
+            title: 'Correções LGPD',
+            icon: FolderCog,
+            href: '/dashboard/correcoes',
+          },
+          {
+            title: 'Auditoria',
+            icon: FolderCog,
+            href: '/dashboard/auditoria',
+          },
         ]
       : []),
   ];

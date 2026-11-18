@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/security/jsonLd';
 import FAQClient from '@/components/faq/FAQClient';
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
@@ -78,7 +79,7 @@ export default function FAQPage() {
         id="faq-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(faqSchema),
+          __html: safeJsonLd(faqSchema),
         }}
       />
       <SharedNavbar />

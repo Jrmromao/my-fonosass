@@ -2,20 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import S3Service from '@/services/S3Service';
+import { csvCell } from '@/lib/security/csv';
+import { getClientIp } from '@/lib/security/clientIp';
+import { rateLimiters } from '@/lib/security/rateLimiter';
+import { createHash } from 'crypto';
+import { z } from 'zod';
+
+const bodySchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(254),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
-
-    if (!email || !email.includes('@')) {
-      return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
+    const limit = await rateLimiters.userCreation.checkAsync(request);
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: 'Muitas tentativas. Tente novamente mais tarde.' },
+        { status: 429 }
+      );
     }
 
-    // Get client IP
-    const ip =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+    const parsed = bodySchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Email inválido' }, { status: 400 });
+    }
+    const { email } = parsed.data;
+
+    const ip = getClientIp(request);
 
     // Create timestamp
     const timestamp = new Date().toISOString();
@@ -26,9 +39,11 @@ export async function POST(request: NextRequest) {
       ip_address: ip,
     };
 
-    // Try to save locally (only works in development)
+    // Local copy is a development convenience only; production (serverless)
+    // must not write PII to the app filesystem.
     let localSaveSuccess = false;
     try {
+      if (process.env.NODE_ENV === 'production') throw new Error('skip-local');
       const dataDir = path.join(process.cwd(), 'data');
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
@@ -43,7 +58,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Create CSV row
-      const csvRow = `"${email}","${timestamp}","${ip}"\n`;
+      const csvRow = `${csvCell(email)},${csvCell(timestamp)},${csvCell(ip)}\n`;
 
       // Append to CSV file
       fs.appendFileSync(csvPath, csvRow);
@@ -74,7 +89,11 @@ export async function POST(request: NextRequest) {
       const s3Service = S3Service.getInstance();
 
       // Upload individual entry as JSON to S3 for real-time backup
-      const individualEntryKey = `waiting-list/entries/${timestamp}-${email.replace('@', '-at-')}.json`;
+      const emailHash = createHash('sha256')
+        .update(email)
+        .digest('hex')
+        .slice(0, 16);
+      const individualEntryKey = `waiting-list/entries/${timestamp}-${emailHash}.json`;
       const individualEntry = JSON.stringify(newEntry, null, 2);
       await s3Service.uploadFile(
         individualEntryKey,

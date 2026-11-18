@@ -1,6 +1,8 @@
 import 'server-only';
 import { prisma } from '@/app/db';
 import { auth } from '@clerk/nextjs/server';
+import { AuditAction, recordAudit } from '@/lib/audit/audit';
+import { NextResponse } from 'next/server';
 
 /**
  * Shared authorization + state-machine rules for the activity approval
@@ -41,8 +43,17 @@ export async function requireAdmin(): Promise<{
     select: { id: true, role: true },
   });
   if (!user) throw new AuthzError(403, 'User not found');
-  if (user.role !== 'ADMIN')
+  if (user.role !== 'ADMIN') {
+    // A signed-in non-admin hit an admin endpoint: worth a trail entry
+    // (throttled so it can't be used to flood the table).
+    await recordAudit({
+      action: AuditAction.ADMIN_DENIED,
+      actorType: 'USER',
+      actorId: user.id,
+      throttleMs: 10 * 60 * 1000,
+    });
     throw new AuthzError(403, 'Insufficient permissions');
+  }
 
   return { userId, dbUserId: user.id };
 }
@@ -85,4 +96,34 @@ export function errorResponse(error: unknown): {
   }
   console.error('[approval] unexpected error:', error);
   return { body: { error: 'Erro interno' }, status: 500 };
+}
+
+/**
+ * Route-handler convenience: returns a 401/403 NextResponse when the caller is
+ * not an ADMIN, or null when access is granted.
+ *
+ *   const denied = await guardAdmin();
+ *   if (denied) return denied;
+ */
+export async function guardAdmin(): Promise<NextResponse | null> {
+  const result = await guardAdminActor();
+  return 'response' in result ? result.response : null;
+}
+
+/** Same check, but also hands back the admin's id for the audit trail. */
+export async function guardAdminActor(): Promise<
+  { response: NextResponse } | { dbUserId: string }
+> {
+  try {
+    const { dbUserId } = await requireAdmin();
+    return { dbUserId };
+  } catch (error) {
+    const { body, status } = errorResponse(error);
+    return {
+      response: NextResponse.json(body, {
+        status,
+        headers: { 'Cache-Control': 'private, no-store' },
+      }),
+    };
+  }
 }

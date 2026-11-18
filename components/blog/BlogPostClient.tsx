@@ -3,6 +3,8 @@
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
 import { BlogPost } from '@/lib/blog';
+import { safeJsonLd } from '@/lib/security/jsonLd';
+import { sanitizeHtml } from '@/lib/security/sanitizeHtml';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { marked } from 'marked';
@@ -155,7 +157,7 @@ export default function BlogPostClient({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Article',
             headline: post.title,
@@ -202,7 +204,7 @@ export default function BlogPostClient({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: safeJsonLd({
               '@context': 'https://schema.org',
               '@type': 'BreadcrumbList',
               itemListElement: [
@@ -553,7 +555,9 @@ export default function BlogPostClient({
                 prose-li:text-gray-700 prose-li:leading-relaxed prose-li:mb-2
                 prose-img:rounded-xl prose-img:shadow-xl prose-img:mx-auto prose-img:border prose-img:border-gray-200
                 prose-hr:border-gray-200 prose-hr:my-12 prose-hr:border-t-2"
-                dangerouslySetInnerHTML={{ __html: marked(post.content) }}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(marked(post.content) as string),
+                }}
                 itemProp="articleBody"
               />
 

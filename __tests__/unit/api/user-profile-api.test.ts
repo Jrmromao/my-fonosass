@@ -1,7 +1,7 @@
 import { GET, PUT } from '@/app/api/user/profile/route';
 import { prisma } from '@/app/db';
 import { CacheManager, QueryCache } from '@/lib/performance/cacheManager';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
 
 // Mock NextRequest
@@ -36,6 +36,7 @@ jest.mock('@/app/db', () => ({
 
 jest.mock('@clerk/nextjs/server', () => ({
   auth: jest.fn(),
+  clerkClient: jest.fn(),
 }));
 
 // Mock the SecurityMiddleware.apply method
@@ -251,13 +252,21 @@ describe('/api/user/profile', () => {
   });
 
   describe('PUT /api/user/profile', () => {
-    it('should update user profile successfully', async () => {
-      const updatedUser = {
-        ...mockUser,
-        fullName: 'Updated Name',
-        email: 'updated@example.com',
-      };
+    const mockUpdateClerkUser = jest.fn();
 
+    beforeEach(() => {
+      mockUpdateClerkUser.mockReset().mockResolvedValue({});
+      (clerkClient as jest.Mock).mockResolvedValue({
+        users: { updateUser: mockUpdateClerkUser },
+      });
+      // Current row: the route reads the stored email to detect email changes.
+      mockPrisma.user.findUnique.mockResolvedValue({
+        email: 'test@example.com',
+      } as never);
+    });
+
+    it('should update the name in Clerk first, then the database', async () => {
+      const updatedUser = { ...mockUser, fullName: 'Updated Name' };
       mockAuth.mockResolvedValue({ userId: 'user_123' });
       mockPrisma.user.update.mockResolvedValue(updatedUser);
 
@@ -267,11 +276,10 @@ describe('/api/user/profile', () => {
           method: 'PUT',
           body: JSON.stringify({
             fullName: 'Updated Name',
-            email: 'updated@example.com',
+            // Older clients echo the current email back: allowed.
+            email: 'TEST@example.com',
           }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         }
       );
 
@@ -281,12 +289,13 @@ describe('/api/user/profile', () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.message).toBe('Profile updated successfully');
+      expect(mockUpdateClerkUser).toHaveBeenCalledWith('user_123', {
+        firstName: 'Updated',
+        lastName: 'Name',
+      });
       expect(mockPrisma.user.update).toHaveBeenCalledWith({
         where: { clerkUserId: 'user_123' },
-        data: {
-          fullName: 'Updated Name',
-          email: 'updated@example.com',
-        },
+        data: { fullName: 'Updated Name' },
         select: {
           id: true,
           email: true,
@@ -295,6 +304,46 @@ describe('/api/user/profile', () => {
           updatedAt: true,
         },
       });
+    });
+
+    it('should refuse an email change (must go through Clerk)', async () => {
+      mockAuth.mockResolvedValue({ userId: 'user_123' });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/user/profile',
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            fullName: 'Updated Name',
+            email: 'someone-else@example.com',
+          }),
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      expect(mockUpdateClerkUser).not.toHaveBeenCalled();
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should reject an invalid name', async () => {
+      mockAuth.mockResolvedValue({ userId: 'user_123' });
+
+      const request = new NextRequest(
+        'http://localhost:3000/api/user/profile',
+        {
+          method: 'PUT',
+          body: JSON.stringify({ fullName: 'A' }),
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+
+      const response = await PUT(request);
+
+      expect(response.status).toBe(400);
+      expect(mockPrisma.user.update).not.toHaveBeenCalled();
     });
 
     it('should return 401 when user is not authenticated', async () => {
@@ -328,7 +377,7 @@ describe('/api/user/profile', () => {
           method: 'PUT',
           body: JSON.stringify({
             fullName: 'Updated Name',
-            email: 'valid@example.com',
+            email: 'test@example.com',
           }),
           headers: {
             'Content-Type': 'application/json',
@@ -351,7 +400,7 @@ describe('/api/user/profile', () => {
           method: 'PUT',
           body: JSON.stringify({
             fullName: 'Updated Name',
-            email: 'valid@example.com',
+            email: 'test@example.com',
           }),
           headers: {
             'Content-Type': 'application/json',

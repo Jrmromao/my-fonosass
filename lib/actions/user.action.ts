@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { prisma } from '@/app/db';
 import { userSchema } from '@/lib/schema';
 import { clerkClient } from '@clerk/nextjs/server';
+import { requireAdmin } from '@/lib/activities/approval';
+import { AuditAction, recordAudit } from '@/lib/audit/audit';
 
 // Data Transfer Object (DTO) for User
 export interface UserDto {
@@ -30,6 +32,42 @@ import crypto from 'crypto'; // Node.js built-in module for random generation
 
 const clerk = await clerkClient();
 
+// Server actions are public HTTP endpoints: every action in this file manages
+// other users, so each one requires a real ADMIN session.
+async function denyUnlessAdmin(): Promise<ActionResponse<never> | null> {
+  try {
+    await requireAdmin();
+    return null;
+  } catch {
+    return { success: false, error: 'Forbidden' };
+  }
+}
+
+/** Audit trail for user-management actions (ids only, no personal data). */
+async function auditUserAction(
+  action:
+    | typeof AuditAction.USER_INSERT
+    | typeof AuditAction.USER_INVITE
+    | typeof AuditAction.USER_UPDATE
+    | typeof AuditAction.USER_REMOVE,
+  targetId?: string,
+  metadata?: Record<string, string | number | boolean | null>
+) {
+  try {
+    const { dbUserId } = await requireAdmin();
+    await recordAudit({
+      action,
+      actorType: 'ADMIN',
+      actorId: dbUserId,
+      targetType: 'User',
+      targetId,
+      metadata,
+    });
+  } catch {
+    // Already authorized above; the trail must never break the action.
+  }
+}
+
 // Mapper function to convert User to UserDto
 const mapUserToDto = (
   user: User & {
@@ -50,6 +88,9 @@ const mapUserToDto = (
 
 // Remove a user by ID
 export const remove = async (id: string): Promise<ActionResponse<UserDto>> => {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   try {
     const deletedUser = await prisma.user.delete({
       where: { id },
@@ -58,6 +99,7 @@ export const remove = async (id: string): Promise<ActionResponse<UserDto>> => {
         subscriptions: true,
       },
     });
+    await auditUserAction(AuditAction.USER_REMOVE, id);
     return {
       success: true,
       data: mapUserToDto(deletedUser),
@@ -75,6 +117,9 @@ export const remove = async (id: string): Promise<ActionResponse<UserDto>> => {
 export const findById = async (
   id: string
 ): Promise<ActionResponse<UserDto>> => {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   try {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -106,6 +151,9 @@ export const findById = async (
 
 // Get all users
 export const getAll = async (): Promise<ActionResponse<UserDto[]>> => {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   try {
     const users = await prisma.user.findMany({
       include: {
@@ -132,6 +180,9 @@ export const getAll = async (): Promise<ActionResponse<UserDto[]>> => {
 export const insert = async (
   userData: z.infer<typeof userSchema>
 ): Promise<ActionResponse<any>> => {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   try {
     // Validate input using Zod schema
     const validatedData = userSchema.parse(userData);
@@ -147,6 +198,9 @@ export const insert = async (
       },
     });
 
+    await auditUserAction(AuditAction.USER_INVITE, undefined, {
+      role: validatedData.role || 'USER',
+    });
     return {
       success: true,
       data: {
@@ -186,6 +240,9 @@ export const insert = async (
 export const invite = async (
   userData: z.infer<typeof userSchema>
 ): Promise<ActionResponse<UserDto>> => {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   try {
     // Validate input using Zod schema
     const validatedData = userSchema.parse(userData);
@@ -220,6 +277,9 @@ export const invite = async (
     //     // inviterUserId: process.env.CLERK_ADMIN_USER_ID, // Uncomment if needed
     // });
 
+    await auditUserAction(AuditAction.USER_INSERT, undefined, {
+      role: validatedData.role || 'USER',
+    });
     return {
       success: true,
     };
@@ -258,6 +318,9 @@ export const update = async (
   id: string,
   userData: Partial<z.infer<typeof userSchema>>
 ): Promise<ActionResponse<UserDto>> => {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
+
   try {
     const updatedUser = await prisma.user.update({
       where: { id },
@@ -268,6 +331,11 @@ export const update = async (
       },
     });
 
+    // Field NAMES only (never values); `role` changes are the sensitive ones.
+    await auditUserAction(AuditAction.USER_UPDATE, id, {
+      fields: Object.keys(userData).slice(0, 8).join(','),
+      roleChanged: 'role' in userData,
+    });
     return {
       success: true,
       data: mapUserToDto(updatedUser),

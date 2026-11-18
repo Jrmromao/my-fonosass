@@ -1,3 +1,4 @@
+import { safeJsonLd } from '@/lib/security/jsonLd';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import AnalyticsConsentBanner from '@/components/cookies/AnalyticsConsentBanner';
 import { Providers } from '@/components/Providers';
@@ -159,7 +160,7 @@ export default function RootLayout({
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: safeJsonLd({
                 '@context': 'https://schema.org',
                 '@type': 'SoftwareApplication',
                 name: 'Almanaque da Fala',

@@ -10,11 +10,6 @@ import S3Service from '@/services/S3Service';
 const MAX_PAYLOAD_SIZE = 1048576; // 1MB in bytes
 const MAX_EXECUTION_TIME = 30000; // 30 seconds in milliseconds
 
-// Rate limiting setup (simple in-memory implementation)
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in milliseconds
-const MAX_REQUESTS_PER_WINDOW = 100;
-const requestTimestamps: number[] = [];
-
 // Email validation regex (basic validation - consider using a library in production)
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -106,23 +101,9 @@ async function createOrUpdateUser(
   }
 }
 export async function POST(req: Request) {
-  // Implement basic rate limiting
-  const now = Date.now();
-  requestTimestamps.push(now);
-  // Remove timestamps outside the current window
-  while (
-    requestTimestamps.length > 0 &&
-    requestTimestamps[0] < now - RATE_LIMIT_WINDOW
-  ) {
-    requestTimestamps.shift();
-  }
-
-  // Check if rate limit exceeded
-  if (requestTimestamps.length > MAX_REQUESTS_PER_WINDOW) {
-    console.warn('Rate limit exceeded for Clerk webhook');
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-  }
-
+  // Authenticity is enforced by the Svix signature check in processWebhook.
+  // No in-memory rate limit here: it counted forged requests too, so anyone
+  // could make genuine Clerk deliveries fail with 429.
   // Set a timeout to prevent long-running operations
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(() => reject(new Error('Request timeout')), MAX_EXECUTION_TIME)

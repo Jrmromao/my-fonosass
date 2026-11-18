@@ -122,6 +122,18 @@ export default function PrivacyPolicyPage() {
             usados para segurança (por exemplo, limitar tentativas abusivas) e
             nos registros técnicos da hospedagem.
           </li>
+          <li>
+            <strong>Seus pedidos de privacidade:</strong> a data de cada cópia
+            dos seus dados que você baixa, e os pedidos de correção que você
+            enviar, com a nossa resposta.
+          </li>
+          <li>
+            <strong>Registros de auditoria:</strong> anotamos as ações de
+            administradores sobre dados pessoais (por exemplo, quem consultou a
+            lista de espera) e eventos de segurança (por exemplo, tentativas de
+            acesso negadas). Guardam apenas identificadores internos, o horário
+            e o endereço IP, sem nomes nem emails.
+          </li>
         </ul>
         <p>
           <strong>Não tratamos dados de pacientes.</strong> O serviço não tem
@@ -231,6 +243,14 @@ export default function PrivacyPolicyPage() {
             Ficam apenas dados que não identificam você: a contagem mensal de
             downloads por atividade e o registro de que uma conta foi excluída
             (data e se tinha assinatura).
+          </li>
+          <li>
+            Os seus pedidos de privacidade ficam guardados enquanto a sua conta
+            existir e são apagados com ela.
+          </li>
+          <li>
+            Os registros de auditoria (apenas identificadores, sem dados
+            pessoais diretos) ficam guardados por 6 meses.
           </li>
           <li>
             Os registros de pagamento ficam com o Stripe pelo prazo exigido pela

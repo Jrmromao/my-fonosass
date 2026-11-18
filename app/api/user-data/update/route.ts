@@ -1,264 +1,145 @@
 import { prisma } from '@/app/db';
+import {
+  createCorrectionRequest,
+  createCorrectionSchema,
+  MAX_CORRECTION_REQUESTS_PER_DAY,
+  toCorrectionRequestDto,
+} from '@/lib/privacy/dataCorrectionRequests';
+import { DPO_EMAIL } from '@/lib/privacy';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from 'next/server';
 
-interface CorrectionRequest {
-  id: string;
-  field: string;
-  currentValue?: string;
-  requestedValue: string;
-  reason: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  requestedAt: string;
+/**
+ * LGPD art. 18 III, data the user cannot fix themselves.
+ *
+ * Name and email are self-service and are NOT handled here:
+ *   - name:  PUT /api/user/profile (updates Clerk, then the DB)
+ *   - email: Clerk account settings (verifies the new address)
+ * This endpoint stores free-text requests for the DPO/admin, who answers them
+ * from the admin panel (/api/admin/correction-requests).
+ */
+
+const NO_STORE = { 'Cache-Control': 'private, no-store' };
+
+async function currentDbUser() {
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) return null;
+  return prisma.user.findUnique({
+    where: { clerkUserId },
+    select: { id: true, email: true, fullName: true },
+  });
 }
 
-// Validation schema for user data updates
-const userUpdateSchema = z.object({
-  fullName: z.string().min(2).max(100).optional(),
-  email: z.string().email().optional(),
-  // Add other fields as they become available
-});
-
-// Validation schema for data correction requests
-const correctionRequestSchema = z.object({
-  field: z.string().min(1),
-  currentValue: z.string().optional(),
-  requestedValue: z.string().min(1),
-  reason: z.string().min(10).max(500),
-  supportingDocuments: z.array(z.string()).optional(),
-});
-
-export async function PUT(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    // Apply security middleware with CSRF protection
-    const securityResult = await SecurityMiddleware.apply(request as any, {
+    const securityResult = await SecurityMiddleware.apply(request, {
       requireAuth: true,
       requireCSRF: true,
       rateLimitType: 'general',
-      validateInput: true,
+      validateInput: false,
     });
+    if (!securityResult.success) return securityResult.response!;
 
-    if (!securityResult.success) {
-      return securityResult.response!;
-    }
-
-    const { userId: clerkUserId } = await auth();
-
-    if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId },
-    });
-
+    const user = await currentDbUser();
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401, headers: NO_STORE }
+      );
     }
 
-    // Parse and validate request body
-    const body = await request.json();
-    const validatedData = userUpdateSchema.parse(body);
+    const parsed = createCorrectionSchema.safeParse(
+      await request.json().catch(() => null)
+    );
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Descreva a correção com pelo menos 10 caracteres.',
+        },
+        { status: 400, headers: NO_STORE }
+      );
+    }
 
-    // Check if email is being changed
-    if (validatedData.email && validatedData.email !== user.email) {
-      // Check if new email already exists
-      const existingUser = await prisma.user.findUnique({
-        where: { email: validatedData.email },
+    const result = await createCorrectionRequest({
+      userId: user.id,
+      description: parsed.data.description,
+    });
+    if (!result.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Limite de ${MAX_CORRECTION_REQUESTS_PER_DAY} solicitações por dia atingido.`,
+        },
+        { status: 429, headers: NO_STORE }
+      );
+    }
+
+    // Never fails the request: the row is already saved and visible in the
+    // admin panel even if the email (or the mail client itself) fails.
+    try {
+      const { EmailService } = await import('@/services/emailService');
+      await EmailService.sendCorrectionRequestToDpo({
+        dpoEmail: DPO_EMAIL,
+        userEmail: user.email,
+        userName: user.fullName,
+        description: result.request.description,
+        requestId: result.request.id,
       });
-
-      if (existingUser) {
-        return NextResponse.json(
-          {
-            error: 'Email already exists',
-            message:
-              'This email address is already registered to another account',
-          },
-          { status: 400 }
-        );
-      }
+    } catch (error) {
+      console.error('Correction request: DPO email failed:', error);
     }
 
-    // Update user data
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        ...validatedData,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Create change history log
-    const changeLog = {
-      userId: user.id,
-      clerkUserId: user.clerkUserId,
-      changes: Object.keys(validatedData).map((key) => ({
-        field: key,
-        oldValue: user[key as keyof typeof user],
-        newValue: validatedData[key as keyof typeof validatedData],
-        changedAt: new Date().toISOString(),
-      })),
-      changedAt: new Date().toISOString(),
-    };
-
-    // Log the changes for audit purposes
-
-    return NextResponse.json({
-      success: true,
-      message: 'User data successfully updated',
-      data: {
-        user: {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          fullName: updatedUser.fullName,
-          role: updatedUser.role,
-          updatedAt: updatedUser.updatedAt,
-        },
-        changeLog: changeLog,
-      },
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation error',
-          message: 'Invalid data provided',
-          details: error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    console.error('Error updating user data:', error);
     return NextResponse.json(
       {
-        error: 'Internal server error',
-        message: 'Failed to update user data',
+        success: true,
+        message: 'Correction request submitted successfully',
+        data: toCorrectionRequestDto(result.request),
       },
-      { status: 500 }
+      { status: 201, headers: NO_STORE }
+    );
+  } catch (error) {
+    console.error('Error creating correction request:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to create correction request' },
+      { status: 500, headers: NO_STORE }
     );
   }
 }
 
-// POST endpoint for data correction requests
-export async function POST(request: Request) {
-  try {
-    const { userId: clerkUserId } = await auth();
-
-    if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    // Parse and validate correction request
-    const body = await request.json();
-    const validatedData = correctionRequestSchema.parse(body);
-
-    // Create correction request record
-    const correctionRequest = {
-      id: `correction-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      userId: user.id,
-      clerkUserId: user.clerkUserId,
-      field: validatedData.field,
-      currentValue: validatedData.currentValue,
-      requestedValue: validatedData.requestedValue,
-      reason: validatedData.reason,
-      supportingDocuments: validatedData.supportingDocuments || [],
-      status: 'PENDING',
-      requestedAt: new Date().toISOString(),
-      // In a real implementation, this would be stored in a database
-    };
-
-    // Log the correction request
-
-    // TODO: In a production environment, you would:
-    // 1. Store the correction request in a database
-    // 2. Send notification to admin team
-    // 3. Send confirmation email to user
-    // 4. Implement approval workflow
-
-    return NextResponse.json({
-      success: true,
-      message: 'Data correction request submitted successfully',
-      data: {
-        requestId: correctionRequest.id,
-        status: correctionRequest.status,
-        submittedAt: correctionRequest.requestedAt,
-        estimatedProcessingTime: '2-5 business days',
-      },
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Validation error',
-          message: 'Invalid correction request data',
-          details: error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    console.error('Error submitting correction request:', error);
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message: 'Failed to submit correction request',
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// GET endpoint to retrieve user's correction request history
+/** The signed-in user's own correction requests, newest first. */
 export async function GET() {
   try {
-    const { userId: clerkUserId } = await auth();
-
-    if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId },
-    });
-
+    const user = await currentDbUser();
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401, headers: NO_STORE }
+      );
     }
 
-    // TODO: In a production environment, retrieve from database
-    // For now, return empty array
-    const correctionHistory: CorrectionRequest[] = [];
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        userId: user.id,
-        correctionRequests: correctionHistory,
-        message: 'No correction requests found',
-      },
+    const rows = await prisma.dataCorrectionRequest.findMany({
+      where: { userId: user.id },
+      orderBy: { requestedAt: 'desc' },
+      take: 50,
     });
-  } catch (error) {
-    console.error('Error retrieving correction history:', error);
+
     return NextResponse.json(
       {
-        error: 'Internal server error',
-        message: 'Failed to retrieve correction history',
+        success: true,
+        data: {
+          userId: user.id,
+          correctionRequests: rows.map(toCorrectionRequestDto),
+        },
       },
-      { status: 500 }
+      { headers: NO_STORE }
+    );
+  } catch (error) {
+    console.error('Error retrieving correction requests:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to retrieve correction requests' },
+      { status: 500, headers: NO_STORE }
     );
   }
 }
