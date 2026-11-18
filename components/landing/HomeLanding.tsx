@@ -305,10 +305,13 @@ function FreeSheetStack({ activities }: { activities: FreePreviewActivity[] }) {
           style={{ zIndex: i + 1 }}
         >
           <img
-            src={`/api/free-preview/${a.imageFileId}`}
+            src={`/api/free-preview/${a.imageFileId}?w=512`}
+            srcSet={`/api/free-preview/${a.imageFileId}?w=512 512w, /api/free-preview/${a.imageFileId}?w=1024 1024w`}
+            sizes="320px"
             alt={`Atividade grátis: ${a.title}, ${a.subject}`}
             className="block w-full"
-            loading={i === 0 ? 'eager' : 'lazy'}
+            // Both sheets are above the fold: load them right away.
+            fetchPriority="high"
           />
           <span className="absolute left-2 top-2 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
             Grátis

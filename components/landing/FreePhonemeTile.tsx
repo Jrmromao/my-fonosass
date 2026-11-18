@@ -71,10 +71,12 @@ export function FreeSamplesDialog({
             <figure key={activity.id}>
               <div className="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-sm border border-neutral-200 bg-white">
                 {activity.imageFileId ? (
-                  // Plain <img>: the route redirects to a short-lived S3
-                  // URL, which next/image would need remotePatterns for.
+                  // Plain <img>: /api/free-preview already serves a resized,
+                  // CDN-cached WebP.
                   <img
-                    src={`/api/free-preview/${activity.imageFileId}`}
+                    src={`/api/free-preview/${activity.imageFileId}?w=512`}
+                    srcSet={`/api/free-preview/${activity.imageFileId}?w=512 512w, /api/free-preview/${activity.imageFileId}?w=1024 1024w`}
+                    sizes="(min-width: 640px) 300px, 90vw"
                     alt={`Atividade ${activity.title}, ${activity.subject}`}
                     loading="lazy"
                     className="h-full w-full object-contain"

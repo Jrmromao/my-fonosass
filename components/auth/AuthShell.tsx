@@ -136,9 +136,12 @@ async function BrandPanel() {
           <figure className="flex flex-col items-center">
             <div className="w-56 xl:w-64 rotate-[-3deg] overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.25)]">
               <img
-                src={`/api/free-preview/${sample.imageFileId}`}
+                src={`/api/free-preview/${sample.imageFileId}?w=512`}
+                srcSet={`/api/free-preview/${sample.imageFileId}?w=512 512w, /api/free-preview/${sample.imageFileId}?w=1024 1024w`}
+                sizes="256px"
                 alt={`Atividade ${sample.name}`}
                 className="block w-full"
+                fetchPriority="high"
               />
             </div>
             <figcaption className="mt-5 text-center text-sm text-neutral-600">

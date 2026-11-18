@@ -1,5 +1,6 @@
 {
   "buildCommand": "prisma generate && node scripts/vercel-migrate.mjs && next build",
+  "regions": ["dub1"],
   "headers": [
     {
       "source": "/(.*)",

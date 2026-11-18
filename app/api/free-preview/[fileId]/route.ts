@@ -1,14 +1,19 @@
 import { prisma } from '@/app/db';
 import { getFreeSamples } from '@/lib/access';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 import { z } from 'zod';
 
 // Public (unauthenticated) PREVIEW of the free sample images, used by the
-// landing page modal. Only the preview image of each free sample is served,
-// inline (no download). Downloading needs an account: see
-// lib/actions/file-download.action.ts. Anything else returns 404.
+// landing page and the auth pages. Only the preview image of each free sample
+// is served, inline, as a resized WebP (no download of the original).
+// Downloading needs an account: see app/api/files/[fileId]/download.
+// Anything else returns 404.
+//
+// Uploads are ~1 MB PNGs; the pages show them at 250-500 px. Resizing here and
+// letting the CDN cache the result turns a multi-second load into one small
+// cached file.
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || 'eu-west-1',
@@ -20,13 +25,24 @@ const s3 = new S3Client({
 
 const paramsSchema = z.object({ fileId: z.string().cuid() });
 
-const PRESIGN_SECONDS = 300;
+/** Allowed output widths (px). Fixed so the CDN keeps few variants. */
+const WIDTHS = [512, 1024] as const;
+const widthSchema = z.coerce
+  .number()
+  .refine((w): w is (typeof WIDTHS)[number] =>
+    (WIDTHS as readonly number[]).includes(w)
+  )
+  .catch(1024);
+
+// CDN: 1 hour, then refreshed in the background (10 min). A sample removed
+// from the free list stops being served within that window.
+const CACHE = 'public, max-age=300, s-maxage=3600, stale-while-revalidate=600';
 
 const notFound = () =>
   NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> }
 ) {
   const parsed = paramsSchema.safeParse(await params);
@@ -36,6 +52,9 @@ export async function GET(
       { status: 400 }
     );
   }
+  const width = widthSchema.parse(
+    new URL(request.url).searchParams.get('w') ?? undefined
+  );
 
   try {
     const samples = await getFreeSamples();
@@ -49,22 +68,30 @@ export async function GET(
     });
     if (!file) return notFound();
 
-    const url = await getSignedUrl(
-      s3,
+    const object = await s3.send(
       new GetObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME || 'fonosapp',
         Key: file.s3Key,
-        ResponseContentDisposition: 'inline',
-      }),
-      { expiresIn: PRESIGN_SECONDS }
+      })
     );
+    if (!object.Body) return notFound();
+    const original = Buffer.from(await object.Body.transformToByteArray());
 
-    const response = NextResponse.redirect(url, 302);
-    // Shorter than the presign lifetime so a cached redirect never points at
-    // an expired URL.
-    response.headers.set('Cache-Control', 'public, max-age=240');
-    return response;
-  } catch {
+    const webp = await sharp(original)
+      .resize({ width, withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    return new Response(new Uint8Array(webp), {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/webp',
+        'Content-Disposition': 'inline',
+        'Cache-Control': CACHE,
+      },
+    });
+  } catch (error) {
+    console.error('[free-preview] failed', error);
     return NextResponse.json(
       { success: false, error: 'Failed to load preview' },
       { status: 500 }
