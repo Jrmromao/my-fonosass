@@ -19,7 +19,7 @@ export class CacheManager {
   private static config: CacheConfig = {
     ttl: 300, // 5 minutes default
     maxSize: 1000,
-    strategy: 'lru'
+    strategy: 'lru',
   };
 
   static setConfig(config: Partial<CacheConfig>): void {
@@ -32,7 +32,7 @@ export class CacheManager {
       value,
       timestamp: Date.now(),
       ttl: ttl || this.config.ttl,
-      hits: 0
+      hits: 0,
     };
 
     // Check if we need to evict items
@@ -45,7 +45,7 @@ export class CacheManager {
 
   static get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
@@ -58,13 +58,13 @@ export class CacheManager {
 
     // Update hit count
     entry.hits++;
-    
+
     return entry.value;
   }
 
   static has(key: string): boolean {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return false;
     }
@@ -98,22 +98,23 @@ export class CacheManager {
       ttl: number;
     }>;
   } {
-    const entries = Array.from(this.cache.values()).map(entry => ({
+    const entries = Array.from(this.cache.values()).map((entry) => ({
       key: entry.key,
       age: Date.now() - entry.timestamp,
       hits: entry.hits,
-      ttl: entry.ttl
+      ttl: entry.ttl,
     }));
 
     const totalHits = entries.reduce((sum, entry) => sum + entry.hits, 0);
-    const hitRate = totalHits > 0 ? totalHits / (totalHits + this.cache.size) : 0;
+    const hitRate =
+      totalHits > 0 ? totalHits / (totalHits + this.cache.size) : 0;
 
     return {
       size: this.cache.size,
       maxSize: this.config.maxSize,
       hitRate: Math.round(hitRate * 100) / 100,
       totalHits,
-      entries: entries.sort((a, b) => b.hits - a.hits)
+      entries: entries.sort((a, b) => b.hits - a.hits),
     };
   }
 
@@ -135,14 +136,14 @@ export class CacheManager {
     // Remove least recently used (lowest hit count)
     let lruKey = '';
     let minHits = Infinity;
-    
+
     for (const [key, entry] of this.cache.entries()) {
       if (entry.hits < minHits) {
         minHits = entry.hits;
         lruKey = key;
       }
     }
-    
+
     if (lruKey) {
       this.cache.delete(lruKey);
     }
@@ -152,14 +153,14 @@ export class CacheManager {
     // Remove first in (oldest timestamp)
     let oldestKey = '';
     let oldestTime = Infinity;
-    
+
     for (const [key, entry] of this.cache.entries()) {
       if (entry.timestamp < oldestTime) {
         oldestTime = entry.timestamp;
         oldestKey = key;
       }
     }
-    
+
     if (oldestKey) {
       this.cache.delete(oldestKey);
     }
@@ -168,7 +169,7 @@ export class CacheManager {
   private static evictTTL(): void {
     // Remove expired entries
     const now = Date.now();
-    
+
     for (const [key, entry] of this.cache.entries()) {
       if (now - entry.timestamp > entry.ttl * 1000) {
         this.cache.delete(key);
@@ -182,29 +183,29 @@ export class HTTPCache {
   static createCacheHeaders(ttl: number = 300): Record<string, string> {
     const maxAge = Math.floor(ttl);
     const expires = new Date(Date.now() + ttl * 1000).toUTCString();
-    
+
     return {
       'Cache-Control': `public, max-age=${maxAge}, s-maxage=${maxAge}`,
-      'Expires': expires,
-      'ETag': `"${Date.now()}"`,
-      'Last-Modified': new Date().toUTCString()
+      Expires: expires,
+      ETag: `"${Date.now()}"`,
+      'Last-Modified': new Date().toUTCString(),
     };
   }
 
   static createNoCacheHeaders(): Record<string, string> {
     return {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
+      Pragma: 'no-cache',
+      Expires: '0',
     };
   }
 
   static createPrivateCacheHeaders(ttl: number = 60): Record<string, string> {
     const maxAge = Math.floor(ttl);
-    
+
     return {
       'Cache-Control': `private, max-age=${maxAge}`,
-      'ETag': `"${Date.now()}"`
+      ETag: `"${Date.now()}"`,
     };
   }
 
@@ -216,7 +217,7 @@ export class HTTPCache {
   static checkLastModified(request: NextRequest, lastModified: Date): boolean {
     const ifModifiedSince = request.headers.get('if-modified-since');
     if (!ifModifiedSince) return false;
-    
+
     const clientDate = new Date(ifModifiedSince);
     return clientDate >= lastModified;
   }
@@ -224,7 +225,10 @@ export class HTTPCache {
 
 // Database query caching
 export class QueryCache {
-  private static cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private static cache = new Map<
+    string,
+    { data: any; timestamp: number; ttl: number }
+  >();
 
   static async get<T>(
     key: string,
@@ -232,17 +236,17 @@ export class QueryCache {
     ttl: number = 300
   ): Promise<T> {
     const cached = this.cache.get(key);
-    
+
     if (cached && Date.now() - cached.timestamp < cached.ttl * 1000) {
       return cached.data;
     }
 
     const data = await queryFn();
-    
+
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
 
     return data;
@@ -262,6 +266,21 @@ export class QueryCache {
 }
 
 // API response caching middleware
+interface CachedResponse {
+  body: string;
+  status: number;
+  headers: [string, string][];
+}
+
+/**
+ * Caches successful responses of a route handler in memory.
+ *
+ * Stores the response *data* (body, status, headers), never the Response
+ * object: a body can only be read once, so returning a stored Response made
+ * every hit after the first come back empty.
+ *
+ * Only for public, non-personal data. Per-user routes must not use this.
+ */
 export function withCaching<T extends any[]>(
   handler: (req: NextRequest, ...args: T) => Promise<NextResponse>,
   options: {
@@ -270,45 +289,41 @@ export function withCaching<T extends any[]>(
     skipCache?: (req: NextRequest) => boolean;
   } = {}
 ) {
-  return async function(req: NextRequest, ...args: T): Promise<NextResponse> {
+  return async function (req: NextRequest, ...args: T): Promise<NextResponse> {
     const {
       ttl = 300,
       keyGenerator = (req) => `${req.method}:${req.url}`,
-      skipCache = () => false
+      skipCache = () => false,
     } = options;
 
-    // Skip caching for certain requests
     if (skipCache(req)) {
       return handler(req, ...args);
     }
 
     const cacheKey = keyGenerator(req);
-    const cached = CacheManager.get<NextResponse>(cacheKey);
+    const cached = CacheManager.get<CachedResponse>(cacheKey);
 
     if (cached) {
-      // Add cache hit headers
-      cached.headers.set('X-Cache', 'HIT');
-      cached.headers.set('X-Cache-Key', cacheKey);
-      return cached;
+      const hit = new NextResponse(cached.body, {
+        status: cached.status,
+        headers: cached.headers,
+      });
+      hit.headers.set('X-Cache', 'HIT');
+      return hit;
     }
 
-    // Execute handler
     const response = await handler(req, ...args);
 
-    // Only cache successful responses
     if (response.status >= 200 && response.status < 300) {
-      // Clone response for caching
-      const responseClone = response.clone();
-      
-      // Add cache headers
+      const body = await response.clone().text();
+      const headers: [string, string][] = [];
+      response.headers.forEach((value, key) => headers.push([key, value]));
+      CacheManager.set<CachedResponse>(
+        cacheKey,
+        { body, status: response.status, headers },
+        ttl
+      );
       response.headers.set('X-Cache', 'MISS');
-      response.headers.set('X-Cache-Key', cacheKey);
-      Object.entries(HTTPCache.createCacheHeaders(ttl)).forEach(([key, value]) => {
-        response.headers.set(key, value);
-      });
-
-      // Cache the response
-      CacheManager.set(cacheKey, responseClone, ttl);
     }
 
     return response;
