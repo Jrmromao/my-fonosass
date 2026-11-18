@@ -33,9 +33,10 @@ describe('EmailService', () => {
       );
 
       expect(mockSend).toHaveBeenCalledWith({
+        attachments: expect.any(Array),
         from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: 'test@example.com',
-        subject: '⚠️ Restam apenas 2 downloads gratuitos',
+        subject: 'Resta 2 downloads este mes',
         html: expect.stringContaining('Test User'),
       });
     });
@@ -66,7 +67,7 @@ describe('EmailService', () => {
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          subject: '⚠️ Restam apenas 5 downloads gratuitos',
+          subject: 'Resta 5 downloads este mes',
         })
       );
     });
@@ -83,7 +84,7 @@ describe('EmailService', () => {
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining('Olá John Doe!'),
+          html: expect.stringContaining('Ola John Doe,'),
         })
       );
     });
@@ -100,7 +101,7 @@ describe('EmailService', () => {
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining('Fazer Upgrade Agora'),
+          html: expect.stringContaining('Ver plano Profissional'),
         })
       );
     });

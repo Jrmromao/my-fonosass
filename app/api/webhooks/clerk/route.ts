@@ -309,7 +309,7 @@ async function processWebhook(req: Request): Promise<NextResponse> {
           const { EmailService } = await import('@/services/emailService');
           await EmailService.sendWelcomeEmail(
             primaryEmail,
-            `${first_name || ''} ${last_name || ''}`.trim() || 'Usuário'
+            `${first_name || ''} ${last_name || ''}`.trim()
           );
         } catch (emailError) {
           console.error('Error sending welcome email:', emailError);

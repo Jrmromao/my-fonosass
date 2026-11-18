@@ -35,14 +35,15 @@ describe('EmailService', () => {
       );
 
       expect(mockSend).toHaveBeenCalledWith({
+        attachments: expect.any(Array),
         from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: 'user@test.com',
-        subject: '⚠️ Restam apenas 1 downloads gratuitos',
-        html: expect.stringContaining('Olá João Silva!'),
+        subject: 'Resta 1 download este mes',
+        html: expect.stringContaining('Ola João Silva,'),
       });
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining('1 downloads restantes'),
+          html: expect.stringContaining('1 download restante'),
         })
       );
     });
@@ -58,7 +59,7 @@ describe('EmailService', () => {
       );
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Error sending download limit warning:',
+        'Download limit warning email failed:',
         expect.any(Error)
       );
       consoleSpy.mockRestore();
@@ -75,14 +76,15 @@ describe('EmailService', () => {
       );
 
       expect(mockSend).toHaveBeenCalledWith({
+        attachments: expect.any(Array),
         from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: 'user@test.com',
-        subject: '🚫 Limite de downloads atingido - Upgrade para Pro',
-        html: expect.stringContaining('Olá Maria Santos!'),
+        subject: 'Limite de downloads atingido',
+        html: expect.stringContaining('Ola Maria Santos,'),
       });
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining('Upgrade Agora - R$ 39,90/mês'),
+          html: expect.stringContaining('Fazer upgrade'),
         })
       );
     });
@@ -97,7 +99,7 @@ describe('EmailService', () => {
       );
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Error sending download limit reached:',
+        'Download limit reached email failed:',
         expect.any(Error)
       );
       consoleSpy.mockRestore();
@@ -111,29 +113,69 @@ describe('EmailService', () => {
       await EmailService.sendWelcomeEmail('newuser@test.com', 'Pedro Costa');
 
       expect(mockSend).toHaveBeenCalledWith({
-        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
+        attachments: expect.any(Array),
+        from: 'Eliane Mota <noreply@almanaquedafala.com.br>',
         to: 'newuser@test.com',
-        subject: '🎉 Bem-vindo ao Almanaque da Fala!',
-        html: expect.stringContaining('Bem-vindo, Pedro Costa!'),
+        subject: 'Boas-vindas ao Almanaque da Fala',
+        html: expect.stringContaining('Olá, Pedro!'),
       });
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining('5 downloads gratuitos'),
+          html: expect.stringContaining(
+            'Baixar grátis 2 atividades do fonema /s/'
+          ),
         })
       );
     });
 
+    it('should be signed by Eliane Mota in pt-BR', async () => {
+      mockSend.mockResolvedValue({ id: 'email-id' });
+
+      await EmailService.sendWelcomeEmail('newuser@test.com', 'Pedro Costa');
+
+      const { html } = mockSend.mock.calls[0][0];
+      expect(html).toContain('<strong>Eliane Mota</strong>');
+      expect(html).toContain('Um abraço');
+      expect(html).not.toMatch(/por mês|Contacto/);
+      expect(html).not.toMatch(/connosco|descarregar|\bvoce\b|\bOla\b/i);
+    });
+
+    it('should embed the logo inline (cid) instead of a remote URL', async () => {
+      mockSend.mockResolvedValue({ id: 'email-id' });
+
+      await EmailService.sendWelcomeEmail('newuser@test.com', 'Pedro Costa');
+
+      const { html, attachments } = mockSend.mock.calls[0][0];
+      expect(html).toContain('src="cid:almanaque-logo"');
+      expect(attachments).toEqual([
+        expect.objectContaining({
+          contentId: 'almanaque-logo',
+          filename: 'logo.png',
+        }),
+      ]);
+    });
+
+    it('should escape HTML in the user name', async () => {
+      mockSend.mockResolvedValue({ id: 'email-id' });
+
+      await EmailService.sendWelcomeEmail(
+        'newuser@test.com',
+        '<script>alert(1)</script> X'
+      );
+
+      const { html } = mockSend.mock.calls[0][0];
+      expect(html).not.toContain('<script>');
+      expect(html).toContain('&lt;script&gt;');
+    });
+
     it('should include correct CTA links', async () => {
-      process.env.NEXT_PUBLIC_APP_URL = 'https://test.com';
       mockSend.mockResolvedValue({ id: 'email-id' });
 
       await EmailService.sendWelcomeEmail('newuser@test.com', 'Pedro Costa');
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          html: expect.stringContaining(
-            'https://test.com/dashboard/biblioteca'
-          ),
+          html: expect.stringContaining('/dashboard/biblioteca'),
         })
       );
     });
@@ -145,7 +187,7 @@ describe('EmailService', () => {
       await EmailService.sendWelcomeEmail('newuser@test.com', 'Pedro Costa');
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Error sending welcome email:',
+        'Welcome email failed:',
         expect.any(Error)
       );
       consoleSpy.mockRestore();

@@ -1,71 +1,117 @@
 import { Resend } from 'resend';
 import 'server-only';
+import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
+import { phonemeLabel } from '@/lib/activityLabels';
+import { FREE_PHONEME } from '@/lib/pricing';
+import { EMAIL_LOGO_BASE64, EMAIL_LOGO_CID } from './emailLogo';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || 'https://www.almanaquedafala.com.br';
 
+const WELCOME_FROM = 'Eliane Mota <noreply@almanaquedafala.com.br>';
+// Optional: where replies to the welcome email should go (e.g. Eliane's inbox).
+const REPLY_TO = process.env.EMAIL_REPLY_TO;
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ─── Base Template ────────────────────────────────────────────
+// Table-based layout with inline styles: Gmail and Outlook drop or mangle
+// div-based layouts (max-width, backgrounds), which broke the card.
+
+const FONT =
+  "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
+/** Inline logo attachment; pass to every send that uses baseTemplate. */
+const LOGO_ATTACHMENTS = [
+  {
+    filename: 'logo.png',
+    content: EMAIL_LOGO_BASE64,
+    contentId: EMAIL_LOGO_CID,
+  },
+];
 
 function baseTemplate(content: string) {
   return `<!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; padding: 40px 20px; margin: 0;">
-  <div style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 4px; overflow: hidden;">
-
-    <!-- Header -->
-    <div style="padding: 28px 40px; text-align: center;">
-      <img src="${APP_URL}/images/logo.png" alt="Almanaque da Fala" width="64" height="64" style="display: inline-block; vertical-align: middle; margin-right: 10px;" />
-      <span style="font-family: 'Nunito', 'Georgia', serif; font-size: 20px; font-weight: 700; color: #1e293b; letter-spacing: -0.02em; vertical-align: middle;">Almanaque da Fala</span>
-    </div>
-
-    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0 40px;" />
-
-    <!-- Content -->
-    <div style="padding: 32px 40px; font-size: 14px; line-height: 1.7; color: #334155;">
-      ${content}
-    </div>
-
-    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0 40px;" />
-
-    <!-- Footer -->
-    <div style="padding: 24px 40px; text-align: center;">
-      <p style="color: #94a3b8; font-size: 11px; margin: 0 0 8px 0;">
-        <a href="${APP_URL}/privacidade" style="color: #94a3b8; text-decoration: none;">Privacidade</a>
-        &nbsp;&middot;&nbsp;
-        <a href="${APP_URL}/faq" style="color: #94a3b8; text-decoration: none;">FAQ</a>
-        &nbsp;&middot;&nbsp;
-        <a href="${APP_URL}/contato" style="color: #94a3b8; text-decoration: none;">Contacto</a>
-      </p>
-      <p style="color: #cbd5e1; font-size: 11px; margin: 0;">
-        &copy; ${new Date().getFullYear()} Almanaque da Fala. Todos os direitos reservados.
-      </p>
-    </div>
-  </div>
+<body style="margin: 0; padding: 0; background-color: #f8fafc;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc;">
+    <tr>
+      <td align="center" style="padding: 40px 16px;">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 560px; background-color: #ffffff; border-radius: 4px;">
+          <tr>
+            <td align="center" style="padding: 28px 40px 24px 40px;">
+              <img src="cid:${EMAIL_LOGO_CID}" alt="Almanaque da Fala" width="141" height="112" style="display: block; border: 0; outline: none; text-decoration: none; width: 141px; height: 112px;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px;"><div style="border-top: 1px solid #e2e8f0; font-size: 0; line-height: 0;">&nbsp;</div></td>
+          </tr>
+          <tr>
+            <td style="padding: 32px 40px; font-family: ${FONT}; font-size: 14px; line-height: 1.7; color: #334155;">
+              ${content}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 0 40px;"><div style="border-top: 1px solid #e2e8f0; font-size: 0; line-height: 0;">&nbsp;</div></td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 24px 40px; font-family: ${FONT};">
+              <p style="color: #94a3b8; font-size: 11px; margin: 0 0 8px 0;">
+                <a href="${APP_URL}/privacidade" style="color: #94a3b8; text-decoration: none;">Privacidade</a>
+                &nbsp;&middot;&nbsp;
+                <a href="${APP_URL}/faq" style="color: #94a3b8; text-decoration: none;">FAQ</a>
+                &nbsp;&middot;&nbsp;
+                <a href="${APP_URL}/contato" style="color: #94a3b8; text-decoration: none;">Contato</a>
+              </p>
+              <p style="color: #cbd5e1; font-size: 11px; margin: 0;">
+                &copy; ${new Date().getFullYear()} Almanaque da Fala. Todos os direitos reservados.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
 
 function button(href: string, text: string) {
-  return `<div style="text-align: center; margin: 28px 0;">
-    <a href="${href}" style="background-color: #1e293b; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; font-size: 14px;">
-      ${text}
-    </a>
-  </div>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 28px auto;">
+    <tr>
+      <td align="center" bgcolor="#1e293b" style="border-radius: 6px;">
+        <a href="${href}" style="display: inline-block; padding: 12px 28px; font-family: ${FONT}; font-size: 14px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">${text}</a>
+      </td>
+    </tr>
+  </table>`;
 }
 
 function infoBox(content: string) {
-  return `<div style="background: #f8fafc; border-radius: 6px; padding: 16px 20px; margin: 20px 0; font-size: 13px;">${content}</div>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
+    <tr>
+      <td bgcolor="#f8fafc" style="background-color: #f8fafc; border-radius: 6px; padding: 16px 20px; font-family: ${FONT}; font-size: 13px; line-height: 1.7; color: #334155;">${content}</td>
+    </tr>
+  </table>`;
 }
 
 function warningBox(content: string) {
-  return `<div style="background: #fef2f2; border-left: 3px solid #f97066; border-radius: 4px; padding: 16px 20px; margin: 20px 0;">
-    <p style="color: #991b1b; font-size: 13px; line-height: 1.6; margin: 0;">${content}</p>
-  </div>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
+    <tr>
+      <td bgcolor="#fef2f2" style="background-color: #fef2f2; border-left: 3px solid #f97066; border-radius: 4px; padding: 16px 20px; font-family: ${FONT}; font-size: 13px; line-height: 1.6; color: #991b1b;">${content}</td>
+    </tr>
+  </table>`;
 }
 
 // ─── Email Methods ────────────────────────────────────────────
@@ -73,25 +119,31 @@ function warningBox(content: string) {
 export class EmailService {
   static async sendWelcomeEmail(userEmail: string, userName: string) {
     try {
-      await resend.emails.send({
-        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
+      const firstName = escapeHtml(userName.trim().split(/\s+/)[0] || '');
+      const { error } = await resend.emails.send({
+        from: WELCOME_FROM,
+        ...(REPLY_TO ? { replyTo: REPLY_TO } : {}),
         to: userEmail,
-        subject: 'Bem-vinda ao Almanaque da Fala',
+        attachments: LOGO_ATTACHMENTS,
+        subject: 'Boas-vindas ao Almanaque da Fala',
         html: baseTemplate(`
-          <p>Ola ${userName},</p>
-          <p>Que bom ter voce connosco! Sei como e a rotina de preparar materiais para cada sessao — por isso criei o Almanaque da Fala.</p>
-          <p>Aqui vai encontrar atividades prontas para imprimir, organizadas por fonema e faixa etaria. Toda semana adiciono materiais novos.</p>
+          <p>Olá${firstName ? `, ${firstName}` : ''}!</p>
+          <p>Que bom ter você por aqui! Eu sei como é a rotina de preparar materiais para cada sessão, e foi por isso que criei o Almanaque da Fala.</p>
+          <p>Aqui você encontra atividades prontas para imprimir, organizadas por fonema e faixa etária. Toda semana eu adiciono materiais novos.</p>
           ${infoBox(`
-            <strong>O que pode fazer agora:</strong><br><br>
+            <strong>O que você pode fazer agora:</strong><br><br>
             &bull; Explorar a biblioteca por fonema<br>
-            &bull; Descarregar ate 3 atividades por mes (plano gratuito)<br>
-            &bull; Imprimir e usar direto na sessao
+            &bull; Baixar grátis ${FREE_SAMPLE_COUNT} atividades do fonema ${phonemeLabel(FREE_PHONEME)}<br>
+            &bull; Imprimir e usar direto na sessão
           `)}
+          <p>Para baixar toda a biblioteca, é só assinar o plano Profissional quando quiser.</p>
           ${button(`${APP_URL}/dashboard/biblioteca`, 'Ver atividades')}
-          <p>Se precisar de algo, e so responder a este email. Estou aqui para ajudar.</p>
-          <p style="margin-top: 24px;">Um abraco,<br><strong>Eliane Mota</strong><br><span style="color: #64748b; font-size: 12px;">Fonoaudiologa — Almanaque da Fala</span></p>
+          <p>Se precisar de qualquer coisa, é só responder a este e-mail. Estou aqui para ajudar.</p>
+          <p style="margin-top: 24px;">Um abraço,<br><strong>Eliane Mota</strong><br><span style="color: #64748b; font-size: 12px;">Fonoaudióloga, Almanaque da Fala</span></p>
         `),
       });
+      // The Resend SDK returns failures in `error` instead of throwing.
+      if (error) console.error('Welcome email failed:', error);
     } catch (error) {
       console.error('Welcome email failed:', error);
     }
@@ -106,6 +158,7 @@ export class EmailService {
       await resend.emails.send({
         from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: userEmail,
+        attachments: LOGO_ATTACHMENTS,
         subject: `Resta ${remaining} download${remaining > 1 ? 's' : ''} este mes`,
         html: baseTemplate(`
           <p>Ola ${userName},</p>
@@ -125,6 +178,7 @@ export class EmailService {
       await resend.emails.send({
         from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
         to: userEmail,
+        attachments: LOGO_ATTACHMENTS,
         subject: 'Limite de downloads atingido',
         html: baseTemplate(`
           <p>Ola ${userName},</p>
