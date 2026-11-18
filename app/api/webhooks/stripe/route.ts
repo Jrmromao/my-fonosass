@@ -42,6 +42,53 @@ async function updateClerkUserMetadata(
   }
 }
 
+// ─── Subscription emails ─────────────────────────────────────
+
+// Since API version 2025-03-31 (we use basil) the billing period lives on the
+// subscription items, not on the subscription. Fall back to the old field.
+type PeriodFields = {
+  current_period_start?: number;
+  current_period_end?: number;
+};
+
+function periodSeconds(
+  subscription: Stripe.Subscription,
+  edge: 'start' | 'end'
+): number | undefined {
+  const key = edge === 'start' ? 'current_period_start' : 'current_period_end';
+  const item = subscription.items?.data?.[0] as PeriodFields | undefined;
+  return (subscription as PeriodFields)[key] ?? item?.[key];
+}
+
+/** Period boundary as a Date; undefined (Prisma skips the field) if missing. */
+function periodDate(
+  subscription: Stripe.Subscription,
+  edge: 'start' | 'end'
+): Date | undefined {
+  const seconds = periodSeconds(subscription, edge);
+  return seconds ? new Date(seconds * 1000) : undefined;
+}
+
+function isCancelScheduled(sub: Partial<Stripe.Subscription>): boolean {
+  return Boolean(sub.cancel_at_period_end || sub.cancel_at);
+}
+
+async function findEmailRecipient(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, fullName: true },
+  });
+}
+
+/** Emails must never fail the webhook (Stripe would retry and re-run it). */
+async function sendSubscriptionEmail(label: string, send: () => Promise<void>) {
+  try {
+    await send();
+  } catch (error) {
+    console.error(`${label} email failed:`, error);
+  }
+}
+
 export async function POST(req: Request) {
   // Basic rate limiting
   const now = Date.now();
@@ -130,16 +177,12 @@ export async function POST(req: Request) {
           'active',
           'PRO',
           subscriptionId,
-          (subscription as any).current_period_end
+          periodSeconds(subscription, 'end')
         );
 
         // Calculate period dates
-        const periodStart = new Date(
-          (subscription as any).current_period_start * 1000
-        );
-        const periodEnd = new Date(
-          (subscription as any).current_period_end * 1000
-        );
+        const periodStart = periodDate(subscription, 'start');
+        const periodEnd = periodDate(subscription, 'end');
 
         // Store subscription in database
         await prisma.subscription.upsert({
@@ -160,6 +203,22 @@ export async function POST(req: Request) {
             currentPeriodStart: periodStart,
             currentPeriodEnd: periodEnd,
           },
+        });
+
+        await sendSubscriptionEmail('Subscription confirmed', async () => {
+          const user = await findEmailRecipient(userId);
+          const price = subscription.items.data[0]?.price;
+          if (!user || !price?.unit_amount || !periodEnd) return;
+          const { EmailService } = await import('@/services/emailService');
+          await EmailService.sendSubscriptionConfirmed(
+            user.email,
+            user.fullName,
+            {
+              amount: price.unit_amount / 100,
+              interval: price.recurring?.interval === 'year' ? 'year' : 'month',
+              renewsAt: periodEnd,
+            }
+          );
         });
 
         break;
@@ -192,12 +251,8 @@ export async function POST(req: Request) {
           },
           data: {
             status: 'ACTIVE',
-            currentPeriodStart: new Date(
-              (subscription as any).current_period_start * 1000
-            ),
-            currentPeriodEnd: new Date(
-              (subscription as any).current_period_end * 1000
-            ),
+            currentPeriodStart: periodDate(subscription, 'start'),
+            currentPeriodEnd: periodDate(subscription, 'end'),
             updatedAt: new Date(),
           },
         });
@@ -209,7 +264,7 @@ export async function POST(req: Request) {
             'active',
             'PRO',
             subscriptionId,
-            (subscription as any).current_period_end
+            periodSeconds(subscription, 'end')
           );
         }
 
@@ -254,7 +309,7 @@ export async function POST(req: Request) {
             'past_due',
             'PRO',
             subscriptionId,
-            (subscription as any).current_period_end
+            periodSeconds(subscription, 'end')
           );
         }
 
@@ -292,12 +347,8 @@ export async function POST(req: Request) {
           },
           data: {
             status: status as any,
-            currentPeriodStart: new Date(
-              (subscription as any).current_period_start * 1000
-            ),
-            currentPeriodEnd: new Date(
-              (subscription as any).current_period_end * 1000
-            ),
+            currentPeriodStart: periodDate(subscription, 'start'),
+            currentPeriodEnd: periodDate(subscription, 'end'),
             updatedAt: new Date(),
           },
         });
@@ -309,8 +360,34 @@ export async function POST(req: Request) {
             subscription.status,
             status === 'ACTIVE' ? 'PRO' : 'FREE',
             subscription.id,
-            (subscription as any).current_period_end
+            periodSeconds(subscription, 'end')
           );
+        }
+
+        // Customer just scheduled a cancellation (e.g. in the billing portal):
+        // confirm it and tell them until when they keep access.
+        const previous = (event.data.previous_attributes ??
+          {}) as Partial<Stripe.Subscription>;
+        const cancelFieldsChanged =
+          'cancel_at_period_end' in previous || 'cancel_at' in previous;
+        if (
+          cancelFieldsChanged &&
+          !isCancelScheduled(previous) &&
+          isCancelScheduled(subscription)
+        ) {
+          await sendSubscriptionEmail('Subscription cancelled', async () => {
+            const user = await findEmailRecipient(userId);
+            if (!user) return;
+            const accessUntil = subscription.cancel_at
+              ? new Date(subscription.cancel_at * 1000)
+              : (periodDate(subscription, 'end') ?? null);
+            const { EmailService } = await import('@/services/emailService');
+            await EmailService.sendSubscriptionCancelled(
+              user.email,
+              user.fullName,
+              accessUntil
+            );
+          });
         }
 
         break;
@@ -341,6 +418,22 @@ export async function POST(req: Request) {
         // Update Clerk if we have the clerkUserId
         if (clerkUserId) {
           await updateClerkUserMetadata(clerkUserId, 'inactive', 'FREE');
+        }
+
+        // A scheduled cancellation was already emailed when it was scheduled.
+        // Otherwise (cancelled immediately, or ended after failed payments)
+        // tell the customer it has ended.
+        if (!isCancelScheduled(subscription)) {
+          await sendSubscriptionEmail('Subscription cancelled', async () => {
+            const user = await findEmailRecipient(userId);
+            if (!user) return;
+            const { EmailService } = await import('@/services/emailService');
+            await EmailService.sendSubscriptionCancelled(
+              user.email,
+              user.fullName,
+              null
+            );
+          });
         }
 
         break;
