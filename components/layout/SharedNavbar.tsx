@@ -1,8 +1,8 @@
 'use client';
 
+import { Logo } from '@/components/brand/Logo';
 import { useAuth } from '@clerk/nextjs';
 import { Menu, X } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -55,19 +55,19 @@ export default function SharedNavbar({
       } ${hasScrolled ? TONE_CLASSES[tone].scrolled : TONE_CLASSES[tone].top} ${className}`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-18">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-14 h-14 transition-transform group-hover:scale-105">
-              <Image
-                src="/images/logo.png"
-                alt="Almanaque da Fala"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-            <span className="text-base font-bold text-gray-900 font-display">
+          {/* Logo + name on every screen size. */}
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+            aria-label="Almanaque da Fala, página inicial"
+          >
+            <Logo size="nav" href={null} priority />
+            <span
+              aria-hidden
+              className="text-base font-bold text-violet-950 font-display md:text-lg"
+            >
               Almanaque da Fala
             </span>
           </Link>

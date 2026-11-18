@@ -2,10 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
-import { APP_NAME } from '@/utils/constants';
 import { useClerk, useUser } from '@clerk/nextjs';
 import { BarChart2, BookOpen, FolderCog, Menu, User, X } from 'lucide-react';
-import Image from 'next/image';
+import { Logo } from '@/components/brand/Logo';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -108,24 +107,15 @@ export function Sidebar({ className }: SidebarProps) {
       >
         {/* Logo area */}
         <div className="h-20 flex items-center border-b border-border">
-          <div className="flex items-center justify-center w-full">
-            <div
-              className={`relative transition-all duration-300 ${
-                !isHydrated || isCollapsed ? 'h-14 w-14' : 'h-20 w-20'
-              }`}
-            >
-              <Image
-                src="/images/logo.png"
-                alt="Almanaque da Fala Logo"
-                fill
-                className="object-contain"
-                priority
-              />
+          {!isHydrated || isCollapsed ? (
+            <div className="flex w-full justify-center">
+              <Logo size="icon" href="/dashboard" priority />
             </div>
-            {isHydrated && !isCollapsed && (
-              <span className="sr-only">{APP_NAME}</span>
-            )}
-          </div>
+          ) : (
+            <div className="flex flex-1 justify-center pl-9">
+              <Logo size="nav" href="/dashboard" priority />
+            </div>
+          )}
 
           {/* Collapse toggle for desktop */}
           {isHydrated && !isCollapsed && (

@@ -82,7 +82,7 @@ export default function FAQPage() {
         }}
       />
       <SharedNavbar />
-      <main className="pt-20">
+      <main className="pt-24">
         <FAQClient />
       </main>
       <LandingFooter />

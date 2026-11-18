@@ -20,7 +20,7 @@ export default function ContatoPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-900 dark:via-indigo-800 dark:to-purple-900">
       <SharedNavbar />
-      <main className="pt-20">
+      <main className="pt-24">
         <ContatoClient />
       </main>
       <LandingFooter />
