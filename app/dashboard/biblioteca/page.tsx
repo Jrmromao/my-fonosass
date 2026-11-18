@@ -1,8 +1,12 @@
 'use client';
 
 import { UpgradeDialog } from '@/components/dashboard/UpgradeDialog';
+import {
+  ActivityCard,
+  ActivityRow,
+  type ActivityItemProps,
+} from '@/components/library/ActivityItems';
 import { NewActivityDialog } from '@/components/dialogs/new-activity-dialog';
-import ExampleWord from '@/components/landing/ExampleWord';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -36,20 +40,32 @@ import type {
   LibraryActivity,
   LibraryResponse,
 } from '@/lib/activityLibrary';
-import { PHONEME_GROUPS, exampleWordFor } from '@/lib/phonemes';
+import { ACTIVITY_CATEGORIES } from '@/lib/activityCategories';
+import {
+  type LibraryFilters,
+  libraryQuery,
+  parseLibraryParams,
+} from '@/lib/libraryUrl';
+import { PHONEME_GROUPS } from '@/lib/phonemes';
 import { FREE_PHONEME } from '@/lib/pricing';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ChevronLeft,
   ChevronRight,
   Download,
+  LayoutGrid,
+  List,
   Lock,
   Search,
 } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 
 const ALL = 'all';
+
+type LibraryView = 'grade' | 'lista';
+const VIEW_STORAGE_KEY = 'almanaque:library-view';
 
 export default function LibraryPage() {
   const queryClient = useQueryClient();
@@ -59,12 +75,12 @@ export default function LibraryPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const page = parseInt(searchParams.get('page') || '1');
-  const search = searchParams.get('search') || '';
-  const phoneme = searchParams.get('phoneme') || '';
-  const type = searchParams.get('type') || '';
-  const difficulty = searchParams.get('difficulty') || '';
-  const ageRange = searchParams.get('ageRange') || '';
+  // The URL is in pt-BR (?categoria=fonema&idade=pre-escolar…); filters
+  // below are the internal codes the API expects. See lib/libraryUrl.ts.
+  const { filters: current, legacy } = parseLibraryParams(
+    new URLSearchParams(searchParams.toString())
+  );
+  const { page, search, phoneme, type, difficulty, ageRange } = current;
 
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebounce(searchInput, 400);
@@ -73,22 +89,55 @@ export default function LibraryPage() {
   const [previewActivity, setPreviewActivity] =
     useState<LibraryActivity | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  // Name of an activity just created (admins): it goes to review, not here.
+  const [createdName, setCreatedName] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
+  // Grid or list, remembered per browser. Read after mount so the server
+  // render and the first client render match.
+  const [view, setView] = useState<LibraryView>('grade');
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(VIEW_STORAGE_KEY);
+      if (saved === 'lista' || saved === 'grade') setView(saved);
+    } catch {
+      /* storage blocked: keep the default */
+    }
+  }, []);
+  const chooseView = (next: LibraryView) => {
+    setView(next);
+    try {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, next);
+    } catch {
+      /* storage blocked: the choice lasts for this page view */
+    }
+  };
+
+  // `updates` uses the internal filter names (phoneme, type, ageRange…).
   const updateParams = useCallback(
-    (updates: Record<string, string>) => {
-      const params = new URLSearchParams(searchParams.toString());
+    (updates: Partial<Record<keyof LibraryFilters, string>>) => {
+      const next: LibraryFilters = { ...current, page: 1 };
       Object.entries(updates).forEach(([key, value]) => {
-        if (value) params.set(key, value);
-        else params.delete(key);
+        if (key === 'page') next.page = parseInt(value || '1') || 1;
+        else (next as unknown as Record<string, string>)[key] = value ?? '';
       });
-      if (!('page' in updates)) params.set('page', '1');
+      const qs = libraryQuery(next);
       startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+        router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
       });
     },
+    // `current` is derived from searchParams on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchParams, pathname, router]
   );
+
+  // Old English links (?phoneme=S&ageRange=PRESCHOOL) become pt-BR URLs.
+  useEffect(() => {
+    if (!legacy) return;
+    const qs = libraryQuery(current);
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [legacy]);
 
   // Push the debounced search to the URL (an effect, not render, so it never
   // updates the router while React is rendering).
@@ -138,6 +187,12 @@ export default function LibraryPage() {
     title: g.title,
     codes: g.entries.map((e) => e.code).filter((c) => available.has(c)),
   })).filter((g) => g.codes.length > 0);
+  const categoryOrder = ACTIVITY_CATEGORIES.map((c) => c.type);
+  const categoryOptions = [
+    ...categoryOrder.filter((t) => filters.types.includes(t)),
+    ...filters.types.filter((t) => !categoryOrder.includes(t)),
+  ];
+
   const otherCodes = filters.phonemes.filter((p) => !known.has(p));
   if (otherCodes.length > 0) {
     phonemeOptions.push({
@@ -200,9 +255,10 @@ export default function LibraryPage() {
           </div>
           {role === 'ADMIN' && (
             <NewActivityDialog
-              onSuccess={() =>
-                queryClient.invalidateQueries({ queryKey: ['activities'] })
-              }
+              onSuccess={(name) => {
+                setCreatedName(name || 'Atividade');
+                queryClient.invalidateQueries({ queryKey: ['activities'] });
+              }}
             />
           )}
         </div>
@@ -221,6 +277,34 @@ export default function LibraryPage() {
             >
               Ver planos
             </Button>
+          </div>
+        )}
+
+        {createdName && (
+          <div
+            role="status"
+            className="mx-6 mb-3 flex flex-col gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p>
+              &ldquo;{createdName}&rdquo; foi criada e está aguardando revisão.
+              Ela aparece na biblioteca depois de aprovada.
+            </p>
+            <div className="flex shrink-0 items-center gap-3">
+              <Link
+                href="/dashboard/resources?tab=review"
+                className="font-semibold underline underline-offset-2"
+              >
+                Ir para Revisão
+              </Link>
+              <button
+                type="button"
+                onClick={() => setCreatedName(null)}
+                className="text-green-900"
+                aria-label="Fechar aviso"
+              >
+                ×
+              </button>
+            </div>
           </div>
         )}
 
@@ -249,17 +333,57 @@ export default function LibraryPage() {
             />
           </div>
           <Select
+            value={type || ALL}
+            onValueChange={(v) => {
+              const next = v === ALL ? '' : v;
+              // Only the Fonema category has phonemes: drop the phoneme filter
+              // for any other category so the two never contradict.
+              updateParams(
+                next && next !== 'SPEECH'
+                  ? { type: next, phoneme: '' }
+                  : { type: next }
+              );
+            }}
+          >
+            <SelectTrigger
+              className={`${filterTrigger} w-48`}
+              aria-label="Filtrar por categoria"
+            >
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>Todas as categorias</SelectItem>
+              {categoryOptions.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {label(TYPE_LABELS, t)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
             value={phoneme || ALL}
-            onValueChange={(v) => updateParams({ phoneme: v === ALL ? '' : v })}
+            disabled={!!type && type !== 'SPEECH'}
+            onValueChange={(v) =>
+              // Choosing a phoneme implies the Fonema category.
+              updateParams(
+                v === ALL ? { phoneme: '' } : { phoneme: v, type: 'SPEECH' }
+              )
+            }
           >
             <SelectTrigger
               className={`${filterTrigger} w-40`}
               aria-label="Filtrar por fonema"
             >
-              <SelectValue placeholder="Fonema" />
+              <SelectValue
+                placeholder={
+                  type && type !== 'SPEECH' ? 'Sem fonema' : 'Fonema'
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>Todos os fonemas</SelectItem>
+              <SelectItem value={ALL}>
+                {type && type !== 'SPEECH' ? 'Sem fonema' : 'Todos os fonemas'}
+              </SelectItem>
               {phonemeOptions.map((group) => (
                 <SelectGroup key={group.id}>
                   <SelectLabel>{group.title}</SelectLabel>
@@ -294,25 +418,6 @@ export default function LibraryPage() {
             </SelectContent>
           </Select>
           <Select
-            value={type || ALL}
-            onValueChange={(v) => updateParams({ type: v === ALL ? '' : v })}
-          >
-            <SelectTrigger
-              className={`${filterTrigger} w-44`}
-              aria-label="Filtrar por tipo"
-            >
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>Todos os tipos</SelectItem>
-              {filters.types.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {label(TYPE_LABELS, t)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
             value={difficulty || ALL}
             onValueChange={(v) =>
               updateParams({ difficulty: v === ALL ? '' : v })
@@ -333,17 +438,55 @@ export default function LibraryPage() {
               ))}
             </SelectContent>
           </Select>
+
+          <div
+            role="group"
+            aria-label="Modo de exibição"
+            className="ml-auto flex rounded-md border border-neutral-200 p-0.5"
+          >
+            {(
+              [
+                { value: 'grade', label: 'Grade', Icon: LayoutGrid },
+                { value: 'lista', label: 'Lista', Icon: List },
+              ] as const
+            ).map(({ value, label: text, Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => chooseView(value)}
+                aria-pressed={view === value}
+                title={text}
+                className={`flex h-8 items-center gap-1.5 rounded px-2.5 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-900 ${
+                  view === value
+                    ? 'bg-neutral-100 font-semibold text-neutral-900'
+                    : 'text-neutral-600 hover:text-neutral-900'
+                }`}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+                <span className="hidden sm:inline">{text}</span>
+                <span className="sr-only sm:hidden">{text}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Cards */}
+      {/* Results */}
       <div className="px-6 py-6">
         {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-44 w-full" />
-            ))}
-          </div>
+          view === 'lista' ? (
+            <div className="space-y-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-44 w-full" />
+              ))}
+            </div>
+          )
         ) : activities.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-sm text-neutral-600">
@@ -351,21 +494,33 @@ export default function LibraryPage() {
             </p>
           </div>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {activities.map((activity) => (
-              <li key={activity.id}>
-                <ActivityCard
-                  activity={activity}
-                  showFreeBadge={canDownloadAll === false}
-                  downloading={downloadingId === activity.files[0]?.id}
-                  onOpen={() => setPreviewActivity(activity)}
-                  onDownload={() =>
-                    handleDownload(activity.files[0].id, `${activity.name}.pdf`)
-                  }
-                  onUpgrade={() => setUpgradeOpen(true)}
-                />
-              </li>
-            ))}
+          <ul
+            className={
+              view === 'lista'
+                ? 'divide-y divide-neutral-200 rounded-md border border-neutral-200 bg-white'
+                : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            }
+          >
+            {activities.map((activity) => {
+              const props: ActivityItemProps = {
+                activity,
+                showFreeBadge: canDownloadAll === false,
+                downloading: downloadingId === activity.files[0]?.id,
+                onOpen: () => setPreviewActivity(activity),
+                onDownload: () =>
+                  handleDownload(activity.files[0].id, `${activity.name}.pdf`),
+                onUpgrade: () => setUpgradeOpen(true),
+              };
+              return (
+                <li key={activity.id}>
+                  {view === 'lista' ? (
+                    <ActivityRow {...props} />
+                  ) : (
+                    <ActivityCard {...props} />
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
 
@@ -475,98 +630,5 @@ export default function LibraryPage() {
 
       <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
-  );
-}
-
-interface ActivityCardProps {
-  activity: LibraryActivity;
-  showFreeBadge: boolean;
-  downloading: boolean;
-  onOpen: () => void;
-  onDownload: () => void;
-  onUpgrade: () => void;
-}
-
-function ActivityCard({
-  activity,
-  showFreeBadge,
-  downloading,
-  onOpen,
-  onDownload,
-  onUpgrade,
-}: ActivityCardProps) {
-  const example = exampleWordFor(activity.phoneme);
-  const hasFile = activity.files.length > 0;
-
-  return (
-    <article className="flex h-full flex-col rounded-md border border-neutral-200 bg-white">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="flex flex-1 flex-col text-left rounded-t-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-900"
-        aria-label={`Ver detalhes de ${activity.name}`}
-      >
-        <div className="flex h-24 items-center justify-center rounded-t-md bg-neutral-50 px-3">
-          {example ? (
-            <ExampleWord
-              word={example}
-              decorationClass="decoration-coral-500"
-              className="font-display text-2xl font-bold text-neutral-900"
-            />
-          ) : (
-            <span className="font-mono text-2xl font-bold text-neutral-900">
-              {phonemeLabel(activity.phoneme)}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-1 flex-col gap-1 p-4">
-          <div className="flex items-start justify-between gap-2">
-            <h2 className="text-base font-semibold text-neutral-900">
-              {activity.name}
-            </h2>
-            {activity.isFreeSample && showFreeBadge && (
-              <span className="shrink-0 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
-                Grátis
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-neutral-600">
-            <span className="font-mono">{phonemeLabel(activity.phoneme)}</span>
-            {' · '}
-            {label(AGE_LABELS, activity.ageRange)}
-          </p>
-          <p className="text-sm text-neutral-600">
-            {label(TYPE_LABELS, activity.type)}
-            {' · '}
-            {label(DIFFICULTY_LABELS, activity.difficulty)}
-          </p>
-        </div>
-      </button>
-      {hasFile && (
-        <div className="border-t border-neutral-100 p-3">
-          {activity.canDownload ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 w-full border-neutral-300 text-sm font-semibold"
-              onClick={onDownload}
-              disabled={downloading}
-            >
-              <Download className="mr-2 h-4 w-4" aria-hidden />
-              {downloading ? 'Baixando...' : 'Baixar'}
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              className="h-9 w-full bg-coral-700 text-sm font-semibold text-white hover:bg-coral-800"
-              onClick={onUpgrade}
-            >
-              <Lock className="mr-2 h-4 w-4" aria-hidden />
-              Assinar para baixar
-            </Button>
-          )}
-        </div>
-      )}
-    </article>
   );
 }

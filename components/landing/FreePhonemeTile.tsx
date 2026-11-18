@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
+import { libraryHref } from '@/lib/libraryUrl';
 import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -40,10 +41,10 @@ export default function FreePhonemeTile({
   const label = `/${phoneme.toLowerCase()}/`;
   // Free samples are downloaded from the library after signing in; sign-up
   // returns the user there (redirect_url).
-  const libraryHref = `/dashboard/biblioteca?phoneme=${encodeURIComponent(phoneme)}`;
+  const libraryUrl = libraryHref({ phoneme });
   const downloadHref = isSignedIn
-    ? libraryHref
-    : `/sign-up?redirect_url=${encodeURIComponent(libraryHref)}`;
+    ? libraryUrl
+    : `/sign-up?redirect_url=${encodeURIComponent(libraryUrl)}`;
   const sampleWord =
     activities.length === 1 ? 'uma atividade' : 'duas atividades';
   const countText = `${count} ${count === 1 ? 'atividade' : 'atividades'}`;
