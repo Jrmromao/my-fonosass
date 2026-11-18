@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Alert, AlertDescription } from '../ui/alert';
@@ -19,6 +19,7 @@ import GoogleButton, { OrDivider } from './GoogleButton';
 import PasswordInput from './PasswordInput';
 import { PASSWORD_HINT, passwordSchema } from './passwordRules';
 import { safeRedirectTarget } from './redirect';
+import { completeMissingUsername } from './username';
 
 // No "confirm password" field: the show/hide toggle lets users check what they
 // typed, and the reset flow covers typos. One field less to fill in.
@@ -39,6 +40,10 @@ export default function CustomSignUpForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  // How Clerk verifies the email for this instance: a 6-digit code or a link.
+  const [method, setMethod] = useState<'code' | 'link'>('code');
+  const cancelLinkFlow = useRef<(() => void) | null>(null);
+  useEffect(() => () => cancelLinkFlow.current?.(), []);
   const [code, setCode] = useState('');
   const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>(
     'idle'
@@ -68,15 +73,30 @@ export default function CustomSignUpForm() {
         lastName: data.lastName,
       });
 
-      if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId });
+      // Clerk requires a username we never ask for: fill it in if missing.
+      const withUsername = await completeMissingUsername(result, data.email);
+
+      if (withUsername.status === 'complete') {
+        await setActive({ session: withUsername.createdSessionId });
         router.push(target());
         return;
       }
 
-      // Email needs verification: make sure a code is sent, then ask for it.
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      // Email needs verification. Use what the Clerk instance allows: both
+      // instances currently only allow the email link, not the code.
+      const strategies =
+        withUsername.verifications.emailAddress.supportedStrategies ?? [];
       setPendingEmail(data.email);
+      if (strategies.includes('email_code')) {
+        await signUp.prepareEmailAddressVerification({
+          strategy: 'email_code',
+        });
+        setMethod('code');
+      } else {
+        setMethod('link');
+        setIsLoading(false);
+        await waitForEmailLink();
+      }
     } catch (err: unknown) {
       setError(
         clerkErrorMessage(
@@ -97,12 +117,15 @@ export default function CustomSignUpForm() {
     setError(null);
 
     try {
-      const result = await signUp.attemptEmailAddressVerification({ code });
+      const verified = await signUp.attemptEmailAddressVerification({ code });
+      const result = await completeMissingUsername(verified);
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
         router.push(target());
       } else {
+        // Something other than the username is still missing.
+        console.error('Sign-up incomplete, missing:', result.missingFields);
         setError('Não foi possível concluir o cadastro. Tente novamente.');
       }
     } catch (err: unknown) {
@@ -112,6 +135,40 @@ export default function CustomSignUpForm() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Sends the link and waits (Clerk polls) until it is opened, in this
+  // browser or another device, then signs the user in here.
+  const waitForEmailLink = async () => {
+    if (!isLoaded) return;
+    cancelLinkFlow.current?.();
+    const { startEmailLinkFlow, cancelEmailLinkFlow } =
+      signUp.createEmailLinkFlow();
+    cancelLinkFlow.current = cancelEmailLinkFlow;
+    try {
+      const verified = await startEmailLinkFlow({
+        redirectUrl: `${window.location.origin}/sign-up/verificar`,
+      });
+      const result = await completeMissingUsername(verified);
+      if (result.status === 'complete' && result.createdSessionId) {
+        await setActive({ session: result.createdSessionId });
+        router.push(target());
+      } else if (verified.verifications.emailAddress.status === 'expired') {
+        setError('O link expirou. Envie um novo link.');
+      }
+    } catch (err: unknown) {
+      setError(
+        clerkErrorMessage(err, 'Não foi possível confirmar o email agora.')
+      );
+    } finally {
+      cancelLinkFlow.current = null;
+    }
+  };
+
+  const resendLink = () => {
+    setError(null);
+    setResendState('sent');
+    void waitForEmailLink();
   };
 
   const resendCode = async () => {
@@ -153,6 +210,64 @@ export default function CustomSignUpForm() {
   };
 
   const busy = isLoading || isGoogleLoading;
+
+  const useOtherEmail = () => {
+    cancelLinkFlow.current?.();
+    setPendingEmail(null);
+    setCode('');
+    setError(null);
+    setResendState('idle');
+  };
+
+  if (pendingEmail && method === 'link') {
+    return (
+      <div className="space-y-4" aria-live="polite">
+        <p className="text-sm text-neutral-600 leading-relaxed">
+          Enviamos um link de confirmação para{' '}
+          <span className="font-semibold text-neutral-900">{pendingEmail}</span>
+          . Abra o email e clique no link. Esta página continua sozinha depois
+          disso. Confira também a caixa de spam.
+        </p>
+
+        {error && (
+          <Alert variant="destructive" role="alert">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex items-center gap-2 text-sm text-neutral-600">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+          Aguardando a confirmação...
+        </div>
+
+        <div className="flex flex-col items-center gap-2 pt-2 text-sm text-neutral-600">
+          <p>
+            {resendState === 'sent' ? (
+              'Enviamos um novo link.'
+            ) : (
+              <>
+                Não recebeu?{' '}
+                <button
+                  type="button"
+                  onClick={resendLink}
+                  className={linkClass}
+                >
+                  Reenviar link
+                </button>
+              </>
+            )}
+          </p>
+          <button
+            type="button"
+            onClick={useOtherEmail}
+            className="text-neutral-600 underline underline-offset-4 hover:text-neutral-900"
+          >
+            Usar outro email
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (pendingEmail) {
     return (
@@ -223,12 +338,7 @@ export default function CustomSignUpForm() {
           </p>
           <button
             type="button"
-            onClick={() => {
-              setPendingEmail(null);
-              setCode('');
-              setError(null);
-              setResendState('idle');
-            }}
+            onClick={useOtherEmail}
             className="text-neutral-600 underline underline-offset-4 hover:text-neutral-900"
           >
             Usar outro email
@@ -311,6 +421,9 @@ export default function CustomSignUpForm() {
             {...register('password')}
           />
         </Field>
+
+        {/* Clerk's bot protection (Cloudflare Turnstile) renders here. */}
+        <div id="clerk-captcha" />
 
         <Button type="submit" disabled={busy} className={primaryButtonClass}>
           {isLoading ? (

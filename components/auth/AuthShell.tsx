@@ -178,7 +178,7 @@ export const primaryButtonClass =
   'w-full h-11 rounded-md bg-coral-700 text-white text-sm font-semibold shadow-none hover:bg-coral-800 focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2';
 
 export const secondaryButtonClass =
-  'w-full h-11 rounded-md border border-neutral-300 bg-white text-sm font-medium text-neutral-900 shadow-none hover:bg-neutral-50';
+  'w-full h-11 rounded-md border border-neutral-300 bg-white text-sm font-medium text-neutral-900 shadow-none hover:bg-neutral-50 hover:text-neutral-900 focus-visible:text-neutral-900';
 
 export const linkClass =
   'font-semibold text-neutral-900 underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-900';
