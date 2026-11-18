@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege: CI only reads the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Types, tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      # Dummy values: the build only needs them to be present and well-formed.
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlcmsuZXhhbXBsZS5jb20k
+      CLERK_SECRET_KEY: sk_test_ci_dummy
+      STRIPE_SECRET_KEY: sk_test_ci_dummy
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install (lockfile must be up to date)
+        run: yarn install --frozen-lockfile
+
+      - name: Prisma client
+        run: npx prisma generate
+
+      # The migration history cannot be replayed from an empty database (known
+      # issue, see .kiro/rules.md), so the throw-away CI database is created
+      # straight from the schema. Production still only uses migrations.
+      - name: Create schema in the CI database
+        run: |
+          npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > /tmp/schema.sql
+          PGPASSWORD=ci psql -h localhost -U ci -d ci -v ON_ERROR_STOP=1 -q -f /tmp/schema.sql
+
+      - name: Type check (application code)
+        run: npx tsc --noEmit -p tsconfig.ci.json
+
+      - name: Unit tests
+        run: npx jest --ci --coverage=false
+
+      - name: Production build
+        run: npx next build
+
+  dependencies:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - name: Fail on critical advisories in production dependencies
+        run: |
+          yarn audit --groups dependencies --level critical || {
+            code=$?
+            # yarn audit exit code is a bitmask: 16 = critical found
+            if [ $((code & 16)) -ne 0 ]; then
+              echo "::error::Critical vulnerabilities in production dependencies"
+              exit 1
+            fi
+          }
+      - name: Report remaining advisories (does not fail)
+        run: yarn audit --groups dependencies --level high || true
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks (full history)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source /repo --config /repo/.gitleaks.toml --no-banner --redact --verbose
