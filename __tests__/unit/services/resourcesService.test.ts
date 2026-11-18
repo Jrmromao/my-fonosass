@@ -150,6 +150,14 @@ describe('ResourcesService', () => {
           });
         }
 
+        if (url.endsWith('/file')) {
+          return Promise.resolve({
+            ok: true,
+            headers: { get: () => 'attachment; filename="resource.pdf"' },
+            blob: () => Promise.resolve(new Blob(['pdf'])),
+          });
+        }
+
         if (url.includes('/1')) {
           if (options?.method === 'POST') {
             // For view/download actions
@@ -466,6 +474,8 @@ describe('ResourcesService', () => {
 
   describe('downloadResource', () => {
     it('should increment download count for valid resource', async () => {
+      window.URL.createObjectURL = jest.fn(() => 'blob:mock');
+      window.URL.revokeObjectURL = jest.fn();
       const success = await service.downloadResource('1');
       expect(success).toBe(true);
     });

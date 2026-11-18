@@ -1,15 +1,15 @@
 // Mock server-only module
-jest.mock('server-only', () => ({}), { virtual: true })
+jest.mock('server-only', () => ({}), { virtual: true });
 
 // Mock email service
 const mockEmailService = {
   sendDownloadLimitWarning: jest.fn(),
   sendDownloadLimitReached: jest.fn(),
-}
+};
 
 jest.mock('../emailService', () => ({
-  EmailService: mockEmailService
-}))
+  EmailService: mockEmailService,
+}));
 
 // Mock Prisma
 jest.mock('@/app/db', () => ({
@@ -33,21 +33,21 @@ jest.mock('@/app/db', () => ({
       findUnique: jest.fn(),
     },
   },
-}))
+}));
 
-import { prisma } from '@/app/db'
-import { DownloadLimitService } from '../downloadLimitService'
+import { prisma } from '@/app/db';
+import { DownloadLimitService } from '../downloadLimitService';
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>
+const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 
 describe('DownloadLimitService', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-  })
+    jest.clearAllMocks();
+  });
 
   describe('checkDownloadLimit', () => {
     it('should create new limit record for new user', async () => {
-      mockPrisma.downloadLimit.findUnique.mockResolvedValue(null)
+      mockPrisma.downloadLimit.findUnique.mockResolvedValue(null);
       mockPrisma.downloadLimit.create.mockResolvedValue({
         id: '1',
         userId: 'user1',
@@ -55,31 +55,31 @@ describe('DownloadLimitService', () => {
         resetDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      });
 
-      const result = await DownloadLimitService.checkDownloadLimit('user1')
+      const result = await DownloadLimitService.checkDownloadLimit('user1');
 
-      expect(result).toEqual({ canDownload: true, remaining: 5 })
+      expect(result).toEqual({ canDownload: true, remaining: 3 });
       expect(mockPrisma.downloadLimit.create).toHaveBeenCalledWith({
-        data: { userId: 'user1', downloads: 0 }
-      })
-    })
+        data: { userId: 'user1', downloads: 0 },
+      });
+    });
 
     it('should allow download when under limit', async () => {
       const mockLimit = {
         id: '1',
         userId: 'user1',
-        downloads: 3,
+        downloads: 1,
         resetDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
-      mockPrisma.downloadLimit.findUnique.mockResolvedValue(mockLimit)
+      };
+      mockPrisma.downloadLimit.findUnique.mockResolvedValue(mockLimit);
 
-      const result = await DownloadLimitService.checkDownloadLimit('user1')
+      const result = await DownloadLimitService.checkDownloadLimit('user1');
 
-      expect(result).toEqual({ canDownload: true, remaining: 2 })
-    })
+      expect(result).toEqual({ canDownload: true, remaining: 2 });
+    });
 
     it('should deny download when limit reached', async () => {
       const mockLimit = {
@@ -89,17 +89,17 @@ describe('DownloadLimitService', () => {
         resetDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
-      mockPrisma.downloadLimit.findUnique.mockResolvedValue(mockLimit)
+      };
+      mockPrisma.downloadLimit.findUnique.mockResolvedValue(mockLimit);
 
-      const result = await DownloadLimitService.checkDownloadLimit('user1')
+      const result = await DownloadLimitService.checkDownloadLimit('user1');
 
-      expect(result).toEqual({ canDownload: false, remaining: 0 })
-    })
+      expect(result).toEqual({ canDownload: false, remaining: 0 });
+    });
 
     it('should reset downloads after 30 days', async () => {
-      const oldDate = new Date()
-      oldDate.setDate(oldDate.getDate() - 31) // 31 days ago
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 31); // 31 days ago
 
       const mockLimit = {
         id: '1',
@@ -108,19 +108,19 @@ describe('DownloadLimitService', () => {
         resetDate: oldDate,
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
-      mockPrisma.downloadLimit.findUnique.mockResolvedValue(mockLimit)
-      mockPrisma.downloadLimit.update.mockResolvedValue(mockLimit)
+      };
+      mockPrisma.downloadLimit.findUnique.mockResolvedValue(mockLimit);
+      mockPrisma.downloadLimit.update.mockResolvedValue(mockLimit);
 
-      const result = await DownloadLimitService.checkDownloadLimit('user1')
+      const result = await DownloadLimitService.checkDownloadLimit('user1');
 
-      expect(result).toEqual({ canDownload: true, remaining: 5 })
+      expect(result).toEqual({ canDownload: true, remaining: 3 });
       expect(mockPrisma.downloadLimit.update).toHaveBeenCalledWith({
         where: { userId: 'user1' },
-        data: { downloads: 0, resetDate: expect.any(Date) }
-      })
-    })
-  })
+        data: { downloads: 0, resetDate: expect.any(Date) },
+      });
+    });
+  });
 
   describe('recordDownload', () => {
     it('should increment download count and record history', async () => {
@@ -132,8 +132,8 @@ describe('DownloadLimitService', () => {
         fileSize: 1024,
         downloadedAt: new Date(),
         ipAddress: '127.0.0.1',
-        userAgent: 'test-agent'
-      } as any)
+        userAgent: 'test-agent',
+      } as any);
 
       mockPrisma.downloadLimit.upsert.mockResolvedValue({
         id: '1',
@@ -142,15 +142,22 @@ describe('DownloadLimitService', () => {
         resetDate: new Date(),
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      });
 
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user1',
         email: 'user@test.com',
-        fullName: 'Test User'
-      } as any)
+        fullName: 'Test User',
+      } as any);
 
-      await DownloadLimitService.recordDownload('user1', 'activity1', 'test.pdf', 1024, '127.0.0.1', 'test-agent')
+      await DownloadLimitService.recordDownload(
+        'user1',
+        'activity1',
+        'test.pdf',
+        1024,
+        '127.0.0.1',
+        'test-agent'
+      );
 
       expect(mockPrisma.downloadHistory.create).toHaveBeenCalledWith({
         data: {
@@ -159,65 +166,75 @@ describe('DownloadLimitService', () => {
           fileName: 'test.pdf',
           fileSize: 1024,
           ipAddress: '127.0.0.1',
-          userAgent: 'test-agent'
-        }
-      })
+          userAgent: 'test-agent',
+        },
+      });
 
       expect(mockPrisma.downloadLimit.upsert).toHaveBeenCalledWith({
         where: { userId: 'user1' },
         update: { downloads: { increment: 1 } },
-        create: { userId: 'user1', downloads: 1 }
-      })
-    })
+        create: { userId: 'user1', downloads: 1 },
+      });
+    });
 
     it('should send warning email when 1 download remaining', async () => {
-      mockPrisma.downloadHistory.create.mockResolvedValue({} as any)
+      mockPrisma.downloadHistory.create.mockResolvedValue({} as any);
       mockPrisma.downloadLimit.upsert.mockResolvedValue({
-        downloads: 4 // 5 - 4 = 1 remaining
-      } as any)
+        downloads: 2, // 3 - 2 = 1 remaining
+      } as any);
       mockPrisma.user.findUnique.mockResolvedValue({
         email: 'user@test.com',
-        fullName: 'Test User'
-      } as any)
+        fullName: 'Test User',
+      } as any);
 
-      await DownloadLimitService.recordDownload('user1', 'activity1', 'test.pdf')
+      await DownloadLimitService.recordDownload(
+        'user1',
+        'activity1',
+        'test.pdf'
+      );
 
       expect(mockEmailService.sendDownloadLimitWarning).toHaveBeenCalledWith(
         'user@test.com',
         'Test User',
         1
-      )
-    })
+      );
+    });
 
     it('should send limit reached email when 0 downloads remaining', async () => {
-      mockPrisma.downloadHistory.create.mockResolvedValue({} as any)
+      mockPrisma.downloadHistory.create.mockResolvedValue({} as any);
       mockPrisma.downloadLimit.upsert.mockResolvedValue({
-        downloads: 5 // 5 - 5 = 0 remaining
-      } as any)
+        downloads: 3, // 3 - 3 = 0 remaining
+      } as any);
       mockPrisma.user.findUnique.mockResolvedValue({
         email: 'user@test.com',
-        fullName: 'Test User'
-      } as any)
+        fullName: 'Test User',
+      } as any);
 
-      await DownloadLimitService.recordDownload('user1', 'activity1', 'test.pdf')
+      await DownloadLimitService.recordDownload(
+        'user1',
+        'activity1',
+        'test.pdf'
+      );
 
       expect(mockEmailService.sendDownloadLimitReached).toHaveBeenCalledWith(
         'user@test.com',
         'Test User'
-      )
-    })
+      );
+    });
 
     it('should not send email if user not found', async () => {
-      mockPrisma.downloadHistory.create.mockResolvedValue({} as any)
+      mockPrisma.downloadHistory.create.mockResolvedValue({} as any);
       mockPrisma.downloadLimit.upsert.mockResolvedValue({
-        downloads: 4
-      } as any)
-      mockPrisma.user.findUnique.mockResolvedValue(null)
+        downloads: 4,
+      } as any);
+      mockPrisma.user.findUnique.mockResolvedValue(null);
 
       // Should not throw error
-      await expect(DownloadLimitService.recordDownload('user1', 'activity1', 'test.pdf')).resolves.not.toThrow()
-    })
-  })
+      await expect(
+        DownloadLimitService.recordDownload('user1', 'activity1', 'test.pdf')
+      ).resolves.not.toThrow();
+    });
+  });
 
   describe('hasProAccess', () => {
     it('should return true for active subscription', async () => {
@@ -225,35 +242,35 @@ describe('DownloadLimitService', () => {
         id: 'user1',
         subscriptions: {
           status: 'ACTIVE',
-          tier: 'PRO'
-        }
-      } as any)
+          tier: 'PRO',
+        },
+      } as any);
 
-      const result = await DownloadLimitService.hasProAccess('user1')
+      const result = await DownloadLimitService.hasProAccess('user1');
 
-      expect(result).toBe(true)
-    })
+      expect(result).toBe(true);
+    });
 
     it('should return false for inactive subscription', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 'user1',
         subscriptions: {
           status: 'INACTIVE',
-          tier: 'PRO'
-        }
-      } as any)
+          tier: 'PRO',
+        },
+      } as any);
 
-      const result = await DownloadLimitService.hasProAccess('user1')
+      const result = await DownloadLimitService.hasProAccess('user1');
 
-      expect(result).toBe(false)
-    })
+      expect(result).toBe(false);
+    });
 
     it('should return false for user not found', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue(null)
+      mockPrisma.user.findUnique.mockResolvedValue(null);
 
-      const result = await DownloadLimitService.hasProAccess('user1')
+      const result = await DownloadLimitService.hasProAccess('user1');
 
-      expect(result).toBe(false)
-    })
-  })
-})
+      expect(result).toBe(false);
+    });
+  });
+});
