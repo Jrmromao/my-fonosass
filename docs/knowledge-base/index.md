@@ -24,6 +24,9 @@ Current state, achievements, and success metrics.
 ### **6. [SUMMARY.md](./SUMMARY.md)**
 Complete summary of everything you need to know.
 
+### **7. [Activity lifecycle](./activity-lifecycle.md)**
+Edit, archive (database + S3 Glacier IR), restore and delete activities.
+
 ---
 
 ## 🚨 **START HERE - Critical Rules**

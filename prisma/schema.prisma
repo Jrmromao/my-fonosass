@@ -65,17 +65,19 @@ model Activity {
 }
 
 model ActivityFile {
-  id           String   @id @default(cuid())
-  activityId   String
-  name         String
-  s3Key        String
-  s3Url        String
-  fileType     String
-  sizeInBytes  Int
-  uploadedById String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  activity     Activity @relation(fields: [activityId], references: [id])
+  id              String   @id @default(cuid())
+  activityId      String
+  name            String
+  s3Key           String
+  // Original s3Key while the activity is archived (files live under archive/)
+  archivedFromKey String?
+  s3Url           String
+  fileType        String
+  sizeInBytes     Int
+  uploadedById    String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  activity        Activity @relation(fields: [activityId], references: [id])
 
   @@index([activityId])
   @@index([fileType])
@@ -403,6 +405,7 @@ enum ActivityStatus {
   PENDING_REVIEW
   PUBLISHED
   REJECTED
+  ARCHIVED
 }
 
 enum ActivityType {

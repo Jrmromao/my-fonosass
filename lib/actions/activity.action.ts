@@ -10,7 +10,6 @@ import { isWatermarkableImage, watermarkImage } from '@/lib/images/watermark';
 import { PHONEMES } from '@/lib/phonemes';
 import { $Enums, ActivityType as ActivityTypeEnum } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { refreshPublicCatalogPages } from '@/lib/cache/publicPages';
 import { z } from 'zod';
 import ActivityType = $Enums.ActivityType;
 
@@ -456,107 +455,6 @@ export async function getActivities({
 //         };
 //     }
 // }
-
-/**
- * Delete an activity
- */
-export async function deleteActivity(id: string) {
-  try {
-    // Validate user authentication
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error('Unauthorized');
-    }
-
-    // Check if activity exists and user has permission
-    const activity = await prisma.activity.findUnique({
-      where: { id },
-      include: { createdBy: true, files: true },
-    });
-
-    if (!activity) {
-      throw new Error('Activity not found');
-    }
-
-    if (activity.createdBy.clerkUserId !== userId) {
-      throw new Error("You don't have permission to delete this activity");
-    }
-
-    // Delete associated files from S3
-    if (activity.files.length > 0) {
-      await Promise.all(
-        activity.files.map(async (file) => {
-          // Extract the file key from the S3Url or use the s3Key directly
-          await s3Service.deleteFile(
-            'activities',
-            `${activity.id}/${file.name}`
-          );
-        })
-      );
-    }
-
-    // Delete the activity and its associated files from the database
-    // Prisma will automatically delete associated files due to the relation
-    await prisma.activity.delete({
-      where: { id },
-    });
-
-    revalidatePath('/activities');
-    refreshPublicCatalogPages();
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting activity:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to delete activity',
-    };
-  }
-}
-
-/**
- * Delete an activity file
- */
-export async function deleteActivityFile(activityId: string, fileId: string) {
-  try {
-    // Validate user authentication
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error('Unauthorized');
-    }
-
-    // Check if activity and file exist
-    const file = await prisma.activityFile.findUnique({
-      where: { id: fileId },
-      include: { activity: { include: { createdBy: true } } },
-    });
-
-    if (!file || file.activityId !== activityId) {
-      throw new Error('File not found');
-    }
-
-    if (file.activity.createdBy.clerkUserId !== userId) {
-      throw new Error("You don't have permission to delete this file");
-    }
-
-    // Delete file from S3
-    await s3Service.deleteFile('activities', `${activityId}/${file.name}`);
-
-    // Delete file record from database
-    await prisma.activityFile.delete({
-      where: { id: fileId },
-    });
-
-    revalidatePath(`/activities/${activityId}`);
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting activity file:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete file',
-    };
-  }
-}
 
 export interface GetActivitiesByPhonemeParams {
   phoneme?: string;
