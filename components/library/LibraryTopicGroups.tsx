@@ -57,7 +57,7 @@ export function LibraryTopicGroups({
   }));
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {groups.map((group) => {
         const tone = toneFor(group.id);
         const tile = (entry: PhonemeEntry) => (
@@ -82,7 +82,6 @@ export function LibraryTopicGroups({
             ready={ready}
             total={group.entries.length}
             chip={tone.chip}
-            dot={tone.dot}
           >
             {group.pairs ? (
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -110,7 +109,6 @@ export function LibraryTopicGroups({
         ready={language.filter((t) => t.count > 0).length}
         total={language.length}
         chip={toneFor('linguagem').chip}
-        dot={toneFor('linguagem').dot}
       >
         <ul className={`grid gap-3 ${columnsFor(language.length)}`}>
           {language.map((topic) => (
@@ -136,7 +134,6 @@ function GroupCard({
   ready,
   total,
   chip,
-  dot,
   children,
 }: {
   title: string;
@@ -144,24 +141,21 @@ function GroupCard({
   ready: number;
   total: number;
   chip: string;
-  dot: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-violet-200/60 sm:p-6">
-      <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className={`h-2.5 w-2.5 rounded-full ${dot}`} aria-hidden />
-        <h2 className="font-display text-lg font-bold text-violet-950">
-          {title}
-        </h2>
-        <span
-          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${chip}`}
-        >
-          {ready} de {total} com atividades
-        </span>
-        <p className="w-full text-sm text-neutral-600 sm:w-auto">
-          {description}
-        </p>
+    <section className="rounded-3xl bg-white p-6">
+      <div className="mb-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className={`rounded-full px-3 py-1 text-xs font-bold ${chip}`}>
+            {ready} de {total}
+            <span className="sr-only"> com atividades</span>
+          </span>
+          <h2 className="font-display text-xl font-black text-violet-950">
+            {title}
+          </h2>
+        </div>
+        <p className="mt-1 text-sm text-neutral-600">{description}</p>
       </div>
       {children}
     </section>

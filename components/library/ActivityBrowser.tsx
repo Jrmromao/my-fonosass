@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TONES, type ToneClasses } from '@/components/library/tones';
 import { useActivityDownload } from '@/hooks/useActivityDownload';
 import {
   AGE_LABELS,
@@ -41,12 +42,15 @@ export interface ActivityBrowserProps {
   emptyText: string;
   /** Show the topic under each name (useful in search results). */
   showSubject?: boolean;
+  /** Group color of the topic: frames the thumbnails. Default: sky. */
+  tone?: ToneClasses;
 }
 
 export function ActivityBrowser({
   filter,
   emptyText,
   showSubject = false,
+  tone = TONES.sky,
 }: ActivityBrowserProps) {
   const [ageRange, setAgeRange] = useState('');
   const [difficulty, setDifficulty] = useState('');
@@ -196,6 +200,7 @@ export function ActivityBrowser({
                 activity={activity}
                 showFreeBadge={showFreeBadge}
                 showSubject={showSubject}
+                tone={tone}
                 downloading={downloadingId === activity.files[0]?.id}
                 onDownload={() => start(activity)}
                 onDetails={() => setDetails(activity)}
@@ -389,6 +394,7 @@ function ActivityThumb({
   activity,
   showFreeBadge,
   showSubject,
+  tone,
   downloading,
   onDownload,
   onDetails,
@@ -396,6 +402,7 @@ function ActivityThumb({
   activity: LibraryActivity;
   showFreeBadge: boolean;
   showSubject: boolean;
+  tone: ToneClasses;
   downloading: boolean;
   onDownload: () => void;
   onDetails: () => void;
@@ -410,7 +417,7 @@ function ActivityThumb({
     .join(' · ');
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-violet-200/70 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-violet-300">
+    <article className="group relative flex h-full flex-col">
       <button
         type="button"
         onClick={onDownload}
@@ -420,30 +427,32 @@ function ActivityThumb({
             ? `Baixar ${activity.name}`
             : `${activity.name}: assine para baixar`
         }
-        className="flex flex-1 flex-col text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-neutral-900 disabled:cursor-wait"
+        className="flex flex-1 flex-col rounded-2xl text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-950 disabled:cursor-wait"
       >
-        <div className="relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden border-b border-neutral-100 bg-neutral-50">
+        <div
+          className={`relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl ring-2 transition-transform group-hover:-translate-y-1 motion-reduce:transition-none ${tone.tile}`}
+        >
           <Preview activity={activity} className="h-full" />
           {!activity.canDownload && (
-            <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-sm bg-white/95 px-1.5 py-0.5 text-[11px] font-semibold text-neutral-800 shadow-sm">
+            <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-semibold text-violet-950 shadow-sm">
               <Lock className="h-3 w-3" aria-hidden />
               Assinantes
             </span>
           )}
           {activity.isFreeSample && showFreeBadge && (
-            <span className="absolute left-2 top-2 rounded-sm bg-coral-700 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white">
+            <span className="absolute left-2 top-2 rounded-full bg-coral-700 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
               Grátis
             </span>
           )}
           {activity.canDownload && (
-            <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-sm bg-neutral-900 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-violet-950 px-2.5 py-1 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
               <Download className="h-3.5 w-3.5" aria-hidden />
               {downloading ? 'Baixando…' : 'Baixar'}
             </span>
           )}
         </div>
-        <span className="flex flex-col gap-0.5 p-3">
-          <span className="text-sm font-semibold text-neutral-900">
+        <span className="flex flex-col gap-0.5 px-1 pt-2">
+          <span className="text-sm font-bold text-violet-950">
             {activity.name}
           </span>
           <span className="text-xs text-neutral-600">{meta}</span>

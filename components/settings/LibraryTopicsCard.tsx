@@ -49,7 +49,7 @@ export function LibraryTopicsCard() {
   const customCount = data?.filter((t) => t.customAbout !== null).length ?? 0;
 
   return (
-    <section className="rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6">
+    <section className="rounded-2xl bg-violet-50 p-6">
       <h3 className="text-base font-semibold text-neutral-900">
         Textos da biblioteca
       </h3>

@@ -1,7 +1,7 @@
 'use client';
 
 import { ActivityBrowser } from '@/components/library/ActivityBrowser';
-import { LibraryHeader } from '@/components/library/LibraryHeader';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { findTopic } from '@/lib/libraryTopics';
 import { toneFor } from '@/components/library/tones';
@@ -37,36 +37,38 @@ export default function LibraryTopicPage() {
     },
   });
   if (!topic) notFound();
+  const tone = toneFor(topic.groupId);
 
   return (
     <div className="h-full">
-      <LibraryHeader band={toneFor(topic.groupId).band}>
+      <PageHeader band={tone.band}>
         <Link
           href={LIBRARY_PATH}
-          className="mb-3 inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1 text-sm font-medium text-violet-950 shadow-sm hover:bg-white"
+          className="mb-4 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-violet-950 shadow-sm hover:bg-violet-50"
         >
           <ChevronLeft className="h-4 w-4" aria-hidden />
           Biblioteca
         </Link>
-        <h1 className="font-display text-2xl font-bold text-violet-950 sm:text-3xl">
+        <h1 className="font-display text-3xl font-black leading-tight text-violet-950 sm:text-4xl">
           {topic.title}
         </h1>
         {isLoading ? (
-          <div className="mt-2 max-w-2xl space-y-2" aria-hidden>
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
+          <div className="mt-3 max-w-xl space-y-2" aria-hidden>
+            <Skeleton className="h-4 w-full bg-white/60" />
+            <Skeleton className="h-4 w-2/3 bg-white/60" />
           </div>
         ) : (
           // On error the default text is shown.
-          <p className="mt-2 max-w-2xl whitespace-pre-line text-sm leading-relaxed text-neutral-600">
+          <p className="mt-2 max-w-xl whitespace-pre-line leading-relaxed text-violet-950/80">
             {about ?? topic.about}
           </p>
         )}
-      </LibraryHeader>
+      </PageHeader>
 
-      <div className="px-6 py-6">
+      <div className="m-4 rounded-3xl bg-white p-6">
         <ActivityBrowser
           filter={topic.filter}
+          tone={tone}
           emptyText="Em breve: as atividades deste tema estão em produção."
         />
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import ExampleWord from '@/components/landing/ExampleWord';
-import { LibraryHeader } from '@/components/library/LibraryHeader';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { LibraryTopicGroups } from '@/components/library/LibraryTopicGroups';
 import { TONES, toneFor } from '@/components/library/tones';
 import { Logo } from '@/components/brand/Logo';
@@ -834,39 +834,38 @@ const MOCK_TYPES: Record<string, number> = { COLOURS: 3, ANIMALS: 5 };
 
 function Real() {
   return (
-    <div className="bg-violet-50">
-      <LibraryHeader band={TONES.cream.band}>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-coral-800">
-          Biblioteca
-        </p>
-        <h1 className="mt-1 max-w-xl font-display text-3xl font-bold leading-tight text-violet-950">
-          45 atividades, organizadas por fonema e tema
-        </h1>
-      </LibraryHeader>
-      <div className="px-6 py-5">
+    <div className="bg-violet-100 pb-4">
+      <PageHeader
+        band={TONES.sun.band}
+        title="Biblioteca"
+        description="45 atividades prontas para imprimir. Escolha um fonema ou tema."
+      />
+      <div className="p-4">
         <LibraryTopicGroups
           phonemeCounts={MOCK_PHONEMES}
           typeCounts={MOCK_TYPES}
         />
       </div>
-      <p className="px-6 pb-2 pt-6 text-xs font-semibold uppercase tracking-wider text-neutral-600">
+      <p className="px-6 pb-0 pt-4 text-xs font-semibold uppercase tracking-wider text-neutral-600">
         Cabeçalho da página de um tema (cor do grupo)
       </p>
-      {(['pares', 'outros', 'arquifonema', 'linguagem'] as const).map((g) => (
-        <LibraryHeader key={g} band={toneFor(g).band}>
-          <h2 className="font-display text-3xl font-bold text-violet-950">
-            {g === 'pares'
-              ? 'Fonema /s/'
-              : g === 'outros'
-                ? 'Fonema /lh/'
-                : g === 'arquifonema'
-                  ? 'Arquifonema /S/'
-                  : 'Cores'}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-neutral-600">
-            Texto do tema editado pelo administrador.
-          </p>
-        </LibraryHeader>
+      {(
+        ['pares', 'outros', 'arquifonema', 'encontro', 'linguagem'] as const
+      ).map((g) => (
+        <PageHeader
+          key={g}
+          band={toneFor(g).band}
+          title={
+            {
+              pares: 'Fonema /s/',
+              outros: 'Fonema /lh/',
+              arquifonema: 'Arquifonema /S/',
+              encontro: 'Encontro com /r/',
+              linguagem: 'Cores',
+            }[g]
+          }
+          description="Texto do tema editado pelo administrador."
+        />
       ))}
     </div>
   );

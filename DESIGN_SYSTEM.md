@@ -73,8 +73,11 @@ dashboard uses the landing colors, at the request of Eliane and the stakeholders
 pages with the lavender background so the header matches.
 
 ### Logo colors (sun and cream)
-Taken from the logo: `sun-*` is the speech-bubble yellow (`sun-400` ≈ #f0d818),
-`cream-*` the warm glow behind it (`cream-300` ≈ #f0d8a8). Tokens live in
+Taken from the logo: `sun-*` is the warm peach-beige of the "da Fala"
+lettering (`sun-300` ≈ #e8d0a8). Tried and not chosen: the pure lemon #f0d818
+(read as a discount brand next to coral), a muted honey #e9c87b and a brighter
+gold #f3c649. `cream-*` is a light warm grey (`cream-300` ≈ #d1ccc7) that
+stays distinct from sun. Tokens live in
 `app/globals.css` and `tailwind.config.js`.
 
 | Use | Token |
@@ -86,7 +89,7 @@ Taken from the logo: `sun-*` is the speech-bubble yellow (`sun-400` ≈ #f0d818)
 
 Rules:
 - **Surfaces only.** Never use sun or cream as text color, and never put white
-  text on them. Text on sun/cream is `violet-950` (11.7:1 on `sun-300`) or
+  text on them. Text on sun/cream is `violet-950` (10:1 on `sun-300`) or
   `neutral-900` / `neutral-600`.
 - Buttons and CTAs stay coral; sun is for "selected" and "look here", not "click".
 - Sun is not a warning color: warnings stay amber.

@@ -2,7 +2,7 @@
 
 import { NewActivityDialog } from '@/components/dialogs/new-activity-dialog';
 import { ActivityBrowser } from '@/components/library/ActivityBrowser';
-import { LibraryHeader } from '@/components/library/LibraryHeader';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { LibraryTopicGroups } from '@/components/library/LibraryTopicGroups';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -85,59 +85,55 @@ export default function LibraryIndexPage() {
 
   return (
     <div className="h-full">
-      <LibraryHeader band={TONES.cream.band}>
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-coral-800">
-              Biblioteca
-            </p>
-            <h1 className="mt-1 max-w-xl font-display text-2xl font-bold leading-tight text-violet-950 sm:text-3xl">
-              {isLoading || isError
-                ? 'Atividades organizadas por fonema e tema'
-                : `${total} ${total === 1 ? 'atividade' : 'atividades'}, organizadas por fonema e tema`}
-            </h1>
-          </div>
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
-            <div className="relative w-full sm:w-80">
-              <Search
-                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-600"
-                aria-hidden
-              />
-              <Input
-                type="search"
-                placeholder="Buscar atividade pelo nome"
-                aria-label="Buscar atividade"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="h-11 rounded-full border-cream-300 bg-white pl-9 pr-9 text-sm shadow-sm"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  onClick={() => setSearchInput('')}
-                  aria-label="Limpar busca"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-600 hover:text-neutral-900"
-                >
-                  <X className="h-4 w-4" aria-hidden />
-                </button>
-              )}
-            </div>
-            {role === 'ADMIN' && (
-              <NewActivityDialog
-                onSuccess={(name) => {
-                  setCreatedName(name || 'Atividade');
-                  queryClient.invalidateQueries({ queryKey: ['activities'] });
-                }}
-              />
-            )}
-          </div>
+      <PageHeader
+        band={TONES.sun.band}
+        title="Biblioteca"
+        description={
+          isLoading || isError
+            ? 'Escolha um fonema ou tema. Cada um tem atividades prontas para imprimir.'
+            : `${total} ${total === 1 ? 'atividade pronta' : 'atividades prontas'} para imprimir. Escolha um fonema ou tema.`
+        }
+        actions={
+          role === 'ADMIN' ? (
+            <NewActivityDialog
+              onSuccess={(name) => {
+                setCreatedName(name || 'Atividade');
+                queryClient.invalidateQueries({ queryKey: ['activities'] });
+              }}
+            />
+          ) : undefined
+        }
+      >
+        <div className="relative mt-6 max-w-md">
+          <Search
+            className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-600"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            placeholder="Buscar atividade"
+            aria-label="Buscar atividade"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="h-12 rounded-2xl border-0 bg-white pl-10 pr-10 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-violet-950"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => setSearchInput('')}
+              aria-label="Limpar busca"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-600 hover:text-neutral-900"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+          )}
         </div>
-      </LibraryHeader>
+      </PageHeader>
 
       {createdName && (
         <div
           role="status"
-          className="mx-6 mt-4 flex flex-col gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900 sm:flex-row sm:items-center sm:justify-between"
+          className="mx-4 mt-4 flex flex-col gap-2 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900 sm:flex-row sm:items-center sm:justify-between"
         >
           <p>
             &ldquo;{createdName}&rdquo; foi criada e está aguardando revisão.
@@ -163,7 +159,7 @@ export default function LibraryIndexPage() {
       )}
 
       {search ? (
-        <div className="px-6 py-6">
+        <div className="m-4 rounded-3xl bg-white p-6">
           <h2 className="mb-1 font-display text-lg font-bold text-violet-950">
             Resultados para &ldquo;{search}&rdquo;
           </h2>
@@ -174,7 +170,7 @@ export default function LibraryIndexPage() {
           />
         </div>
       ) : (
-        <div className="px-4 py-5 sm:px-6">
+        <div className="p-4">
           {isError ? (
             <div className="py-16 text-center text-sm text-neutral-600">
               <p>Não foi possível carregar a biblioteca.</p>

@@ -12,7 +12,7 @@ export interface ToneClasses {
   tile: string;
   /** Count pill and group chip. */
   chip: string;
-  /** Topic page header band. */
+  /** Page header banner ("Lúdico refinado": a saturated rounded block). */
   band: string;
   /** Small dot next to the group title. */
   dot: string;
@@ -22,31 +22,31 @@ export const TONES: Record<LibraryTone, ToneClasses> = {
   sky: {
     tile: 'bg-sky-100 ring-sky-300',
     chip: 'bg-sky-200 text-violet-950',
-    band: 'bg-sky-100 border-sky-200',
+    band: 'bg-sky-200',
     dot: 'bg-sky-400',
   },
   sun: {
     tile: 'bg-sun-100 ring-sun-300',
     chip: 'bg-sun-300 text-violet-950',
-    band: 'bg-sun-100 border-sun-200',
+    band: 'bg-sun-300',
     dot: 'bg-sun-400',
   },
   coral: {
     tile: 'bg-coral-50 ring-coral-200',
     chip: 'bg-coral-100 text-coral-900',
-    band: 'bg-coral-50 border-coral-100',
+    band: 'bg-coral-200',
     dot: 'bg-coral-500',
   },
   cream: {
     tile: 'bg-cream-100 ring-cream-300',
     chip: 'bg-cream-300 text-violet-950',
-    band: 'bg-cream-100 border-cream-200',
+    band: 'bg-cream-300',
     dot: 'bg-cream-300',
   },
   violet: {
     tile: 'bg-violet-100 ring-violet-200',
     chip: 'bg-violet-200 text-violet-950',
-    band: 'bg-violet-100 border-violet-200',
+    band: 'bg-violet-200',
     dot: 'bg-violet-400',
   },
 };
@@ -64,7 +64,7 @@ export const toneFor = (groupId: string): ToneClasses =>
   TONES[GROUP_TONE[groupId] ?? 'sky'];
 
 /** White card on the lavender page (dashboard sections and panels). */
-export const CARD = 'rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60';
+export const CARD = 'rounded-3xl bg-white';
 
 /** Tone of the group a phoneme code belongs to (sky for unknown codes). */
 export function toneForPhoneme(code: string): ToneClasses {

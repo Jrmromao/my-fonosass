@@ -102,7 +102,7 @@ export function SubscriptionPanel() {
             Não foi possível carregar a sua assinatura. Atualize a página.
           </p>
         ) : sub.subscribed ? (
-          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6 space-y-4">
+          <section className="rounded-2xl bg-violet-50 p-6 space-y-4">
             <div>
               <p className="text-sm text-neutral-600">Plano atual</p>
               <p className="text-lg font-semibold text-neutral-900">
@@ -143,13 +143,13 @@ export function SubscriptionPanel() {
             )}
           </section>
         ) : sub.isAdmin ? (
-          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6">
+          <section className="rounded-2xl bg-violet-50 p-6">
             <p className="text-sm text-neutral-900">
               Sua conta é de administrador e tem acesso a toda a biblioteca.
             </p>
           </section>
         ) : (
-          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6 space-y-4">
+          <section className="rounded-2xl bg-violet-50 p-6 space-y-4">
             <div>
               <p className="text-sm text-neutral-600">Plano atual</p>
               <p className="text-lg font-semibold text-neutral-900">

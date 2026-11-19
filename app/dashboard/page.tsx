@@ -85,8 +85,7 @@ export default function Dashboard() {
   return (
     <div className="h-full">
       <PageHeader
-        band={TONES.cream.band}
-        eyebrow="Painel"
+        band={TONES.sun.band}
         title={`${greeting()}, ${user?.firstName || 'Profissional'}`}
         description="Resumo da sua conta e das novidades da biblioteca."
         actions={
@@ -100,7 +99,7 @@ export default function Dashboard() {
         }
       />
 
-      <div className="space-y-5 px-4 py-5 sm:px-6">
+      <div className="space-y-4 p-4">
         {/* Per-user cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (

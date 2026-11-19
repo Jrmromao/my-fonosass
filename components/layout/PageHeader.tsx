@@ -1,61 +1,59 @@
 import type { ReactNode } from 'react';
 
-// Colored header band of the signed-in pages (Painel, Perfil, Biblioteca),
-// with soft shapes in the logo colors. `band` comes from
-// components/library/tones.ts (TONES.<tone>.band).
+// Header banner of the signed-in pages ("Lúdico refinado", chosen by Eliane
+// in /estilos): a rounded block in a logo color with two soft shapes, big
+// rounded title. `band` comes from components/library/tones.ts
+// (TONES.<tone>.band): sun for Painel, Perfil and Biblioteca, the group's
+// color for each topic page.
 
 export function PageHeader({
   band,
-  eyebrow,
   title,
   description,
   actions,
   children,
 }: {
   band: string;
-  /** Small coral label above the title, e.g. "Painel". */
-  eyebrow?: string;
   title?: ReactNode;
   description?: ReactNode;
-  /** Right side (search, buttons). */
+  /** Right side or below (search, buttons). */
   actions?: ReactNode;
   /** Free content instead of / below the title block. */
   children?: ReactNode;
 }) {
   return (
-    <div className={`relative overflow-hidden border-b ${band}`}>
-      <span
-        className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-sun-300/40"
-        aria-hidden
-      />
-      <span
-        className="pointer-events-none absolute -bottom-16 right-48 h-32 w-32 rounded-full bg-coral-200/40"
-        aria-hidden
-      />
-      <div className="relative px-6 py-7 sm:px-8">
-        {(eyebrow || title || actions) && (
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              {eyebrow && (
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-coral-800">
-                  {eyebrow}
-                </p>
-              )}
-              {title && (
-                <h1 className="mt-1 max-w-xl font-display text-2xl font-bold leading-tight text-violet-950 sm:text-3xl">
-                  {title}
-                </h1>
-              )}
-              {description && (
-                <p className="mt-2 max-w-2xl text-sm text-neutral-600">
-                  {description}
-                </p>
-              )}
+    <div className="px-4 pt-4">
+      <div
+        className={`relative overflow-hidden rounded-3xl px-6 py-8 sm:px-8 sm:py-10 ${band}`}
+      >
+        <span
+          className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-white/35"
+          aria-hidden
+        />
+        <span
+          className="pointer-events-none absolute -bottom-16 right-40 h-32 w-32 rounded-full bg-coral-300/50"
+          aria-hidden
+        />
+        <div className="relative">
+          {(title || actions) && (
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                {title && (
+                  <h1 className="font-display text-3xl font-black leading-tight text-violet-950 sm:text-4xl">
+                    {title}
+                  </h1>
+                )}
+                {description && (
+                  <p className="mt-2 max-w-xl text-violet-950/80">
+                    {description}
+                  </p>
+                )}
+              </div>
+              {actions}
             </div>
-            {actions}
-          </div>
-        )}
-        {children}
+          )}
+          {children}
+        </div>
       </div>
     </div>
   );
