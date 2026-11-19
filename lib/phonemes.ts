@@ -163,6 +163,7 @@ export const LANGUAGE_TOPICS: LanguageTopic[] = [
   { id: 'animais', label: 'Animais', types: ['ANIMALS'] },
   { id: 'alimentos', label: 'Alimentos', types: [] },
   { id: 'numeros', label: 'Números', types: ['NUMBERS_AND_LETTERS'] },
+  { id: 'alfabeto', label: 'Alfabeto', types: ['ALPHABET'] },
 ];
 
 // Below this many published activities the landing headline talks about the
