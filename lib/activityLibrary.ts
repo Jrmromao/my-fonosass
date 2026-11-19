@@ -8,7 +8,8 @@ export interface LibraryActivity {
   phoneme: string;
   type: string;
   createdAt: string;
-  files: { id: string; fileType: string }[];
+  /** Pages of the activity (one file each), page 1 first. */
+  files: { id: string; name: string; fileType: string }[];
   /** Signed URL; null unless the viewer may download this activity. */
   thumbnailUrl: string | null;
   /**

@@ -2,30 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { phonemeLabel } from '@/lib/activityLabels';
+import { PHONEME_GROUPS } from '@/lib/phonemes';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-const PHONEMES = [
-  'P',
-  'B',
-  'T',
-  'D',
-  'K',
-  'G',
-  'F',
-  'V',
-  'S',
-  'Z',
-  'R',
-  'L',
-  'CH',
-  'J',
-  'M',
-  'N',
-  'NH',
-  'LH',
-];
+// Phonemes come from the library taxonomy (R forte/fraco, arquifonemas,
+// encontros). Saved values are Activity.phoneme codes, e.g. "R_FORTE".
 
 export default function OnboardingPage() {
   const { user } = useUser();
@@ -94,21 +78,39 @@ export default function OnboardingPage() {
               <p className="text-sm text-neutral-600 mb-4">
                 Selecione os principais.
               </p>
-              <div className="grid grid-cols-6 gap-2 mb-6">
-                {PHONEMES.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() =>
-                      toggleItem(p, selectedPhonemes, setSelectedPhonemes)
-                    }
-                    className={`px-2 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                      selectedPhonemes.includes(p)
-                        ? 'border-coral-700 bg-coral-50 text-coral-800'
-                        : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
-                    }`}
-                  >
-                    /{p}/
-                  </button>
+              <div className="mb-6 max-h-[50vh] space-y-4 overflow-y-auto pr-1">
+                {PHONEME_GROUPS.map((group) => (
+                  <div key={group.id}>
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                      {group.title}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {group.entries.map((entry) => {
+                        const selected = selectedPhonemes.includes(entry.code);
+                        return (
+                          <button
+                            key={entry.code}
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={() =>
+                              toggleItem(
+                                entry.code,
+                                selectedPhonemes,
+                                setSelectedPhonemes
+                              )
+                            }
+                            className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                              selected
+                                ? 'border-coral-700 bg-coral-50 text-coral-800'
+                                : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                            }`}
+                          >
+                            {phonemeLabel(entry.code)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 ))}
               </div>
               <Button

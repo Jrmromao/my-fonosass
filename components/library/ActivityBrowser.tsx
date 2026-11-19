@@ -47,7 +47,7 @@ export function ActivityBrowser({
 }: ActivityBrowserProps) {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [details, setDetails] = useState<LibraryActivity | null>(null);
-  const { download, downloadingId, error, lastDownloaded } =
+  const { download, downloadAll, downloadingId, error, lastDownloaded } =
     useActivityDownload(() => {
       setDetails(null);
       setUpgradeOpen(true);
@@ -87,14 +87,29 @@ export function ActivityBrowser({
   const showFreeBadge = first?.viewer?.canDownloadAll === false;
 
   const start = (activity: LibraryActivity) => {
-    const file = activity.files[0];
-    if (!file) return;
+    const pages = activity.files;
+    if (pages.length === 0) return;
     if (!activity.canDownload) {
       setDetails(null);
       setUpgradeOpen(true);
       return;
     }
-    download(file.id, `${activity.name}.pdf`, activity.name);
+    if (pages.length === 1) {
+      download(
+        pages[0].id,
+        `${activity.name}.${extensionFor(pages[0].fileType)}`,
+        activity.name
+      );
+      return;
+    }
+    // Several pages: "Nome - página 1.pdf", "Nome - página 2.png"...
+    downloadAll(
+      pages.map((p, i) => ({
+        id: p.id,
+        name: `${activity.name} - página ${i + 1}.${extensionFor(p.fileType)}`,
+      })),
+      activity.name
+    );
   };
 
   return (
@@ -187,7 +202,7 @@ export function ActivityBrowser({
                 </DialogTitle>
               </DialogHeader>
               <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
-                <Preview activity={details} large className="rounded border" />
+                <DetailsPages key={details.id} activity={details} />
                 <p className="text-sm text-neutral-600">
                   {subjectLabel(details.phoneme, details.type)}
                 </p>
@@ -209,7 +224,9 @@ export function ActivityBrowser({
                         <Download className="mr-2 h-4 w-4" aria-hidden />
                         {downloadingId === details.files[0].id
                           ? 'Baixando…'
-                          : 'Baixar'}
+                          : details.files.length > 1
+                            ? `Baixar ${details.files.length} páginas`
+                            : 'Baixar'}
                       </Button>
                     ) : (
                       <Button
@@ -252,26 +269,110 @@ function Grid({ children }: { children: React.ReactNode }) {
   );
 }
 
+const PREVIEWABLE = (fileType: string) =>
+  fileType === 'application/pdf' || fileType.startsWith('image/');
+
+/** File extension for a saved download, from its MIME type. */
+function extensionFor(fileType: string): string {
+  if (fileType === 'application/pdf') return 'pdf';
+  if (fileType === 'image/png') return 'png';
+  if (fileType === 'image/jpeg') return 'jpg';
+  if (fileType === 'image/webp') return 'webp';
+  return 'pdf';
+}
+
+/**
+ * Details preview. One page: the large preview, as before. Several pages:
+ * the selected page large, and a strip of page thumbnails to switch.
+ */
+function DetailsPages({ activity }: { activity: LibraryActivity }) {
+  const pages = activity.files;
+  const [selected, setSelected] = useState(0);
+  const current = pages[Math.min(selected, pages.length - 1)];
+
+  if (pages.length <= 1) {
+    return <Preview activity={activity} large className="rounded border" />;
+  }
+
+  return (
+    <div className="space-y-3">
+      <Preview
+        activity={activity}
+        fileId={
+          current && PREVIEWABLE(current.fileType) ? current.id : undefined
+        }
+        large
+        className="rounded border"
+      />
+      <p className="text-xs text-neutral-600" aria-live="polite">
+        Página {selected + 1} de {pages.length}
+      </p>
+      <ul
+        className="flex gap-2 overflow-x-auto pb-1"
+        aria-label="Páginas da atividade"
+      >
+        {pages.map((page, i) => (
+          <li key={page.id} className="w-16 shrink-0">
+            <button
+              type="button"
+              onClick={() => setSelected(i)}
+              aria-label={`Ver página ${i + 1}`}
+              aria-current={i === selected ? 'true' : undefined}
+              className={`block w-full overflow-hidden rounded border-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-950 ${
+                i === selected
+                  ? 'border-violet-950'
+                  : 'border-neutral-200 hover:border-neutral-400'
+              }`}
+            >
+              {PREVIEWABLE(page.fileType) ? (
+                <Preview
+                  activity={activity}
+                  fileId={page.id}
+                  className="aspect-[3/4]"
+                />
+              ) : (
+                <span className="flex aspect-[3/4] items-center justify-center bg-neutral-50 text-xs text-neutral-500">
+                  {i + 1}
+                </span>
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** Thumbnail, or a placeholder for activities without an image (PDF only). */
 function Preview({
   activity,
+  fileId,
   large = false,
   className = '',
 }: {
   activity: LibraryActivity;
+  /** One page (file) of the activity. Default: the activity's cover. */
+  fileId?: string;
   /** Details dialog size (960 px) instead of the card thumbnail (480 px). */
   large?: boolean;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
-  if (activity.previewUrl && !failed) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const params = new URLSearchParams();
+  if (large) params.set('w', '960');
+  if (fileId) params.set('file', fileId);
+  const qs = params.toString();
+  const src = activity.previewUrl
+    ? `${activity.previewUrl}${qs ? `?${qs}` : ''}`
+    : null;
+  if (src && failedSrc !== src) {
     return (
       // Plain <img>: the API already serves a small, resized WebP.
       <img
-        src={large ? `${activity.previewUrl}?w=960` : activity.previewUrl}
+        src={src}
         alt={`Prévia de ${activity.name}`}
         loading="lazy"
-        onError={() => setFailed(true)}
+        onError={() => setFailedSrc(src)}
         className={`w-full bg-white object-contain ${className}`}
       />
     );

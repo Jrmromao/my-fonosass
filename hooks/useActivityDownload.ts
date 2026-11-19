@@ -3,14 +3,17 @@
 import type { DownloadResponse } from '@/lib/activityLibrary';
 import { useEffect, useState } from 'react';
 
+// Browsers drop downloads started in the same tick; wait between pages.
+const PAGE_DOWNLOAD_GAP_MS = 400;
+
 /**
- * Downloads an activity file through POST /api/files/[id]/download.
+ * Downloads activity files through POST /api/files/[id]/download.
  * `onRequiresSubscription` runs when the server answers 403 for a free user.
  */
 export function useActivityDownload(onRequiresSubscription: () => void) {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Name of the last file that started downloading, for a short confirmation.
+  // Name of the last activity that started downloading, for a short confirmation.
   const [lastDownloaded, setLastDownloaded] = useState<string | null>(null);
   useEffect(() => {
     if (!lastDownloaded) return;
@@ -18,11 +21,8 @@ export function useActivityDownload(onRequiresSubscription: () => void) {
     return () => window.clearTimeout(t);
   }, [lastDownloaded]);
 
-  /** `name` is the saved file name; `title` is what the confirmation shows. */
-  const download = async (fileId: string, name: string, title = name) => {
-    setDownloadingId(fileId);
-    setError(null);
-    setLastDownloaded(null);
+  /** Starts one browser download. Returns false (and sets the error) on failure. */
+  const save = async (fileId: string, name: string): Promise<boolean> => {
     try {
       const res = await fetch(
         `/api/files/${encodeURIComponent(fileId)}/download`,
@@ -36,8 +36,9 @@ export function useActivityDownload(onRequiresSubscription: () => void) {
         a.href = json.data.url;
         a.download = name;
         a.click();
-        setLastDownloaded(title);
-      } else if (res.status === 403 && json.requiresSubscription) {
+        return true;
+      }
+      if (res.status === 403 && json.requiresSubscription) {
         onRequiresSubscription();
       } else if (res.status === 401) {
         setError('Sua sessão expirou. Entre novamente para baixar.');
@@ -46,10 +47,46 @@ export function useActivityDownload(onRequiresSubscription: () => void) {
       }
     } catch {
       setError('Não foi possível baixar. Tente de novo.');
+    }
+    return false;
+  };
+
+  /** `name` is the saved file name; `title` is what the confirmation shows. */
+  const download = async (fileId: string, name: string, title = name) => {
+    setDownloadingId(fileId);
+    setError(null);
+    setLastDownloaded(null);
+    try {
+      if (await save(fileId, name)) setLastDownloaded(title);
     } finally {
       setDownloadingId(null);
     }
   };
 
-  return { download, downloadingId, error, lastDownloaded };
+  /**
+   * Downloads every page of an activity in order. While it runs,
+   * `downloadingId` is the first page's id. Stops at the first failure.
+   */
+  const downloadAll = async (
+    pages: { id: string; name: string }[],
+    title: string
+  ) => {
+    if (pages.length === 0) return;
+    setDownloadingId(pages[0].id);
+    setError(null);
+    setLastDownloaded(null);
+    try {
+      for (const [i, page] of pages.entries()) {
+        if (i > 0) {
+          await new Promise((r) => setTimeout(r, PAGE_DOWNLOAD_GAP_MS));
+        }
+        if (!(await save(page.id, page.name))) return;
+      }
+      setLastDownloaded(title);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  return { download, downloadAll, downloadingId, error, lastDownloaded };
 }

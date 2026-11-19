@@ -71,8 +71,9 @@ export async function GET(request: NextRequest) {
           type: true,
           createdAt: true,
           files: {
-            select: { id: true, fileType: true, s3Key: true },
-            orderBy: { createdAt: 'asc' },
+            select: { id: true, name: true, fileType: true, s3Key: true },
+            // Page order: upload order, then name (files sent together).
+            orderBy: [{ createdAt: 'asc' }, { name: 'asc' }],
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -118,10 +119,11 @@ export async function GET(request: NextRequest) {
             /* skip failed thumbnails */
           }
         }
-        // s3Key stays server-side: the client only needs the file id.
-        // Only the first file is offered for download, as before.
-        const files = activity.files.slice(0, 1).map(({ id, fileType }) => ({
+        // s3Key stays server-side: the client only needs id, name and type.
+        // Every file is a page of the activity, page 1 first.
+        const files = activity.files.map(({ id, name, fileType }) => ({
           id,
+          name,
           fileType,
         }));
         return {

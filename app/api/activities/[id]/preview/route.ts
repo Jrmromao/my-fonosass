@@ -18,6 +18,8 @@ import { z } from 'zod';
 export const runtime = 'nodejs';
 
 const paramsSchema = z.object({ id: z.string().cuid() });
+// Optional page: one file of the activity. Default: the activity's cover.
+const fileSchema = z.string().cuid().optional().catch(undefined);
 const widthSchema = z.coerce
   .number()
   .refine((w): w is PreviewWidth =>
@@ -53,10 +55,14 @@ export async function GET(
   const width = widthSchema.parse(
     request.nextUrl.searchParams.get('w') ?? undefined
   );
+  const fileId = fileSchema.parse(
+    request.nextUrl.searchParams.get('file') ?? undefined
+  );
 
   try {
-    // Only published library activities. Prefer an image file (cheaper and
-    // usually the sheet itself), otherwise the PDF.
+    // Only published library activities. Without ?file, prefer an image file
+    // (cheaper and usually the sheet itself), otherwise the PDF. With ?file,
+    // that page, which must belong to this activity.
     const files = await prisma.activityFile.findMany({
       where: {
         activityId: parsed.data.id,
@@ -65,9 +71,10 @@ export async function GET(
       orderBy: { createdAt: 'asc' },
       select: { id: true, s3Key: true, fileType: true },
     });
-    const file =
-      files.find((f) => f.fileType.startsWith('image/')) ??
-      files.find((f) => canPreview(f.fileType));
+    const file = fileId
+      ? files.find((f) => f.id === fileId && canPreview(f.fileType))
+      : (files.find((f) => f.fileType.startsWith('image/')) ??
+        files.find((f) => canPreview(f.fileType)));
     if (!file) return notFound();
 
     const webp = await getPreview(file, width);
