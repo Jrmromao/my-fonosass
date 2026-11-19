@@ -25,8 +25,6 @@ interface Activity {
   name: string;
   description: string;
   phoneme: string;
-  difficulty: string;
-  ageRange: string;
   type: string;
   status: string;
   isPublic: boolean;
@@ -207,9 +205,6 @@ export function ActivityManagerPanel() {
                 Fonema
               </th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                Dificuldade
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Status
               </th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">
@@ -224,17 +219,11 @@ export function ActivityManagerPanel() {
                   <span className="font-medium text-foreground">
                     {activity.name}
                   </span>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {activity.ageRange}
-                  </p>
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant="outline" className="text-xs">
                     {subjectLabel(activity.phoneme, activity.type)}
                   </Badge>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {activity.difficulty}
                 </td>
                 <td className="px-4 py-3">
                   <Badge
@@ -400,8 +389,6 @@ function ActivityPreview({ activity }: { activity: Activity }) {
         <Badge variant="outline">
           {subjectLabel(activity.phoneme, activity.type)}
         </Badge>
-        <Badge variant="outline">{activity.difficulty}</Badge>
-        <Badge variant="outline">{activity.ageRange}</Badge>
         <Badge variant="outline">{activity.type}</Badge>
       </div>
 

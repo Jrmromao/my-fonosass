@@ -15,8 +15,6 @@ export async function GET() {
         name: true,
         description: true,
         phoneme: true,
-        difficulty: true,
-        ageRange: true,
         type: true,
         status: true,
         createdAt: true,

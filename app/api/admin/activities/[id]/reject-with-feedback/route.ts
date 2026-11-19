@@ -116,7 +116,6 @@ REGRAS:
 - Mantenha o mesmo estilo visual e layout
 - NÃO adicione marca d'água ou rodapé (são adicionados programaticamente)
 - Todo o texto em português do Brasil correto
-- Atividade para crianças de faixa ${activity.ageRange}
 - Tipo: ${activity.type}`;
 
       const res = await fetchWithTimeout(

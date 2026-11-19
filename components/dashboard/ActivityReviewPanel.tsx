@@ -11,8 +11,6 @@ interface PendingActivity {
   name: string;
   phoneme: string;
   type: string;
-  difficulty: string;
-  ageRange: string;
   status: string;
   createdAt: string;
   description: string;
@@ -143,10 +141,6 @@ export function ActivityReviewPanel() {
               <span className="text-xs text-neutral-600">
                 {subjectLabel(activity.phoneme, activity.type)}
               </span>
-              <span className="text-xs text-neutral-600">·</span>
-              <span className="text-xs text-neutral-600">
-                {activity.difficulty}
-              </span>
             </div>
           </button>
         ))}
@@ -203,12 +197,6 @@ export function ActivityReviewPanel() {
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline" className="text-xs">
                     {subjectLabel(selected.phoneme, selected.type)}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {selected.difficulty}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {selected.ageRange}
                   </Badge>
                   <Badge
                     className={`text-xs ${

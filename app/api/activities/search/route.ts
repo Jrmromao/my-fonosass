@@ -43,8 +43,6 @@ export async function GET(request: NextRequest) {
     const search = url.searchParams.get('search')?.trim() || '';
     const phoneme = url.searchParams.get('phoneme') || '';
     const type = url.searchParams.get('type') || '';
-    const difficulty = url.searchParams.get('difficulty') || '';
-    const ageRange = url.searchParams.get('ageRange') || '';
 
     const where: Prisma.ActivityWhereInput = {
       isPublic: true,
@@ -60,8 +58,6 @@ export async function GET(request: NextRequest) {
 
     if (phoneme) where.phoneme = phoneme;
     if (type) where.type = type as any;
-    if (difficulty) where.difficulty = difficulty as any;
-    if (ageRange) where.ageRange = ageRange as any;
 
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
@@ -72,8 +68,6 @@ export async function GET(request: NextRequest) {
           description: true,
           phoneme: true,
           type: true,
-          difficulty: true,
-          ageRange: true,
           createdAt: true,
           files: { select: { id: true, fileType: true, s3Key: true }, take: 1 },
         },
@@ -85,7 +79,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Get available filter options (for the current filtered set minus that filter)
-    const [phonemes, types, difficulties, ageRanges] = await Promise.all([
+    const [phonemes, types] = await Promise.all([
       prisma.activity.findMany({
         where: { isPublic: true, status: 'PUBLISHED' },
         select: { phoneme: true },
@@ -96,16 +90,6 @@ export async function GET(request: NextRequest) {
         where: { isPublic: true, status: 'PUBLISHED' },
         select: { type: true },
         distinct: ['type'],
-      }),
-      prisma.activity.findMany({
-        where: { isPublic: true, status: 'PUBLISHED' },
-        select: { difficulty: true },
-        distinct: ['difficulty'],
-      }),
-      prisma.activity.findMany({
-        where: { isPublic: true, status: 'PUBLISHED' },
-        select: { ageRange: true },
-        distinct: ['ageRange'],
       }),
     ]);
 
@@ -160,8 +144,6 @@ export async function GET(request: NextRequest) {
           .filter((p): p is string => !!p && p.trim() !== '')
           .sort(),
         types: types.map((t) => t.type).filter(Boolean),
-        difficulties: difficulties.map((d) => d.difficulty).filter(Boolean),
-        ageRanges: ageRanges.map((a) => a.ageRange).filter(Boolean),
       },
     });
   } catch (error) {

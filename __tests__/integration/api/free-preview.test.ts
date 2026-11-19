@@ -63,8 +63,6 @@ describe('GET /api/free-preview/[fileId]', () => {
       {
         id: 'act-1',
         name: 'Animais',
-        ageRange: 'PRESCHOOL',
-        difficulty: 'BEGINNER',
         files: [{ id: SAMPLE_FILE }],
       },
     ]);

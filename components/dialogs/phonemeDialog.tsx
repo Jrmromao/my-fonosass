@@ -215,22 +215,6 @@ function PhonemeDialog({
                       >
                         {activity.type}
                       </Badge>
-                      <Badge
-                        variant={
-                          getBadgeVariant.difficulty(activity.difficulty) as any
-                        }
-                        className="text-xs font-normal px-2.5 py-1 rounded-full"
-                      >
-                        {activity.difficulty}
-                      </Badge>
-                      <Badge
-                        variant={
-                          getBadgeVariant.ageRange(activity.ageRange) as any
-                        }
-                        className="text-xs font-normal px-2.5 py-1 rounded-full"
-                      >
-                        {activity.ageRange}
-                      </Badge>
                     </div>
                   </li>
                 ))}

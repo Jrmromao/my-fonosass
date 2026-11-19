@@ -66,8 +66,6 @@ describe('createActivity', () => {
       description: 'Encontre as palavras com o fonema.',
       category: 'fonema',
       phoneme: 'R_FORTE',
-      difficulty: 'BEGINNER',
-      ageRange: 'PRESCHOOL',
       ...overrides,
     };
     Object.entries(fields).forEach(([k, v]) => fd.set(k, v));

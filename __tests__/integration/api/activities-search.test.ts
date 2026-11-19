@@ -61,8 +61,6 @@ describe('Activities Search API', () => {
         name: 'Test Activity',
         phoneme: 'P',
         type: 'SPEECH',
-        difficulty: 'BEGINNER',
-        ageRange: 'CHILD',
         createdAt: new Date(),
         files: [],
       },

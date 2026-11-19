@@ -32,8 +32,6 @@ export const GET = withCaching(
               name: true,
               description: true,
               type: true,
-              difficulty: true,
-              ageRange: true,
               isPublic: true,
               createdAt: true,
               categories: {

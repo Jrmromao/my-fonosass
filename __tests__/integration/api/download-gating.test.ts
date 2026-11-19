@@ -59,8 +59,6 @@ const setup = ({
     freeSampleIds.map((id) => ({
       id,
       name: id,
-      ageRange: 'PRESCHOOL',
-      difficulty: 'BEGINNER',
       files: [{ id: `${id}-img` }],
     }))
   );

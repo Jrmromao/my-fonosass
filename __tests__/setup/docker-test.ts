@@ -3,7 +3,9 @@ import { PrismaClient } from '@prisma/client';
 let prisma: PrismaClient;
 
 export async function setupDockerTest() {
-  const testDbUrl = process.env.DATABASE_URL || 'postgresql://fonosass:fonosass@localhost:5435/fonosass_test';
+  const testDbUrl =
+    process.env.DATABASE_URL ||
+    'postgresql://fonosass:fonosass@localhost:5435/fonosass_test';
   process.env.DATABASE_URL = testDbUrl;
   process.env.DIRECT_URL = testDbUrl;
 
@@ -15,10 +17,18 @@ export async function setupDockerTest() {
       console.log('Applying schema...');
       execSync('npx prisma db push --skip-generate --accept-data-loss', {
         stdio: 'pipe',
-        env: { ...process.env, DATABASE_URL: testDbUrl, DIRECT_URL: testDbUrl, PATH: process.env.PATH },
+        env: {
+          ...process.env,
+          DATABASE_URL: testDbUrl,
+          DIRECT_URL: testDbUrl,
+          PATH: process.env.PATH,
+        },
       });
     } catch (error: any) {
-      console.error('Schema push failed:', error.stderr?.toString() || error.message);
+      console.error(
+        'Schema push failed:',
+        error.stderr?.toString() || error.message
+      );
     }
   }
 
@@ -36,11 +46,14 @@ async function waitForDatabase() {
   const maxRetries = 30;
   for (let i = 0; i < maxRetries; i++) {
     try {
-      execSync('docker-compose -f docker-compose.test.yml exec -T test-postgres pg_isready -U testuser -d fonosass_test', { stdio: 'pipe' });
+      execSync(
+        'docker-compose -f docker-compose.test.yml exec -T test-postgres pg_isready -U testuser -d fonosass_test',
+        { stdio: 'pipe' }
+      );
       console.log('Database ready');
       return;
     } catch {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
   throw new Error('Database failed to start');
@@ -49,14 +62,19 @@ async function waitForDatabase() {
 async function seedTestData() {
   try {
     if (!prisma) throw new Error('Prisma client not initialized');
-    
+
     // Clean existing data
     await prisma.downloadLimit.deleteMany({});
     await prisma.activity.deleteMany({});
     await prisma.user.deleteMany({});
 
     const user = await prisma.user.create({
-      data: { clerkUserId: 'test-user-clerk', email: 'test@almanaquedafala.com.br', fullName: 'Test User', role: 'ADMIN' },
+      data: {
+        clerkUserId: 'test-user-clerk',
+        email: 'test@almanaquedafala.com.br',
+        fullName: 'Test User',
+        role: 'ADMIN',
+      },
     });
 
     // Seed activities
@@ -68,8 +86,6 @@ async function seedTestData() {
             name: `Test Activity ${phoneme}-${i}`,
             description: `Test description for phoneme /${phoneme}/`,
             type: 'SPEECH',
-            difficulty: 'BEGINNER',
-            ageRange: 'CHILD',
             phoneme,
             isPublic: true,
             status: 'PUBLISHED',
@@ -85,8 +101,6 @@ async function seedTestData() {
         name: 'Pending Activity',
         description: '{"titulo":"Test","objetivo":"Test"}',
         type: 'SPEECH',
-        difficulty: 'BEGINNER',
-        ageRange: 'CHILD',
         phoneme: 'R',
         isPublic: false,
         status: 'PENDING_REVIEW',
@@ -118,7 +132,9 @@ export async function teardownDockerTest() {
   if (!isCI) {
     const { execSync } = require('child_process');
     console.log('Stopping test containers...');
-    execSync('docker-compose -f docker-compose.test.yml down -v', { stdio: 'inherit' });
+    execSync('docker-compose -f docker-compose.test.yml down -v', {
+      stdio: 'inherit',
+    });
   }
 }
 

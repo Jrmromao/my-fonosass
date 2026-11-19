@@ -1,12 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  label,
-  phonemeLabel,
-} from '@/lib/activityLabels';
+import { phonemeLabel } from '@/lib/activityLabels';
 import type { LibraryResponse } from '@/lib/activityLibrary';
 import { libraryHref } from '@/lib/libraryUrl';
 import { useUser } from '@clerk/nextjs';
@@ -173,14 +168,8 @@ export default function Dashboard() {
                         <span className="text-xs font-mono text-neutral-600">
                           {phonemeLabel(activity.phoneme)}
                         </span>
-                        <span className="text-xs text-neutral-600">
-                          {label(DIFFICULTY_LABELS, activity.difficulty)}
-                        </span>
                       </div>
                     </div>
-                    <span className="text-xs text-neutral-600 text-right">
-                      {label(AGE_LABELS, activity.ageRange)}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -210,10 +199,7 @@ export default function Dashboard() {
               />
               <QuickLink href="/dashboard/profile" label="Perfil" />
               {isAdmin && (
-                <>
-                  <QuickLink href="/dashboard/ai" label="Gerar exercício" />
-                  <QuickLink href="/dashboard/resources" label="Recursos" />
-                </>
+                <QuickLink href="/dashboard/resources" label="Recursos" />
               )}
             </div>
           </section>

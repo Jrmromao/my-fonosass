@@ -8,25 +8,10 @@ import { type FreePreviewActivity } from '@/components/landing/FreePhonemeTile';
 import { getFreeSamples } from '@/lib/access';
 import { TYPE_LABELS, label, phonemeLabel } from '@/lib/activityLabels';
 import { LANGUAGE_TOPICS, PHONEMES } from '@/lib/phonemes';
-import { ActivityDifficulty, ActivityStatus, AgeRange } from '@prisma/client';
+import { ActivityStatus } from '@prisma/client';
 
 // Catalog numbers change at most a few times a week; refresh hourly.
 export const revalidate = 3600;
-
-const AGE_LABELS: Record<AgeRange, string> = {
-  TODDLER: 'Primeira infância',
-  PRESCHOOL: 'Pré-escolar',
-  CHILD: 'Idade escolar',
-  TEENAGER: 'Adolescente',
-  ADULT: 'Adulto',
-};
-
-const DIFFICULTY_LABELS: Record<ActivityDifficulty, string> = {
-  BEGINNER: 'Iniciante',
-  INTERMEDIATE: 'Intermediário',
-  ADVANCED: 'Avançado',
-  EXPERT: 'Especialista',
-};
 
 // Activity names are stored as "Animais (Fonema /S/)"; the phoneme is shown
 // separately on the card, so drop the suffix.
@@ -60,8 +45,6 @@ async function getCatalog(): Promise<{
           id: true,
           name: true,
           phoneme: true,
-          ageRange: true,
-          difficulty: true,
         },
         orderBy: { createdAt: 'asc' },
         take: 30,
@@ -92,32 +75,24 @@ async function getCatalog(): Promise<{
       subject: a.phoneme
         ? `Fonema ${phonemeLabel(a.phoneme)}`
         : label(TYPE_LABELS, a.type),
-      ageLabel: AGE_LABELS[a.ageRange],
-      difficultyLabel: DIFFICULTY_LABELS[a.difficulty],
       imageFileId: a.imageFileId,
     }));
 
-    // One sheet per phoneme, each from a different age range and theme, so
-    // the hero shows the breadth of the catalog rather than three copies.
-    const usedAges = new Set<AgeRange>();
+    // One sheet per phoneme, each with a different theme, so the hero shows
+    // the breadth of the catalog rather than three copies.
     const usedTitles = new Set<string>();
     const sampleByPhoneme = new Map<string, (typeof sampleRows)[number]>();
     for (const row of sampleRows) {
       const title = cleanTitle(row.name);
-      if (
-        sampleByPhoneme.has(row.phoneme) ||
-        usedAges.has(row.ageRange) ||
-        usedTitles.has(title)
-      ) {
+      if (sampleByPhoneme.has(row.phoneme) || usedTitles.has(title)) {
         continue;
       }
       sampleByPhoneme.set(row.phoneme, row);
-      usedAges.add(row.ageRange);
       usedTitles.add(title);
     }
     const picked = [...sampleByPhoneme.values()];
-    // Small catalogs (e.g. production today) may not have three distinct age
-    // ranges; fill the remaining slots with any other activity.
+    // Small catalogs may not have three distinct phonemes; fill the remaining
+    // slots with any other activity.
     for (const row of sampleRows) {
       if (picked.length >= 3) break;
       if (!picked.includes(row)) picked.push(row);
@@ -146,8 +121,6 @@ async function getCatalog(): Promise<{
         id: a.id,
         title: cleanTitle(a.name),
         phoneme: a.phoneme,
-        ageLabel: AGE_LABELS[a.ageRange],
-        difficultyLabel: DIFFICULTY_LABELS[a.difficulty],
       })),
     };
   } catch (error) {

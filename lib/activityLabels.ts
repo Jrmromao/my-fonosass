@@ -1,5 +1,5 @@
 // pt-BR labels for the activity enums. Never show the raw enum values
-// (SPEECH, BEGINNER, PRESCHOOL…) to users. Client-safe (no Prisma import).
+// (SPEECH, ANIMALS…) to users. Client-safe (no Prisma import).
 
 export const TYPE_LABELS: Record<string, string> = {
   ANIMALS: 'Animais',
@@ -19,21 +19,6 @@ export const TYPE_LABELS: Record<string, string> = {
   COGNITIVE: 'Cognição',
   MOTOR: 'Motricidade',
   SOCIAL: 'Social',
-};
-
-export const DIFFICULTY_LABELS: Record<string, string> = {
-  BEGINNER: 'Iniciante',
-  INTERMEDIATE: 'Intermediário',
-  ADVANCED: 'Avançado',
-  EXPERT: 'Especialista',
-};
-
-export const AGE_LABELS: Record<string, string> = {
-  TODDLER: 'Primeira infância',
-  PRESCHOOL: 'Pré-escolar',
-  CHILD: 'Idade escolar',
-  TEENAGER: 'Adolescente',
-  ADULT: 'Adulto',
 };
 
 const PHONEME_DISPLAY: Record<string, string> = {

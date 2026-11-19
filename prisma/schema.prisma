@@ -37,9 +37,7 @@ model Activity {
   description          String
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
-  ageRange             AgeRange
   createdById          String
-  difficulty           ActivityDifficulty
   isPublic             Boolean                @default(false)
   type                 ActivityType
   phoneme              String                 @default("")
@@ -57,8 +55,7 @@ model Activity {
   freeSampleSelections FreeSampleSelection[]
 
   @@index([isPublic, createdAt])
-  @@index([type, difficulty])
-  @@index([ageRange])
+  @@index([type])
   @@index([createdById])
   @@index([name])
   @@index([status])
@@ -423,21 +420,6 @@ enum ActivityType {
   COGNITIVE
   MOTOR
   SOCIAL
-}
-
-enum ActivityDifficulty {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
-}
-
-enum AgeRange {
-  TODDLER
-  PRESCHOOL
-  CHILD
-  TEENAGER
-  ADULT
 }
 
 enum TierType {

@@ -20,8 +20,6 @@ export interface FreePreviewActivity {
   phoneme: string;
   /** "Fonema /s/", "Arquifonema /S/", "Cores"… */
   subject: string;
-  ageLabel: string;
-  difficultyLabel: string;
   /** ActivityFile id of an image file, served via /api/free-preview/[fileId]. */
   imageFileId: string | null;
 }
@@ -96,10 +94,7 @@ export function FreeSamplesDialog({
                 <p className="text-sm font-semibold text-neutral-900">
                   {activity.title}
                 </p>
-                <p className="text-xs text-neutral-600">
-                  {activity.subject} · {activity.ageLabel} ·{' '}
-                  {activity.difficultyLabel}
-                </p>
+                <p className="text-xs text-neutral-600">{activity.subject}</p>
               </figcaption>
             </figure>
           ))}

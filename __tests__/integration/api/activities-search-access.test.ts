@@ -53,8 +53,6 @@ const search = async (subscription: unknown) => {
     name: 'Grátis',
     phoneme: 'S',
     type: 'SPEECH',
-    ageRange: 'PRESCHOOL',
-    difficulty: 'BEGINNER',
     files: [{ id: 'f2' }],
   };
   prisma.activity.findMany.mockImplementation(async (args: unknown) => {

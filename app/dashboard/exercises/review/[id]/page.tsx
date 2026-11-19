@@ -180,14 +180,6 @@ export default async function ExerciseReviewPage({
               {subjectLabel(activity.phoneme, activity.type)}
             </span>
           </div>
-          <div>
-            <span className="text-sm text-neutral-600">Dificuldade:</span>
-            <span className="ml-2 font-medium">{activity.difficulty}</span>
-          </div>
-          <div>
-            <span className="text-sm text-neutral-600">Faixa etária:</span>
-            <span className="ml-2 font-medium">{activity.ageRange}</span>
-          </div>
 
           {exerciseData.objetivo && (
             <div>
