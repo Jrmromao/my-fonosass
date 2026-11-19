@@ -5,6 +5,7 @@ import { PRO_PLAN, formatBRL } from '@/lib/pricing';
 import { ArrowRight, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import AuthAwareLink from './AuthAwareLink';
 import { type FreePreviewActivity } from './FreePhonemeTile';
 import PhonemeLibrary, {
   type PhonemeCount,
@@ -25,8 +26,6 @@ export interface SampleActivity {
   id: string;
   title: string;
   phoneme: string;
-  ageLabel: string;
-  difficultyLabel: string;
 }
 
 interface HomeLandingProps {
@@ -74,8 +73,8 @@ export default function HomeLanding({
                 Atividades de fonoaudiologia infantil, organizadas por fonema.
               </h1>
               <p className="mt-6 text-lg text-neutral-600 leading-relaxed max-w-[34rem]">
-                Escolha o fonema, a faixa etária e imprima. Materiais criados e
-                revisados por fonoaudióloga, com novidades toda semana.
+                Escolha o fonema e imprima. Materiais criados e revisados por
+                fonoaudióloga.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
                 <Link
@@ -172,7 +171,7 @@ export default function HomeLanding({
               Um plano. Sem créditos, sem adicionais.
             </h2>
             <p className="mt-3 text-neutral-600">
-              Acesso completo à biblioteca, com novas atividades toda semana.
+              Acesso completo à biblioteca, com atividades novas todo mês.
             </p>
 
             <div className="mt-10 rounded-lg border-2 border-neutral-900 bg-white p-7 md:p-9">
@@ -196,12 +195,12 @@ export default function HomeLanding({
                     period="/ano"
                     note={`Equivale a ${formatBRL(PRO_PLAN.yearlyPrice / 12)} por mês, ${yearlySavings}% de desconto`}
                   />
-                  <Link
-                    href="/sign-up"
+                  <AuthAwareLink
+                    to="/dashboard/profile?tab=assinatura"
                     className="mt-3 block rounded-md bg-neutral-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
                   >
                     Assinar
-                  </Link>
+                  </AuthAwareLink>
                   <p className="text-center text-xs text-neutral-600">
                     Cancele quando quiser, sem multa.
                   </p>
@@ -348,12 +347,10 @@ function SheetStack({ samples }: { samples: SampleActivity[] }) {
             <span className="font-mono text-sm font-semibold text-neutral-900">
               /{sample.phoneme.toLowerCase()}/
             </span>
-            <span>{sample.ageLabel}</span>
           </div>
           <p className="mt-4 font-display text-xl font-bold leading-tight">
             {sample.title}
           </p>
-          <p className="text-xs text-neutral-600">{sample.difficultyLabel}</p>
           <div className="mt-5 grid grid-cols-3 gap-2">
             {Array.from({ length: 6 }).map((_, j) => (
               <div
@@ -382,11 +379,6 @@ function buildFaqs(freeAvailable: boolean, freeText: string) {
       answer:
         'Todas as atividades são criadas e revisadas por fonoaudióloga com experiência clínica em atendimento infantil. Nada é publicado sem revisão.',
     },
-    {
-      question: 'Para quais idades são as atividades?',
-      answer:
-        'Há atividades para pré-escolares, crianças em idade escolar e adolescentes, em três níveis de dificuldade: iniciante, intermediário e avançado.',
-    },
     ...(freeAvailable
       ? [
           {
@@ -398,7 +390,7 @@ function buildFaqs(freeAvailable: boolean, freeText: string) {
     {
       question: 'O que está incluído na assinatura?',
       answer:
-        'Acesso a todas as atividades da biblioteca, com downloads ilimitados prontos para impressão. Novas atividades são adicionadas toda semana sem custo extra.',
+        'Acesso a todas as atividades da biblioteca, com downloads ilimitados prontos para impressão. Todo mês entram atividades novas no seu plano, sem custo extra.',
     },
     {
       question: 'Posso cancelar a assinatura?',

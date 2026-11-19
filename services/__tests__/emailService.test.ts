@@ -24,88 +24,6 @@ describe('EmailService', () => {
     jest.clearAllMocks();
   });
 
-  describe('sendDownloadLimitWarning', () => {
-    it('should send warning email with correct content', async () => {
-      mockSend.mockResolvedValue({ id: 'email-id' });
-
-      await EmailService.sendDownloadLimitWarning(
-        'user@test.com',
-        'João Silva',
-        1
-      );
-
-      expect(mockSend).toHaveBeenCalledWith({
-        attachments: expect.any(Array),
-        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
-        to: 'user@test.com',
-        subject: 'Resta 1 download este mes',
-        html: expect.stringContaining('Ola João Silva,'),
-      });
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          html: expect.stringContaining('1 download restante'),
-        })
-      );
-    });
-
-    it('should handle email sending errors gracefully', async () => {
-      mockSend.mockRejectedValue(new Error('Email service error'));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      await EmailService.sendDownloadLimitWarning(
-        'user@test.com',
-        'João Silva',
-        1
-      );
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Download limit warning email failed:',
-        expect.any(Error)
-      );
-      consoleSpy.mockRestore();
-    });
-  });
-
-  describe('sendDownloadLimitReached', () => {
-    it('should send limit reached email with upgrade CTA', async () => {
-      mockSend.mockResolvedValue({ id: 'email-id' });
-
-      await EmailService.sendDownloadLimitReached(
-        'user@test.com',
-        'Maria Santos'
-      );
-
-      expect(mockSend).toHaveBeenCalledWith({
-        attachments: expect.any(Array),
-        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
-        to: 'user@test.com',
-        subject: 'Limite de downloads atingido',
-        html: expect.stringContaining('Ola Maria Santos,'),
-      });
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          html: expect.stringContaining('Fazer upgrade'),
-        })
-      );
-    });
-
-    it('should handle email sending errors gracefully', async () => {
-      mockSend.mockRejectedValue(new Error('Email service error'));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-      await EmailService.sendDownloadLimitReached(
-        'user@test.com',
-        'Maria Santos'
-      );
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Download limit reached email failed:',
-        expect.any(Error)
-      );
-      consoleSpy.mockRestore();
-    });
-  });
-
   describe('sendWelcomeEmail', () => {
     it('should send welcome email with onboarding content', async () => {
       mockSend.mockResolvedValue({ id: 'email-id' });
@@ -121,8 +39,10 @@ describe('EmailService', () => {
       });
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
+          // The free activities can change every month, so the email points
+          // to the "Grátis" badge instead of naming a phoneme.
           html: expect.stringContaining(
-            'Baixar grátis 2 atividades do fonema /s/'
+            'Baixe grátis as 2 atividades com o selo'
           ),
         })
       );

@@ -39,9 +39,7 @@ model Activity {
   description          String
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
-  ageRange             AgeRange
   createdById          String
-  difficulty           ActivityDifficulty
   isPublic             Boolean                @default(false)
   type                 ActivityType
   phoneme              String                 @default("")
@@ -59,8 +57,7 @@ model Activity {
   freeSampleSelections FreeSampleSelection[]
 
   @@index([isPublic, createdAt])
-  @@index([type, difficulty])
-  @@index([ageRange])
+  @@index([type])
   @@index([createdById])
   @@index([name])
   @@index([status])
@@ -68,17 +65,19 @@ model Activity {
 }
 
 model ActivityFile {
-  id           String   @id @default(cuid())
-  activityId   String
-  name         String
-  s3Key        String
-  s3Url        String
-  fileType     String
-  sizeInBytes  Int
-  uploadedById String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  activity     Activity @relation(fields: [activityId], references: [id])
+  id              String   @id @default(cuid())
+  activityId      String
+  name            String
+  s3Key           String
+  // Original s3Key while the activity is archived (files live under archive/)
+  archivedFromKey String?
+  s3Url           String
+  fileType        String
+  sizeInBytes     Int
+  uploadedById    String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  activity        Activity @relation(fields: [activityId], references: [id])
 
   @@index([activityId])
   @@index([fileType])
@@ -406,6 +405,7 @@ enum ActivityStatus {
   PENDING_REVIEW
   PUBLISHED
   REJECTED
+  ARCHIVED
 }
 
 enum ActivityType {
@@ -425,21 +425,6 @@ enum ActivityType {
   COGNITIVE
   MOTOR
   SOCIAL
-}
-
-enum ActivityDifficulty {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
-}
-
-enum AgeRange {
-  TODDLER
-  PRESCHOOL
-  CHILD
-  TEENAGER
-  ADULT
 }
 
 enum TierType {
@@ -609,6 +594,20 @@ model ProcessedWebhookEvent {
 
   @@index([processedAt])
   @@map("processed_webhook_events")
+}
+
+/// Admin-edited paragraph of a library topic page (/dashboard/biblioteca/[slug]).
+/// No row = the default text in lib/libraryTopics.ts. Deleting a row restores
+/// the default. updatedById is the admin's User.id (no relation, so erasing a
+/// user never touches this content).
+model LibraryTopicContent {
+  /// Topic slug as in the URL: "g", "r-forte", "arquifonema-s", "cores".
+  slug        String   @id
+  about       String
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("library_topic_contents")
 }
 
 /// Append-only trail of admin actions on personal data and of security

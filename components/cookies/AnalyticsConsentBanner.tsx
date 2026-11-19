@@ -5,7 +5,7 @@ import { useAnalyticsConsent, writeConsent } from '@/lib/cookieConsent';
 import Link from 'next/link';
 
 /**
- * Asks once whether Google Analytics may run. Accept and Refuse have the same
+ * Asks once whether Google Analytics and browser error reports (Sentry) may run. Accept and Refuse have the same
  * weight on purpose. Essential cookies (login, security) need no consent.
  */
 export default function AnalyticsConsentBanner() {
@@ -29,9 +29,10 @@ export default function AnalyticsConsentBanner() {
         id="analytics-consent-text"
         className="mt-1.5 text-sm text-neutral-600"
       >
-        Usamos o Google Analytics para entender como o site é usado e
-        melhorá-lo. Só ativamos se você aceitar. Os cookies essenciais, de login
-        e segurança, funcionam sempre.{' '}
+        Usamos o Google Analytics para entender como o site é usado e o Sentry
+        para receber relatórios de erros do navegador, sem dados pessoais. Só
+        ativamos se você aceitar. Os cookies essenciais, de login e segurança,
+        funcionam sempre.{' '}
         <Link href="/cookies" className="underline underline-offset-2">
           Saiba mais
         </Link>

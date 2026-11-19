@@ -1,8 +1,12 @@
-// Runs `prisma migrate deploy` during the Vercel build, production only.
+// Runs `prisma migrate deploy` during the Vercel build.
 //
-// Preview and Production share DATABASE_URL/DIRECT_URL in Vercel, so a
-// preview build of an unmerged branch must never migrate the shared
-// database. Locally (no VERCEL_ENV) it does nothing.
+// - Production: always.
+// - Preview: only when PREVIEW_RUN_MIGRATIONS=true. Set it in Vercel for
+//   Preview *scoped to the UAT branch* (feat/stripe-billing), whose
+//   DATABASE_URL/DIRECT_URL point at the separate preview database
+//   (AdF_preview). Other preview branches never migrate, so an unmerged
+//   branch can't change a database it shares with others.
+// - Locally (no VERCEL_ENV): nothing.
 //
 // Migrations run before the new code goes live while the old deployment is
 // still serving, so they must be backward compatible (add, don't drop or
@@ -16,12 +20,19 @@
 import { execSync } from 'node:child_process';
 
 const env = process.env.VERCEL_ENV;
+const previewOptIn = process.env.PREVIEW_RUN_MIGRATIONS === 'true';
+const branch = process.env.VERCEL_GIT_COMMIT_REF ?? 'unknown';
 
-if (env !== 'production') {
-  console.log(`[migrate] skipped (VERCEL_ENV=${env ?? 'unset'})`);
+if (env === 'production') {
+  console.log('[migrate] production build: prisma migrate deploy');
+} else if (env === 'preview' && previewOptIn) {
+  console.log(`[migrate] preview build (${branch}): prisma migrate deploy`);
+} else {
+  console.log(
+    `[migrate] skipped (VERCEL_ENV=${env ?? 'unset'}, branch=${branch}, PREVIEW_RUN_MIGRATIONS=${previewOptIn})`
+  );
   process.exit(0);
 }
 
-console.log('[migrate] production build: prisma migrate deploy');
 // Uses DIRECT_URL (schema directUrl), so it bypasses any connection pooler.
 execSync('npx prisma migrate deploy', { stdio: 'inherit' });

@@ -45,8 +45,12 @@ When generating or modifying Portuguese text, always verify accents and grammar 
 
 #### Production migrations (automatic) — expand/contract rule
 - Migrations are applied by the Vercel **production** build (`vercel.json` →
-  `scripts/vercel-migrate.mjs` → `prisma migrate deploy`). Preview and local
-  builds skip it, because Preview shares the production database.
+  `scripts/vercel-migrate.mjs` → `prisma migrate deploy`). Local builds skip
+  it. Preview builds skip it too, except the UAT branch
+  (`feat/stripe-billing`, served at uat.almanaquedafala.com.br): it has
+  `PREVIEW_RUN_MIGRATIONS=true` and migrates the separate preview database
+  (Supabase project AdF_preview). Never set that flag where DATABASE_URL
+  could be the production database.
 - They run **before** the new code is live, while the previous deployment is
   still serving traffic. So **every migration must work with the code that is
   currently in production** (backward compatible):

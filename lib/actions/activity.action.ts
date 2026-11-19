@@ -8,14 +8,8 @@ import { auth } from '@clerk/nextjs/server';
 import { findCategory } from '@/lib/activityCategories';
 import { isWatermarkableImage, watermarkImage } from '@/lib/images/watermark';
 import { PHONEMES } from '@/lib/phonemes';
-import {
-  $Enums,
-  ActivityDifficulty,
-  ActivityType as ActivityTypeEnum,
-  AgeRange,
-} from '@prisma/client';
+import { $Enums, ActivityType as ActivityTypeEnum } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { refreshPublicCatalogPages } from '@/lib/cache/publicPages';
 import { z } from 'zod';
 import ActivityType = $Enums.ActivityType;
 
@@ -27,8 +21,6 @@ const activitySchema = z.object({
   name: z.string().min(2, 'Name is required'),
   description: z.string().min(10, 'Description is required'),
   type: z.enum(['SPEECH', 'LANGUAGE', 'COGNITIVE', 'MOTOR', 'SOCIAL', 'OTHER']),
-  difficulty: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']),
-  ageRange: z.enum(['TODDLER', 'PRESCHOOL', 'CHILD', 'TEENAGER', 'ADULT']),
   isPublic: z.boolean().default(true),
   files: z.array(z.instanceof(File)).optional(),
   categoryIds: z.array(z.string()).optional(),
@@ -40,8 +32,6 @@ type ActivityInput = {
   name: string;
   description: string;
   type: 'SPEECH' | 'LANGUAGE' | 'COGNITIVE' | 'MOTOR' | 'SOCIAL' | 'OTHER';
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
-  ageRange: 'TODDLER' | 'PRESCHOOL' | 'CHILD' | 'TEENAGER' | 'ADULT';
   isPublic: boolean;
   files: File[];
 };
@@ -77,8 +67,6 @@ export async function createActivity(formData: FormData) {
     const name = sanitizeInput(formData.get('name') as string, 100);
     const description = sanitizeHtml(formData.get('description') as string);
     const category = findCategory(formData.get('category') as string);
-    const difficulty = (formData.get('difficulty') as string) || '';
-    const ageRange = (formData.get('ageRange') as string) || '';
     const rawPhoneme = sanitizeInput(
       (formData.get('phoneme') as string) || '',
       50
@@ -94,19 +82,12 @@ export async function createActivity(formData: FormData) {
     }
     const type = category.type;
 
-    // Enum fields come from <select>s but must still be checked server-side.
+    // The type comes from a <select> but must still be checked server-side.
     const enums = z
-      .object({
-        type: z.nativeEnum(ActivityTypeEnum),
-        difficulty: z.nativeEnum(ActivityDifficulty),
-        ageRange: z.nativeEnum(AgeRange),
-      })
-      .safeParse({ type, difficulty, ageRange });
+      .object({ type: z.nativeEnum(ActivityTypeEnum) })
+      .safeParse({ type });
     if (!enums.success) {
-      return {
-        success: false,
-        error: 'Escolha a dificuldade e a faixa etária.',
-      };
+      return { success: false, error: 'Dados da atividade inválidos.' };
     }
 
     // Validate required fields
@@ -128,17 +109,6 @@ export async function createActivity(formData: FormData) {
         description,
         phoneme,
         type: type as ActivityType,
-        difficulty: difficulty as
-          | 'BEGINNER'
-          | 'INTERMEDIATE'
-          | 'ADVANCED'
-          | 'EXPERT',
-        ageRange: ageRange as
-          | 'TODDLER'
-          | 'PRESCHOOL'
-          | 'CHILD'
-          | 'TEENAGER'
-          | 'ADULT',
         createdBy: { connect: { clerkUserId: userId } },
         // New content must enter the review workflow — never auto-publish.
         status: 'PENDING_REVIEW',
@@ -334,16 +304,12 @@ export async function getActivities({
   page = 1,
   limit = 10,
   type,
-  difficulty,
-  ageRange,
   categoryId,
   searchTerm,
 }: {
   page?: number;
   limit?: number;
   type?: string;
-  difficulty?: string;
-  ageRange?: string;
   categoryId?: string;
   searchTerm?: string;
 }) {
@@ -352,8 +318,6 @@ export async function getActivities({
     const where: any = { isPublic: true };
 
     if (type) where.type = type;
-    if (difficulty) where.difficulty = difficulty;
-    if (ageRange) where.ageRange = ageRange;
     if (searchTerm) {
       where.OR = [
         { name: { contains: searchTerm, mode: 'insensitive' } },
@@ -492,107 +456,6 @@ export async function getActivities({
 //     }
 // }
 
-/**
- * Delete an activity
- */
-export async function deleteActivity(id: string) {
-  try {
-    // Validate user authentication
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error('Unauthorized');
-    }
-
-    // Check if activity exists and user has permission
-    const activity = await prisma.activity.findUnique({
-      where: { id },
-      include: { createdBy: true, files: true },
-    });
-
-    if (!activity) {
-      throw new Error('Activity not found');
-    }
-
-    if (activity.createdBy.clerkUserId !== userId) {
-      throw new Error("You don't have permission to delete this activity");
-    }
-
-    // Delete associated files from S3
-    if (activity.files.length > 0) {
-      await Promise.all(
-        activity.files.map(async (file) => {
-          // Extract the file key from the S3Url or use the s3Key directly
-          await s3Service.deleteFile(
-            'activities',
-            `${activity.id}/${file.name}`
-          );
-        })
-      );
-    }
-
-    // Delete the activity and its associated files from the database
-    // Prisma will automatically delete associated files due to the relation
-    await prisma.activity.delete({
-      where: { id },
-    });
-
-    revalidatePath('/activities');
-    refreshPublicCatalogPages();
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting activity:', error);
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : 'Failed to delete activity',
-    };
-  }
-}
-
-/**
- * Delete an activity file
- */
-export async function deleteActivityFile(activityId: string, fileId: string) {
-  try {
-    // Validate user authentication
-    const { userId } = await auth();
-    if (!userId) {
-      throw new Error('Unauthorized');
-    }
-
-    // Check if activity and file exist
-    const file = await prisma.activityFile.findUnique({
-      where: { id: fileId },
-      include: { activity: { include: { createdBy: true } } },
-    });
-
-    if (!file || file.activityId !== activityId) {
-      throw new Error('File not found');
-    }
-
-    if (file.activity.createdBy.clerkUserId !== userId) {
-      throw new Error("You don't have permission to delete this file");
-    }
-
-    // Delete file from S3
-    await s3Service.deleteFile('activities', `${activityId}/${file.name}`);
-
-    // Delete file record from database
-    await prisma.activityFile.delete({
-      where: { id: fileId },
-    });
-
-    revalidatePath(`/activities/${activityId}`);
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting activity file:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete file',
-    };
-  }
-}
-
 export interface GetActivitiesByPhonemeParams {
   phoneme?: string;
   type?: keyof typeof ActivityType;
@@ -601,8 +464,6 @@ export interface GetActivitiesByPhonemeParams {
   cursor?: string;
   categoryIds?: string[];
   types?: ActivityType[];
-  difficulties?: ActivityDifficulty[];
-  ageRanges?: AgeRange[];
 }
 
 export async function getActivitiesByPhoneme({
@@ -612,8 +473,6 @@ export async function getActivitiesByPhoneme({
   cursor,
   categoryIds = [],
   types = [],
-  difficulties = [],
-  ageRanges = [],
 }: GetActivitiesByPhonemeParams) {
   try {
     const { userId } = await auth();
@@ -652,18 +511,6 @@ export async function getActivitiesByPhoneme({
     if (types.length > 0) {
       where.type = {
         in: types,
-      };
-    }
-
-    if (difficulties.length > 0) {
-      where.difficulty = {
-        in: difficulties,
-      };
-    }
-
-    if (ageRanges.length > 0) {
-      where.ageRange = {
-        in: ageRanges,
       };
     }
 
@@ -710,8 +557,6 @@ export async function getActivitiesByType({
   cursor,
   categoryIds = [],
   types = [],
-  difficulties = [],
-  ageRanges = [],
 }: GetActivitiesByPhonemeParams) {
   try {
     const { userId } = await auth();
@@ -750,18 +595,6 @@ export async function getActivitiesByType({
     if (types.length > 0) {
       where.type = {
         in: types,
-      };
-    }
-
-    if (difficulties.length > 0) {
-      where.difficulty = {
-        in: difficulties,
-      };
-    }
-
-    if (ageRanges.length > 0) {
-      where.ageRange = {
-        in: ageRanges,
       };
     }
 

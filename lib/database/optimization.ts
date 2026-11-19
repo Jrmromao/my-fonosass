@@ -83,8 +83,6 @@ export class DatabaseOptimizer {
         name: true,
         description: true,
         type: true,
-        difficulty: true,
-        ageRange: true,
         createdAt: true,
         categories: {
           select: {

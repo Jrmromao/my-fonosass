@@ -168,11 +168,10 @@ describe('/api/user/profile', () => {
         status: 'ACTIVE',
         currentPeriodEnd: undefined,
       });
-      expect(data.data.downloadLimits).toEqual({
-        canDownload: true,
-        remaining: 3,
-        isPro: false,
-      });
+      // No download quota: free users get the monthly free samples
+      // (lib/access.ts), subscribers everything.
+      expect(data.data.downloadLimits).toBeUndefined();
+      expect(mockPrisma.downloadLimit.findUnique).not.toHaveBeenCalled();
       expect(data.data.stats).toEqual({
         totalDownloads: 5,
         uniqueActivities: 2,
@@ -246,8 +245,7 @@ describe('/api/user/profile', () => {
       const data = await response.json();
 
       expect(data.data.subscription.tier).toBe('PRO');
-      expect(data.data.downloadLimits.isPro).toBe(true);
-      expect(data.data.downloadLimits.remaining).toBe(Infinity);
+      expect(data.data.downloadLimits).toBeUndefined();
     });
   });
 

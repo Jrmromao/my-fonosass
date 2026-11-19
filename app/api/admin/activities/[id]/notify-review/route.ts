@@ -39,8 +39,6 @@ export async function POST(
       id: activity.id,
       name: activity.name,
       phoneme: activity.phoneme,
-      difficulty: activity.difficulty,
-      ageRange: activity.ageRange,
       approvalToken,
     });
 

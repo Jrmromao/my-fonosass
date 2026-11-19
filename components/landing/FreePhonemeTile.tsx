@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { LIBRARY_PATH, libraryHref } from '@/lib/libraryUrl';
+import { LIBRARY_PATH, phonemeSlug } from '@/lib/libraryUrl';
 import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -20,8 +20,6 @@ export interface FreePreviewActivity {
   phoneme: string;
   /** "Fonema /s/", "Arquifonema /S/", "Cores"… */
   subject: string;
-  ageLabel: string;
-  difficultyLabel: string;
   /** ActivityFile id of an image file, served via /api/free-preview/[fileId]. */
   imageFileId: string | null;
 }
@@ -96,10 +94,7 @@ export function FreeSamplesDialog({
                 <p className="text-sm font-semibold text-neutral-900">
                   {activity.title}
                 </p>
-                <p className="text-xs text-neutral-600">
-                  {activity.subject} · {activity.ageLabel} ·{' '}
-                  {activity.difficultyLabel}
-                </p>
+                <p className="text-xs text-neutral-600">{activity.subject}</p>
               </figcaption>
             </figure>
           ))}
@@ -176,7 +171,7 @@ export default function FreePhonemeTile({
   const [open, setOpen] = useState(false);
   const { isSignedIn } = useAuth();
   const label = `/${phoneme.toLowerCase()}/`;
-  const libraryUrl = libraryHref({ phoneme });
+  const libraryUrl = `${LIBRARY_PATH}/${phonemeSlug(phoneme)}`;
   const downloadHref = isSignedIn
     ? libraryUrl
     : `/sign-up?redirect_url=${encodeURIComponent(libraryUrl)}`;

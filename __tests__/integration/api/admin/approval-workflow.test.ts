@@ -60,8 +60,6 @@ describe('Activity Approval Workflow', () => {
           id: 'act-1',
           name: 'Encontre e Circule - Animais',
           phoneme: 'P',
-          difficulty: 'BEGINNER',
-          ageRange: 'PRESCHOOL',
           status: 'PENDING_REVIEW',
         },
       ]);

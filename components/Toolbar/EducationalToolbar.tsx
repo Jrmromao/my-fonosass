@@ -216,7 +216,7 @@ const EducationalToolbar: React.FC = () => {
         bgColor: '#FFF8E1',
         darkBgColor: '#4D3200',
         content:
-          'Aprenda os números e o alfabeto com exercícios adequados para cada faixa etária.',
+          'Aprenda os números e o alfabeto com exercícios prontos para imprimir.',
       },
       {
         label: 'Motricidade',

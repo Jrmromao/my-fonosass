@@ -18,8 +18,6 @@ const row = (id: string, files: { id: string }[] = [{ id: `${id}-img` }]) => ({
   name: id,
   phoneme: 'S',
   type: 'SPEECH',
-  ageRange: 'PRESCHOOL',
-  difficulty: 'BEGINNER',
   files,
 });
 

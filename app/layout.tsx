@@ -39,7 +39,7 @@ export const metadata = {
     template: '%s | Almanaque da Fala',
   },
   description:
-    'Biblioteca de atividades imprimíveis para fonoaudiólogos que atendem crianças. Organizadas por fonema, faixa etária e dificuldade, criadas e revisadas por fonoaudióloga.',
+    'Biblioteca de atividades imprimíveis para fonoaudiólogos que atendem crianças. Organizadas por fonema, criadas e revisadas por fonoaudióloga.',
   keywords: [
     'fonoaudiologia',
     'fonoaudiólogo',
@@ -70,7 +70,7 @@ export const metadata = {
   openGraph: {
     title: 'Almanaque da Fala | Atividades de fonoaudiologia por fonema',
     description:
-      'Atividades imprimíveis para fonoaudiólogos que atendem crianças, organizadas por fonema e faixa etária.',
+      'Atividades imprimíveis para fonoaudiólogos que atendem crianças, organizadas por fonema.',
     url: 'https://www.almanaquedafala.com.br',
     siteName: 'Almanaque da Fala',
     locale: 'pt_BR',
@@ -88,7 +88,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Almanaque da Fala | Atividades de fonoaudiologia por fonema',
     description:
-      'Atividades imprimíveis para fonoaudiólogos que atendem crianças, organizadas por fonema e faixa etária.',
+      'Atividades imprimíveis para fonoaudiólogos que atendem crianças, organizadas por fonema.',
     images: ['/og-image.png'],
     creator: '@almanaquedafala',
   },

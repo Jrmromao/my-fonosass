@@ -2,6 +2,7 @@ import { prisma } from '@/app/db';
 import { getEffectiveAccess } from '@/lib/auth/viewAs';
 import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { getFreeSamples } from '@/lib/access';
+import { canPreview } from '@/lib/files/preview';
 import { auth } from '@clerk/nextjs/server';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -43,8 +44,6 @@ export async function GET(request: NextRequest) {
     const search = url.searchParams.get('search')?.trim() || '';
     const phoneme = url.searchParams.get('phoneme') || '';
     const type = url.searchParams.get('type') || '';
-    const difficulty = url.searchParams.get('difficulty') || '';
-    const ageRange = url.searchParams.get('ageRange') || '';
 
     const where: Prisma.ActivityWhereInput = {
       isPublic: true,
@@ -60,8 +59,6 @@ export async function GET(request: NextRequest) {
 
     if (phoneme) where.phoneme = phoneme;
     if (type) where.type = type as any;
-    if (difficulty) where.difficulty = difficulty as any;
-    if (ageRange) where.ageRange = ageRange as any;
 
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
@@ -72,10 +69,12 @@ export async function GET(request: NextRequest) {
           description: true,
           phoneme: true,
           type: true,
-          difficulty: true,
-          ageRange: true,
           createdAt: true,
-          files: { select: { id: true, fileType: true, s3Key: true }, take: 1 },
+          files: {
+            select: { id: true, name: true, fileType: true, s3Key: true },
+            // Page order: upload order, then name (files sent together).
+            orderBy: [{ createdAt: 'asc' }, { name: 'asc' }],
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -85,7 +84,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Get available filter options (for the current filtered set minus that filter)
-    const [phonemes, types, difficulties, ageRanges] = await Promise.all([
+    const [phonemes, types] = await Promise.all([
       prisma.activity.findMany({
         where: { isPublic: true, status: 'PUBLISHED' },
         select: { phoneme: true },
@@ -97,22 +96,15 @@ export async function GET(request: NextRequest) {
         select: { type: true },
         distinct: ['type'],
       }),
-      prisma.activity.findMany({
-        where: { isPublic: true, status: 'PUBLISHED' },
-        select: { difficulty: true },
-        distinct: ['difficulty'],
-      }),
-      prisma.activity.findMany({
-        where: { isPublic: true, status: 'PUBLISHED' },
-        select: { ageRange: true },
-        distinct: ['ageRange'],
-      }),
     ]);
 
     // Generate presigned thumbnail URLs in batch
     const activitiesWithThumbnails = await Promise.all(
       activities.map(async (activity) => {
         const file = activity.files[0];
+        // Every signed-in user sees a small preview of activities with a PDF
+        // or image file (see /api/activities/[id]/preview).
+        const hasPreview = activity.files.some((f) => canPreview(f.fileType));
         const isFreeSample = freeSampleIds.has(activity.id);
         const canDownload = canDownloadAll || isFreeSample;
         let thumbnailUrl = null;
@@ -127,15 +119,20 @@ export async function GET(request: NextRequest) {
             /* skip failed thumbnails */
           }
         }
-        // s3Key stays server-side: the client only needs the file id.
-        const files = activity.files.map(({ id, fileType }) => ({
+        // s3Key stays server-side: the client only needs id, name and type.
+        // Every file is a page of the activity, page 1 first.
+        const files = activity.files.map(({ id, name, fileType }) => ({
           id,
+          name,
           fileType,
         }));
         return {
           ...activity,
           files,
           thumbnailUrl,
+          previewUrl: hasPreview
+            ? `/api/activities/${activity.id}/preview`
+            : null,
           isFreeSample,
           canDownload,
         };
@@ -160,8 +157,6 @@ export async function GET(request: NextRequest) {
           .filter((p): p is string => !!p && p.trim() !== '')
           .sort(),
         types: types.map((t) => t.type).filter(Boolean),
-        difficulties: difficulties.map((d) => d.difficulty).filter(Boolean),
-        ageRanges: ageRanges.map((a) => a.ageRange).filter(Boolean),
       },
     });
   } catch (error) {

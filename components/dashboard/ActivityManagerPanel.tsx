@@ -13,10 +13,24 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Bell, Check, Eye, EyeOff, Search } from 'lucide-react';
+import {
+  Archive,
+  ArchiveRestore,
+  Bell,
+  Check,
+  Eye,
+  EyeOff,
+  Pencil,
+  Search,
+  Trash2,
+} from 'lucide-react';
+import { ActivityEditDialog } from '@/components/dashboard/ActivityEditDialog';
+import { useCSRF } from '@/hooks/useCSRF';
 import { phonemeLabel, subjectLabel } from '@/lib/activityLabels';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -25,11 +39,10 @@ interface Activity {
   name: string;
   description: string;
   phoneme: string;
-  difficulty: string;
-  ageRange: string;
   type: string;
   status: string;
   isPublic: boolean;
+  canDelete?: boolean;
   createdAt: string;
   files?: { id: string; s3Key: string; fileType: string; name: string }[];
 }
@@ -44,6 +57,13 @@ export function ActivityManagerPanel() {
   const [toggling, setToggling] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notifying, setNotifying] = useState<string | null>(null);
+  const { csrfToken } = useCSRF();
+  const [editing, setEditing] = useState<Activity | null>(null);
+  const [confirm, setConfirm] = useState<{
+    kind: 'archive' | 'delete';
+    activity: Activity;
+  } | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
 
@@ -118,6 +138,44 @@ export function ActivityManagerPanel() {
       { status: isPublic ? 'PUBLISHED' : 'DRAFT', isPublic }
     );
 
+  // Archive, restore and delete change files in S3, so they only update the
+  // list after the server answers (and can take a few seconds).
+  const changeActivity = async (
+    activity: Activity,
+    kind: 'archive' | 'restore' | 'delete'
+  ) => {
+    setToggling(activity.id);
+    setActionError(null);
+    setNotice(null);
+    try {
+      const base = `/api/admin/activities/${activity.id}`;
+      const res = await fetch(kind === 'delete' ? base : `${base}/${kind}`, {
+        method: kind === 'delete' ? 'DELETE' : 'POST',
+        headers: { 'X-CSRF-Token': csrfToken ?? '' },
+      });
+      const json: { success?: boolean; error?: string } = await res
+        .json()
+        .catch(() => ({}));
+      if (!res.ok || !json.success) {
+        setActionError(json.error || 'Não foi possível concluir a ação.');
+        return;
+      }
+      setNotice(
+        kind === 'archive'
+          ? 'Atividade arquivada.'
+          : kind === 'restore'
+            ? 'Atividade restaurada. A prévia é gerada de novo na primeira visualização.'
+            : 'Atividade excluída.'
+      );
+      await loadActivities();
+    } catch {
+      setActionError('Não foi possível concluir a ação. Tente novamente.');
+    } finally {
+      setToggling(null);
+      setConfirm(null);
+    }
+  };
+
   const notifyReview = async (id: string) => {
     setNotifying(id);
     await fetch(`/api/admin/activities/${id}/notify-review`, {
@@ -152,6 +210,14 @@ export function ActivityManagerPanel() {
           {actionError}
         </p>
       )}
+      {notice && (
+        <p
+          role="status"
+          className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800"
+        >
+          {notice}
+        </p>
+      )}
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
@@ -173,6 +239,7 @@ export function ActivityManagerPanel() {
             <SelectItem value="PENDING_REVIEW">Pendente</SelectItem>
             <SelectItem value="REJECTED">Rejeitado</SelectItem>
             <SelectItem value="DRAFT">Rascunho</SelectItem>
+            <SelectItem value="ARCHIVED">Arquivado</SelectItem>
           </SelectContent>
         </Select>
         <Select value={phonemeFilter} onValueChange={setPhonemeFilter}>
@@ -207,9 +274,6 @@ export function ActivityManagerPanel() {
                 Fonema
               </th>
               <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                Dificuldade
-              </th>
-              <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                 Status
               </th>
               <th className="text-right px-4 py-3 font-medium text-muted-foreground">
@@ -224,17 +288,11 @@ export function ActivityManagerPanel() {
                   <span className="font-medium text-foreground">
                     {activity.name}
                   </span>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {activity.ageRange}
-                  </p>
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant="outline" className="text-xs">
                     {subjectLabel(activity.phoneme, activity.type)}
                   </Badge>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {activity.difficulty}
                 </td>
                 <td className="px-4 py-3">
                   <Badge
@@ -246,13 +304,16 @@ export function ActivityManagerPanel() {
                           ? 'bg-amber-50 text-amber-700 border-amber-200'
                           : activity.status === 'REJECTED'
                             ? 'bg-red-50 text-red-700 border-red-200'
-                            : 'bg-neutral-50 text-muted-foreground border-neutral-200'
+                            : activity.status === 'ARCHIVED'
+                              ? 'bg-neutral-100 text-neutral-600 border-neutral-300'
+                              : 'bg-neutral-50 text-muted-foreground border-neutral-200'
                     }`}
                   >
                     {activity.status === 'PUBLISHED' && 'Publicado'}
                     {activity.status === 'PENDING_REVIEW' && 'Pendente'}
                     {activity.status === 'REJECTED' && 'Rejeitado'}
                     {activity.status === 'DRAFT' && 'Rascunho'}
+                    {activity.status === 'ARCHIVED' && 'Arquivado'}
                   </Badge>
                 </td>
                 <td className="px-4 py-3">
@@ -310,6 +371,57 @@ export function ActivityManagerPanel() {
                     <Button
                       size="sm"
                       variant="ghost"
+                      className="h-8 px-2 text-xs"
+                      onClick={() => setEditing(activity)}
+                      title="Editar título e descrição"
+                    >
+                      <Pencil className="mr-1 h-4 w-4" aria-hidden />
+                      Editar
+                    </Button>
+                    {activity.status === 'PUBLISHED' && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 text-xs"
+                        onClick={() =>
+                          setConfirm({ kind: 'archive', activity })
+                        }
+                        disabled={toggling === activity.id || !csrfToken}
+                        title="Tirar da biblioteca e guardar os arquivos"
+                      >
+                        <Archive className="mr-1 h-4 w-4" aria-hidden />
+                        Arquivar
+                      </Button>
+                    )}
+                    {activity.status === 'ARCHIVED' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => changeActivity(activity, 'restore')}
+                        disabled={toggling === activity.id || !csrfToken}
+                        title="Voltar para a biblioteca"
+                      >
+                        <ArchiveRestore className="mr-1 h-4 w-4" aria-hidden />
+                        Restaurar
+                      </Button>
+                    )}
+                    {activity.canDelete && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 text-xs text-red-700 hover:bg-red-50"
+                        onClick={() => setConfirm({ kind: 'delete', activity })}
+                        disabled={toggling === activity.id || !csrfToken}
+                        title="Excluir de vez"
+                      >
+                        <Trash2 className="mr-1 h-4 w-4" aria-hidden />
+                        Excluir
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       className="h-8 w-8 p-0"
                       onClick={() => notifyReview(activity.id)}
                       disabled={notifying === activity.id}
@@ -353,6 +465,62 @@ export function ActivityManagerPanel() {
           </div>
         </div>
       )}
+
+      <ActivityEditDialog
+        activity={editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => {
+          setNotice('Atividade atualizada.');
+          setActionError(null);
+          loadActivities();
+        }}
+      />
+
+      <Dialog
+        open={!!confirm}
+        onOpenChange={(open) => {
+          if (!open && !toggling) setConfirm(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {confirm?.kind === 'delete'
+                ? 'Excluir atividade?'
+                : 'Arquivar atividade?'}
+            </DialogTitle>
+            <DialogDescription>
+              {confirm?.kind === 'delete'
+                ? `“${confirm.activity.name}” e o arquivo dela serão excluídos de vez. Não dá para desfazer.`
+                : confirm
+                  ? `“${confirm.activity.name}”: some da biblioteca e os arquivos vão para o arquivo; o histórico é mantido.`
+                  : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setConfirm(null)}
+              disabled={!!toggling}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant={confirm?.kind === 'delete' ? 'destructive' : 'default'}
+              disabled={!!toggling}
+              onClick={() =>
+                confirm && changeActivity(confirm.activity, confirm.kind)
+              }
+            >
+              {toggling
+                ? 'Aguarde…'
+                : confirm?.kind === 'delete'
+                  ? 'Excluir'
+                  : 'Arquivar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Preview Dialog */}
       <Dialog
@@ -400,8 +568,6 @@ function ActivityPreview({ activity }: { activity: Activity }) {
         <Badge variant="outline">
           {subjectLabel(activity.phoneme, activity.type)}
         </Badge>
-        <Badge variant="outline">{activity.difficulty}</Badge>
-        <Badge variant="outline">{activity.ageRange}</Badge>
         <Badge variant="outline">{activity.type}</Badge>
       </div>
 

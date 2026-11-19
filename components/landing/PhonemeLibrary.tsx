@@ -4,7 +4,8 @@ import {
   PHONEME_GROUPS,
   type PhonemeEntry,
 } from '@/lib/phonemes';
-import Link from 'next/link';
+import LibraryTileLink from './LibraryTileLink';
+import { phonemeSlug } from '@/lib/libraryUrl';
 import ExampleWord from './ExampleWord';
 import { freeOfferText } from '@/lib/freeOffer';
 import FreePhonemeTile, {
@@ -88,6 +89,7 @@ export default function PhonemeLibrary({
     }
     return (
       <Tile
+        slug={phonemeSlug(entry.code)}
         label={entry.display}
         notation={entry.notation}
         note={entry.note}
@@ -107,11 +109,11 @@ export default function PhonemeLibrary({
           <h2 className="font-display text-3xl font-bold max-w-md leading-tight">
             {totalActivities >= MIN_ACTIVITIES_TO_SHOW_COUNT
               ? `${totalActivities} atividades prontas, organizadas por fonema.`
-              : 'Organizada por fonema, com novas atividades toda semana.'}
+              : 'Organizada por fonema, com atividades novas todo mês.'}
           </h2>
           <p className="text-neutral-600 max-w-sm text-sm leading-relaxed">
-            Atividades para pré-escolares, crianças em idade escolar e
-            adolescentes, em três níveis de dificuldade.
+            Cada fonema com uma palavra de exemplo. Escolha, baixe e imprima
+            para usar na sessão.
           </p>
         </div>
 
@@ -152,6 +154,7 @@ export default function PhonemeLibrary({
               {languageTopics.map((topic) => (
                 <li key={topic.id}>
                   <Tile
+                    slug={topic.id}
                     label={topic.label}
                     notation={false}
                     count={topic.count}
@@ -180,7 +183,7 @@ export default function PhonemeLibrary({
           hasComingSoon && (
             <p className="mt-8 text-sm text-neutral-600">
               Os itens marcados como &ldquo;Em breve&rdquo; estão em produção e
-              entram na biblioteca nas próximas semanas, sem custo extra para
+              entram na biblioteca nos próximos meses, sem custo extra para
               assinantes.
             </p>
           )
@@ -208,12 +211,14 @@ function GroupHeading({
 // Library card: phoneme small at the top, example word large with the
 // target sound underlined, count or "Em breve" in the corner.
 function Tile({
+  slug,
   label,
   notation,
   note,
   example,
   count,
 }: {
+  slug: string;
   label: string;
   notation: boolean;
   note?: string;
@@ -289,13 +294,13 @@ function Tile({
   }
 
   return (
-    <Link
-      href="/sign-up"
+    <LibraryTileLink
+      slug={slug}
       className={`group ${base} ${CARD_CLASS} transition-colors hover:border-neutral-900 hover:bg-neutral-900`}
     >
       {head}
       {body}
-    </Link>
+    </LibraryTileLink>
   );
 }
 

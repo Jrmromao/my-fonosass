@@ -1,5 +1,6 @@
 'use client';
 
+import AuthAwareLink from '@/components/landing/AuthAwareLink';
 import WaitingListAlert from '@/components/WaitingListAlert';
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
@@ -30,18 +31,9 @@ const CATEGORIES = [
   'Fluência',
 ];
 
-const AGE_GROUPS = [
-  'Todas as idades',
-  '0-3 anos',
-  '3-6 anos',
-  '4-8 anos',
-  '6-12 anos',
-];
-
 export default function RecursosGratuitosClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
-  const [selectedAgeGroup, setSelectedAgeGroup] = useState('Todas as idades');
   const [sortBy, setSortBy] = useState('popular');
   const [selectedResource, setSelectedResource] = useState<FreeResource | null>(
     null
@@ -85,11 +77,7 @@ export default function RecursosGratuitosClient() {
 
     const matchesCategory =
       selectedCategory === 'Todos' || resource.category === selectedCategory;
-    const matchesAgeGroup =
-      selectedAgeGroup === 'Todas as idades' ||
-      resource.ageGroup === selectedAgeGroup;
-
-    return matchesSearch && matchesCategory && matchesAgeGroup;
+    return matchesSearch && matchesCategory;
   });
 
   const sortedResources = [...filteredResources].sort((a, b) => {
@@ -322,9 +310,6 @@ export default function RecursosGratuitosClient() {
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                             {resource.category}
                           </span>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            {resource.ageGroup}
-                          </span>
                         </div>
 
                         <div className="flex items-center gap-4 text-sm text-gray-500 mb-6 min-h-[1.5rem]">
@@ -376,7 +361,7 @@ export default function RecursosGratuitosClient() {
             {/* Filters */}
             <div className="mb-8">
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                <div className="grid md:grid-cols-4 gap-4">
+                <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Buscar
@@ -404,23 +389,6 @@ export default function RecursosGratuitosClient() {
                       {CATEGORIES.map((category) => (
                         <option key={category} value={category}>
                           {category}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Faixa Etária
-                    </label>
-                    <select
-                      value={selectedAgeGroup}
-                      onChange={(e) => setSelectedAgeGroup(e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-coral-500 focus:border-coral-500"
-                    >
-                      {AGE_GROUPS.map((ageGroup) => (
-                        <option key={ageGroup} value={ageGroup}>
-                          {ageGroup}
                         </option>
                       ))}
                     </select>
@@ -506,9 +474,6 @@ export default function RecursosGratuitosClient() {
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                             {resource.category}
                           </span>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            {resource.ageGroup}
-                          </span>
                         </div>
 
                         <div className="flex items-center gap-4 text-sm text-gray-500 mb-6 min-h-[1.5rem]">
@@ -567,16 +532,15 @@ export default function RecursosGratuitosClient() {
               Precisa de mais materiais?
             </h2>
             <p className="text-neutral-300 mb-6 max-w-xl mx-auto text-sm leading-relaxed">
-              Além dos recursos gratuitos, a biblioteca completa traz novas
-              atividades por fonema toda semana, criadas e revisadas por
-              fonoaudióloga.
+              Além dos recursos gratuitos, a biblioteca completa traz atividades
+              novas por fonema todo mês, criadas e revisadas por fonoaudióloga.
             </p>
-            <Link
-              href="/sign-up"
+            <AuthAwareLink
+              to="/dashboard/biblioteca"
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-coral-500 text-white text-sm font-medium hover:bg-coral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
             >
               Conhecer a biblioteca completa
-            </Link>
+            </AuthAwareLink>
           </div>
         </section>
 
@@ -594,10 +558,6 @@ export default function RecursosGratuitosClient() {
                 <span className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full">
                   <FileText className="w-4 h-4" />
                   {selectedResource?.category}
-                </span>
-                <span className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full">
-                  <Star className="w-4 h-4" />
-                  {selectedResource?.ageGroup}
                 </span>
                 <span className="px-3 py-1 bg-gray-100 rounded-full">
                   {selectedResource?.fileSize}

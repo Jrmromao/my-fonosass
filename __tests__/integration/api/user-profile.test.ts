@@ -199,11 +199,6 @@ describe('/api/user/profile', () => {
             status: 'ACTIVE',
             currentPeriodEnd: undefined,
           },
-          downloadLimits: {
-            canDownload: true,
-            remaining: 5,
-            isPro: false,
-          },
           stats: expect.any(Object),
           recentDownloads: expect.any(Array),
         },

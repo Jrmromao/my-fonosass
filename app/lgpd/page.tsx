@@ -31,7 +31,7 @@ const RIGHTS: { right: string; how: string }[] = [
   },
   {
     right: 'Retirar um consentimento',
-    how: 'Na sua conta: Perfil → Privacidade. Para o Google Analytics, também na Política de Cookies.',
+    how: 'Na sua conta: Perfil → Privacidade. Para o Google Analytics e os relatórios de erros, também na Política de Cookies.',
   },
   {
     right: 'Saber com quem compartilhamos seus dados',
@@ -39,7 +39,7 @@ const RIGHTS: { right: string; how: string }[] = [
   },
   {
     right: 'Saber o que acontece se você não consentir',
-    how: 'Sem consentimento, apenas o Google Analytics e os emails de novidades ficam desligados. O resto do serviço funciona normalmente.',
+    how: 'Sem consentimento, apenas o Google Analytics, os relatórios de erros do navegador e os emails de novidades ficam desligados. O resto do serviço funciona normalmente.',
   },
   {
     right:

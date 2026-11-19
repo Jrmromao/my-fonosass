@@ -2,14 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LibraryTopicsCard } from '@/components/settings/LibraryTopicsCard';
 import { useCSRF } from '@/hooks/useCSRF';
 import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  label,
-  subjectLabel,
-} from '@/lib/activityLabels';
+import { subjectLabel } from '@/lib/activityLabels';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -20,8 +16,6 @@ interface SampleActivity {
   name: string;
   phoneme: string;
   type: string;
-  ageRange: string;
-  difficulty: string;
 }
 
 interface MonthSamples {
@@ -55,7 +49,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-md border border-neutral-200 p-6">
+    <section className="rounded-2xl bg-violet-50 p-6">
       <h3 className="text-base font-semibold text-neutral-900">{title}</h3>
       <p className="mt-1 mb-5 text-sm text-neutral-600">{description}</p>
       {children}
@@ -70,9 +64,7 @@ function ActivityLine({ activity }: { activity: SampleActivity }) {
         {activity.name}
       </span>
       <span className="text-sm text-neutral-600">
-        {subjectLabel(activity.phoneme, activity.type)} ·{' '}
-        {label(AGE_LABELS, activity.ageRange)} ·{' '}
-        {label(DIFFICULTY_LABELS, activity.difficulty)}
+        {subjectLabel(activity.phoneme, activity.type)}
       </span>
     </span>
   );
@@ -83,6 +75,7 @@ export function AdminPanel() {
     <div className="space-y-6">
       <ViewAsCard />
       <FreeSamplesCard />
+      <LibraryTopicsCard />
     </div>
   );
 }

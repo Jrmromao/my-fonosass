@@ -40,17 +40,18 @@ The brand accent is **coral** (warm salmon-red), implemented as a full ramp in
 | Accent (text on light backgrounds) | `coral-800` | Inline highlights such as the free phoneme |
 | Accent tint | `coral-50` / `coral-100` | Highlighted tile backgrounds |
 | Text | `neutral-900` | Primary text (app, dashboard) |
-| Heading ink (landing) | `violet-950` | Landing page text and headings, from the logo's dark purple |
+| Heading ink | `violet-950` | Landing and dashboard page headings (h1/h2), from the logo's dark purple |
 | Text secondary | `neutral-600` | Body, descriptions, metadata |
 | Text disabled | `neutral-400` | Disabled/unavailable items only ("Em breve") |
 | Dark button | `neutral-900`, hover `neutral-800` | Secondary primary action (navbar "Assinar", plan CTA) |
-| Background (app, dashboard) | `white` | Page background |
-| Background alt (app, dashboard) | `neutral-50` | Alternating sections |
+| Background (dashboard) | `violet-50` | Signed-in content area (same as the landing library section) |
+| Dashboard sidebar | `violet-100`, border `violet-200` | Same as the landing navbar; active item `sun-300` with `violet-950` text and icon |
+| Dashboard cards | `white`, border `neutral-200` | Cards, panels and form sections sit on the lavender as white surfaces |
+| Dashboard dividers | `border-violet-200` | Page header bottom border |
 | Background (landing page) | `violet-100` | Landing page body and navbar |
 | Background alt (landing page) | `violet-50` | Alternating landing sections |
 | Landing section divider | `border-violet-200` | Top border of alternating landing sections |
 | Border | `neutral-100` / `neutral-200` | Card borders, dividers |
-| Dark section bg | `neutral-900` | Dashboard sidebar |
 
 ### Why coral-700 and not coral-500 for fills
 White text on `coral-500` is 2.8:1 and fails WCAG AA (4.5:1). `coral-700` is
@@ -64,15 +65,57 @@ White text on `coral-500` is 2.8:1 and fails WCAG AA (4.5:1). `coral-700` is
   is exempt.
 
 ### Lavender scope
-`violet-*` is allowed **only as a landing-page background** (`violet-100`, `violet-50`,
-`border-violet-200`) and `violet-950` as the landing page ink. Do not use violet
-for buttons, links, badges or dashboard UI. Use the navbar `tone="lavender"` prop on
+`violet-*` is allowed **only as a background** (`violet-100`, `violet-50`,
+`border-violet-200`) on the landing page and in the dashboard (content area,
+sidebar, header dividers), and `violet-950` as heading ink. Do not use violet
+for buttons, links or badges: those stay coral / neutral. Since Nov 2026 the
+dashboard uses the landing colors, at the request of Eliane and the stakeholders. Use the navbar `tone="lavender"` prop on
 pages with the lavender background so the header matches.
+
+### Logo colors (sun and cream)
+Taken from the logo: `sun-*` is the warm peach-beige of the "da Fala"
+lettering (`sun-300` ≈ #e8d0a8). Tried and not chosen: the pure lemon #f0d818
+(read as a discount brand next to coral), a muted honey #e9c87b and a brighter
+gold #f3c649. `cream-*` is a light warm grey (`cream-300` ≈ #d1ccc7) that
+stays distinct from sun. Tokens live in
+`app/globals.css` and `tailwind.config.js`.
+
+| Use | Token |
+|-----|-------|
+| Selected / active surfaces: sidebar item, filter chips (border `sun-500`) | `sun-300` |
+| Attention banners (e.g. "atividades pendentes de revisão") | `sun-100`, border `sun-300` |
+| Icon circles on Painel stat cards | `sun-300` |
+| Warm header band (library topic page), hover on quick links | `cream-100`, border `cream-300` |
+
+Rules:
+- **Surfaces only.** Never use sun or cream as text color, and never put white
+  text on them. Text on sun/cream is `violet-950` (10:1 on `sun-300`) or
+  `neutral-900` / `neutral-600`.
+- Buttons and CTAs stay coral; sun is for "selected" and "look here", not "click".
+- Sun is not a warning color: warnings stay amber.
+
+### Library group colors
+Each library group has one color, used for its available tiles, its count
+chip, its title dot and the header band of its topic pages. Defined in
+`components/library/tones.ts` (keep it under `components/`: Tailwind does not
+scan `lib/`).
+
+| Group | Tone | Tile | Chip |
+|-------|------|------|------|
+| Pares surdo e sonoro | sky | `bg-sky-100 ring-sky-300` | `bg-sky-200` |
+| Nasais, laterais e vibrantes | sun | `bg-sun-100 ring-sun-300` | `bg-sun-300` |
+| Arquifonema | coral | `bg-coral-50 ring-coral-200` | `bg-coral-100` |
+| Encontro consonantal | cream | `bg-cream-100 ring-cream-300` | `bg-cream-300` |
+| Linguagem | violet | `bg-violet-100 ring-violet-200` | `bg-violet-200` |
+
+Text on every tone is `violet-950` / `neutral-600`. "Em breve" tiles are white
+with a dashed `neutral-300` border. Groups sit in white `rounded-2xl` cards on
+the lavender page.
 
 ### Forbidden colors
 - ❌ NO hardcoded hex values in classes (`bg-[#...]`): use tokens
 - ❌ NO `gray-*` or `slate-*`: the neutral family is `neutral-*`
-- ❌ NO pink, fuchsia, cyan, yellow or indigo as UI colors; violet and sky only as described in their scope sections
+- ❌ NO pink, fuchsia, cyan, Tailwind `yellow-*` or indigo as UI colors; violet, sky, sun and cream only as described in their scope sections
 - ❌ NO multi-color gradients on text
 - ❌ NO `bg-gradient-to-*` on backgrounds (exception: `bg-brand-gradient` in the hero only)
 - ✅ Activity sheets and balloons are the ONLY places where multiple bright colors appear
@@ -179,7 +222,7 @@ over drawn placeholders.
 - Always show every entry; phonemes in the DB but not in the taxonomy are appended to the second group so nothing published is hidden.
 - Each entry is a **word card** (`components/landing/PhonemeLibrary.tsx`, `ExampleWord.tsx`): phoneme small at the top (`font-mono text-base`) with the count or "Em breve" on the right, and an example word below (`font-display text-2xl font-bold`) with the target sound underlined (`decoration-[3px]`). Example words live in `lib/phonemes.ts` as `'[p]ato'`, to be confirmed by Eliane.
 - Cards are separate (`rounded-lg`, `gap-2`; pairs `gap-1.5`).
-- Available card (Eliane's choice): `bg-sky-100` with `border-2 border-sky-300`, coral underline (`decoration-coral-500`), hover `bg-neutral-900` with white text. **Sky is allowed only for library cards**; never for text, buttons or badges.
+- Available card (Eliane's choice): `bg-sky-100` with `border-2 border-sky-300`, coral underline (`decoration-coral-500`), hover `bg-neutral-900` with white text. **Sky is allowed only for library cards** (now one of the library group colors, see "Library group colors"); never for text, buttons or badges.
 - Unavailable card: `bg-white` with `border-neutral-200`, label, word and "Em breve" in `text-neutral-400`, grey underline, not clickable. So blue means "ready to download".
 - Free phoneme (`FREE_PHONEME` in `lib/pricing.ts`): `bg-coral-50`, `ring-2 ring-inset ring-coral-500`, "Grátis" badge (`bg-coral-700 text-white`), opens the preview modal. Only promoted when it has published activities.
 - Headline quotes counts only above `MIN_ACTIVITIES_TO_SHOW_COUNT`; below that it talks about the catalog in general
@@ -202,6 +245,7 @@ Rows: hover:bg-neutral-50 cursor-pointer
 px-2.5 py-0.5 bg-neutral-100 text-neutral-600 rounded text-xs
 Phoneme badge: font-mono text-xs px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded
 ```
+- Activity status (admin list): Publicado emerald, Pendente amber, Rejeitado red, Rascunho neutral-50, **Arquivado grey** (`bg-neutral-100 text-neutral-600 border-neutral-300`)
 - NO colored badges unless semantic (green=success, red=error, amber=warning) or the "Grátis" badge
 
 ### Form inputs

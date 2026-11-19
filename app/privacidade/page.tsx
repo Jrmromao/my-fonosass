@@ -61,6 +61,12 @@ const PROVIDERS: { name: string; purpose: string; where: string }[] = [
     where: 'Estados Unidos',
   },
   {
+    name: 'Sentry',
+    purpose:
+      'Relatórios de erros do site e do navegador (mensagem do erro, trecho do código e tipo de navegador), com emails, CPF e telefones removidos antes do envio.',
+    where: 'Alemanha (União Europeia)',
+  },
+  {
     name: 'Google',
     purpose:
       'Login com Google (se você escolher) e Google Analytics (somente se você aceitar).',
@@ -134,6 +140,12 @@ export default function PrivacyPolicyPage() {
             acesso negadas). Guardam apenas identificadores internos, o horário
             e o endereço IP, sem nomes nem emails.
           </li>
+          <li>
+            <strong>Relatórios de erros:</strong> quando o site falha, enviamos
+            ao Sentry a mensagem do erro, o trecho do código que falhou e o tipo
+            de navegador, sem cookies, corpo de requisições nem identificação da
+            conta. O Sentry pode receber o endereço IP da conexão.
+          </li>
         </ul>
         <p>
           <strong>Não tratamos dados de pacientes.</strong> O serviço não tem
@@ -173,10 +185,16 @@ export default function PrivacyPolicyPage() {
           </li>
           <li>
             <strong>
-              Google Analytics, emails de novidades e lista de espera:
+              Google Analytics, relatórios de erros do navegador, emails de
+              novidades e lista de espera:
             </strong>{' '}
             somente com o seu consentimento (art. 7º, I), que você pode retirar
             a qualquer momento.
+          </li>
+          <li>
+            <strong>Relatórios de erros dos nossos servidores</strong>, sem
+            dados pessoais, para manter o site estável e seguro: legítimo
+            interesse (art. 7º, IX).
           </li>
         </ul>
         <p>
@@ -223,9 +241,10 @@ export default function PrivacyPolicyPage() {
           Como mostra a tabela acima, parte dos dados é tratada fora do Brasil,
           nos Estados Unidos e na União Europeia. Essas transferências são
           necessárias para executar o contrato com você (art. 33, IX, da LGPD)
-          ou, no caso do Google Analytics, dependem do seu consentimento
-          específico (art. 33, VIII). Os fornecedores tratam os dados segundo
-          seus próprios compromissos contratuais de proteção de dados.
+          ou, no caso do Google Analytics e dos relatórios de erros do
+          navegador, dependem do seu consentimento específico (art. 33, VIII).
+          Os fornecedores tratam os dados segundo seus próprios compromissos
+          contratuais de proteção de dados.
         </p>
       </Section>
 
@@ -282,7 +301,8 @@ export default function PrivacyPolicyPage() {
       <Section id="cookies" title="8. Cookies">
         <p>
           Usamos apenas os cookies necessários para o login funcionar. O Google
-          Analytics só é carregado se você aceitar. Detalhes em{' '}
+          Analytics e os relatórios de erros do navegador (Sentry) só são
+          carregados se você aceitar. Detalhes em{' '}
           <Link href="/cookies">Política de Cookies</Link>.
         </p>
       </Section>

@@ -1,5 +1,5 @@
 import { getFreeSamples, type FreeSample } from '@/lib/access';
-import { AGE_LABELS, label, subjectLabel } from '@/lib/activityLabels';
+import { subjectLabel } from '@/lib/activityLabels';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -148,7 +148,7 @@ async function BrandPanel() {
               <span className="font-semibold text-coral-800">
                 Grátis com sua conta:
               </span>{' '}
-              {captionSubject(sample)} · {label(AGE_LABELS, sample.ageRange)}
+              {captionSubject(sample)}
             </figcaption>
           </figure>
         ) : (
@@ -159,12 +159,10 @@ async function BrandPanel() {
                 <span className="font-mono text-sm font-semibold text-neutral-900">
                   /s/
                 </span>
-                <span>Pré-escolar</span>
               </div>
               <p className="mt-4 font-display text-lg font-bold leading-tight text-neutral-900">
                 Atividade de exemplo
               </p>
-              <p className="text-xs text-neutral-600">Iniciante</p>
               <div className="mt-5 grid grid-cols-3 gap-2">
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div

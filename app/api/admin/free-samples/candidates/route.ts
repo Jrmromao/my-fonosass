@@ -27,8 +27,6 @@ export async function GET(request: NextRequest) {
         name: true,
         phoneme: true,
         type: true,
-        ageRange: true,
-        difficulty: true,
       },
       orderBy: { name: 'asc' },
       take: 50,

@@ -9,7 +9,7 @@ export const PRO_PLAN = {
   features: [
     'Todas as atividades da biblioteca',
     'Downloads ilimitados, prontos para imprimir',
-    'Novas atividades toda semana',
+    'Atividades novas todo mês, sem custo extra',
   ],
 } as const;
 
