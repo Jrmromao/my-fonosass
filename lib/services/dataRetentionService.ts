@@ -30,57 +30,53 @@ export class DataRetentionService {
         dataCategory: 'personal_data',
         purpose: 'Prestação de serviços de fonoaudiologia',
         retentionPeriod: 730, // 2 years
-        legalBasis: LegalBasis.CONTRACT
+        legalBasis: LegalBasis.CONTRACT,
       },
       {
         dataCategory: 'contact_info',
         purpose: 'Comunicação com usuários',
         retentionPeriod: 365, // 1 year
-        legalBasis: LegalBasis.CONSENT
+        legalBasis: LegalBasis.CONSENT,
       },
       {
         dataCategory: 'usage_data',
         purpose: 'Melhoria de serviços e analytics',
         retentionPeriod: 1095, // 3 years
-        legalBasis: LegalBasis.LEGITIMATE_INTERESTS
+        legalBasis: LegalBasis.LEGITIMATE_INTERESTS,
       },
       {
         dataCategory: 'marketing_data',
         purpose: 'Comunicações de marketing',
         retentionPeriod: 365, // 1 year
-        legalBasis: LegalBasis.CONSENT
+        legalBasis: LegalBasis.CONSENT,
       },
       {
         dataCategory: 'session_data',
         purpose: 'Funcionamento do site',
         retentionPeriod: 30, // 30 days
-        legalBasis: LegalBasis.LEGITIMATE_INTERESTS
+        legalBasis: LegalBasis.LEGITIMATE_INTERESTS,
       },
       {
         dataCategory: 'analytics_data',
         purpose: 'Análise de uso e performance',
         retentionPeriod: 1095, // 3 years
-        legalBasis: LegalBasis.LEGITIMATE_INTERESTS
+        legalBasis: LegalBasis.LEGITIMATE_INTERESTS,
       },
       {
         dataCategory: 'payment_data',
         purpose: 'Processamento de pagamentos',
-        retentionPeriod: 2555, // 7 years (legal requirement)
-        legalBasis: LegalBasis.LEGAL_OBLIGATION
+        retentionPeriod: 1825, // 5 years (fiscal records: CTN arts. 173/174); matches /lgpd
+        legalBasis: LegalBasis.LEGAL_OBLIGATION,
       },
-      {
-        dataCategory: 'medical_records',
-        purpose: 'Registros médicos de pacientes',
-        retentionPeriod: 5475, // 15 years (medical records)
-        legalBasis: LegalBasis.LEGAL_OBLIGATION
-      }
+      // No patient/medical records policy: the app does not store patient
+      // data. Add one (and publish it on /lgpd) if that ever changes.
     ];
 
     for (const policy of defaultPolicies) {
       await prisma.dataRetentionPolicy.upsert({
         where: { dataCategory: policy.dataCategory },
         update: policy,
-        create: policy
+        create: policy,
       });
     }
   }
@@ -88,12 +84,14 @@ export class DataRetentionService {
   /**
    * Process data retention for a specific user
    */
-  static async processUserDataRetention(userId: string): Promise<RetentionLog[]> {
+  static async processUserDataRetention(
+    userId: string
+  ): Promise<RetentionLog[]> {
     const logs: RetentionLog[] = [];
-    
+
     // Get all active retention policies
     const policies = await prisma.dataRetentionPolicy.findMany({
-      where: { isActive: true }
+      where: { isActive: true },
     });
 
     for (const policy of policies) {
@@ -110,7 +108,7 @@ export class DataRetentionService {
    * Process retention for a specific data category
    */
   private static async processDataCategoryRetention(
-    userId: string, 
+    userId: string,
     policy: DataRetentionPolicy
   ): Promise<RetentionLog | null> {
     const cutoffDate = new Date();
@@ -126,10 +124,10 @@ export class DataRetentionService {
           const oldUserData = await prisma.user.findFirst({
             where: {
               id: userId,
-              updatedAt: { lt: cutoffDate }
-            }
+              updatedAt: { lt: cutoffDate },
+            },
           });
-          
+
           if (oldUserData) {
             // Only delete if user has been inactive for retention period
             const lastActivity = await this.getLastUserActivity(userId);
@@ -146,11 +144,14 @@ export class DataRetentionService {
           const deletedDownloads = await prisma.downloadHistory.deleteMany({
             where: {
               userId,
-              downloadedAt: { lt: cutoffDate }
-            }
+              downloadedAt: { lt: cutoffDate },
+            },
           });
           recordsAffected = deletedDownloads.count;
-          action = deletedDownloads.count > 0 ? RetentionAction.DELETE : RetentionAction.RETAIN;
+          action =
+            deletedDownloads.count > 0
+              ? RetentionAction.DELETE
+              : RetentionAction.RETAIN;
           break;
 
         case 'analytics_data':
@@ -158,13 +159,16 @@ export class DataRetentionService {
           const deletedAuditLogs = await prisma.consentAuditLog.deleteMany({
             where: {
               consentRecord: {
-                userId
+                userId,
               },
-              createdAt: { lt: cutoffDate }
-            }
+              createdAt: { lt: cutoffDate },
+            },
           });
           recordsAffected = deletedAuditLogs.count;
-          action = deletedAuditLogs.count > 0 ? RetentionAction.DELETE : RetentionAction.RETAIN;
+          action =
+            deletedAuditLogs.count > 0
+              ? RetentionAction.DELETE
+              : RetentionAction.RETAIN;
           break;
 
         case 'session_data':
@@ -176,16 +180,21 @@ export class DataRetentionService {
 
         case 'marketing_data':
           // Delete old marketing consent records
-          const deletedMarketingConsent = await prisma.consentRecord.deleteMany({
-            where: {
-              userId,
-              consentType: 'MARKETING_COMMUNICATIONS',
-              granted: false,
-              withdrawnAt: { lt: cutoffDate }
+          const deletedMarketingConsent = await prisma.consentRecord.deleteMany(
+            {
+              where: {
+                userId,
+                consentType: 'MARKETING_COMMUNICATIONS',
+                granted: false,
+                withdrawnAt: { lt: cutoffDate },
+              },
             }
-          });
+          );
           recordsAffected = deletedMarketingConsent.count;
-          action = deletedMarketingConsent.count > 0 ? RetentionAction.DELETE : RetentionAction.RETAIN;
+          action =
+            deletedMarketingConsent.count > 0
+              ? RetentionAction.DELETE
+              : RetentionAction.RETAIN;
           break;
 
         default:
@@ -201,14 +210,16 @@ export class DataRetentionService {
           dataCategory: policy.dataCategory,
           action,
           recordsAffected,
-          retentionPolicyId: policy.id
-        }
+          retentionPolicyId: policy.id,
+        },
       });
 
       return retentionLog as RetentionLog;
-
     } catch (error) {
-      console.error(`Error processing retention for category ${policy.dataCategory}:`, error);
+      console.error(
+        `Error processing retention for category ${policy.dataCategory}:`,
+        error
+      );
       return null;
     }
   }
@@ -216,31 +227,35 @@ export class DataRetentionService {
   /**
    * Get the last activity date for a user
    */
-  private static async getLastUserActivity(userId: string): Promise<Date | null> {
+  private static async getLastUserActivity(
+    userId: string
+  ): Promise<Date | null> {
     const lastDownload = await prisma.downloadHistory.findFirst({
       where: { userId },
       orderBy: { downloadedAt: 'desc' },
-      select: { downloadedAt: true }
+      select: { downloadedAt: true },
     });
 
     const lastConsent = await prisma.consentRecord.findFirst({
       where: { userId },
       orderBy: { updatedAt: 'desc' },
-      select: { updatedAt: true }
+      select: { updatedAt: true },
     });
 
     const lastUserUpdate = await prisma.user.findUnique({
       where: { id: userId },
-      select: { updatedAt: true }
+      select: { updatedAt: true },
     });
 
     const dates = [
       lastDownload?.downloadedAt,
       lastConsent?.updatedAt,
-      lastUserUpdate?.updatedAt
+      lastUserUpdate?.updatedAt,
     ].filter(Boolean) as Date[];
 
-    return dates.length > 0 ? new Date(Math.max(...dates.map(d => d.getTime()))) : null;
+    return dates.length > 0
+      ? new Date(Math.max(...dates.map((d) => d.getTime())))
+      : null;
   }
 
   /**
@@ -248,10 +263,10 @@ export class DataRetentionService {
    */
   static async processAllUsersRetention(): Promise<RetentionLog[]> {
     const allLogs: RetentionLog[] = [];
-    
+
     // Get all users
     const users = await prisma.user.findMany({
-      select: { id: true }
+      select: { id: true },
     });
 
     for (const user of users) {
@@ -265,7 +280,9 @@ export class DataRetentionService {
   /**
    * Get expiring data notifications
    */
-  static async getExpiringDataNotifications(daysBeforeExpiry: number = 30): Promise<any[]> {
+  static async getExpiringDataNotifications(
+    daysBeforeExpiry: number = 30
+  ): Promise<any[]> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() + daysBeforeExpiry);
 
@@ -275,17 +292,17 @@ export class DataRetentionService {
         granted: true,
         expiresAt: {
           lte: cutoffDate,
-          gte: new Date()
-        }
+          gte: new Date(),
+        },
       },
       include: {
         user: {
           select: {
             email: true,
-            fullName: true
-          }
-        }
-      }
+            fullName: true,
+          },
+        },
+      },
     });
 
     return expiringConsents;
@@ -299,14 +316,14 @@ export class DataRetentionService {
       where: {
         granted: true,
         expiresAt: {
-          lt: new Date()
-        }
+          lt: new Date(),
+        },
       },
       data: {
         granted: false,
         withdrawnAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
 
     return result.count;
@@ -323,23 +340,23 @@ export class DataRetentionService {
   }> {
     const totalPolicies = await prisma.dataRetentionPolicy.count();
     const activePolicies = await prisma.dataRetentionPolicy.count({
-      where: { isActive: true }
+      where: { isActive: true },
     });
-    
+
     const totalLogs = await prisma.dataRetentionLog.count();
     const recentLogs = await prisma.dataRetentionLog.count({
       where: {
         processedAt: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
-        }
-      }
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+        },
+      },
     });
 
     return {
       totalPolicies,
       activePolicies,
       totalLogs,
-      recentLogs
+      recentLogs,
     };
   }
 
@@ -355,8 +372,8 @@ export class DataRetentionService {
     return await prisma.dataRetentionPolicy.create({
       data: {
         ...data,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
   }
 
@@ -364,12 +381,12 @@ export class DataRetentionService {
    * Update a retention policy
    */
   static async updateRetentionPolicy(
-    id: string, 
+    id: string,
     data: Partial<DataRetentionPolicy>
   ): Promise<DataRetentionPolicy> {
     return await prisma.dataRetentionPolicy.update({
       where: { id },
-      data
+      data,
     });
   }
 
@@ -378,7 +395,7 @@ export class DataRetentionService {
    */
   static async getRetentionPolicies(): Promise<DataRetentionPolicy[]> {
     return await prisma.dataRetentionPolicy.findMany({
-      orderBy: { dataCategory: 'asc' }
+      orderBy: { dataCategory: 'asc' },
     });
   }
 }

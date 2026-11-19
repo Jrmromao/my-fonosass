@@ -9,23 +9,25 @@ datasource db {
 }
 
 model User {
-  id                 String             @id @default(cuid())
-  email              String             @unique
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  clerkUserId        String             @unique
-  fullName           String
-  role               UserRole           @default(USER)
-  createdActivities  Activity[]         @relation("ActivityCreator")
-  reviewedActivities Activity[]         @relation("ActivityReviewer")
-  subscriptions      Subscription?
-  consentRecords     ConsentRecord[]
-  downloadHistory    DownloadHistory[]
-  downloads          Download[]
-  resourceDownloads  ResourceDownload[]
-  resourceRatings    ResourceRating[]
-  resourceViews      ResourceView[]
-  createdResources   Resource[]
+  id                     String                  @id @default(cuid())
+  email                  String                  @unique
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  clerkUserId            String                  @unique
+  fullName               String
+  role                   UserRole                @default(USER)
+  createdActivities      Activity[]              @relation("ActivityCreator")
+  reviewedActivities     Activity[]              @relation("ActivityReviewer")
+  subscriptions          Subscription?
+  consentRecords         ConsentRecord[]
+  downloadHistory        DownloadHistory[]
+  downloads              Download[]
+  resourceDownloads      ResourceDownload[]
+  resourceRatings        ResourceRating[]
+  resourceViews          ResourceView[]
+  createdResources       Resource[]
+  dataExportRequests     DataExportRequest[]
+  dataCorrectionRequests DataCorrectionRequest[]
 
   @@index([createdAt])
   @@index([role])
@@ -538,6 +540,108 @@ model AccountDeletion {
 
   @@index([deletedAt])
   @@map("account_deletions")
+}
+
+/// LGPD art. 18 (II, V) / art. 19: record of each data-access/portability
+/// request and when it was answered. The export itself is generated on demand
+/// by GET /api/user-data/export (never stored). Rows go away with the user.
+model DataExportRequest {
+  id            String                  @id @default(cuid())
+  userId        String
+  format        DataExportFormat        @default(JSON)
+  reason        String?
+  status        DataExportRequestStatus @default(PENDING)
+  requestedAt   DateTime                @default(now())
+  completedAt   DateTime?
+  expiresAt     DateTime
+  downloadCount Int                     @default(0)
+  error         String?
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, requestedAt])
+  @@map("data_export_requests")
+}
+
+/// LGPD art. 18 III: a correction the user cannot make themselves (name and
+/// email are self-service). Answered by the DPO/admin; the row is the proof
+/// of the request and of the answer. Rows go away with the user.
+model DataCorrectionRequest {
+  id             String                      @id @default(cuid())
+  userId         String
+  description    String
+  status         DataCorrectionRequestStatus @default(PENDING)
+  requestedAt    DateTime                    @default(now())
+  resolvedAt     DateTime?
+  /// Answer shown to the user.
+  resolutionNote String?
+  /// Internal id of the admin who answered (no FK: kept if that admin leaves).
+  resolvedById   String?
+  user           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, requestedAt])
+  @@index([status, requestedAt])
+  @@map("data_correction_requests")
+}
+
+enum DataCorrectionRequestStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+}
+
+enum DataExportFormat {
+  JSON
+}
+
+enum DataExportRequestStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+/// Webhook events already handled (Stripe delivers at least once). The id is
+/// the provider's event id; a second delivery hits the primary key and is
+/// skipped. Rows older than 30 days are purged by lib/webhooks/idempotency.ts.
+model ProcessedWebhookEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+
+  @@index([processedAt])
+  @@map("processed_webhook_events")
+}
+
+/// Append-only trail of admin actions on personal data and of security
+/// events. Deliberately NO foreign keys and NO personal data (no names, emails
+/// or free text): ids and action codes only, so the trail survives account
+/// deletion without keeping anything that identifies the person. Kept 12
+/// months (purged by lib/audit/audit.ts).
+model AuditEvent {
+  id         String         @id @default(cuid())
+  createdAt  DateTime       @default(now())
+  actorType  AuditActorType
+  /// Internal User.id of the actor; null for MACHINE / ANONYMOUS.
+  actorId    String?
+  /// Dotted action code, e.g. "admin.waiting_list.read".
+  action     String
+  targetType String?
+  targetId   String?
+  ip         String?
+  /// Small, non-personal context (counts, formats, outcomes).
+  metadata   Json?
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
+  @@map("audit_events")
+}
+
+enum AuditActorType {
+  ADMIN
+  USER
+  MACHINE
+  ANONYMOUS
 }
 
 /// Admin choice of the free activities for a month (overrides the automatic

@@ -1,4 +1,7 @@
 import { prisma } from '@/app/db';
+import { getTrackedBlogPost, truncate } from '@/lib/blog-tracking';
+import { getClientIp } from '@/lib/security/clientIp';
+import { rateLimiters } from '@/lib/security/rateLimiter';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -6,85 +9,55 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params;
-    const { ipAddress, userAgent } = await request.json();
-
-    // Find or create blog post
-    let blogPost = await prisma.blogPost.findUnique({
-      where: { slug },
-    });
-
-    if (!blogPost) {
-      // Create blog post if it doesn't exist
-      blogPost = await prisma.blogPost.create({
-        data: {
-          slug,
-          title: slug
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, (l) => l.toUpperCase()),
-          viewCount: 0,
-          likeCount: 0,
-        },
-      });
+    const limit = await rateLimiters.general.checkAsync(request);
+    if (!limit.success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
-    // Check if already liked by this IP
+    const { slug } = await params;
+    const body = await request.json().catch(() => ({}));
+
+    const blogPost = await getTrackedBlogPost(slug);
+    if (!blogPost) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    // IP is taken from the request, never from the client payload.
+    const ipAddress = getClientIp(request);
+
     const existingLike = await prisma.blogLike.findUnique({
-      where: {
-        postId_ipAddress: {
-          postId: blogPost.id,
-          ipAddress: ipAddress || 'anonymous',
-        },
-      },
+      where: { postId_ipAddress: { postId: blogPost.id, ipAddress } },
     });
 
     if (existingLike) {
-      // Unlike - remove the like
-      await prisma.blogLike.delete({
-        where: { id: existingLike.id },
-      });
-
-      // Decrement like count
+      await prisma.blogLike.delete({ where: { id: existingLike.id } });
       const updatedPost = await prisma.blogPost.update({
         where: { id: blogPost.id },
-        data: {
-          likeCount: {
-            decrement: 1,
-          },
-        },
+        data: { likeCount: { decrement: 1 } },
       });
-
       return NextResponse.json({
         success: true,
         liked: false,
         likeCount: updatedPost.likeCount,
       });
-    } else {
-      // Like - add the like
-      await prisma.blogLike.create({
-        data: {
-          postId: blogPost.id,
-          ipAddress,
-          userAgent,
-        },
-      });
-
-      // Increment like count
-      const updatedPost = await prisma.blogPost.update({
-        where: { id: blogPost.id },
-        data: {
-          likeCount: {
-            increment: 1,
-          },
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        liked: true,
-        likeCount: updatedPost.likeCount,
-      });
     }
+
+    await prisma.blogLike.create({
+      data: {
+        postId: blogPost.id,
+        ipAddress,
+        userAgent: truncate(body?.userAgent, 255),
+      },
+    });
+    const updatedPost = await prisma.blogPost.update({
+      where: { id: blogPost.id },
+      data: { likeCount: { increment: 1 } },
+    });
+    return NextResponse.json({
+      success: true,
+      liked: true,
+      likeCount: updatedPost.likeCount,
+    });
   } catch (error) {
     console.error('Error toggling blog like:', error);
     return NextResponse.json(
@@ -100,10 +73,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'anonymous';
+    const ipAddress = getClientIp(request);
 
     const blogPost = await prisma.blogPost.findUnique({
       where: { slug },

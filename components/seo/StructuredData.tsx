@@ -1,4 +1,5 @@
 import { COMPANY } from '@/lib/legal/company';
+import { safeJsonLd } from '@/lib/security/jsonLd';
 import Script from 'next/script';
 
 interface StructuredDataProps {
@@ -102,7 +103,7 @@ export default function StructuredData({
       id="structured-data"
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(getStructuredData()),
+        __html: safeJsonLd(getStructuredData()),
       }}
     />
   );

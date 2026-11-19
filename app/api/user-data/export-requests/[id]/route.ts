@@ -1,110 +1,126 @@
-import { prisma } from '@/app/db'
-import { auth } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
+import { prisma } from '@/app/db';
+import { guardAdmin } from '@/lib/activities/approval';
+import { toExportRequestDto } from '@/lib/privacy/dataExportRequests';
+import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
-// In-memory store for export requests (in production, use a database)
-const exportRequests = new Map<string, any>()
+const NO_STORE = { 'Cache-Control': 'private, no-store' };
 
-// GET specific export request by ID
+const idSchema = z.string().cuid();
+
+const updateSchema = z.object({
+  status: z.enum(['PENDING', 'COMPLETED', 'FAILED']).optional(),
+  error: z.string().trim().max(500).nullable().optional(),
+});
+
+// GET one of the signed-in user's own export requests
 export async function GET(
-  request: Request, 
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId: clerkUserId } = await auth()
-    
+    const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401, headers: NO_STORE }
+      );
     }
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId }
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    const { id } = await params;
+    if (!idSchema.safeParse(id).success) {
+      return NextResponse.json(
+        { success: false, error: 'Export request not found' },
+        { status: 404, headers: NO_STORE }
+      );
     }
 
-    const { id: requestId } = await params
-    const exportRequest = exportRequests.get(requestId)
-
-    if (!exportRequest) {
-      return NextResponse.json({ error: 'Export request not found' }, { status: 404 })
+    // Ownership is part of the query: someone else's id looks like a miss.
+    const row = await prisma.dataExportRequest.findFirst({
+      where: { id, user: { clerkUserId } },
+    });
+    if (!row) {
+      return NextResponse.json(
+        { success: false, error: 'Export request not found' },
+        { status: 404, headers: NO_STORE }
+      );
     }
 
-    // Check if user owns this request
-    if (exportRequest.userId !== user.id) {
-      return NextResponse.json({ error: 'Unauthorized access to export request' }, { status: 403 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: exportRequest
-    })
-
+    return NextResponse.json(
+      { success: true, data: toExportRequestDto(row) },
+      { headers: NO_STORE }
+    );
   } catch (error) {
-    console.error('Error retrieving export request:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      message: 'Failed to retrieve export request'
-    }, { status: 500 })
+    console.error('Error retrieving export request:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to retrieve export request' },
+      { status: 500, headers: NO_STORE }
+    );
   }
 }
 
-// PUT endpoint to update export request status (admin only)
+// PUT: admin correction of a request's status (e.g. mark FAILED with a note)
 export async function PUT(
-  request: Request, 
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const denied = await guardAdmin();
+  if (denied) return denied;
+
   try {
-    const { userId: clerkUserId } = await auth()
-    
-    if (!clerkUserId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { id } = await params;
+    if (!idSchema.safeParse(id).success) {
+      return NextResponse.json(
+        { success: false, error: 'Export request not found' },
+        { status: 404, headers: NO_STORE }
+      );
     }
 
-    // Get user from database to check role
-    const user = await prisma.user.findUnique({
-      where: { clerkUserId }
-    })
-
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    const parsed = updateSchema.safeParse(
+      await request.json().catch(() => null)
+    );
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid request body' },
+        { status: 400, headers: NO_STORE }
+      );
     }
 
-    const { id: requestId } = await params
-    const exportRequest = exportRequests.get(requestId)
-
-    if (!exportRequest) {
-      return NextResponse.json({ error: 'Export request not found' }, { status: 404 })
+    const existing = await prisma.dataExportRequest.findUnique({
+      where: { id },
+    });
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Export request not found' },
+        { status: 404, headers: NO_STORE }
+      );
     }
 
-    // Parse update data
-    const { status, downloadUrl, error: errorMessage } = await request.json()
+    const { status, error } = parsed.data;
+    const updated = await prisma.dataExportRequest.update({
+      where: { id },
+      data: {
+        ...(status && { status }),
+        ...(status === 'COMPLETED' &&
+          !existing.completedAt && { completedAt: new Date() }),
+        ...(error !== undefined && { error }),
+      },
+    });
 
-    // Update the request
-    const updatedRequest = {
-      ...exportRequest,
-      status: status || exportRequest.status,
-      downloadUrl: downloadUrl || exportRequest.downloadUrl,
-      error: errorMessage || null,
-      updatedAt: new Date().toISOString()
-    }
-
-    exportRequests.set(requestId, updatedRequest)
-
-    return NextResponse.json({
-      success: true,
-      message: 'Export request updated successfully',
-      data: updatedRequest
-    })
-
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Export request updated successfully',
+        data: toExportRequestDto(updated),
+      },
+      { headers: NO_STORE }
+    );
   } catch (error) {
-    console.error('Error updating export request:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      message: 'Failed to update export request'
-    }, { status: 500 })
+    console.error('Error updating export request:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to update export request' },
+      { status: 500, headers: NO_STORE }
+    );
   }
 }

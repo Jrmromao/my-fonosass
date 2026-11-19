@@ -2,6 +2,7 @@ import { prisma } from '@/app/db';
 import { phonemeLabel, subjectLabel } from '@/lib/activityLabels';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { safeEqual } from '@/lib/security/safeCompare';
 import { notFound } from 'next/navigation';
 
 const s3 = new S3Client({
@@ -42,7 +43,7 @@ export default async function ExerciseReviewPage({
   if (!activity) notFound();
 
   // Verify token for unauthenticated access
-  const hasValidToken = token && activity.approvalToken === token;
+  const hasValidToken = safeEqual(activity.approvalToken, token);
 
   // After an approve/reject action the token is consumed, so the redirect back
   // here carries a result flag instead of a valid token — show the outcome.
@@ -235,18 +236,32 @@ export default async function ExerciseReviewPage({
 
         {hasValidToken && activity.status === 'PENDING_REVIEW' && (
           <div className="mt-6 flex gap-3">
-            <a
-              href={`/api/exercises/${id}/approve?token=${token}`}
-              className="flex-1 text-center px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+            <form
+              method="POST"
+              action={`/api/exercises/${id}/approve`}
+              className="flex-1"
             >
-              Aprovar e Publicar
-            </a>
-            <a
-              href={`/api/exercises/${id}/reject?token=${token}`}
-              className="flex-1 text-center px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
+              <input type="hidden" name="token" value={token} />
+              <button
+                type="submit"
+                className="w-full text-center px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+              >
+                Aprovar e Publicar
+              </button>
+            </form>
+            <form
+              method="POST"
+              action={`/api/exercises/${id}/reject`}
+              className="flex-1"
             >
-              Rejeitar
-            </a>
+              <input type="hidden" name="token" value={token} />
+              <button
+                type="submit"
+                className="w-full text-center px-4 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700"
+              >
+                Rejeitar
+              </button>
+            </form>
           </div>
         )}
       </div>

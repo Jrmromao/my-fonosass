@@ -1,5 +1,6 @@
 import { prisma } from '@/app/db';
 import { QueryCache, withCaching } from '@/lib/performance/cacheManager';
+import { getResourceViewer, hasSessionCookie } from '@/lib/resources/access';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest } from 'next/server';
@@ -97,9 +98,35 @@ export const GET = withCaching(
         );
       }
 
+      // This response is public and shared via the cache, so it must never
+      // carry premium payloads. Premium files go through the gated
+      // /download and /file routes.
+      const { isAdmin } = await getResourceViewer();
+      const publicResource =
+        resource.isFree || isAdmin
+          ? resource
+          : {
+              ...resource,
+              content: null,
+              downloadUrl: null,
+              viewUrl: null,
+              files: resource.files.map(({ s3Url: _s3Url, ...file }) => file),
+            };
+
+      // Reviewer names are shown as first name only.
+      const safeResource = {
+        ...publicResource,
+        ratings: publicResource.ratings.map((r) => ({
+          ...r,
+          user: {
+            fullName: r.user?.fullName?.trim().split(/\s+/)[0] ?? null,
+          },
+        })),
+      };
+
       return SecurityMiddleware.createSecureResponse({
         success: true,
-        data: resource,
+        data: safeResource,
         cached: true,
       });
     } catch (error) {
@@ -113,6 +140,8 @@ export const GET = withCaching(
   {
     ttl: RESOURCE_CACHE_TTL,
     keyGenerator: (req) => `resource:${req.url.split('/').pop()}`,
+    // Only anonymous (identical, stripped) responses are shared via cache.
+    skipCache: hasSessionCookie,
   }
 );
 

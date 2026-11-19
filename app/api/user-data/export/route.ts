@@ -1,13 +1,17 @@
 import { prisma } from '@/app/db';
 import { getOrCreateDbUser } from '@/lib/auth/dbUser';
+import {
+  EXPORT_LINK_TTL_MS,
+  recordExportDownload,
+} from '@/lib/privacy/dataExportRequests';
 import { auth } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * LGPD data portability: everything we store about the signed-in user, as a
  * JSON file. Never cacheable (personal data).
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
@@ -29,6 +33,35 @@ export async function GET() {
     });
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // LGPD audit trail: every export is tied to a persisted request.
+    // ?request=<id> -> a request made from the data-rights dashboard;
+    // no param      -> direct download (privacy panel), recorded as a request
+    //                  answered on the spot.
+    const requestId = request.nextUrl.searchParams.get('request');
+    if (requestId) {
+      const counted = await recordExportDownload(requestId, user.id);
+      if (!counted) {
+        return NextResponse.json(
+          { error: 'Solicitação inválida ou expirada.' },
+          { status: 404, headers: { 'Cache-Control': 'private, no-store' } }
+        );
+      }
+    } else {
+      const now = new Date();
+      await prisma.dataExportRequest.create({
+        data: {
+          userId: user.id,
+          format: 'JSON',
+          reason: 'Download direto (painel de privacidade)',
+          status: 'COMPLETED',
+          requestedAt: now,
+          completedAt: now,
+          expiresAt: new Date(now.getTime() + EXPORT_LINK_TTL_MS),
+          downloadCount: 1,
+        },
+      });
     }
 
     const data = {

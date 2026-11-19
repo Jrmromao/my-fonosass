@@ -1,6 +1,34 @@
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
 import { auth } from '@clerk/nextjs/server';
+import { randomUUID } from 'crypto';
 import { NextRequest } from 'next/server';
+
+// MIME type -> extension we control (never trust the client file name).
+const EXTENSIONS: Record<string, string> = {
+  'application/pdf': 'pdf',
+  'video/mp4': 'mp4',
+  'video/avi': 'avi',
+  'video/mov': 'mov',
+  'video/wmv': 'wmv',
+  'audio/mp3': 'mp3',
+  'audio/wav': 'wav',
+  'audio/m4a': 'm4a',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+};
+
+// Magic bytes for the types we can cheaply verify.
+const SIGNATURES: Record<string, number[][]> = {
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]],
+  'image/jpeg': [[0xff, 0xd8, 0xff]],
+  'image/png': [[0x89, 0x50, 0x4e, 0x47]],
+  'image/gif': [[0x47, 0x49, 0x46, 0x38]],
+  'image/webp': [[0x52, 0x49, 0x46, 0x46]],
+};
+
+const RESOURCE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +72,12 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const resourceId = formData.get('resourceId') as string;
+    const rawResourceId = formData.get('resourceId');
+    const resourceId =
+      typeof rawResourceId === 'string' && rawResourceId ? rawResourceId : '';
+    if (resourceId && !RESOURCE_ID.test(resourceId)) {
+      return SecurityMiddleware.createErrorResponse('Invalid resource id', 400);
+    }
 
     if (!file) {
       return SecurityMiddleware.createErrorResponse('No file provided', 400);
@@ -83,10 +116,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate unique filename
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${timestamp}-${randomString}.${fileExtension}`;
+    // Verify the content matches the declared type (client MIME is untrusted).
+    const signatures = SIGNATURES[file.type];
+    if (signatures) {
+      const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+      const matches = signatures.some((sig) =>
+        sig.every((byte, i) => head[i] === byte)
+      );
+      if (!matches) {
+        return SecurityMiddleware.createErrorResponse(
+          'File content does not match its type',
+          400
+        );
+      }
+    }
+
+    const fileName = `${Date.now()}-${randomUUID()}.${EXTENSIONS[file.type]}`;
     const s3Key = `resources/${resourceId || 'temp'}/${fileName}`;
 
     // For now, we'll simulate file upload
@@ -98,7 +143,7 @@ export async function POST(request: NextRequest) {
       await prisma.resourceFile.create({
         data: {
           resourceId,
-          name: file.name,
+          name: file.name.slice(0, 255),
           s3Key,
           s3Url: mockS3Url,
           fileType: file.type,

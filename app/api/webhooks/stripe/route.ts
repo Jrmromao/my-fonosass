@@ -1,13 +1,12 @@
 import { prisma } from '@/app/db';
+import {
+  claimWebhookEvent,
+  releaseWebhookEvent,
+} from '@/lib/webhooks/idempotency';
 import { stripe } from '@/lib/stripe';
 import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { Stripe } from 'stripe';
-
-// Rate limiting setup
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute window
-const MAX_REQUESTS_PER_WINDOW = 50;
-const requestTimestamps: number[] = [];
 
 // Helper function to update Clerk user metadata with subscription details
 async function updateClerkUserMetadata(
@@ -90,21 +89,9 @@ async function sendSubscriptionEmail(label: string, send: () => Promise<void>) {
 }
 
 export async function POST(req: Request) {
-  // Basic rate limiting
-  const now = Date.now();
-  requestTimestamps.push(now);
-  while (
-    requestTimestamps.length > 0 &&
-    requestTimestamps[0] < now - RATE_LIMIT_WINDOW
-  ) {
-    requestTimestamps.shift();
-  }
-
-  if (requestTimestamps.length > MAX_REQUESTS_PER_WINDOW) {
-    console.warn('Rate limit exceeded for Stripe webhook');
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-  }
-
+  // Authenticity is enforced by the Stripe signature below. No in-memory
+  // rate limit here: it counted forged requests too, so an attacker could
+  // trigger 429s for genuine Stripe deliveries.
   // Verify webhook signature
   const body = await req.text();
   const sig = req.headers.get('stripe-signature') as string;
@@ -128,7 +115,22 @@ export async function POST(req: Request) {
       { status: 401 }
     );
   }
+  // Idempotency: Stripe delivers at least once and retries on failure.
+  // Claim the event id first; a duplicate delivery is acknowledged without
+  // repeating its side effects (emails, Clerk metadata, subscription writes).
+  const claimed = await claimWebhookEvent(event.id, event.type);
+  if (!claimed) {
+    return NextResponse.json({ success: true, duplicate: true });
+  }
 
+  const response = await handleStripeEvent(event);
+  // Failed: release the claim so Stripe's retry is processed.
+  if (!response.ok) await releaseWebhookEvent(event.id);
+  return response;
+}
+
+/** Business logic for one verified event. A non-2xx response makes Stripe retry. */
+async function handleStripeEvent(event: Stripe.Event): Promise<NextResponse> {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {

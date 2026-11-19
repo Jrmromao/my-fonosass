@@ -1,0 +1,5 @@
+Contact: mailto:dpo@almanaquedafala.com.br
+Expires: 2027-11-18T00:00:00.000Z
+Preferred-Languages: pt, en
+Canonical: https://www.almanaquedafala.com.br/.well-known/security.txt
+Policy: https://www.almanaquedafala.com.br/privacidade

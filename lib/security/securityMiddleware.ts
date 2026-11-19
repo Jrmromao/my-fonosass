@@ -66,7 +66,7 @@ export class SecurityMiddleware {
       // 3. Rate limiting
       if (config.rateLimitType) {
         const limiter = rateLimiters[config.rateLimitType];
-        const rateLimitResult = limiter.check(request);
+        const rateLimitResult = await limiter.checkAsync(request);
 
         if (!rateLimitResult.success) {
           return {

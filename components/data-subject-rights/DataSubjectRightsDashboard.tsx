@@ -9,16 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useCSRF } from '@/hooks/useCSRF';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertTriangle,
@@ -27,6 +20,7 @@ import {
   Download,
   Edit3,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -35,20 +29,19 @@ interface ExportRequest {
   format: string;
   status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'EXPIRED';
   requestedAt: string;
+  completedAt: string | null;
   expiresAt: string;
-  downloadUrl?: string;
+  downloadUrl: string | null;
   downloadCount: number;
-  maxDownloads: number;
 }
 
 interface CorrectionRequest {
   id: string;
-  field: string;
-  currentValue?: string;
-  requestedValue: string;
-  reason: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  description: string;
+  status: 'PENDING' | 'RESOLVED' | 'REJECTED';
   requestedAt: string;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
 }
 
 export default function DataSubjectRightsDashboard() {
@@ -59,13 +52,9 @@ export default function DataSubjectRightsDashboard() {
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCorrectionForm, setShowCorrectionForm] = useState(false);
-  const [correctionData, setCorrectionData] = useState({
-    field: '',
-    currentValue: '',
-    requestedValue: '',
-    reason: '',
-  });
+  const [description, setDescription] = useState('');
   const { toast } = useToast();
+  const { fetchCSRFToken } = useCSRF();
 
   // Load user's data requests
   useEffect(() => {
@@ -117,7 +106,9 @@ export default function DataSubjectRightsDashboard() {
         });
         loadExportRequests();
       } else {
-        throw new Error(data.message || 'Failed to submit export request');
+        throw new Error(
+          data.error || data.message || 'Failed to submit export request'
+        );
       }
     } catch (error) {
       toast({
@@ -132,14 +123,10 @@ export default function DataSubjectRightsDashboard() {
   };
 
   const handleDataCorrection = async () => {
-    if (
-      !correctionData.field ||
-      !correctionData.requestedValue ||
-      !correctionData.reason
-    ) {
+    if (description.trim().length < 10) {
       toast({
         title: 'Erro de Validação',
-        description: 'Por favor, preencha todos os campos obrigatórios.',
+        description: 'Descreva a correção com pelo menos 10 caracteres.',
         variant: 'destructive',
       });
       return;
@@ -147,35 +134,35 @@ export default function DataSubjectRightsDashboard() {
 
     setIsLoading(true);
     try {
+      const csrfToken = await fetchCSRFToken();
       const response = await fetch('/api/user-data/update', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(correctionData),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+        },
+        body: JSON.stringify({ description }),
       });
 
       const data = await response.json();
-      if (data.success) {
-        toast({
-          title: 'Solicitação de Correção Enviada',
-          description:
-            'Sua solicitação de correção de dados foi enviada para análise.',
-        });
-        setShowCorrectionForm(false);
-        setCorrectionData({
-          field: '',
-          currentValue: '',
-          requestedValue: '',
-          reason: '',
-        });
-        loadCorrectionRequests();
-      } else {
-        throw new Error(data.message || 'Failed to submit correction request');
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to submit correction request');
       }
+      toast({
+        title: 'Solicitação enviada',
+        description:
+          'Nosso encarregado de dados responderá por email em até 15 dias úteis.',
+      });
+      setShowCorrectionForm(false);
+      setDescription('');
+      loadCorrectionRequests();
     } catch (error) {
       toast({
         title: 'Erro',
         description:
-          'Falha ao enviar solicitação de correção. Tente novamente.',
+          error instanceof Error && error.message
+            ? error.message
+            : 'Falha ao enviar solicitação de correção. Tente novamente.',
         variant: 'destructive',
       });
     } finally {
@@ -199,14 +186,24 @@ export default function DataSubjectRightsDashboard() {
   const getStatusBadge = (status: string) => {
     const variants = {
       COMPLETED: 'default',
+      RESOLVED: 'default',
       PENDING: 'secondary',
       FAILED: 'destructive',
+      REJECTED: 'destructive',
       EXPIRED: 'outline',
     } as const;
+    const labels: Record<string, string> = {
+      COMPLETED: 'Concluída',
+      RESOLVED: 'Atendida',
+      PENDING: 'Pendente',
+      FAILED: 'Falhou',
+      REJECTED: 'Recusada',
+      EXPIRED: 'Expirada',
+    };
 
     return (
       <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
-        {status}
+        {labels[status] ?? status}
       </Badge>
     );
   };
@@ -225,7 +222,8 @@ export default function DataSubjectRightsDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* JSON is the only export we generate (portable, LGPD art. 18 V). */}
+          <div className="grid grid-cols-1 gap-3">
             <Button
               onClick={() => handleDataExport('json')}
               disabled={isLoading}
@@ -233,24 +231,6 @@ export default function DataSubjectRightsDashboard() {
             >
               <Download className="h-4 w-4 mr-2" />
               JSON
-            </Button>
-            <Button
-              onClick={() => handleDataExport('csv')}
-              disabled={isLoading}
-              variant="outline"
-              className="w-full"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              CSV
-            </Button>
-            <Button
-              onClick={() => handleDataExport('pdf')}
-              disabled={isLoading}
-              variant="outline"
-              className="w-full"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              PDF
             </Button>
           </div>
 
@@ -279,9 +259,11 @@ export default function DataSubjectRightsDashboard() {
                     <div className="flex items-center gap-2">
                       {getStatusBadge(request.status)}
                       {request.downloadUrl && (
-                        <Button size="sm" variant="outline">
-                          <Download className="h-3 w-3 mr-1" />
-                          Baixar
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={request.downloadUrl} download>
+                            <Download className="h-3 w-3 mr-1" />
+                            Baixar
+                          </a>
                         </Button>
                       )}
                     </div>
@@ -305,10 +287,20 @@ export default function DataSubjectRightsDashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <p className="mb-4 rounded-lg bg-neutral-50 p-3 text-sm text-neutral-700">
+            Para corrigir o <strong>nome</strong>, use{' '}
+            <Link href="/dashboard/profile" className="underline">
+              Meu perfil
+            </Link>
+            . Para o <strong>email</strong>, use "Gerenciar conta" no mesmo
+            lugar: o novo endereço é verificado por segurança. Os demais pedidos
+            vão para o nosso encarregado de dados (DPO).
+          </p>
+
           {!showCorrectionForm ? (
             <div className="text-center py-4">
               <p className="text-sm text-neutral-600 mb-4">
-                Precisa corrigir alguma informação?
+                Precisa corrigir outra informação?
               </p>
               <Button
                 onClick={() => setShowCorrectionForm(true)}
@@ -320,80 +312,18 @@ export default function DataSubjectRightsDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="field" className="text-sm font-medium">
-                    Campo para Corrigir *
-                  </Label>
-                  <Select
-                    value={correctionData.field}
-                    onValueChange={(value) =>
-                      setCorrectionData({ ...correctionData, field: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o campo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fullName">Nome Completo</SelectItem>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="phone">Telefone</SelectItem>
-                      <SelectItem value="other">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="currentValue" className="text-sm font-medium">
-                    Valor Atual
-                  </Label>
-                  <Input
-                    id="currentValue"
-                    value={correctionData.currentValue}
-                    onChange={(e) =>
-                      setCorrectionData({
-                        ...correctionData,
-                        currentValue: e.target.value,
-                      })
-                    }
-                    placeholder="Valor atual (opcional)"
-                  />
-                </div>
-              </div>
-
               <div>
-                <Label htmlFor="requestedValue" className="text-sm font-medium">
-                  Valor Corrigido *
-                </Label>
-                <Input
-                  id="requestedValue"
-                  value={correctionData.requestedValue}
-                  onChange={(e) =>
-                    setCorrectionData({
-                      ...correctionData,
-                      requestedValue: e.target.value,
-                    })
-                  }
-                  placeholder="Digite o valor corrigido"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="reason" className="text-sm font-medium">
-                  Motivo *
+                <Label htmlFor="description" className="text-sm font-medium">
+                  O que precisa ser corrigido? *
                 </Label>
                 <Textarea
-                  id="reason"
-                  value={correctionData.reason}
-                  onChange={(e) =>
-                    setCorrectionData({
-                      ...correctionData,
-                      reason: e.target.value,
-                    })
-                  }
-                  placeholder="Explique por que esta correção é necessária"
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Diga qual informação está incorreta e qual é o valor correto"
+                  className="min-h-[100px]"
+                  maxLength={1000}
                   required
-                  className="min-h-[80px]"
                 />
               </div>
 
@@ -421,21 +351,30 @@ export default function DataSubjectRightsDashboard() {
                 Solicitações Recentes
               </h4>
               <div className="space-y-2">
-                {correctionRequests.slice(0, 2).map((request) => (
+                {correctionRequests.slice(0, 3).map((request) => (
                   <div
                     key={request.id}
-                    className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg"
+                    className="space-y-1 p-3 bg-neutral-50 rounded-lg"
                   >
-                    <div className="flex items-center gap-2">
-                      <Edit3 className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">{request.field}</span>
-                      <span className="text-xs text-neutral-600">
-                        {new Date(request.requestedAt).toLocaleDateString(
-                          'pt-BR'
-                        )}
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Edit3 className="h-4 w-4 shrink-0 text-green-600" />
+                        <span className="truncate text-sm">
+                          {request.description}
+                        </span>
+                      </div>
+                      {getStatusBadge(request.status)}
                     </div>
-                    {getStatusBadge(request.status)}
+                    <span className="text-xs text-neutral-600">
+                      {new Date(request.requestedAt).toLocaleDateString(
+                        'pt-BR'
+                      )}
+                    </span>
+                    {request.resolutionNote && (
+                      <p className="text-sm text-neutral-700">
+                        Resposta: {request.resolutionNote}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

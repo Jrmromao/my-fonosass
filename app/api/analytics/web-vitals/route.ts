@@ -1,64 +1,42 @@
+import { rateLimiters } from '@/lib/security/rateLimiter';
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
-interface WebVitalsData {
-  name: string;
-  value: number;
-  id: string;
-  delta: number;
-  navigationType: string;
-  rating: 'good' | 'needs-improvement' | 'poor';
-  url: string;
-  timestamp: number;
-}
+const webVitalsSchema = z.object({
+  name: z.string().min(1).max(32),
+  value: z.number().finite(),
+  id: z.string().min(1).max(128),
+  delta: z.number().finite().optional(),
+  navigationType: z.string().max(32).optional(),
+  rating: z.enum(['good', 'needs-improvement', 'poor']).optional(),
+  url: z.string().max(2048).optional(),
+  timestamp: z.number().finite().optional(),
+});
 
+// Public beacon endpoint: validated, size-limited and rate limited. Metrics are
+// currently discarded (no storage wired up); nothing from the payload is logged.
 export async function POST(request: NextRequest) {
-  try {
-    const data: WebVitalsData = await request.json();
+  const limit = await rateLimiters.general.checkAsync(request);
+  if (!limit.success) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
 
-    // Validate the data
-    if (!data.name || typeof data.value !== 'number' || !data.id) {
-      return NextResponse.json(
-        { error: 'Invalid Web Vitals data' },
-        { status: 400 }
-      );
-    }
+  const length = Number(request.headers.get('content-length') ?? 0);
+  if (length > 4096) {
+    return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+  }
 
-    // Log the Web Vitals data (in production, you might want to store this in a database)
-    console.log('[Web Vitals API] Received metric:', {
-      name: data.name,
-      value: data.value,
-      rating: data.rating,
-      url: data.url,
-      timestamp: new Date(data.timestamp).toISOString(),
-    });
-
-    // Here you could store the data in a database, send to external analytics, etc.
-    // For now, we'll just log it and return success
-
-    // Example: Store in database (uncomment and modify as needed)
-    /*
-    await prisma.webVitals.create({
-      data: {
-        name: data.name,
-        value: data.value,
-        id: data.id,
-        delta: data.delta,
-        navigationType: data.navigationType,
-        rating: data.rating,
-        url: data.url,
-        timestamp: new Date(data.timestamp),
-      },
-    });
-    */
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('[Web Vitals API] Error:', error);
+  const parsed = webVitalsSchema.safeParse(
+    await request.json().catch(() => null)
+  );
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: 'Invalid Web Vitals data' },
+      { status: 400 }
     );
   }
+
+  return NextResponse.json({ success: true });
 }
 
 export async function GET() {

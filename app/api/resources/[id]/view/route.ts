@@ -1,6 +1,7 @@
 import { prisma } from '@/app/db';
 import { SecurityMiddleware } from '@/lib/security/securityMiddleware';
-import { auth } from '@clerk/nextjs/server';
+import { getResourceViewer } from '@/lib/resources/access';
+import { getClientIp } from '@/lib/security/clientIp';
 import { NextRequest } from 'next/server';
 
 export const POST = async (
@@ -17,23 +18,12 @@ export const POST = async (
       );
     }
 
-    // Get user info (optional for views)
-    const { userId } = await auth();
-    let user = null;
+    const viewer = await getResourceViewer();
+    const user = viewer.userId ? { id: viewer.userId } : null;
 
-    if (userId) {
-      user = await prisma.user.findUnique({
-        where: { clerkUserId: userId },
-        select: { id: true },
-      });
-    }
-
-    // Get client info
-    const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
+    const ipAddress = getClientIp(request);
+    const userAgent =
+      request.headers.get('user-agent')?.slice(0, 255) || 'unknown';
 
     // Check if resource exists and is published
     const resource = await prisma.resource.findUnique({
