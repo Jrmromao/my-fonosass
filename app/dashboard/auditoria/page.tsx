@@ -94,7 +94,9 @@ export default function AuditTrailPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-4 p-6">
       <div>
-        <h1 className="text-2xl font-bold">Registro de auditoria</h1>
+        <h1 className="text-2xl font-bold text-violet-950">
+          Registro de auditoria
+        </h1>
         <p className="text-sm text-neutral-600">
           Ações de administradores sobre dados pessoais e eventos de segurança.
           Somente leitura. Os registros guardam apenas identificadores (sem

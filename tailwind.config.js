@@ -33,6 +33,22 @@ module.exports = {
           900: 'hsl(var(--coral-900))',
           DEFAULT: 'hsl(var(--coral-500))',
         },
+        // Logo colors: surfaces only, never text (see DESIGN_SYSTEM.md).
+        sun: {
+          50: 'hsl(var(--sun-50))',
+          100: 'hsl(var(--sun-100))',
+          200: 'hsl(var(--sun-200))',
+          300: 'hsl(var(--sun-300))',
+          400: 'hsl(var(--sun-400))',
+          500: 'hsl(var(--sun-500))',
+          DEFAULT: 'hsl(var(--sun-400))',
+        },
+        cream: {
+          50: 'hsl(var(--cream-50))',
+          100: 'hsl(var(--cream-100))',
+          200: 'hsl(var(--cream-200))',
+          300: 'hsl(var(--cream-300))',
+        },
         // Neutral ramp — navy-tinted. Use this ONE family app-wide (not gray+slate).
         neutral: {
           50: 'hsl(var(--neutral-50))',

@@ -102,7 +102,7 @@ export function SubscriptionPanel() {
             Não foi possível carregar a sua assinatura. Atualize a página.
           </p>
         ) : sub.subscribed ? (
-          <section className="rounded-md border border-neutral-200 p-6 space-y-4">
+          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6 space-y-4">
             <div>
               <p className="text-sm text-neutral-600">Plano atual</p>
               <p className="text-lg font-semibold text-neutral-900">
@@ -143,13 +143,13 @@ export function SubscriptionPanel() {
             )}
           </section>
         ) : sub.isAdmin ? (
-          <section className="rounded-md border border-neutral-200 p-6">
+          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6">
             <p className="text-sm text-neutral-900">
               Sua conta é de administrador e tem acesso a toda a biblioteca.
             </p>
           </section>
         ) : (
-          <section className="rounded-md border border-neutral-200 p-6 space-y-4">
+          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6 space-y-4">
             <div>
               <p className="text-sm text-neutral-600">Plano atual</p>
               <p className="text-lg font-semibold text-neutral-900">
@@ -160,7 +160,7 @@ export function SubscriptionPanel() {
                 biblioteca.
               </p>
             </div>
-            <div className="rounded-md bg-neutral-50 p-4 space-y-2">
+            <div className="rounded-xl bg-sun-100 p-4 ring-1 ring-sun-300 space-y-2">
               <p className="text-base font-semibold text-neutral-900">
                 {PRO_PLAN.name}: {formatBRL(PRO_PLAN.monthlyPrice)}/mês
               </p>

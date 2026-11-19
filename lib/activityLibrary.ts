@@ -13,6 +13,12 @@ export interface LibraryActivity {
   files: { id: string; fileType: string }[];
   /** Signed URL; null unless the viewer may download this activity. */
   thumbnailUrl: string | null;
+  /**
+   * WebP preview (page 1) for any signed-in user, or null when the activity
+   * has no PDF or image file. Served by /api/activities/[id]/preview;
+   * append ?w=960 for the larger size.
+   */
+  previewUrl: string | null;
   isFreeSample: boolean;
   canDownload: boolean;
 }
@@ -33,6 +39,17 @@ export interface LibraryResponse {
     difficulties: string[];
     ageRanges: string[];
   };
+}
+
+/** GET /api/library/counts: published activities per phoneme and type. */
+export interface LibraryCountsResponse {
+  success: boolean;
+  data?: {
+    total: number;
+    phonemes: Record<string, number>;
+    types: Record<string, number>;
+  };
+  error?: string;
 }
 
 export interface DownloadResponse {

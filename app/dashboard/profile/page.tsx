@@ -1,6 +1,8 @@
 'use client';
 
 import { SubscriptionPanel } from '@/components/dashboard/SubscriptionPanel';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { TONES } from '@/components/library/tones';
 import { AdminPanel } from '@/components/settings/AdminPanel';
 import { PrivacyPanel } from '@/components/settings/PrivacyPanel';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -101,19 +103,19 @@ function ProfileSettings() {
 
   return (
     <div className="h-full">
-      <div className="border-b border-neutral-100 px-6 py-6 md:px-8">
-        <h1 className="text-2xl font-bold text-neutral-900 font-display">
-          Configurações
-        </h1>
-        <p className="mt-1 text-sm text-neutral-600">
-          Gerencie sua conta, assinatura e privacidade.
-        </p>
-      </div>
+      <PageHeader
+        band={TONES.cream.band}
+        eyebrow="Perfil"
+        title="Configurações"
+        description="Gerencie sua conta, assinatura e privacidade."
+      />
 
-      <div className="flex flex-col gap-6 px-6 py-6 md:flex-row md:gap-10 md:px-8">
+      <div className="flex flex-col gap-5 px-4 py-5 sm:px-6 md:flex-row md:gap-6">
         <nav
           aria-label="Seções de configurações"
-          className="md:w-52 md:shrink-0 md:border-r md:border-neutral-100 md:pr-6"
+          // Stays in view while the section scrolls (desktop; on mobile it is a
+          // horizontal strip above the content).
+          className="h-fit rounded-2xl bg-white p-3 shadow-sm ring-1 ring-violet-200/60 md:sticky md:top-6 md:w-56 md:shrink-0 md:self-start"
         >
           {groups.map((group) => (
             <div key={group.title} className="mb-4 last:mb-0">
@@ -130,10 +132,10 @@ function ProfileSettings() {
                         onClick={() => setSection(section.value)}
                         aria-current={active ? 'page' : undefined}
                         className={cn(
-                          'w-full rounded-md px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-900',
+                          'w-full rounded-lg px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-950',
                           active
-                            ? 'bg-neutral-100 font-semibold text-neutral-900'
-                            : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                            ? 'bg-sun-300 font-semibold text-violet-950'
+                            : 'text-neutral-600 hover:bg-violet-50 hover:text-violet-950'
                         )}
                       >
                         {section.label}
@@ -147,7 +149,7 @@ function ProfileSettings() {
         </nav>
 
         <section className="min-w-0 flex-1 max-w-3xl">
-          <h2 className="text-xl font-semibold text-neutral-900 font-display">
+          <h2 className="font-display text-xl font-bold text-violet-950">
             {current.title}
           </h2>
           <p className="mt-1 mb-6 text-sm text-neutral-600">
@@ -247,10 +249,10 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
         <p className="mb-3 text-sm text-neutral-600">
           Dados da sua conta no Almanaque da Fala.
         </p>
-        <div className="space-y-5 rounded-md border border-neutral-200 p-6">
+        <div className="space-y-5 rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-14 w-14">
-              <AvatarFallback className="bg-coral-50 text-lg font-semibold text-coral-800">
+              <AvatarFallback className="bg-sun-300 text-lg font-semibold text-violet-950">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -307,7 +309,7 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
           <p className="mb-3 text-sm text-neutral-600">
             O que você escolheu ao começar.
           </p>
-          <div className="space-y-4 rounded-md border border-neutral-200 p-6">
+          <div className="space-y-4 rounded-2xl bg-white shadow-sm ring-1 ring-violet-200/60 p-6">
             {(preferences?.ageRanges?.length ?? 0) > 0 && (
               <div>
                 <p className="mb-1.5 text-sm text-neutral-600">

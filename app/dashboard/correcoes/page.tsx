@@ -77,7 +77,7 @@ export default function CorrectionRequestsPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-6">
       <div>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl font-bold text-violet-950">
           Solicitações de correção de dados
         </h1>
         <p className="text-sm text-neutral-600">

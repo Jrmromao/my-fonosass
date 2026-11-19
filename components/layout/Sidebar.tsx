@@ -106,7 +106,7 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen flex flex-col bg-white border-r border-border transition-all duration-200 overflow-hidden',
+          'fixed top-0 left-0 z-40 h-screen flex flex-col bg-violet-100 border-r border-violet-200 transition-all duration-200 overflow-hidden',
           isCollapsed ? 'w-16' : 'w-56',
           isMobileMenuOpen
             ? 'translate-x-0'
@@ -116,7 +116,7 @@ export function Sidebar({ className }: SidebarProps) {
         suppressHydrationWarning={true}
       >
         {/* Logo area */}
-        <div className="h-20 flex items-center border-b border-border">
+        <div className="h-20 flex items-center border-b border-violet-200">
           {!isHydrated || isCollapsed ? (
             <div className="flex w-full justify-center">
               <Logo size="icon" href="/dashboard" priority />
@@ -132,7 +132,7 @@ export function Sidebar({ className }: SidebarProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto mr-2 hidden md:flex text-neutral-600 hover:text-foreground hover:bg-neutral-100 rounded-md h-7 w-7 p-0"
+              className="ml-auto mr-2 hidden md:flex text-neutral-600 hover:text-violet-950 hover:bg-violet-50 rounded-md h-7 w-7 p-0"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -197,8 +197,8 @@ export function Sidebar({ className }: SidebarProps) {
                         ? 'justify-center p-3 mx-1'
                         : 'px-3 py-2.5',
                       isActive
-                        ? 'bg-muted text-foreground font-medium'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        ? 'bg-sun-300 text-violet-950 font-semibold shadow-sm'
+                        : 'text-neutral-600 hover:bg-violet-50 hover:text-violet-950'
                     )}
                     title={!isHydrated || isCollapsed ? item.title : undefined}
                   >
@@ -207,8 +207,8 @@ export function Sidebar({ className }: SidebarProps) {
                         className={cn(
                           'flex-shrink-0 transition-colors',
                           isActive
-                            ? 'text-foreground'
-                            : 'text-muted-foreground group-hover:text-foreground',
+                            ? 'text-violet-950'
+                            : 'text-neutral-600 group-hover:text-violet-950',
                           !isHydrated || isCollapsed
                             ? 'h-5 w-5'
                             : 'h-[18px] w-[18px]'
@@ -240,7 +240,7 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* User profile section */}
         {user && (
-          <div className="mt-auto border-t border-border p-3 overflow-hidden">
+          <div className="mt-auto border-t border-violet-200 p-3 overflow-hidden">
             <div
               className={cn(
                 'flex items-center',
