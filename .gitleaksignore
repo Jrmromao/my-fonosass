@@ -1,0 +1,5 @@
+# Known historical findings (already removed from the code). gitleaks reads this file by default.
+# Stripe TEST key committed 2025-03-30, removed 2025-04-01 (44d6c81). Must be rolled in the Stripe dashboard.
+af334d3b0ba31d43586bf43c9fe24a72f546fd7b:lib/stripe.ts:stripe-access-token:5
+# False positive: a record UUID in a test fixture, not a secret.
+c42bf3178d9e30507c257a3fac833f3de41612e7:lib/actions/patient.action.ts:generic-api-key:228
