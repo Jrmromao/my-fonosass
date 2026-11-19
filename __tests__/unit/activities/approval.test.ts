@@ -22,6 +22,7 @@ describe('approval state machine', () => {
         'PENDING_REVIEW',
         'PUBLISHED',
         'REJECTED',
+        'ARCHIVED',
       ];
       for (const s of all) expect(canTransition(s, s)).toBe(true);
     });
@@ -32,6 +33,20 @@ describe('approval state machine', () => {
 
     it('forbids reviving a rejected item directly to published', () => {
       expect(canTransition('REJECTED', 'PUBLISHED')).toBe(false);
+    });
+
+    it('allows archiving a published activity and restoring it', () => {
+      expect(canTransition('PUBLISHED', 'ARCHIVED')).toBe(true);
+      expect(canTransition('ARCHIVED', 'PUBLISHED')).toBe(true);
+    });
+
+    it('only published activities can be archived, and restore only goes to published', () => {
+      expect(canTransition('DRAFT', 'ARCHIVED')).toBe(false);
+      expect(canTransition('PENDING_REVIEW', 'ARCHIVED')).toBe(false);
+      expect(canTransition('REJECTED', 'ARCHIVED')).toBe(false);
+      expect(canTransition('ARCHIVED', 'DRAFT')).toBe(false);
+      expect(canTransition('ARCHIVED', 'PENDING_REVIEW')).toBe(false);
+      expect(canTransition('ARCHIVED', 'REJECTED')).toBe(false);
     });
 
     it('forbids rejected -> draft', () => {

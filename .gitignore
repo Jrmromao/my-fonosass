@@ -54,3 +54,5 @@ next-env.d.ts
 
 .playwright-mcp/
 .env*.local
+
+.kiro/specs/word-bank-curation/

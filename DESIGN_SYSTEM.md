@@ -245,6 +245,7 @@ Rows: hover:bg-neutral-50 cursor-pointer
 px-2.5 py-0.5 bg-neutral-100 text-neutral-600 rounded text-xs
 Phoneme badge: font-mono text-xs px-2 py-0.5 bg-neutral-100 text-neutral-600 rounded
 ```
+- Activity status (admin list): Publicado emerald, Pendente amber, Rejeitado red, Rascunho neutral-50, **Arquivado grey** (`bg-neutral-100 text-neutral-600 border-neutral-300`)
 - NO colored badges unless semantic (green=success, red=error, amber=warning) or the "Grátis" badge
 
 ### Form inputs

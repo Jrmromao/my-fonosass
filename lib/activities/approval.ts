@@ -15,7 +15,8 @@ export type ActivityStatus =
   | 'DRAFT'
   | 'PENDING_REVIEW'
   | 'PUBLISHED'
-  | 'REJECTED';
+  | 'REJECTED'
+  | 'ARCHIVED';
 
 export class AuthzError extends Error {
   constructor(
@@ -65,8 +66,9 @@ export async function requireAdmin(): Promise<{
 const ALLOWED_TRANSITIONS: Record<ActivityStatus, ActivityStatus[]> = {
   DRAFT: ['PENDING_REVIEW', 'REJECTED'],
   PENDING_REVIEW: ['PUBLISHED', 'REJECTED', 'PENDING_REVIEW'], // re-review allowed
-  PUBLISHED: ['DRAFT', 'REJECTED'], // can unpublish or retire
+  PUBLISHED: ['DRAFT', 'REJECTED', 'ARCHIVED'], // unpublish, retire or archive
   REJECTED: ['PENDING_REVIEW'], // can be re-submitted for review
+  ARCHIVED: ['PUBLISHED'], // restore only; files must be moved back first
 };
 
 export function canTransition(

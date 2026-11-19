@@ -10,6 +10,7 @@ const VALID_STATUSES = [
   'PENDING_REVIEW',
   'PUBLISHED',
   'REJECTED',
+  'ARCHIVED',
 ] as const;
 
 export async function GET(request: NextRequest) {
@@ -50,6 +51,14 @@ export async function GET(request: NextRequest) {
             select: { id: true, s3Key: true, fileType: true, name: true },
             take: 1,
           },
+          // Real deletion is refused when any of these exist.
+          _count: {
+            select: {
+              downloadHistory: true,
+              downloadStats: true,
+              freeSampleSelections: true,
+            },
+          },
         },
       }),
       prisma.activity.count({ where }),
@@ -57,7 +66,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      activities,
+      activities: activities.map(({ _count, ...activity }) => ({
+        ...activity,
+        canDelete:
+          (activity.status === 'DRAFT' || activity.status === 'REJECTED') &&
+          _count.downloadHistory +
+            _count.downloadStats +
+            _count.freeSampleSelections ===
+            0,
+      })),
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {

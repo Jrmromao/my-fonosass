@@ -1,6 +1,7 @@
 import 'server-only';
 
 import {
+  DeleteObjectsCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -44,6 +45,32 @@ export const canPreview = (fileType: string) =>
 
 const cacheKey = (fileId: string, width: PreviewWidth) =>
   `previews/${VERSION}/${fileId}-w${width}.webp`;
+
+/**
+ * Remove the cached previews of a file (both widths). Best effort: a stray
+ * preview is harmless (it is only reachable through a PUBLISHED activity),
+ * so this never throws.
+ */
+export async function deletePreviews(fileId: string): Promise<void> {
+  try {
+    const result = await s3.send(
+      new DeleteObjectsCommand({
+        Bucket: BUCKET,
+        Delete: {
+          Objects: PREVIEW_WIDTHS.map((w) => ({ Key: cacheKey(fileId, w) })),
+          Quiet: true,
+        },
+      })
+    );
+    for (const e of result.Errors ?? []) {
+      if (e.Code !== 'NoSuchKey') {
+        console.error('[preview] delete failed', e.Key, e.Code);
+      }
+    }
+  } catch (error) {
+    console.error('[preview] delete failed', fileId, error);
+  }
+}
 
 async function readObject(key: string): Promise<Buffer | null> {
   try {
