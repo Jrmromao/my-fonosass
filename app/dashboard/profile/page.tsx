@@ -7,7 +7,7 @@ import {
   type ToneClasses,
   toneForPhoneme,
 } from '@/components/library/tones';
-import { AGE_LABELS, label, phonemeLabel } from '@/lib/activityLabels';
+import { phonemeLabel } from '@/lib/activityLabels';
 import { AdminPanel } from '@/components/settings/AdminPanel';
 import { PrivacyPanel } from '@/components/settings/PrivacyPanel';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -290,7 +290,8 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
                     key={age}
                     className="rounded-full bg-sun-300 px-3 py-1 text-xs font-semibold text-violet-950"
                   >
-                    {label(AGE_LABELS, age)}
+                    {/* Stored as shown in onboarding, e.g. "4-5 anos". */}
+                    {age}
                   </span>
                 ))}
               </ChipGroup>

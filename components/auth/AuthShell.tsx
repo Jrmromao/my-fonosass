@@ -1,5 +1,5 @@
 import { getFreeSamples, type FreeSample } from '@/lib/access';
-import { AGE_LABELS, label, subjectLabel } from '@/lib/activityLabels';
+import { subjectLabel } from '@/lib/activityLabels';
 import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -148,7 +148,7 @@ async function BrandPanel() {
               <span className="font-semibold text-coral-800">
                 Grátis com sua conta:
               </span>{' '}
-              {captionSubject(sample)} · {label(AGE_LABELS, sample.ageRange)}
+              {captionSubject(sample)}
             </figcaption>
           </figure>
         ) : (

@@ -22,11 +22,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { createActivity } from '@/lib/actions/activity.action';
 import { ACTIVITY_CATEGORIES, findCategory } from '@/lib/activityCategories';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  phonemeLabel,
-} from '@/lib/activityLabels';
+import { phonemeLabel } from '@/lib/activityLabels';
 import { PHONEME_GROUPS } from '@/lib/phonemes';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
@@ -37,8 +33,6 @@ const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 const REQUIRED_SELECTS: { name: string; label: string }[] = [
   { name: 'category', label: 'categoria' },
-  { name: 'difficulty', label: 'dificuldade' },
-  { name: 'ageRange', label: 'faixa etária' },
 ];
 
 interface NewActivityDialogProps {
@@ -81,7 +75,7 @@ export function NewActivityDialog({ onSuccess }: NewActivityDialogProps) {
     // Radix selects don't block submit on their own: check them here.
     const missing = REQUIRED_SELECTS.filter((f) => !formData.get(f.name));
     if (category?.requiresPhoneme && !phoneme) {
-      // Keep the message in form order: categoria, fonema, dificuldade...
+      // Keep the message in form order: categoria, fonema
       missing.unshift({ name: 'phoneme', label: 'fonema' });
     }
     if (missing.length > 0) {
@@ -235,45 +229,6 @@ export function NewActivityDialog({ onSuccess }: NewActivityDialogProps) {
                         </SelectItem>
                       ))}
                     </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-sm text-neutral-900">Dificuldade</Label>
-              <Select name="difficulty">
-                <SelectTrigger
-                  className={triggerClass}
-                  aria-label="Dificuldade"
-                >
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(DIFFICULTY_LABELS).map(([value, text]) => (
-                    <SelectItem key={value} value={value}>
-                      {text}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-sm text-neutral-900">Faixa etária</Label>
-              <Select name="ageRange">
-                <SelectTrigger
-                  className={triggerClass}
-                  aria-label="Faixa etária"
-                >
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(AGE_LABELS).map(([value, text]) => (
-                    <SelectItem key={value} value={value}>
-                      {text}
-                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

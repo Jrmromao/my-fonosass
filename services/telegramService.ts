@@ -13,8 +13,6 @@ export class TelegramService {
     id: string;
     name: string;
     phoneme: string;
-    difficulty: string;
-    ageRange: string;
     approvalToken: string;
   }): Promise<boolean | undefined> {
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
@@ -30,8 +28,6 @@ export class TelegramService {
 
 *${exercise.name}*
 Fonema: /${exercise.phoneme}/
-Dificuldade: ${exercise.difficulty}
-Faixa etaria: ${exercise.ageRange}
 
 [Ver exercicio](${reviewUrl})`;
 

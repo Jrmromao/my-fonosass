@@ -5,12 +5,7 @@ import { Input } from '@/components/ui/input';
 import { LibraryTopicsCard } from '@/components/settings/LibraryTopicsCard';
 import { useCSRF } from '@/hooks/useCSRF';
 import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  label,
-  subjectLabel,
-} from '@/lib/activityLabels';
+import { subjectLabel } from '@/lib/activityLabels';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -21,8 +16,6 @@ interface SampleActivity {
   name: string;
   phoneme: string;
   type: string;
-  ageRange: string;
-  difficulty: string;
 }
 
 interface MonthSamples {
@@ -71,9 +64,7 @@ function ActivityLine({ activity }: { activity: SampleActivity }) {
         {activity.name}
       </span>
       <span className="text-sm text-neutral-600">
-        {subjectLabel(activity.phoneme, activity.type)} ·{' '}
-        {label(AGE_LABELS, activity.ageRange)} ·{' '}
-        {label(DIFFICULTY_LABELS, activity.difficulty)}
+        {subjectLabel(activity.phoneme, activity.type)}
       </span>
     </span>
   );

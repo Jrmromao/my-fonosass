@@ -15,25 +15,18 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { TONES, type ToneClasses } from '@/components/library/tones';
 import { useActivityDownload } from '@/hooks/useActivityDownload';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  label,
-  subjectLabel,
-} from '@/lib/activityLabels';
+import { label, subjectLabel } from '@/lib/activityLabels';
 import type { LibraryActivity, LibraryResponse } from '@/lib/activityLibrary';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Download, Eye, FileText, Lock, Printer } from 'lucide-react';
 import { useState } from 'react';
 
-// Activities of one library topic (or a search): optional age / difficulty
-// chips, a grid of thumbnails and "Mostrar mais". Clicking a thumbnail
+// Activities of one library topic (or a search): a grid of thumbnails and
+// "Mostrar mais". Clicking a thumbnail
 // downloads the activity (or opens the plans for free users); the eye button
 // opens the details with a larger preview and "Imprimir instruções".
 
 const PAGE_SIZE = 24;
-/** Below this many activities the age / difficulty chips are not shown. */
-const CHIPS_FROM = 12;
 
 export interface ActivityBrowserProps {
   /** Sent to /api/activities/search, e.g. { phoneme: 'S' } or { search }. */
@@ -52,8 +45,6 @@ export function ActivityBrowser({
   showSubject = false,
   tone = TONES.sky,
 }: ActivityBrowserProps) {
-  const [ageRange, setAgeRange] = useState('');
-  const [difficulty, setDifficulty] = useState('');
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [details, setDetails] = useState<LibraryActivity | null>(null);
   const { download, downloadingId, error, lastDownloaded } =
@@ -62,7 +53,7 @@ export function ActivityBrowser({
       setUpgradeOpen(true);
     });
 
-  const query = { ...filter, ageRange, difficulty };
+  const query = filter;
   const {
     data,
     isLoading,
@@ -94,8 +85,6 @@ export function ActivityBrowser({
   const activities = data?.pages.flatMap((p) => p.data) ?? [];
   const total = first?.pagination.total ?? 0;
   const showFreeBadge = first?.viewer?.canDownloadAll === false;
-  const filtering = !!ageRange || !!difficulty;
-  const showChips = filtering || total > CHIPS_FROM;
 
   const start = (activity: LibraryActivity) => {
     const file = activity.files[0];
@@ -113,27 +102,7 @@ export function ActivityBrowser({
       {!isLoading && !isError && (
         <p className="mb-4 text-sm text-neutral-600" aria-live="polite">
           {total} {total === 1 ? 'atividade' : 'atividades'}
-          {filtering && ' com os filtros escolhidos'}
         </p>
-      )}
-
-      {showChips && first && (
-        <div className="mb-5 space-y-2">
-          <ChipRow
-            label="Idade"
-            options={first.filters.ageRanges}
-            labels={AGE_LABELS}
-            value={ageRange}
-            onChange={setAgeRange}
-          />
-          <ChipRow
-            label="Dificuldade"
-            options={first.filters.difficulties}
-            labels={DIFFICULTY_LABELS}
-            value={difficulty}
-            onChange={setDifficulty}
-          />
-        </div>
       )}
 
       {lastDownloaded && (
@@ -175,22 +144,7 @@ export function ActivityBrowser({
         </div>
       ) : activities.length === 0 ? (
         <div className="py-16 text-center text-sm text-neutral-600">
-          <p>
-            {filtering ? 'Nenhuma atividade com esses filtros.' : emptyText}
-          </p>
-          {filtering && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => {
-                setAgeRange('');
-                setDifficulty('');
-              }}
-            >
-              Limpar filtros
-            </Button>
-          )}
+          <p>{emptyText}</p>
         </div>
       ) : (
         <Grid>
@@ -235,13 +189,7 @@ export function ActivityBrowser({
               <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
                 <Preview activity={details} large className="rounded border" />
                 <p className="text-sm text-neutral-600">
-                  {[
-                    subjectLabel(details.phoneme, details.type),
-                    label(AGE_LABELS, details.ageRange),
-                    label(DIFFICULTY_LABELS, details.difficulty),
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
+                  {subjectLabel(details.phoneme, details.type)}
                 </p>
                 {details.description.trim() && (
                   <p className="whitespace-pre-line text-sm text-neutral-600">
@@ -304,58 +252,6 @@ function Grid({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ChipRow({
-  label: rowLabel,
-  options,
-  labels,
-  value,
-  onChange,
-}: {
-  label: string;
-  options: string[];
-  labels: Record<string, string>;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  if (options.length < 2) return null;
-  const chip = (active: boolean) =>
-    `h-8 rounded-full border px-3 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-900 ${
-      active
-        ? 'border-sun-500 bg-sun-300 font-semibold text-violet-950'
-        : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900'
-    }`;
-  return (
-    <div
-      role="group"
-      aria-label={`Filtrar por ${rowLabel.toLowerCase()}`}
-      className="flex flex-wrap items-center gap-2"
-    >
-      <span className="w-24 text-sm font-semibold text-neutral-700">
-        {rowLabel}
-      </span>
-      <button
-        type="button"
-        aria-pressed={!value}
-        className={chip(!value)}
-        onClick={() => onChange('')}
-      >
-        Todas
-      </button>
-      {options.map((o) => (
-        <button
-          key={o}
-          type="button"
-          aria-pressed={value === o}
-          className={chip(value === o)}
-          onClick={() => onChange(value === o ? '' : o)}
-        >
-          {label(labels, o)}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 /** Thumbnail, or a placeholder for activities without an image (PDF only). */
 function Preview({
   activity,
@@ -408,13 +304,6 @@ function ActivityThumb({
   onDetails: () => void;
 }) {
   const hasFile = activity.files.length > 0;
-  const meta = [
-    showSubject ? subjectLabel(activity.phoneme, activity.type) : '',
-    label(AGE_LABELS, activity.ageRange),
-    label(DIFFICULTY_LABELS, activity.difficulty),
-  ]
-    .filter(Boolean)
-    .join(' · ');
 
   return (
     <article className="group relative flex h-full flex-col">
@@ -455,7 +344,11 @@ function ActivityThumb({
           <span className="text-sm font-bold text-violet-950">
             {activity.name}
           </span>
-          <span className="text-xs text-neutral-600">{meta}</span>
+          {showSubject && (
+            <span className="text-xs text-neutral-600">
+              {subjectLabel(activity.phoneme, activity.type)}
+            </span>
+          )}
         </span>
       </button>
       <button

@@ -2,13 +2,7 @@
 
 import ExampleWord from '@/components/landing/ExampleWord';
 import { Button } from '@/components/ui/button';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  TYPE_LABELS,
-  label,
-  phonemeLabel,
-} from '@/lib/activityLabels';
+import { TYPE_LABELS, label, phonemeLabel } from '@/lib/activityLabels';
 import type { LibraryActivity } from '@/lib/activityLibrary';
 import { exampleWordFor } from '@/lib/phonemes';
 import { Download, Lock } from 'lucide-react';
@@ -96,11 +90,6 @@ export function ActivityCard({
               </span>
             )}
           </div>
-          <p className="text-sm text-neutral-600">
-            {label(AGE_LABELS, activity.ageRange)}
-            {' · '}
-            {label(DIFFICULTY_LABELS, activity.difficulty)}
-          </p>
         </div>
       </button>
       {hasFile && (
@@ -140,7 +129,7 @@ function FreeBadge() {
   );
 }
 
-/** One line per activity: subject, name, age and difficulty, action. */
+/** One line per activity: subject, name, action. */
 export function ActivityRow({
   activity,
   showFreeBadge,
@@ -187,11 +176,6 @@ export function ActivityRow({
             {activity.name}
           </span>
           {activity.isFreeSample && showFreeBadge && <FreeBadge />}
-        </span>
-        <span className="shrink-0 text-sm text-neutral-600 sm:w-56 sm:text-right">
-          {label(AGE_LABELS, activity.ageRange)}
-          {' · '}
-          {label(DIFFICULTY_LABELS, activity.difficulty)}
         </span>
       </button>
       {hasFile &&

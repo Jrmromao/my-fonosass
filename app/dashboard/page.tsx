@@ -8,12 +8,7 @@ import {
   toneForPhoneme,
 } from '@/components/library/tones';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  label,
-  phonemeLabel,
-} from '@/lib/activityLabels';
+import { phonemeLabel, subjectLabel } from '@/lib/activityLabels';
 import type { LibraryResponse } from '@/lib/activityLibrary';
 import { LIBRARY_PATH, libraryHref, phonemeSlug } from '@/lib/libraryUrl';
 import { LANGUAGE_TOPICS } from '@/lib/phonemes';
@@ -199,8 +194,7 @@ export default function Dashboard() {
                             {activity.name}
                           </span>
                           <span className="block text-xs text-neutral-600">
-                            {label(AGE_LABELS, activity.ageRange)} ·{' '}
-                            {label(DIFFICULTY_LABELS, activity.difficulty)}
+                            {subjectLabel(activity.phoneme, activity.type)}
                           </span>
                         </span>
                         <ArrowRight
@@ -233,10 +227,7 @@ export default function Dashboard() {
               />
               <QuickLink href="/dashboard/profile" label="Perfil" />
               {isAdmin && (
-                <>
-                  <QuickLink href="/dashboard/ai" label="Gerar exercício" />
-                  <QuickLink href="/dashboard/resources" label="Recursos" />
-                </>
+                <QuickLink href="/dashboard/resources" label="Recursos" />
               )}
             </div>
           </section>

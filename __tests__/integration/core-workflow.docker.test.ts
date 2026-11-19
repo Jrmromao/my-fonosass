@@ -12,7 +12,9 @@ let userId: string;
 
 describe('Activity Workflow Integration (Real DB)', () => {
   beforeAll(async () => {
-    const user = await prisma.user.findFirst({ where: { email: 'test@almanaquedafala.com.br' } });
+    const user = await prisma.user.findFirst({
+      where: { email: 'test@almanaquedafala.com.br' },
+    });
     if (!user) throw new Error('Test user not found — run setup first');
     userId = user.id;
   });
@@ -192,7 +194,11 @@ describe('Activity Workflow Integration (Real DB)', () => {
     it('enforces unique clerkUserId', async () => {
       await expect(
         prisma.user.create({
-          data: { clerkUserId: 'test-user-clerk', email: 'dupe@test.com', fullName: 'Dupe' },
+          data: {
+            clerkUserId: 'test-user-clerk',
+            email: 'dupe@test.com',
+            fullName: 'Dupe',
+          },
         })
       ).rejects.toThrow();
     });
@@ -203,8 +209,6 @@ describe('Activity Workflow Integration (Real DB)', () => {
           name: 'Temp Activity',
           description: 'temp',
           type: 'SPEECH',
-          difficulty: 'BEGINNER',
-          ageRange: 'CHILD',
           phoneme: 'T',
           isPublic: false,
           status: 'DRAFT',
@@ -214,18 +218,21 @@ describe('Activity Workflow Integration (Real DB)', () => {
 
       await prisma.activity.delete({ where: { id: activity.id } });
 
-      const deleted = await prisma.activity.findUnique({ where: { id: activity.id } });
+      const deleted = await prisma.activity.findUnique({
+        where: { id: activity.id },
+      });
       expect(deleted).toBeNull();
     });
   });
 });
 
-
 describe('Edge Cases (Real DB)', () => {
   let testUserId: string;
 
   beforeAll(async () => {
-    const user = await prisma.user.findFirst({ where: { email: 'test@almanaquedafala.com.br' } });
+    const user = await prisma.user.findFirst({
+      where: { email: 'test@almanaquedafala.com.br' },
+    });
     testUserId = user!.id;
   });
 
@@ -236,12 +243,17 @@ describe('Edge Cases (Real DB)', () => {
         data: { downloads: 3, resetDate: new Date() },
       });
 
-      const limit = await prisma.downloadLimit.findUnique({ where: { userId: testUserId } });
+      const limit = await prisma.downloadLimit.findUnique({
+        where: { userId: testUserId },
+      });
       const remaining = Math.max(0, 3 - limit!.downloads);
       expect(remaining).toBe(0);
 
       // Revert
-      await prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: 2 } });
+      await prisma.downloadLimit.update({
+        where: { userId: testUserId },
+        data: { downloads: 2 },
+      });
     });
 
     it('resets at exactly 30 days (not 29)', async () => {
@@ -253,13 +265,20 @@ describe('Edge Cases (Real DB)', () => {
         data: { downloads: 3, resetDate: day29 },
       });
 
-      const limit = await prisma.downloadLimit.findUnique({ where: { userId: testUserId } });
-      const daysSinceReset = Math.floor((Date.now() - limit!.resetDate.getTime()) / (1000 * 60 * 60 * 24));
+      const limit = await prisma.downloadLimit.findUnique({
+        where: { userId: testUserId },
+      });
+      const daysSinceReset = Math.floor(
+        (Date.now() - limit!.resetDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
       // 29 days — should NOT reset
       expect(daysSinceReset).toBeLessThan(30);
 
       // Revert
-      await prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: 2, resetDate: new Date() } });
+      await prisma.downloadLimit.update({
+        where: { userId: testUserId },
+        data: { downloads: 2, resetDate: new Date() },
+      });
     });
 
     it('concurrent increment does not skip counts', async () => {
@@ -270,16 +289,30 @@ describe('Edge Cases (Real DB)', () => {
 
       // Simulate 3 concurrent increments
       await Promise.all([
-        prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: { increment: 1 } } }),
-        prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: { increment: 1 } } }),
-        prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: { increment: 1 } } }),
+        prisma.downloadLimit.update({
+          where: { userId: testUserId },
+          data: { downloads: { increment: 1 } },
+        }),
+        prisma.downloadLimit.update({
+          where: { userId: testUserId },
+          data: { downloads: { increment: 1 } },
+        }),
+        prisma.downloadLimit.update({
+          where: { userId: testUserId },
+          data: { downloads: { increment: 1 } },
+        }),
       ]);
 
-      const limit = await prisma.downloadLimit.findUnique({ where: { userId: testUserId } });
+      const limit = await prisma.downloadLimit.findUnique({
+        where: { userId: testUserId },
+      });
       expect(limit!.downloads).toBe(3);
 
       // Revert
-      await prisma.downloadLimit.update({ where: { userId: testUserId }, data: { downloads: 2 } });
+      await prisma.downloadLimit.update({
+        where: { userId: testUserId },
+        data: { downloads: 2 },
+      });
     });
   });
 
@@ -308,7 +341,9 @@ describe('Edge Cases (Real DB)', () => {
 
     it('handles SQL injection attempt in search', async () => {
       const results = await prisma.activity.findMany({
-        where: { name: { contains: "'; DROP TABLE Activity; --", mode: 'insensitive' } },
+        where: {
+          name: { contains: "'; DROP TABLE Activity; --", mode: 'insensitive' },
+        },
       });
       // Prisma parameterizes — should return 0, not crash
       expect(Array.isArray(results)).toBe(true);
@@ -322,7 +357,9 @@ describe('Edge Cases (Real DB)', () => {
 
   describe('Approval edge cases', () => {
     it('double-approve does not error', async () => {
-      const activity = await prisma.activity.findFirst({ where: { status: 'PUBLISHED' } });
+      const activity = await prisma.activity.findFirst({
+        where: { status: 'PUBLISHED' },
+      });
 
       // Approve an already-published activity
       const result = await prisma.activity.update({
@@ -361,8 +398,6 @@ describe('Edge Cases (Real DB)', () => {
             name: 'Orphan',
             description: 'test',
             type: 'SPEECH',
-            difficulty: 'BEGINNER',
-            ageRange: 'CHILD',
             phoneme: 'X',
             isPublic: false,
             status: 'DRAFT',

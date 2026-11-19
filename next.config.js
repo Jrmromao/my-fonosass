@@ -142,4 +142,16 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+const { withSentryConfig } = require('@sentry/nextjs/config');
+
+// Sentry: server, edge and (consent-gated) browser error reporting.
+// No tunnel route, no replay. The browser posts to the EU ingest host (see CSP).
+// Source maps upload only when SENTRY_AUTH_TOKEN is set (Vercel build).
+module.exports = withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  telemetry: false,
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+});
