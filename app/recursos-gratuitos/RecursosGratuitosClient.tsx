@@ -1,5 +1,6 @@
 'use client';
 
+import AuthAwareLink from '@/components/landing/AuthAwareLink';
 import WaitingListAlert from '@/components/WaitingListAlert';
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
@@ -534,12 +535,12 @@ export default function RecursosGratuitosClient() {
               Além dos recursos gratuitos, a biblioteca completa traz atividades
               novas por fonema todo mês, criadas e revisadas por fonoaudióloga.
             </p>
-            <Link
-              href="/sign-up"
+            <AuthAwareLink
+              to="/dashboard/biblioteca"
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md bg-coral-500 text-white text-sm font-medium hover:bg-coral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900"
             >
               Conhecer a biblioteca completa
-            </Link>
+            </AuthAwareLink>
           </div>
         </section>
 

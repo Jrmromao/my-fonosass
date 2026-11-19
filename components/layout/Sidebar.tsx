@@ -3,7 +3,17 @@ import { Button } from '@/components/ui/button';
 import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
 import { useClerk, useUser } from '@clerk/nextjs';
-import { BarChart2, BookOpen, FolderCog, Menu, User, X } from 'lucide-react';
+import {
+  BarChart2,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  FolderCog,
+  Menu,
+  ShieldCheck,
+  X,
+} from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -38,12 +48,12 @@ export function Sidebar({ className }: SidebarProps) {
           },
           {
             title: 'Correções LGPD',
-            icon: FolderCog,
+            icon: ShieldCheck,
             href: '/dashboard/correcoes',
           },
           {
             title: 'Auditoria',
-            icon: FolderCog,
+            icon: ClipboardList,
             href: '/dashboard/auditoria',
           },
         ]
@@ -117,70 +127,49 @@ export function Sidebar({ className }: SidebarProps) {
         suppressHydrationWarning={true}
       >
         <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm">
-          {/* Logo area */}
+          {/* Logo area. The collapse/expand toggle lives here in both states:
+              beside the logo when open, right under it when collapsed. */}
           <div
-            className={cn('flex items-center', isCollapsed ? 'h-20' : 'h-28')}
+            className={cn(
+              'flex items-center',
+              !isHydrated || isCollapsed
+                ? 'flex-col justify-center gap-1 pt-4'
+                : 'h-28'
+            )}
           >
             {!isHydrated || isCollapsed ? (
-              <div className="flex w-full justify-center">
-                <Logo size="icon" href="/dashboard" priority />
-              </div>
+              <Logo size="icon" href="/dashboard" priority />
             ) : (
               <div className="flex flex-1 justify-center pl-9">
                 <Logo size="lg" href="/dashboard" priority />
               </div>
             )}
 
-            {/* Collapse toggle for desktop */}
-            {isHydrated && !isCollapsed && (
+            {isHydrated && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="ml-auto mr-2 hidden md:flex text-neutral-600 hover:text-violet-950 hover:bg-violet-50 rounded-md h-7 w-7 p-0"
+                aria-label={isCollapsed ? 'Expandir menu' : 'Recolher menu'}
+                title={isCollapsed ? 'Expandir menu' : 'Recolher menu'}
+                aria-expanded={!isCollapsed}
+                className={cn(
+                  'hidden h-7 w-7 rounded-md p-0 text-neutral-600 hover:bg-violet-50 hover:text-violet-950 md:flex',
+                  !isCollapsed && 'ml-auto mr-2'
+                )}
                 onClick={() => setIsCollapsed(!isCollapsed)}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M15 6L9 12L15 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Button>
-            )}
-
-            {/* Expand toggle for collapsed state */}
-            {isHydrated && isCollapsed && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-4 -right-3 hidden md:flex text-neutral-600 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full w-6 h-6 p-0 border border-neutral-200 dark:border-neutral-700"
-                onClick={() => setIsCollapsed(!isCollapsed)}
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9 6L15 12L9 18"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                {isCollapsed ? (
+                  <ChevronRight className="h-4 w-4" aria-hidden />
+                ) : (
+                  <ChevronLeft className="h-4 w-4" aria-hidden />
+                )}
               </Button>
             )}
           </div>
 
           {/* Nav items with professional styling */}
           <nav
-            className={`flex-1 overflow-y-auto transition-all duration-300 ${!isHydrated || isCollapsed ? 'px-2 py-4' : 'px-4 py-4'}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-300 ${!isHydrated || isCollapsed ? 'px-2 py-4' : 'px-4 py-4'}`}
           >
             <ul className="space-y-2">
               {sidebarItems.map((item) => {
@@ -196,7 +185,7 @@ export function Sidebar({ className }: SidebarProps) {
                       className={cn(
                         'flex items-center rounded-2xl font-semibold transition-all duration-200 group relative',
                         !isHydrated || isCollapsed
-                          ? 'justify-center p-3'
+                          ? 'justify-center p-2.5'
                           : 'px-4 py-3',
                         isActive
                           ? 'bg-sun-300 text-violet-950'
@@ -225,13 +214,6 @@ export function Sidebar({ className }: SidebarProps) {
                         >
                           {item.title}
                         </span>
-                      )}
-
-                      {/* Tooltip for collapsed state */}
-                      {isHydrated && isCollapsed && (
-                        <div className="absolute left-full ml-2 px-2 py-1 bg-neutral-900 dark:bg-neutral-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                          {item.title}
-                        </div>
                       )}
                     </Link>
                   </li>

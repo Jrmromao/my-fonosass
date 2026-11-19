@@ -4,7 +4,8 @@ import {
   PHONEME_GROUPS,
   type PhonemeEntry,
 } from '@/lib/phonemes';
-import Link from 'next/link';
+import LibraryTileLink from './LibraryTileLink';
+import { phonemeSlug } from '@/lib/libraryUrl';
 import ExampleWord from './ExampleWord';
 import { freeOfferText } from '@/lib/freeOffer';
 import FreePhonemeTile, {
@@ -88,6 +89,7 @@ export default function PhonemeLibrary({
     }
     return (
       <Tile
+        slug={phonemeSlug(entry.code)}
         label={entry.display}
         notation={entry.notation}
         note={entry.note}
@@ -152,6 +154,7 @@ export default function PhonemeLibrary({
               {languageTopics.map((topic) => (
                 <li key={topic.id}>
                   <Tile
+                    slug={topic.id}
                     label={topic.label}
                     notation={false}
                     count={topic.count}
@@ -208,12 +211,14 @@ function GroupHeading({
 // Library card: phoneme small at the top, example word large with the
 // target sound underlined, count or "Em breve" in the corner.
 function Tile({
+  slug,
   label,
   notation,
   note,
   example,
   count,
 }: {
+  slug: string;
   label: string;
   notation: boolean;
   note?: string;
@@ -289,13 +294,13 @@ function Tile({
   }
 
   return (
-    <Link
-      href="/sign-up"
+    <LibraryTileLink
+      slug={slug}
       className={`group ${base} ${CARD_CLASS} transition-colors hover:border-neutral-900 hover:bg-neutral-900`}
     >
       {head}
       {body}
-    </Link>
+    </LibraryTileLink>
   );
 }
 

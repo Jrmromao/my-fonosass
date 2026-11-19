@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { LIBRARY_PATH, libraryHref } from '@/lib/libraryUrl';
+import { LIBRARY_PATH, phonemeSlug } from '@/lib/libraryUrl';
 import { useAuth } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -171,7 +171,7 @@ export default function FreePhonemeTile({
   const [open, setOpen] = useState(false);
   const { isSignedIn } = useAuth();
   const label = `/${phoneme.toLowerCase()}/`;
-  const libraryUrl = libraryHref({ phoneme });
+  const libraryUrl = `${LIBRARY_PATH}/${phonemeSlug(phoneme)}`;
   const downloadHref = isSignedIn
     ? libraryUrl
     : `/sign-up?redirect_url=${encodeURIComponent(libraryUrl)}`;

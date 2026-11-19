@@ -5,6 +5,7 @@ import { PRO_PLAN, formatBRL } from '@/lib/pricing';
 import { ArrowRight, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import AuthAwareLink from './AuthAwareLink';
 import { type FreePreviewActivity } from './FreePhonemeTile';
 import PhonemeLibrary, {
   type PhonemeCount,
@@ -194,12 +195,12 @@ export default function HomeLanding({
                     period="/ano"
                     note={`Equivale a ${formatBRL(PRO_PLAN.yearlyPrice / 12)} por mês, ${yearlySavings}% de desconto`}
                   />
-                  <Link
-                    href="/sign-up"
+                  <AuthAwareLink
+                    to="/dashboard/profile?tab=assinatura"
                     className="mt-3 block rounded-md bg-neutral-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
                   >
                     Assinar
-                  </Link>
+                  </AuthAwareLink>
                   <p className="text-center text-xs text-neutral-600">
                     Cancele quando quiser, sem multa.
                   </p>

@@ -5,7 +5,25 @@ import {
 } from '@/lib/security/csp';
 import { isCrossSiteMutation } from '@/lib/security/origin';
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+
+const isAuthPage = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)']);
+
+// Where a signed-in user lands when they open an auth page. Honors Clerk's
+// redirect_url only when it points at this site (no open redirect).
+function signedInDestination(req: NextRequest): URL {
+  const fallback = new URL('/dashboard', req.url);
+  const raw = req.nextUrl.searchParams.get('redirect_url');
+  if (!raw) return fallback;
+  try {
+    const target = new URL(raw, req.url);
+    if (target.origin !== req.nextUrl.origin) return fallback;
+    if (/^\/(sign-in|sign-up)(\/|$)/.test(target.pathname)) return fallback;
+    return target;
+  } catch {
+    return fallback;
+  }
+}
 
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
@@ -52,6 +70,12 @@ export default clerkMiddleware(async (auth, req) => {
       { error: 'Cross-site request refused' },
       { status: 403 }
     );
+  }
+
+  // Signed-in users never see the auth pages.
+  if (isAuthPage(req)) {
+    const { userId } = await auth();
+    if (userId) return NextResponse.redirect(signedInDestination(req));
   }
 
   // Protect dashboard and profile routes (except public review pages)
