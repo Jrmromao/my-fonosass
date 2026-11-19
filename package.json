@@ -42,7 +42,6 @@
     "type-check:precommit": "tsc --noEmit --skipLibCheck --strict false",
     "prepare": "husky",
     "db:seed": "tsx scripts/seed-exercises.ts",
-    "db:generate-exercises": "tsx scripts/batch-generate-exercises.ts",
     "db:local": "tsx scripts/dev-db.ts",
     "db:diagnose": "node scripts/db-diagnose.js",
     "security:test": "bash scripts/security-test.sh",

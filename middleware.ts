@@ -52,9 +52,8 @@ const isProtectedAPIRoute = createRouteMatcher([
   '/api/cache(.*)',
   '/api/activities/generate',
   // Admin API. Each handler also enforces role === ADMIN; this is a second
-  // layer. sync-activities is excluded because GitHub Actions calls it with
-  // a Bearer API key instead of a Clerk session (checked in the handler).
-  /^\/api\/admin\/(?!sync-activities)/,
+  // layer.
+  '/api/admin(.*)',
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
