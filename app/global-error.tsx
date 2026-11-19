@@ -1,22 +1,24 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect } from 'react'
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import * as Sentry from '@sentry/nextjs';
+import { useEffect } from 'react';
 
 export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Global application error:', error)
-  }, [error])
+    Sentry.captureException(error);
+    console.error('Global application error:', error);
+  }, [error]);
 
   return (
     <html>
@@ -33,23 +35,17 @@ export default function GlobalError({
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-center text-gray-600">
-                Ocorreu um erro crítico na aplicação. Por favor, tente novamente ou entre em contato com o suporte.
+                Ocorreu um erro crítico na aplicação. Por favor, tente novamente
+                ou entre em contato com o suporte.
               </p>
-              
+
               <div className="flex flex-col gap-2">
-                <Button 
-                  onClick={reset}
-                  className="w-full"
-                >
+                <Button onClick={reset} className="w-full">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Tentar Novamente
                 </Button>
-                
-                <Button 
-                  variant="outline" 
-                  asChild
-                  className="w-full"
-                >
+
+                <Button variant="outline" asChild className="w-full">
                   <Link href="/">
                     <Home className="h-4 w-4 mr-2" />
                     Voltar ao Início
@@ -61,5 +57,5 @@ export default function GlobalError({
         </div>
       </body>
     </html>
-  )
+  );
 }

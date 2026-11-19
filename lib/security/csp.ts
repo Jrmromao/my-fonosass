@@ -103,7 +103,7 @@ export function buildReportOnlyContentSecurityPolicy(nonce?: string): string {
     'https://*.googletagmanager.com',
   ];
   const strict = [
-    `connect-src 'self' ${[...CLERK_HOSTS, 'https://clerk-telemetry.com', 'https://*.clerk-telemetry.com', ...analytics].join(' ')}`,
+    `connect-src 'self' ${[...CLERK_HOSTS, 'https://clerk-telemetry.com', 'https://*.clerk-telemetry.com', ...analytics, 'https://*.ingest.de.sentry.io'].join(' ')}`,
     `img-src 'self' data: blob: https://img.clerk.com https://images.clerk.dev https://www.gravatar.com https://*.amazonaws.com ${analytics.join(' ')}`,
     `frame-src 'self' ${[...CLERK_HOSTS, 'https://challenges.cloudflare.com'].join(' ')}`,
     "font-src 'self' data:",

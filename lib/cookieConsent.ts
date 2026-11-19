@@ -9,7 +9,10 @@ export type AnalyticsChoice = 'granted' | 'denied' | 'unset';
 /** 'loading' only on the server and during hydration. */
 export type AnalyticsConsent = AnalyticsChoice | 'loading';
 
-export const CONSENT_STORAGE_KEY = 'almanaque:analytics-consent';
+// v2: the choice now also covers browser error reports (Sentry). Bumping the
+// key re-asks everyone who only agreed to Google Analytics before, because
+// LGPD consent is specific to a purpose (art. 8, § 4º).
+export const CONSENT_STORAGE_KEY = 'almanaque:analytics-consent:v2';
 const CHANGE_EVENT = 'almanaque:analytics-consent-change';
 
 export function readConsent(): AnalyticsChoice {
