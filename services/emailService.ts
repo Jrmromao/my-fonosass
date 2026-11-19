@@ -149,47 +149,28 @@ function infoBox(content: string) {
   </table>`;
 }
 
-function warningBox(content: string) {
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0;">
-    <tr>
-      <td bgcolor="#fef2f2" style="background-color: #fef2f2; border-left: 3px solid #f97066; border-radius: 4px; padding: 16px 20px; font-family: ${FONT}; font-size: 13px; line-height: 1.6; color: #991b1b;">${content}</td>
-    </tr>
-  </table>`;
-}
-
 // ─── Email Methods ────────────────────────────────────────────
 
 export class EmailService {
   static async sendWelcomeEmail(userEmail: string, userName: string) {
-    try {
-      const firstName = escapeHtml(userName.trim().split(/\s+/)[0] || '');
-      const { error } = await resend.emails.send({
-        from: WELCOME_FROM,
-        ...(REPLY_TO ? { replyTo: REPLY_TO } : {}),
-        to: userEmail,
-        attachments: LOGO_ATTACHMENTS,
-        subject: 'Boas-vindas ao Almanaque da Fala',
-        html: baseTemplate(`
-          <p>Olá${firstName ? `, ${firstName}` : ''}!</p>
-          <p>Que bom ter você por aqui! Eu sei como é a rotina de preparar materiais para cada sessão, e foi por isso que criei o Almanaque da Fala.</p>
-          <p>Aqui você encontra atividades prontas para imprimir, organizadas por fonema e faixa etária. Toda semana eu adiciono materiais novos.</p>
-          ${infoBox(`
-            <strong>O que você pode fazer agora:</strong><br><br>
-            &bull; Explorar a biblioteca por fonema<br>
-            &bull; Baixar grátis ${FREE_SAMPLE_COUNT} atividades do fonema ${phonemeLabel(FREE_DEFAULT_PHONEME)}<br>
-            &bull; Imprimir e usar direto na sessão
-          `)}
-          <p>Para baixar toda a biblioteca, é só assinar o plano Profissional quando quiser.</p>
-          ${button(`${APP_URL}/dashboard/biblioteca`, 'Ver atividades')}
-          <p>Se precisar de qualquer coisa, é só responder a este e-mail. Estou aqui para ajudar.</p>
-          <p style="margin-top: 24px;">Um abraço,<br><strong>Eliane Mota</strong><br><span style="color: #64748b; font-size: 12px;">Fonoaudióloga, Almanaque da Fala</span></p>
-        `),
-      });
-      // The Resend SDK returns failures in `error` instead of throwing.
-      if (error) console.error('Welcome email failed:', error);
-    } catch (error) {
-      console.error('Welcome email failed:', error);
-    }
+    await sendFromEliane('Welcome', {
+      to: userEmail,
+      subject: 'Boas-vindas ao Almanaque da Fala',
+      html: baseTemplate(`
+        ${greeting(userName)}
+        <p>Boas-vindas ao Almanaque da Fala. Aqui você encontra atividades de fonoaudiologia prontas para imprimir, organizadas por fonema. Eu mesma crio e reviso cada uma.</p>
+        ${infoBox(`
+          <strong>Para começar:</strong><br><br>
+          &bull; Baixe grátis as ${FREE_SAMPLE_COUNT} atividades com o selo &ldquo;Grátis&rdquo;<br>
+          &bull; Procure por fonema na biblioteca<br>
+          &bull; Imprima e use direto na sessão
+        `)}
+        <p>Para baixar a biblioteca inteira, assine o plano Profissional. Você cancela quando quiser, e todo mês entram atividades novas no plano, sem custo extra.</p>
+        ${button(`${APP_URL}/dashboard/biblioteca`, 'Ver atividades')}
+        <p>Dúvidas ou sugestões? Responda a este e-mail.</p>
+        ${SIGNATURE}
+      `),
+    });
   }
 
   /** Sent once when a checkout creates the Profissional subscription. */
@@ -211,7 +192,7 @@ export class EmailService {
           Plano Profissional ${period}: ${formatBRL(plan.amount)}/${per}<br>
           Próxima renovação: ${formatDateBR(plan.renewsAt)}
         `)}
-        <p>Toda semana eu adiciono materiais novos, e eles já entram no seu plano.</p>
+        <p>Todo mês entram atividades novas no seu plano, sem custo extra.</p>
         ${button(`${APP_URL}/dashboard/biblioteca`, 'Abrir a biblioteca')}
         <p style="color: #64748b; font-size: 12px;">Você pode ver os recibos, trocar o cartão ou cancelar quando quiser em <a href="${APP_URL}/dashboard/profile?tab=assinatura" style="color: #64748b;">Minha assinatura</a>.</p>
         <p>Qualquer dúvida, é só responder a este e-mail.</p>
@@ -246,51 +227,6 @@ export class EmailService {
         ${SIGNATURE}
       `),
     });
-  }
-
-  static async sendDownloadLimitWarning(
-    userEmail: string,
-    userName: string,
-    remaining: number
-  ) {
-    try {
-      await resend.emails.send({
-        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
-        to: userEmail,
-        attachments: LOGO_ATTACHMENTS,
-        subject: `Resta ${remaining} download${remaining > 1 ? 's' : ''} este mes`,
-        html: baseTemplate(`
-          <p>Ola ${userName},</p>
-          <p>Tem <strong>${remaining} download${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}</strong> no seu plano gratuito este mes.</p>
-          ${warningBox(`Apos atingir o limite, tera de aguardar ate ao proximo mes ou fazer upgrade para downloads ilimitados.`)}
-          <p>O plano Profissional inclui downloads ilimitados, novos materiais toda semana e acesso prioritario.</p>
-          ${button(`${APP_URL}/#assinatura`, 'Ver plano Profissional')}
-        `),
-      });
-    } catch (error) {
-      console.error('Download limit warning email failed:', error);
-    }
-  }
-
-  static async sendDownloadLimitReached(userEmail: string, userName: string) {
-    try {
-      await resend.emails.send({
-        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
-        to: userEmail,
-        attachments: LOGO_ATTACHMENTS,
-        subject: 'Limite de downloads atingido',
-        html: baseTemplate(`
-          <p>Ola ${userName},</p>
-          <p>Atingiu o limite de 3 downloads gratuitos este mes.</p>
-          ${infoBox(`O seu limite sera renovado automaticamente no proximo mes.`)}
-          <p>Para continuar a descarregar materiais agora, faca upgrade para o plano Profissional:</p>
-          ${button(`${APP_URL}/#assinatura`, 'Fazer upgrade')}
-          <p style="color: #64748b; font-size: 12px;">Pode continuar a navegar e visualizar atividades normalmente.</p>
-        `),
-      });
-    } catch (error) {
-      console.error('Download limit reached email failed:', error);
-    }
   }
 
   /** Tells the DPO a correction request is waiting (LGPD: answer within 15 days). */

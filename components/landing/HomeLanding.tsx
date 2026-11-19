@@ -72,8 +72,8 @@ export default function HomeLanding({
                 Atividades de fonoaudiologia infantil, organizadas por fonema.
               </h1>
               <p className="mt-6 text-lg text-neutral-600 leading-relaxed max-w-[34rem]">
-                Escolha o fonema, a faixa etária e imprima. Materiais criados e
-                revisados por fonoaudióloga.
+                Escolha o fonema e imprima. Materiais criados e revisados por
+                fonoaudióloga.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
                 <Link
@@ -170,7 +170,7 @@ export default function HomeLanding({
               Um plano. Sem créditos, sem adicionais.
             </h2>
             <p className="mt-3 text-neutral-600">
-              Acesso completo à biblioteca, incluindo as atividades novas.
+              Acesso completo à biblioteca, com atividades novas todo mês.
             </p>
 
             <div className="mt-10 rounded-lg border-2 border-neutral-900 bg-white p-7 md:p-9">
@@ -378,11 +378,6 @@ function buildFaqs(freeAvailable: boolean, freeText: string) {
       answer:
         'Todas as atividades são criadas e revisadas por fonoaudióloga com experiência clínica em atendimento infantil. Nada é publicado sem revisão.',
     },
-    {
-      question: 'Para quais idades são as atividades?',
-      answer:
-        'Há atividades para pré-escolares, crianças em idade escolar e adolescentes, em três níveis de dificuldade: iniciante, intermediário e avançado.',
-    },
     ...(freeAvailable
       ? [
           {
@@ -394,7 +389,7 @@ function buildFaqs(freeAvailable: boolean, freeText: string) {
     {
       question: 'O que está incluído na assinatura?',
       answer:
-        'Acesso a todas as atividades da biblioteca, com downloads ilimitados prontos para impressão. As atividades novas entram no seu plano sem custo extra.',
+        'Acesso a todas as atividades da biblioteca, com downloads ilimitados prontos para impressão. Todo mês entram atividades novas no seu plano, sem custo extra.',
     },
     {
       question: 'Posso cancelar a assinatura?',

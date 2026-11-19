@@ -23,7 +23,6 @@ Allow: /contato
 Allow: /comunidade
 Allow: /recursos-gratuitos
 Allow: /recursos/
-Allow: /especialistas
 Allow: /faq
 Allow: /blog
 Allow: /privacidade

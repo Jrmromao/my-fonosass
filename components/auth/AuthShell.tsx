@@ -159,12 +159,10 @@ async function BrandPanel() {
                 <span className="font-mono text-sm font-semibold text-neutral-900">
                   /s/
                 </span>
-                <span>Pré-escolar</span>
               </div>
               <p className="mt-4 font-display text-lg font-bold leading-tight text-neutral-900">
                 Atividade de exemplo
               </p>
-              <p className="text-xs text-neutral-600">Iniciante</p>
               <div className="mt-5 grid grid-cols-3 gap-2">
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div

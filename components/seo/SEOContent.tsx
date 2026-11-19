@@ -38,7 +38,7 @@ export default function SEOContent() {
             <p className="text-gray-600">
               Biblioteca com centenas de{' '}
               <strong>exercícios fonoaudiológicos online</strong>
-              organizados por fonemas e dificuldades específicas.
+              organizados por fonema.
             </p>
           </div>
 
