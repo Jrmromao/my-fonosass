@@ -58,7 +58,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-violet-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-lg border-neutral-200">
         <CardContent className="p-8">
           {/* Progress */}
@@ -73,7 +73,7 @@ export default function OnboardingPage() {
 
           {step === 0 && (
             <div>
-              <h1 className="text-xl font-bold text-neutral-900 mb-2">
+              <h1 className="text-xl font-bold text-violet-950 mb-2">
                 Bem-vindo ao Almanaque da Fala
               </h1>
               <p className="text-sm text-neutral-600 mb-6">

@@ -29,13 +29,13 @@ const listed = [
     id: 'act-paid',
     name: 'Paga',
     phoneme: 'P',
-    files: [{ id: 'f1', s3Key: 'paid.pdf' }],
+    files: [{ id: 'f1', s3Key: 'paid.pdf', fileType: 'application/pdf' }],
   },
   {
     id: 'act-free',
     name: 'Grátis',
     phoneme: 'S',
-    files: [{ id: 'f2', s3Key: 'free.png' }],
+    files: [{ id: 'f2', s3Key: 'free.png', fileType: 'image/png' }],
   },
 ];
 

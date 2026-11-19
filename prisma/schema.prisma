@@ -593,6 +593,20 @@ model ProcessedWebhookEvent {
   @@map("processed_webhook_events")
 }
 
+/// Admin-edited paragraph of a library topic page (/dashboard/biblioteca/[slug]).
+/// No row = the default text in lib/libraryTopics.ts. Deleting a row restores
+/// the default. updatedById is the admin's User.id (no relation, so erasing a
+/// user never touches this content).
+model LibraryTopicContent {
+  /// Topic slug as in the URL: "g", "r-forte", "arquifonema-s", "cores".
+  slug        String   @id
+  about       String
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("library_topic_contents")
+}
+
 /// Append-only trail of admin actions on personal data and of security
 /// events. Deliberately NO foreign keys and NO personal data (no names, emails
 /// or free text): ids and action codes only, so the trail survives account

@@ -378,10 +378,10 @@ export default function AdminResourcesPage() {
 
   return (
     <div>
-      <div className="border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+      <div className="border-b border-violet-200 dark:border-neutral-800 dark:bg-neutral-900">
         <div className="px-8 py-6 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-neutral-900 dark:text-white font-display">
+            <h1 className="text-xl font-semibold text-violet-950 dark:text-white font-display">
               Recursos
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">

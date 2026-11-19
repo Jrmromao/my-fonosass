@@ -106,8 +106,9 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen flex flex-col bg-white border-r border-border transition-all duration-200 overflow-hidden',
-          isCollapsed ? 'w-16' : 'w-56',
+          // "Lúdico refinado": a white rounded card floating on the lavender.
+          'fixed top-0 left-0 z-40 h-screen p-3 bg-violet-100 transition-all duration-200',
+          isCollapsed ? 'w-20' : 'w-64',
           isMobileMenuOpen
             ? 'translate-x-0'
             : '-translate-x-full md:translate-x-0',
@@ -115,149 +116,151 @@ export function Sidebar({ className }: SidebarProps) {
         )}
         suppressHydrationWarning={true}
       >
-        {/* Logo area */}
-        <div className="h-20 flex items-center border-b border-border">
-          {!isHydrated || isCollapsed ? (
-            <div className="flex w-full justify-center">
-              <Logo size="icon" href="/dashboard" priority />
-            </div>
-          ) : (
-            <div className="flex flex-1 justify-center pl-9">
-              <Logo size="nav" href="/dashboard" priority />
-            </div>
-          )}
+        <div className="relative flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm">
+          {/* Logo area */}
+          <div
+            className={cn('flex items-center', isCollapsed ? 'h-20' : 'h-28')}
+          >
+            {!isHydrated || isCollapsed ? (
+              <div className="flex w-full justify-center">
+                <Logo size="icon" href="/dashboard" priority />
+              </div>
+            ) : (
+              <div className="flex flex-1 justify-center pl-9">
+                <Logo size="lg" href="/dashboard" priority />
+              </div>
+            )}
 
-          {/* Collapse toggle for desktop */}
-          {isHydrated && !isCollapsed && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto mr-2 hidden md:flex text-neutral-600 hover:text-foreground hover:bg-neutral-100 rounded-md h-7 w-7 p-0"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M15 6L9 12L15 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Button>
-          )}
-
-          {/* Expand toggle for collapsed state */}
-          {isHydrated && isCollapsed && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-4 -right-3 hidden md:flex text-neutral-600 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full w-6 h-6 p-0 border border-neutral-200 dark:border-neutral-700"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            {/* Collapse toggle for desktop */}
+            {isHydrated && !isCollapsed && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-auto mr-2 hidden md:flex text-neutral-600 hover:text-violet-950 hover:bg-violet-50 rounded-md h-7 w-7 p-0"
+                onClick={() => setIsCollapsed(!isCollapsed)}
               >
-                <path
-                  d="M9 6L15 12L9 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </Button>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M15 6L9 12L15 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Button>
+            )}
+
+            {/* Expand toggle for collapsed state */}
+            {isHydrated && isCollapsed && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-4 -right-3 hidden md:flex text-neutral-600 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full w-6 h-6 p-0 border border-neutral-200 dark:border-neutral-700"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 6L15 12L9 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Button>
+            )}
+          </div>
+
+          {/* Nav items with professional styling */}
+          <nav
+            className={`flex-1 overflow-y-auto transition-all duration-300 ${!isHydrated || isCollapsed ? 'px-2 py-4' : 'px-4 py-4'}`}
+          >
+            <ul className="space-y-2">
+              {sidebarItems.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  (pathname.startsWith(item.href + '/') &&
+                    item.href !== '/dashboard') ||
+                  (item.href === '/dashboard' && pathname === '/dashboard');
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        'flex items-center rounded-2xl font-semibold transition-all duration-200 group relative',
+                        !isHydrated || isCollapsed
+                          ? 'justify-center p-3'
+                          : 'px-4 py-3',
+                        isActive
+                          ? 'bg-sun-300 text-violet-950'
+                          : 'text-neutral-600 hover:bg-violet-50 hover:text-violet-950'
+                      )}
+                      title={
+                        !isHydrated || isCollapsed ? item.title : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-2">
+                        <item.icon
+                          className={cn(
+                            'flex-shrink-0 transition-colors',
+                            isActive
+                              ? 'text-violet-950'
+                              : 'text-neutral-600 group-hover:text-violet-950',
+                            'h-5 w-5'
+                          )}
+                        />
+                      </div>
+
+                      {isHydrated && !isCollapsed && (
+                        <span
+                          className="ml-3 text-sm"
+                          suppressHydrationWarning={true}
+                        >
+                          {item.title}
+                        </span>
+                      )}
+
+                      {/* Tooltip for collapsed state */}
+                      {isHydrated && isCollapsed && (
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-neutral-900 dark:bg-neutral-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                          {item.title}
+                        </div>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+
+          {/* User profile section */}
+          {user && (
+            <div className="mt-auto border-t border-violet-100 p-3 overflow-hidden">
+              <div
+                className={cn(
+                  'flex items-center',
+                  isCollapsed && 'justify-center'
+                )}
+              >
+                <Footer isCollapsed={isCollapsed} />
+              </div>
+            </div>
           )}
         </div>
-
-        {/* Nav items with professional styling */}
-        <nav
-          className={`flex-1 overflow-y-auto transition-all duration-300 ${!isHydrated || isCollapsed ? 'px-2 py-4' : 'px-3 py-4'}`}
-        >
-          <ul
-            className={`space-y-1 ${!isHydrated || isCollapsed ? 'space-y-2' : ''}`}
-          >
-            {sidebarItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (pathname.startsWith(item.href + '/') &&
-                  item.href !== '/dashboard') ||
-                (item.href === '/dashboard' && pathname === '/dashboard');
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      'flex items-center rounded-lg transition-all duration-200 group relative',
-                      !isHydrated || isCollapsed
-                        ? 'justify-center p-3 mx-1'
-                        : 'px-3 py-2.5',
-                      isActive
-                        ? 'bg-muted text-foreground font-medium'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                    title={!isHydrated || isCollapsed ? item.title : undefined}
-                  >
-                    <div className="flex items-center gap-2">
-                      <item.icon
-                        className={cn(
-                          'flex-shrink-0 transition-colors',
-                          isActive
-                            ? 'text-foreground'
-                            : 'text-muted-foreground group-hover:text-foreground',
-                          !isHydrated || isCollapsed
-                            ? 'h-5 w-5'
-                            : 'h-[18px] w-[18px]'
-                        )}
-                      />
-                    </div>
-
-                    {isHydrated && !isCollapsed && (
-                      <span
-                        className="ml-3 text-sm font-medium"
-                        suppressHydrationWarning={true}
-                      >
-                        {item.title}
-                      </span>
-                    )}
-
-                    {/* Tooltip for collapsed state */}
-                    {isHydrated && isCollapsed && (
-                      <div className="absolute left-full ml-2 px-2 py-1 bg-neutral-900 dark:bg-neutral-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                        {item.title}
-                      </div>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        {/* User profile section */}
-        {user && (
-          <div className="mt-auto border-t border-border p-3 overflow-hidden">
-            <div
-              className={cn(
-                'flex items-center',
-                isCollapsed && 'justify-center'
-              )}
-            >
-              <Footer isCollapsed={isCollapsed} />
-            </div>
-          </div>
-        )}
       </aside>
 
       {/* Content wrapper */}
       <div
         className={cn(
           'min-h-screen transition-all duration-300',
-          isCollapsed ? 'md:ml-16' : 'md:ml-56'
+          isCollapsed ? 'md:ml-20' : 'md:ml-64'
         )}
       ></div>
     </div>

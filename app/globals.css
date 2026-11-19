@@ -191,6 +191,23 @@ body {
     --coral-800: 2 58% 42%;
     --coral-900: 3 52% 35%;
 
+    /* ---- Logo colors (DESIGN_SYSTEM.md, "Logo colors"). Sun = the warm
+       peach-beige of the "da Fala" lettering in the logo (~#e8d0a8, sun-300);
+       chosen over the pure lemon (#f0d818, read as a discount brand), a
+       muted honey and a brighter gold. Cream = a light warm grey, kept
+       apart from sun so the two library groups don't blur together.
+       Surfaces only, always with violet-950 / neutral text on top. ---- */
+    --sun-50: 38 60% 97%;
+    --sun-100: 38 62% 91%;
+    --sun-200: 37 60% 85%;
+    --sun-300: 37 58% 78%; /* logo "da Fala": banner, active menu item */
+    --sun-400: 35 50% 64%;
+    --sun-500: 33 42% 50%;
+    --cream-50: 30 12% 97%;
+    --cream-100: 30 12% 94%;
+    --cream-200: 30 11% 88%;
+    --cream-300: 30 10% 80%;
+
     /* ---- Neutral ramp (navy-tinted slate). Pick ONE neutral family app-wide. ---- */
     --neutral-50: 210 20% 98%;
     --neutral-100: 210 20% 96%;

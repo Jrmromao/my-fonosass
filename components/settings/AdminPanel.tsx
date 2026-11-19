@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LibraryTopicsCard } from '@/components/settings/LibraryTopicsCard';
 import { useCSRF } from '@/hooks/useCSRF';
 import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
 import { subjectLabel } from '@/lib/activityLabels';
@@ -48,7 +49,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-md border border-neutral-200 p-6">
+    <section className="rounded-2xl bg-violet-50 p-6">
       <h3 className="text-base font-semibold text-neutral-900">{title}</h3>
       <p className="mt-1 mb-5 text-sm text-neutral-600">{description}</p>
       {children}
@@ -74,6 +75,7 @@ export function AdminPanel() {
     <div className="space-y-6">
       <ViewAsCard />
       <FreeSamplesCard />
+      <LibraryTopicsCard />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { prisma } from '@/app/db';
 import { getEffectiveAccess } from '@/lib/auth/viewAs';
 import { getOrCreateDbUser } from '@/lib/auth/dbUser';
 import { getFreeSamples } from '@/lib/access';
+import { canPreview } from '@/lib/files/preview';
 import { auth } from '@clerk/nextjs/server';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -69,7 +70,10 @@ export async function GET(request: NextRequest) {
           phoneme: true,
           type: true,
           createdAt: true,
-          files: { select: { id: true, fileType: true, s3Key: true }, take: 1 },
+          files: {
+            select: { id: true, fileType: true, s3Key: true },
+            orderBy: { createdAt: 'asc' },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -97,6 +101,9 @@ export async function GET(request: NextRequest) {
     const activitiesWithThumbnails = await Promise.all(
       activities.map(async (activity) => {
         const file = activity.files[0];
+        // Every signed-in user sees a small preview of activities with a PDF
+        // or image file (see /api/activities/[id]/preview).
+        const hasPreview = activity.files.some((f) => canPreview(f.fileType));
         const isFreeSample = freeSampleIds.has(activity.id);
         const canDownload = canDownloadAll || isFreeSample;
         let thumbnailUrl = null;
@@ -112,7 +119,8 @@ export async function GET(request: NextRequest) {
           }
         }
         // s3Key stays server-side: the client only needs the file id.
-        const files = activity.files.map(({ id, fileType }) => ({
+        // Only the first file is offered for download, as before.
+        const files = activity.files.slice(0, 1).map(({ id, fileType }) => ({
           id,
           fileType,
         }));
@@ -120,6 +128,9 @@ export async function GET(request: NextRequest) {
           ...activity,
           files,
           thumbnailUrl,
+          previewUrl: hasPreview
+            ? `/api/activities/${activity.id}/preview`
+            : null,
           isFreeSample,
           canDownload,
         };

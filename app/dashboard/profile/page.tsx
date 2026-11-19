@@ -1,13 +1,17 @@
 'use client';
 
 import { SubscriptionPanel } from '@/components/dashboard/SubscriptionPanel';
+import { PageHeader } from '@/components/layout/PageHeader';
+import {
+  TONES,
+  type ToneClasses,
+  toneForPhoneme,
+} from '@/components/library/tones';
+import { phonemeLabel } from '@/lib/activityLabels';
 import { AdminPanel } from '@/components/settings/AdminPanel';
 import { PrivacyPanel } from '@/components/settings/PrivacyPanel';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useUser } from '@clerk/nextjs';
@@ -101,19 +105,18 @@ function ProfileSettings() {
 
   return (
     <div className="h-full">
-      <div className="border-b border-neutral-100 px-6 py-6 md:px-8">
-        <h1 className="text-2xl font-bold text-neutral-900 font-display">
-          Configurações
-        </h1>
-        <p className="mt-1 text-sm text-neutral-600">
-          Gerencie sua conta, assinatura e privacidade.
-        </p>
-      </div>
+      <PageHeader
+        band={TONES.sun.band}
+        title="Configurações"
+        description="Gerencie sua conta, assinatura e privacidade."
+      />
 
-      <div className="flex flex-col gap-6 px-6 py-6 md:flex-row md:gap-10 md:px-8">
+      <div className="flex flex-col gap-4 p-4 md:flex-row">
         <nav
           aria-label="Seções de configurações"
-          className="md:w-52 md:shrink-0 md:border-r md:border-neutral-100 md:pr-6"
+          // Stays in view while the section scrolls (desktop; on mobile it is a
+          // horizontal strip above the content).
+          className="h-fit rounded-3xl bg-white p-3 md:sticky md:top-4 md:w-56 md:shrink-0 md:self-start"
         >
           {groups.map((group) => (
             <div key={group.title} className="mb-4 last:mb-0">
@@ -130,10 +133,10 @@ function ProfileSettings() {
                         onClick={() => setSection(section.value)}
                         aria-current={active ? 'page' : undefined}
                         className={cn(
-                          'w-full rounded-md px-3 py-2 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-900',
+                          'w-full rounded-2xl px-4 py-2.5 text-left text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-950',
                           active
-                            ? 'bg-neutral-100 font-semibold text-neutral-900'
-                            : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                            ? 'bg-sun-300 font-semibold text-violet-950'
+                            : 'text-neutral-600 hover:bg-violet-50 hover:text-violet-950'
                         )}
                       >
                         {section.label}
@@ -146,8 +149,8 @@ function ProfileSettings() {
           ))}
         </nav>
 
-        <section className="min-w-0 flex-1 max-w-3xl">
-          <h2 className="text-xl font-semibold text-neutral-900 font-display">
+        <section className="min-w-0 max-w-3xl flex-1 rounded-3xl bg-white p-6">
+          <h2 className="font-display text-xl font-bold text-violet-950">
             {current.title}
           </h2>
           <p className="mt-1 mb-6 text-sm text-neutral-600">
@@ -166,33 +169,6 @@ function ProfileSettings() {
   );
 }
 
-function ReadOnlyField({
-  id,
-  label,
-  value,
-  hint,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  hint?: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-sm font-medium text-neutral-900">
-        {label}
-      </Label>
-      <Input
-        id={id}
-        value={value}
-        readOnly
-        className="bg-neutral-50 text-neutral-900"
-      />
-      {hint && <p className="text-sm text-neutral-600">{hint}</p>}
-    </div>
-  );
-}
-
 function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
   const { user, isLoaded } = useUser();
 
@@ -207,7 +183,7 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
   });
 
   if (!isLoaded) {
-    return <Skeleton className="h-64 w-full rounded-md" />;
+    return <Skeleton className="h-64 w-full rounded-3xl" />;
   }
 
   const name = user?.fullName || 'Usuário';
@@ -223,12 +199,11 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
   const preferences = user?.unsafeMetadata?.preferences as
     | Preferences
     | undefined;
-  const hasPreferences =
-    !!preferences &&
-    ((preferences.ageRanges?.length ?? 0) > 0 ||
-      (preferences.phonemes?.length ?? 0) > 0);
+  const ageRanges = preferences?.ageRanges ?? [];
+  const phonemes = preferences?.phonemes ?? [];
 
-  const planLabel = stats?.data?.subscribed
+  const subscribed = !!stats?.data?.subscribed;
+  const planLabel = subscribed
     ? 'Profissional'
     : stats?.data?.isAdmin
       ? 'Administrador'
@@ -237,106 +212,164 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('pt-BR')
     : '—';
+  const downloads = stats?.data?.downloads ?? 0;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h3 className="text-base font-semibold text-neutral-900">
-          Informações gerais
-        </h3>
-        <p className="mb-3 text-sm text-neutral-600">
-          Dados da sua conta no Almanaque da Fala.
-        </p>
-        <div className="space-y-5 rounded-md border border-neutral-200 p-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-14 w-14">
-              <AvatarFallback className="bg-coral-50 text-lg font-semibold text-coral-800">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-base font-semibold text-neutral-900">{name}</p>
-              <p className="text-sm text-neutral-600">{email}</p>
-            </div>
+    <div className="space-y-6">
+      {/* Who you are */}
+      <div className="relative overflow-hidden rounded-3xl bg-sun-200 p-6">
+        <span
+          className="pointer-events-none absolute -right-8 -top-12 h-36 w-36 rounded-full bg-white/40"
+          aria-hidden
+        />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <Avatar className="h-16 w-16 ring-4 ring-white">
+            <AvatarFallback className="bg-white font-display text-xl font-black text-violet-950">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-xl font-black text-violet-950">
+              {name}
+            </p>
+            <p className="truncate text-sm text-violet-950/80">{email}</p>
           </div>
-
-          <ReadOnlyField id="profile-name" label="Nome" value={name} />
-          <ReadOnlyField
-            id="profile-email"
-            label="E-mail"
-            value={email}
-            hint="O e-mail está ligado à sua conta e não pode ser alterado aqui."
-          />
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-neutral-900">
-                Plano
-              </Label>
-              <div className="flex h-10 items-center justify-between rounded-md border border-input bg-neutral-50 px-3">
-                <span className="text-sm text-neutral-900">{planLabel}</span>
-                <button
-                  type="button"
-                  onClick={() => onSection('assinatura')}
-                  className="text-sm font-medium text-coral-800 hover:underline"
-                >
-                  {stats?.data?.subscribed ? 'Gerenciar' : 'Ver planos'}
-                </button>
-              </div>
-            </div>
-            <ReadOnlyField
-              id="profile-member-since"
-              label="Membro desde"
-              value={memberSince}
-            />
-          </div>
-
-          <ReadOnlyField
-            id="profile-downloads"
-            label="Atividades baixadas este mês"
-            value={String(stats?.data?.downloads ?? 0)}
-          />
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-violet-950">
+            {planLabel}
+          </span>
         </div>
       </div>
 
-      {hasPreferences && (
+      {/* At a glance */}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <InfoTile
+          tone={TONES.sky}
+          label="Baixadas este mês"
+          value={String(downloads)}
+        />
+        <InfoTile tone={TONES.violet} label="Plano" value={planLabel}>
+          <button
+            type="button"
+            onClick={() => onSection('assinatura')}
+            className="mt-2 text-sm font-semibold text-coral-800 hover:underline"
+          >
+            {subscribed ? 'Gerenciar assinatura' : 'Ver planos'}
+          </button>
+        </InfoTile>
+        <InfoTile tone={TONES.cream} label="Membro desde" value={memberSince} />
+      </div>
+
+      {/* Account details: read-only, so a list, not a form */}
+      <div>
+        <h3 className="mb-2 font-display text-base font-bold text-violet-950">
+          Dados da conta
+        </h3>
+        <dl className="divide-y divide-violet-200/70 rounded-2xl bg-violet-50 px-5">
+          <DetailRow label="Nome" value={name} />
+          <DetailRow
+            label="E-mail"
+            value={email}
+            hint="Ligado ao seu login; não pode ser alterado aqui."
+          />
+        </dl>
+      </div>
+
+      {(ageRanges.length > 0 || phonemes.length > 0) && (
         <div>
-          <h3 className="text-base font-semibold text-neutral-900">
+          <h3 className="font-display text-base font-bold text-violet-950">
             Preferências
           </h3>
           <p className="mb-3 text-sm text-neutral-600">
             O que você escolheu ao começar.
           </p>
-          <div className="space-y-4 rounded-md border border-neutral-200 p-6">
-            {(preferences?.ageRanges?.length ?? 0) > 0 && (
-              <div>
-                <p className="mb-1.5 text-sm text-neutral-600">
-                  Faixas etárias
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {preferences?.ageRanges?.map((age) => (
-                    <Badge key={age} variant="outline" className="text-xs">
-                      {age}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+          <div className="space-y-4 rounded-2xl bg-violet-50 p-5">
+            {ageRanges.length > 0 && (
+              <ChipGroup label="Faixas etárias">
+                {ageRanges.map((age) => (
+                  <span
+                    key={age}
+                    className="rounded-full bg-sun-300 px-3 py-1 text-xs font-semibold text-violet-950"
+                  >
+                    {/* Stored as shown in onboarding, e.g. "4-5 anos". */}
+                    {age}
+                  </span>
+                ))}
+              </ChipGroup>
             )}
-            {(preferences?.phonemes?.length ?? 0) > 0 && (
-              <div>
-                <p className="mb-1.5 text-sm text-neutral-600">Fonemas</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {preferences?.phonemes?.map((p) => (
-                    <Badge key={p} variant="outline" className="text-xs">
-                      /{p.toLowerCase()}/
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+            {phonemes.length > 0 && (
+              <ChipGroup label="Fonemas">
+                {phonemes.map((code) => (
+                  <span
+                    key={code}
+                    className={`rounded-full px-3 py-1 font-mono text-xs font-semibold text-violet-950 ring-1 ${toneForPhoneme(code).tile}`}
+                  >
+                    {phonemeLabel(code)}
+                  </span>
+                ))}
+              </ChipGroup>
             )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function InfoTile({
+  tone,
+  label: title,
+  value,
+  children,
+}: {
+  tone: ToneClasses;
+  label: string;
+  value: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className={`rounded-2xl p-4 ring-2 ${tone.tile}`}>
+      <p className="text-xs font-semibold text-violet-950/80">{title}</p>
+      <p className="mt-1 font-display text-2xl font-black text-violet-950">
+        {value}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function DetailRow({
+  label: title,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+}) {
+  return (
+    <div className="grid gap-1 py-4 sm:grid-cols-[8rem_1fr] sm:gap-4">
+      <dt className="text-sm font-semibold text-neutral-600">{title}</dt>
+      <dd className="min-w-0">
+        <span className="block break-words text-sm text-neutral-900">
+          {value}
+        </span>
+        {hint && <span className="text-xs text-neutral-600">{hint}</span>}
+      </dd>
+    </div>
+  );
+}
+
+function ChipGroup({
+  label: title,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-semibold text-neutral-600">{title}</p>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
   );
 }

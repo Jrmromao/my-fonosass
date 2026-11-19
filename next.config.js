@@ -13,7 +13,15 @@ const nextConfig = {
       './public/images/logo-trimmed.png',
       './assets/fonts/Inter-Medium.ttf',
     ],
+    // Library previews (lib/files/preview.ts) read pdf.js standard fonts.
+    '/api/activities/*/preview': [
+      './node_modules/pdfjs-dist/standard_fonts/**',
+    ],
   },
+
+  // Native / large server-only packages used by the library previews
+  // (lib/files/preview.ts): loaded from node_modules, not bundled.
+  serverExternalPackages: ['pdfjs-dist', '@napi-rs/canvas'],
 
   // Performance optimizations
   experimental: {

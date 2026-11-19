@@ -23,6 +23,8 @@ export const AuditAction = {
   ACTIVITIES_SYNC: 'admin.activities.sync',
   FREE_SAMPLES_SET: 'admin.free_samples.set',
   FREE_SAMPLES_CLEAR: 'admin.free_samples.clear',
+  LIBRARY_TOPIC_UPDATE: 'admin.library_topic.update',
+  LIBRARY_TOPIC_RESET: 'admin.library_topic.reset',
   MONITORING_CLEAR: 'admin.monitoring.clear',
   CACHE_CLEAR: 'admin.cache.clear',
   USER_INSERT: 'admin.user.insert',
