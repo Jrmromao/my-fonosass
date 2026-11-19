@@ -1,10 +1,6 @@
 import { prisma } from '@/app/db';
 import { monthBucket } from '@/lib/stats/downloadStats';
-import type {
-  ActivityDifficulty,
-  ActivityType,
-  AgeRange,
-} from '@prisma/client';
+import type { ActivityType } from '@prisma/client';
 import { cache } from 'react';
 
 /**
@@ -30,8 +26,6 @@ export interface FreeSample {
   name: string;
   phoneme: string;
   type: ActivityType;
-  ageRange: AgeRange;
-  difficulty: ActivityDifficulty;
   /** First image file of the activity (used for the public preview). */
   imageFileId: string;
 }
@@ -73,8 +67,6 @@ async function loadSamples(ids: string[]): Promise<FreeSample[]> {
       name: true,
       phoneme: true,
       type: true,
-      ageRange: true,
-      difficulty: true,
       files: {
         where: { fileType: { startsWith: 'image/' } },
         select: { id: true },
@@ -92,8 +84,6 @@ async function loadSamples(ids: string[]): Promise<FreeSample[]> {
       name: r.name,
       phoneme: r.phoneme,
       type: r.type,
-      ageRange: r.ageRange,
-      difficulty: r.difficulty,
       imageFileId: r.files[0].id,
     }));
 }

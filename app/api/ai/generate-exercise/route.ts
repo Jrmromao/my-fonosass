@@ -12,20 +12,6 @@ const exerciseSchema = z.object({
   autoSave: z.boolean().optional().default(false),
 });
 
-const difficultyMap = {
-  iniciante: 'BEGINNER',
-  intermediário: 'INTERMEDIATE',
-  avançado: 'ADVANCED',
-} as const;
-
-const ageToRange = (age: number) => {
-  if (age <= 2) return 'TODDLER';
-  if (age <= 5) return 'PRESCHOOL';
-  if (age <= 12) return 'CHILD';
-  if (age <= 17) return 'TEENAGER';
-  return 'ADULT';
-};
-
 export async function POST(request: NextRequest) {
   try {
     // AI generation costs money and is an internal tool: admins only.
@@ -116,14 +102,13 @@ REGRAS OBRIGATORIAS:
     // Auto-save to DB and notify reviewer
     let savedActivity = null;
     if (autoSave) {
-      // Dedup: check if same phoneme + difficulty + ageRange already exists today
+      // Dedup: check if same phoneme + title already exists today
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const existingToday = await prisma.activity.findFirst({
         where: {
           phoneme,
-          difficulty: difficultyMap[difficulty],
-          ageRange: ageToRange(age),
+          name: exerciseData.titulo,
           createdAt: { gte: today },
         },
       });
@@ -134,8 +119,7 @@ REGRAS OBRIGATORIAS:
           exercise: exerciseData,
           saved: null,
           skipped: true,
-          reason:
-            'Activity for this phoneme/difficulty/age already created today',
+          reason: 'Activity with this phoneme and title already created today',
           metadata: {
             phoneme,
             age,
@@ -156,8 +140,6 @@ REGRAS OBRIGATORIAS:
             name: exerciseData.titulo,
             description: JSON.stringify(exerciseData),
             type: 'SPEECH',
-            difficulty: difficultyMap[difficulty],
-            ageRange: ageToRange(age),
             phoneme,
             isPublic: false,
             status: 'PENDING_REVIEW',
@@ -171,8 +153,6 @@ REGRAS OBRIGATORIAS:
           id: savedActivity.id,
           name: exerciseData.titulo,
           phoneme,
-          difficulty,
-          ageRange: ageToRange(age),
           approvalToken,
         });
       }

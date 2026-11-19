@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  TYPE_LABELS,
-  label,
-  phonemeLabel,
-} from '@/lib/activityLabels';
+import { TYPE_LABELS, label, phonemeLabel } from '@/lib/activityLabels';
 import type { LibraryActivity } from '@/lib/activityLibrary';
 import { copyrightText } from '@/lib/copyright';
 import { useEffect, useState } from 'react';
@@ -47,8 +41,6 @@ export function PrintableInstructions({
   const details = [
     activity.phoneme ? phonemeLabel(activity.phoneme) : null,
     label(TYPE_LABELS, activity.type),
-    label(AGE_LABELS, activity.ageRange),
-    label(DIFFICULTY_LABELS, activity.difficulty),
   ].filter(Boolean);
 
   return createPortal(

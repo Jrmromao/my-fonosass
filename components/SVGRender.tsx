@@ -32,12 +32,7 @@ import {
 import SvgImage from '@/components/SVGImage';
 import AppleComponent from '@/components/AppleComponent';
 import { AppleType } from '@/types/types';
-import {
-  Activity,
-  ActivityType,
-  ActivityDifficulty,
-  AgeRange,
-} from '@prisma/client';
+import { Activity, ActivityType } from '@prisma/client';
 // import { getActivitiesByPhoneme } from "@/lib/actions/activity.action";
 // import { getFileDownloadUrl } from "@/lib/actions/file-download.action";
 import { cn } from '@/lib/utils';
@@ -93,25 +88,7 @@ const PHONEME_MESSAGES: { [key: string]: string } = {
 
 // Badge color utility functions
 const getBadgeVariant = {
-  difficulty: (difficulty: ActivityDifficulty) => {
-    const variants: { [key: string]: string } = {
-      BEGINNER: 'success',
-      INTERMEDIATE: 'warning',
-      ADVANCED: 'destructive',
-      default: 'secondary',
-    };
-    return variants[difficulty] || variants.default;
-  },
   type: (type: ActivityType) => 'secondary',
-  ageRange: (ageRange: AgeRange) => {
-    const variants: { [key: string]: string } = {
-      TODDLER: 'success',
-      PRESCHOOL: 'warning',
-      ADULT: 'default',
-      default: 'secondary',
-    };
-    return variants[ageRange] || variants.default;
-  },
 };
 
 // Use dynamic import with SSR disabled for this component
@@ -363,18 +340,6 @@ const SVGRender = () => {
               className="text-xs font-normal"
             >
               {activity.type}
-            </Badge>
-            <Badge
-              variant={getBadgeVariant.difficulty(activity.difficulty) as any}
-              className="text-xs font-normal"
-            >
-              {activity.difficulty}
-            </Badge>
-            <Badge
-              variant={getBadgeVariant.ageRange(activity.ageRange) as any}
-              className="text-xs font-normal"
-            >
-              {activity.ageRange}
             </Badge>
           </div>
         </li>

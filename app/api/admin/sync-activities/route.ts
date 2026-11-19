@@ -34,7 +34,6 @@ async function notifyReviewer(activity: {
   id: string;
   name: string;
   phoneme: string;
-  ageRange: string;
   approvalToken: string;
 }): Promise<void> {
   if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
@@ -50,8 +49,7 @@ async function notifyReviewer(activity: {
         text:
           `*Nova atividade para revisão*\n\n` +
           `${activity.name}\n` +
-          `Fonema: /${activity.phoneme}/\n` +
-          `Idade: ${activity.ageRange}`,
+          `Fonema: /${activity.phoneme}/`,
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [[{ text: '👀 Revisar atividade', url: reviewUrl }]],
@@ -82,9 +80,7 @@ async function runQualityCheck(parsed: {
   name: string;
   description: string;
   phoneme: string;
-  ageRange: string;
   type: string;
-  difficulty: string;
 }): Promise<{ passed: boolean; reason?: string }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return { passed: true }; // Skip if no API key
@@ -106,13 +102,12 @@ async function runQualityCheck(parsed: {
 Criterios de reprovacao:
 - Erros ortograficos ou gramaticais em portugues brasileiro
 - Emojis no conteudo
-- Nome ou descricao inadequados para a faixa etaria indicada
 - Fonema incorreto para o tipo de atividade
 - Referencia incorreta a marca (deve ser almanaquedafala.com.br)`,
           },
           {
             role: 'user',
-            content: `Nome: ${parsed.name}\nDescricao: ${parsed.description}\nFonema: ${parsed.phoneme}\nFaixa etaria: ${parsed.ageRange}\nTipo: ${parsed.type}\nDificuldade: ${parsed.difficulty}`,
+            content: `Nome: ${parsed.name}\nDescricao: ${parsed.description}\nFonema: ${parsed.phoneme}\nTipo: ${parsed.type}`,
           },
         ],
         max_tokens: 150,
@@ -131,11 +126,11 @@ Criterios de reprovacao:
   }
 }
 
-const activityTypeMap: Record<string, { type: string; difficulty: string }> = {
-  find_circle: { type: 'SPEECH', difficulty: 'BEGINNER' },
-  word_search: { type: 'LANGUAGE', difficulty: 'INTERMEDIATE' },
-  board_game: { type: 'COGNITIVE', difficulty: 'INTERMEDIATE' },
-  color_speak: { type: 'SPEECH', difficulty: 'ADVANCED' },
+const activityTypeMap: Record<string, { type: string }> = {
+  find_circle: { type: 'SPEECH' },
+  word_search: { type: 'LANGUAGE' },
+  board_game: { type: 'COGNITIVE' },
+  color_speak: { type: 'SPEECH' },
 };
 
 const themeNames: Record<string, string> = {
@@ -158,14 +153,6 @@ const activityNames: Record<string, string> = {
   color_speak: 'Colorir e Falar',
 };
 
-function ageToRange(age: number) {
-  if (age <= 3) return 'TODDLER';
-  if (age <= 5) return 'PRESCHOOL';
-  if (age <= 12) return 'CHILD';
-  if (age <= 17) return 'TEENAGER';
-  return 'ADULT';
-}
-
 function parseKey(key: string) {
   const parts = key.split('/');
   if (parts.length < 3) return null;
@@ -181,9 +168,7 @@ function parseKey(key: string) {
     return {
       phoneme: '',
       age: 6,
-      ageRange: 'CHILD',
       type: 'OTHER',
-      difficulty: 'BEGINNER',
       name: `Recortar e Classificar - ${themeLabel}`,
       description: `Atividade de recortar e classificar com tema "${themeLabel}". A criança recorta os cartões e cola cada um na categoria certa, dizendo o nome em voz alta.`,
       s3Key: key,
@@ -203,9 +188,7 @@ function parseKey(key: string) {
     return {
       phoneme: '',
       age: 6,
-      ageRange: 'CHILD',
       type: 'COGNITIVE',
-      difficulty: 'BEGINNER',
       name: `Classificar por Atributo - ${label}`,
       description: `Atividade de classificar por atributo ("${label}"). A criança recorta os cartões e cola cada um na categoria certa, dizendo o nome em voz alta.`,
       s3Key: key,
@@ -230,9 +213,7 @@ function parseKey(key: string) {
   return {
     phoneme,
     age,
-    ageRange: ageToRange(age),
     type: meta.type,
-    difficulty: meta.difficulty,
     name: `${activityNames[actType] || actType} - ${themeNames[theme] || theme} (Fonema /${phoneme}/)`,
     description: `Atividade de ${(activityNames[actType] || actType).toLowerCase()} com tema "${themeNames[theme] || theme}" para trabalhar o fonema /${phoneme}/. Indicado para crianças de ${age} anos.`,
     s3Key: key,
@@ -320,12 +301,11 @@ export async function POST(request: Request) {
         continue;
       }
 
-      // Quality Gate 1: Dedup — no duplicate phoneme + type + ageRange + name
+      // Quality Gate 1: Dedup — no duplicate phoneme + type + name
       const existingActivity = await prisma.activity.findFirst({
         where: {
           phoneme: parsed.phoneme,
           type: parsed.type as any,
-          ageRange: parsed.ageRange as any,
           name: parsed.name,
         },
         select: { id: true },
@@ -348,8 +328,6 @@ export async function POST(request: Request) {
           name: parsed.name,
           description: parsed.description,
           type: parsed.type as any,
-          difficulty: parsed.difficulty as any,
-          ageRange: parsed.ageRange as any,
           phoneme: parsed.phoneme,
           isPublic: false,
           status: 'PENDING_REVIEW',
@@ -374,7 +352,6 @@ export async function POST(request: Request) {
         id: activity.id,
         name: parsed.name,
         phoneme: parsed.phoneme,
-        ageRange: parsed.ageRange,
         approvalToken,
       });
 

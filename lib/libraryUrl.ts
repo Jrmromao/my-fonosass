@@ -1,5 +1,5 @@
 // Library URL in pt-BR: /dashboard/biblioteca?categoria=fonema&fonema=r-forte
-// &idade=pre-escolar&dificuldade=iniciante&busca=sapo&pagina=2
+// &busca=sapo&pagina=2
 //
 // The URL uses Portuguese keys and slugs; the app and the API keep the
 // internal codes (Activity.phoneme, Prisma enums). Client-safe.
@@ -10,10 +10,6 @@ export interface LibraryFilters {
   phoneme: string;
   /** ActivityType, e.g. "SPEECH". */
   type: string;
-  /** ActivityDifficulty, e.g. "BEGINNER". */
-  difficulty: string;
-  /** AgeRange, e.g. "PRESCHOOL". */
-  ageRange: string;
   page: number;
 }
 
@@ -23,8 +19,6 @@ const KEYS = {
   search: 'busca',
   phoneme: 'fonema',
   type: 'categoria',
-  difficulty: 'dificuldade',
-  ageRange: 'idade',
   page: 'pagina',
 } as const;
 
@@ -33,8 +27,6 @@ const LEGACY_KEYS = {
   search: 'search',
   phoneme: 'phoneme',
   type: 'type',
-  difficulty: 'difficulty',
-  ageRange: 'ageRange',
   page: 'page',
 } as const;
 
@@ -57,21 +49,6 @@ const TYPE_SLUGS: Record<string, string> = {
   OTHER: 'outros',
 };
 
-const DIFFICULTY_SLUGS: Record<string, string> = {
-  BEGINNER: 'iniciante',
-  INTERMEDIATE: 'intermediario',
-  ADVANCED: 'avancado',
-  EXPERT: 'especialista',
-};
-
-const AGE_SLUGS: Record<string, string> = {
-  TODDLER: 'primeira-infancia',
-  PRESCHOOL: 'pre-escolar',
-  CHILD: 'idade-escolar',
-  TEENAGER: 'adolescente',
-  ADULT: 'adulto',
-};
-
 // Phonemes whose slug isn't just the lowercase code.
 const PHONEME_SLUGS: Record<string, string> = {
   R_FORTE: 'r-forte',
@@ -86,8 +63,6 @@ const invert = (map: Record<string, string>) =>
   Object.fromEntries(Object.entries(map).map(([k, v]) => [v, k]));
 
 const TYPE_CODES = invert(TYPE_SLUGS);
-const DIFFICULTY_CODES = invert(DIFFICULTY_SLUGS);
-const AGE_CODES = invert(AGE_SLUGS);
 const PHONEME_CODES = invert(PHONEME_SLUGS);
 
 export function phonemeSlug(code: string): string {
@@ -124,12 +99,6 @@ export function parseLibraryParams(params: URLSearchParams): {
     search: read('search'),
     phoneme: rawPhoneme ? phonemeFromSlug(rawPhoneme) : '',
     type: fromSlug(read('type'), TYPE_CODES, TYPE_SLUGS),
-    difficulty: fromSlug(
-      read('difficulty'),
-      DIFFICULTY_CODES,
-      DIFFICULTY_SLUGS
-    ),
-    ageRange: fromSlug(read('ageRange'), AGE_CODES, AGE_SLUGS),
     page: Math.max(1, parseInt(read('page') || '1') || 1),
   };
   return { filters, legacy };
@@ -140,10 +109,6 @@ export function libraryQuery(filters: Partial<LibraryFilters>): string {
   const params = new URLSearchParams();
   if (filters.type) params.set(KEYS.type, TYPE_SLUGS[filters.type] ?? '');
   if (filters.phoneme) params.set(KEYS.phoneme, phonemeSlug(filters.phoneme));
-  if (filters.ageRange)
-    params.set(KEYS.ageRange, AGE_SLUGS[filters.ageRange] ?? '');
-  if (filters.difficulty)
-    params.set(KEYS.difficulty, DIFFICULTY_SLUGS[filters.difficulty] ?? '');
   if (filters.search) params.set(KEYS.search, filters.search);
   if (filters.page && filters.page > 1)
     params.set(KEYS.page, String(filters.page));

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, FileDown, Plus, BarChart2 } from 'lucide-react';
+import { Volume2, FileDown, BarChart2 } from 'lucide-react';
 import { ActivityWithFiles } from '@/types/activity';
 
 interface ActivityStatsBarProps {
@@ -36,13 +36,6 @@ const ActivityStatsBar: React.FC<ActivityStatsBarProps> = ({
       value: activities.filter((a) => a.type !== 'OTHER').length,
       icon: FileDown,
       color: 'sunshine',
-    },
-    {
-      id: 'beginner',
-      label: 'Nível iniciante',
-      value: activities.filter((a) => a.difficulty === 'BEGINNER').length,
-      icon: Plus,
-      color: 'bubblegum',
     },
   ];
 

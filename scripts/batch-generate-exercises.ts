@@ -30,19 +30,6 @@ const PHONEMES = [
 const DIFFICULTIES = ['iniciante', 'intermediário', 'avançado'] as const;
 const AGE_SAMPLES = [4, 7, 12, 16]; // one per age range
 
-const difficultyMap = {
-  iniciante: 'BEGINNER',
-  intermediário: 'INTERMEDIATE',
-  avançado: 'ADVANCED',
-} as const;
-const ageToRange = (age: number) => {
-  if (age <= 2) return 'TODDLER';
-  if (age <= 5) return 'PRESCHOOL';
-  if (age <= 12) return 'CHILD';
-  if (age <= 17) return 'TEENAGER';
-  return 'ADULT';
-};
-
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_REVIEWER_CHAT_ID;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -51,14 +38,12 @@ async function sendTelegram(exercise: {
   id: string;
   name: string;
   phoneme: string;
-  difficulty: string;
-  ageRange: string;
   approvalToken: string;
 }) {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
 
   const reviewUrl = `${APP_URL}/dashboard/exercises/review/${exercise.id}?token=${exercise.approvalToken}`;
-  const message = `🆕 *${exercise.name}*\n🔤 /${exercise.phoneme}/ | 📊 ${exercise.difficulty} | 👶 ${exercise.ageRange}\n\n[👁 Ver e aprovar](${reviewUrl})`;
+  const message = `🆕 *${exercise.name}*\n🔤 /${exercise.phoneme}/\n\n[👁 Ver e aprovar](${reviewUrl})`;
 
   await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -153,8 +138,6 @@ async function main() {
             `Exercício /${combo.phoneme}/ - ${combo.difficulty}`,
           description: JSON.stringify(exerciseData),
           type: 'SPEECH',
-          difficulty: difficultyMap[combo.difficulty],
-          ageRange: ageToRange(combo.age),
           phoneme: combo.phoneme,
           isPublic: false,
           status: 'PENDING_REVIEW',
@@ -167,8 +150,6 @@ async function main() {
         id: activity.id,
         name: exerciseData.titulo,
         phoneme: combo.phoneme,
-        difficulty: combo.difficulty,
-        ageRange: ageToRange(combo.age),
         approvalToken,
       });
 

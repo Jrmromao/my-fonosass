@@ -32,13 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useUserRole } from '@/hooks/useUserRole';
 import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
-import {
-  AGE_LABELS,
-  DIFFICULTY_LABELS,
-  TYPE_LABELS,
-  label,
-  phonemeLabel,
-} from '@/lib/activityLabels';
+import { TYPE_LABELS, label, phonemeLabel } from '@/lib/activityLabels';
 import type {
   DownloadResponse,
   LibraryActivity,
@@ -84,7 +78,7 @@ export default function LibraryPage() {
   const { filters: current, legacy } = parseLibraryParams(
     new URLSearchParams(searchParams.toString())
   );
-  const { page, search, phoneme, type, difficulty, ageRange } = current;
+  const { page, search, phoneme, type } = current;
 
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebounce(searchInput, 400);
@@ -117,7 +111,7 @@ export default function LibraryPage() {
     }
   };
 
-  // `updates` uses the internal filter names (phoneme, type, ageRange…).
+  // `updates` uses the internal filter names (phoneme, type…).
   const updateParams = useCallback(
     (updates: Partial<Record<keyof LibraryFilters, string>>) => {
       const next: LibraryFilters = { ...current, page: 1 };
@@ -135,7 +129,7 @@ export default function LibraryPage() {
     [searchParams, pathname, router]
   );
 
-  // Old English links (?phoneme=S&ageRange=PRESCHOOL) become pt-BR URLs.
+  // Old English links (?phoneme=S&type=SPEECH) become pt-BR URLs.
   useEffect(() => {
     if (!legacy) return;
     const qs = libraryQuery(current);
@@ -153,7 +147,7 @@ export default function LibraryPage() {
   }, [debouncedSearch]);
 
   const { data, isLoading } = useQuery<LibraryResponse>({
-    queryKey: ['activities', page, search, phoneme, type, difficulty, ageRange],
+    queryKey: ['activities', page, search, phoneme, type],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.set('page', String(page));
@@ -161,8 +155,6 @@ export default function LibraryPage() {
       if (search) params.set('search', search);
       if (phoneme) params.set('phoneme', phoneme);
       if (type) params.set('type', type);
-      if (difficulty) params.set('difficulty', difficulty);
-      if (ageRange) params.set('ageRange', ageRange);
       const res = await fetch(`/api/activities/search?${params.toString()}`);
       if (!res.ok) throw new Error('Falha ao carregar atividades');
       return res.json();
@@ -176,8 +168,6 @@ export default function LibraryPage() {
   const filters = data?.filters ?? {
     phonemes: [],
     types: [],
-    difficulties: [],
-    ageRanges: [],
   };
 
   // Phoneme options in the landing taxonomy order; codes the taxonomy does not
@@ -399,48 +389,6 @@ export default function LibraryPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select
-            value={ageRange || ALL}
-            onValueChange={(v) =>
-              updateParams({ ageRange: v === ALL ? '' : v })
-            }
-          >
-            <SelectTrigger
-              className={`${filterTrigger} w-44`}
-              aria-label="Filtrar por idade"
-            >
-              <SelectValue placeholder="Idade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>Todas as idades</SelectItem>
-              {filters.ageRanges.map((a) => (
-                <SelectItem key={a} value={a}>
-                  {label(AGE_LABELS, a)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={difficulty || ALL}
-            onValueChange={(v) =>
-              updateParams({ difficulty: v === ALL ? '' : v })
-            }
-          >
-            <SelectTrigger
-              className={`${filterTrigger} w-44`}
-              aria-label="Filtrar por dificuldade"
-            >
-              <SelectValue placeholder="Dificuldade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>Todas as dificuldades</SelectItem>
-              {filters.difficulties.map((d) => (
-                <SelectItem key={d} value={d}>
-                  {label(DIFFICULTY_LABELS, d)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
           <div
             role="group"
@@ -590,10 +538,6 @@ export default function LibraryPage() {
                     {phonemeLabel(previewActivity.phoneme)}
                   </span>
                   <span>{label(TYPE_LABELS, previewActivity.type)}</span>
-                  <span>
-                    {label(DIFFICULTY_LABELS, previewActivity.difficulty)}
-                  </span>
-                  <span>{label(AGE_LABELS, previewActivity.ageRange)}</span>
                 </div>
                 <p className="whitespace-pre-line text-sm text-neutral-600">
                   {previewActivity.description}

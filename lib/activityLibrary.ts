@@ -7,8 +7,6 @@ export interface LibraryActivity {
   description: string;
   phoneme: string;
   type: string;
-  difficulty: string;
-  ageRange: string;
   createdAt: string;
   files: { id: string; fileType: string }[];
   /** Signed URL; null unless the viewer may download this activity. */
@@ -30,8 +28,6 @@ export interface LibraryResponse {
   filters: {
     phonemes: string[];
     types: string[];
-    difficulties: string[];
-    ageRanges: string[];
   };
 }
 

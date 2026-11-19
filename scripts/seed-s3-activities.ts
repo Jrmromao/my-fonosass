@@ -6,11 +6,11 @@ const BUCKET = 'fonosapp';
 const REGION = process.env.AWS_REGION || 'eu-west-1';
 
 // Mapping from filename patterns to metadata
-const activityTypeMap: Record<string, { type: string; difficulty: string }> = {
-  find_circle: { type: 'SPEECH', difficulty: 'BEGINNER' },
-  word_search: { type: 'LANGUAGE', difficulty: 'INTERMEDIATE' },
-  board_game: { type: 'COGNITIVE', difficulty: 'INTERMEDIATE' },
-  color_speak: { type: 'SPEECH', difficulty: 'ADVANCED' },
+const activityTypeMap: Record<string, { type: string }> = {
+  find_circle: { type: 'SPEECH' },
+  word_search: { type: 'LANGUAGE' },
+  board_game: { type: 'COGNITIVE' },
+  color_speak: { type: 'SPEECH' },
 };
 
 const themeNames: Record<string, string> = {
@@ -32,14 +32,6 @@ const activityNames: Record<string, string> = {
   board_game: 'Jogo de Tabuleiro',
   color_speak: 'Colorir e Falar',
 };
-
-function ageToRange(age: number) {
-  if (age <= 3) return 'TODDLER';
-  if (age <= 5) return 'PRESCHOOL';
-  if (age <= 12) return 'CHILD';
-  if (age <= 17) return 'TEENAGER';
-  return 'ADULT';
-}
 
 // All S3 files organized by phoneme
 const files = [
@@ -98,9 +90,7 @@ function parseKey(key: string) {
     actType,
     theme,
     age,
-    ageRange: ageToRange(age),
     type: meta.type,
-    difficulty: meta.difficulty,
     name: `${activityNames[actType]} - ${themeNames[theme] || theme} (Fonema /${phoneme}/)`,
     description: `Atividade de ${(activityNames[actType] || actType).toLowerCase()} com tema "${themeNames[theme] || theme}" para trabalhar o fonema /${phoneme}/. Indicado para crianças de ${age} anos.`,
     s3Key: key,
@@ -141,8 +131,6 @@ async function main() {
         name: parsed.name,
         description: parsed.description,
         type: parsed.type as any,
-        difficulty: parsed.difficulty as any,
-        ageRange: parsed.ageRange as any,
         phoneme: parsed.phoneme,
         isPublic: true,
         status: 'PUBLISHED',

@@ -41,17 +41,4 @@ export const ActivityType = toEnum([
   'MOTOR',
   'SOCIAL',
 ] as const);
-export const ActivityDifficulty = toEnum([
-  'BEGINNER',
-  'INTERMEDIATE',
-  'ADVANCED',
-  'EXPERT',
-] as const);
-export const AgeRange = toEnum([
-  'TODDLER',
-  'PRESCHOOL',
-  'CHILD',
-  'TEENAGER',
-  'ADULT',
-] as const);
-export const $Enums = { ActivityType, ActivityDifficulty, AgeRange };
+export const $Enums = { ActivityType };
