@@ -133,8 +133,21 @@ export async function POST(req: Request) {
 async function handleStripeEvent(event: Stripe.Event): Promise<NextResponse> {
   try {
     switch (event.type) {
-      case 'checkout.session.completed': {
+      // Pix completes asynchronously: `completed` arrives when the mandate is
+      // authorized (payment may still be pending); `async_payment_succeeded`
+      // arrives when the money lands. Card payments are paid at `completed`.
+      case 'checkout.session.async_payment_failed': {
         const session = event.data.object as Stripe.Checkout.Session;
+        console.warn('Async checkout payment failed', session.id);
+        // Nothing to undo: access is only granted once the session is paid.
+        break;
+      }
+
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        // 'unpaid' = Pix still pending: record the subscription, no access yet.
+        const paid = session.payment_status !== 'unpaid';
 
         // Make sure this is a subscription checkout
         if (session.mode !== 'subscription' || !session.subscription) {
@@ -176,7 +189,7 @@ async function handleStripeEvent(event: Stripe.Event): Promise<NextResponse> {
         // Update Clerk user metadata
         await updateClerkUserMetadata(
           clerkUserId,
-          'active',
+          paid ? 'active' : 'pending',
           'PRO',
           subscriptionId,
           periodSeconds(subscription, 'end')
@@ -191,7 +204,7 @@ async function handleStripeEvent(event: Stripe.Event): Promise<NextResponse> {
           where: { userId },
           update: {
             tier: 'PRO',
-            status: 'ACTIVE',
+            status: paid ? 'ACTIVE' : 'INACTIVE',
             paymentId: subscriptionId,
             currentPeriodStart: periodStart,
             currentPeriodEnd: periodEnd,
@@ -200,12 +213,15 @@ async function handleStripeEvent(event: Stripe.Event): Promise<NextResponse> {
           create: {
             userId,
             tier: 'PRO',
-            status: 'ACTIVE',
+            status: paid ? 'ACTIVE' : 'INACTIVE',
             paymentId: subscriptionId,
             currentPeriodStart: periodStart,
             currentPeriodEnd: periodEnd,
           },
         });
+
+        // Confirmation only once paid (Pix sends it on async_payment_succeeded).
+        if (!paid) break;
 
         await sendSubscriptionEmail('Subscription confirmed', async () => {
           const user = await findEmailRecipient(userId);

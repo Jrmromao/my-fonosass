@@ -123,6 +123,9 @@ jest.mock('@/lib/stripe', () => ({
     subscriptions: {
       retrieve: jest.fn(),
     },
+    prices: {
+      retrieve: jest.fn(),
+    },
   },
 }));
 

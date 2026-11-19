@@ -20,6 +20,10 @@ describe('Subscription API Endpoints', () => {
       stripe.checkout.sessions.create.mockResolvedValue({
         url: 'https://checkout.stripe.com/session-123',
       });
+      stripe.prices.retrieve.mockResolvedValue({
+        unit_amount: 3990,
+        currency: 'brl',
+      });
 
       // Mock environment variable
       process.env.STRIPE_MONTHLY_PRICE_ID = 'price_123';
@@ -46,6 +50,12 @@ describe('Subscription API Endpoints', () => {
           },
         ],
         mode: 'subscription',
+        payment_method_types: ['card', 'pix'],
+        payment_method_options: {
+          pix: {
+            mandate_options: { amount: 3990, payment_schedule: 'monthly' },
+          },
+        },
         success_url: expect.stringContaining(
           '/dashboard/profile?tab=assinatura&checkout=success'
         ),
