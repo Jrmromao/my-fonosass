@@ -65,15 +65,3 @@ database. Fix:
 
 Do **not** work around it with `db push` or by editing the DB directly.
 
-## Syncing S3 activities to the DB
-
-The `Generate Content` GH Action uploads PDFs to S3, then POSTs
-`/api/admin/sync-activities` (auth: `ADMIN_API_KEY`) to register them. To
-re-sync without regenerating:
-```bash
-gh workflow run "Sync S3 Activities to DB"
-```
-The sync route returns a `detail` field with the real error for authenticated
-machine callers — read it from the Action log to diagnose failures. A failing
-sync now fails the job (non-200 → exit 1), so a red run is surfacing the real
-error, not a new problem.
