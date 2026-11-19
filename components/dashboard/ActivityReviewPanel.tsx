@@ -266,7 +266,7 @@ export function ActivityReviewPanel() {
                 <textarea
                   className="w-full p-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 resize-none focus:outline-none focus:ring-2 focus:ring-coral-500"
                   rows={3}
-                  placeholder="Descreva o que esta errado (ex: erro ortografico no titulo, faixa etaria incorreta...)"
+                  placeholder="Descreva o que esta errado (ex: erro ortográfico no título, fonema incorreto...)"
                   value={feedback}
                   onChange={(e) => setFeedback(e.target.value)}
                 />

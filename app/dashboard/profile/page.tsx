@@ -24,7 +24,6 @@ interface ProfileStats {
 }
 
 interface Preferences {
-  ageRanges?: string[];
   phonemes?: string[];
 }
 
@@ -199,7 +198,6 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
   const preferences = user?.unsafeMetadata?.preferences as
     | Preferences
     | undefined;
-  const ageRanges = preferences?.ageRanges ?? [];
   const phonemes = preferences?.phonemes ?? [];
 
   const subscribed = !!stats?.data?.subscribed;
@@ -274,7 +272,7 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
         </dl>
       </div>
 
-      {(ageRanges.length > 0 || phonemes.length > 0) && (
+      {phonemes.length > 0 && (
         <div>
           <h3 className="font-display text-base font-bold text-violet-950">
             Preferências
@@ -283,19 +281,6 @@ function AccountSection({ onSection }: { onSection: (tab: string) => void }) {
             O que você escolheu ao começar.
           </p>
           <div className="space-y-4 rounded-2xl bg-violet-50 p-5">
-            {ageRanges.length > 0 && (
-              <ChipGroup label="Faixas etárias">
-                {ageRanges.map((age) => (
-                  <span
-                    key={age}
-                    className="rounded-full bg-sun-300 px-3 py-1 text-xs font-semibold text-violet-950"
-                  >
-                    {/* Stored as shown in onboarding, e.g. "4-5 anos". */}
-                    {age}
-                  </span>
-                ))}
-              </ChipGroup>
-            )}
             {phonemes.length > 0 && (
               <ChipGroup label="Fonemas">
                 {phonemes.map((code) => (

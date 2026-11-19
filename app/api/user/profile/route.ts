@@ -103,16 +103,6 @@ export const GET = async (request: NextRequest) => {
       currentPeriodEnd: null,
     };
 
-    // Get download limits
-    const downloadLimit = await prisma.downloadLimit.findUnique({
-      where: { userId: user.id },
-    });
-
-    const isPro = subscription.tier === 'PRO';
-    const remainingDownloads = isPro
-      ? Infinity
-      : Math.max(0, 5 - (downloadLimit?.downloads || 0));
-
     return SecurityMiddleware.createSecureResponse({
       success: true,
       data: {
@@ -127,11 +117,6 @@ export const GET = async (request: NextRequest) => {
           tier: subscription.tier,
           status: subscription.status,
           currentPeriodEnd: subscription.currentPeriodEnd?.toISOString(),
-        },
-        downloadLimits: {
-          canDownload: remainingDownloads > 0,
-          remaining: remainingDownloads,
-          isPro,
         },
         stats: {
           totalDownloads: stats._count.id,

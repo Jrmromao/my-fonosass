@@ -57,7 +57,7 @@ export default function SignupDialog({
   const benefits = [
     'Atividades imprimíveis organizadas por fonema',
     'Criadas e revisadas por fonoaudióloga clínica',
-    'Novos materiais adicionados toda semana',
+    'Atividades novas todo mês, incluídas no plano',
   ];
 
   const getTriggerCopy = () => {

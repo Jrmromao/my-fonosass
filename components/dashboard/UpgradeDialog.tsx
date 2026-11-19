@@ -58,7 +58,7 @@ export function UpgradeDialog({ open, onOpenChange }: UpgradeDialogProps) {
         <div className="space-y-4">
           <p className="text-sm text-neutral-600">
             Com o plano {PRO_PLAN.name} você baixa todas as atividades, com
-            novidades toda semana. Cancele quando quiser.
+            novidades todo mês. Cancele quando quiser.
           </p>
           {error && (
             <p className="text-sm text-destructive" role="alert">

@@ -1,29 +1,11 @@
-import LandingFooter from '@/components/layout/LandingFooter';
-import SharedNavbar from '@/components/layout/SharedNavbar';
-import { Metadata } from 'next';
-import EspecialistasClient from './EspecialistasClient';
+import { notFound } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Especialistas - Almanaque da Fala',
-  description:
-    'Conecte-se com fonoaudiólogos especialistas e receba orientação profissional personalizada.',
-  keywords: [
-    'especialistas',
-    'fonoaudiólogos',
-    'consulta online',
-    'orientação profissional',
-    'almanaque da fala',
-  ],
-};
+// Hidden: the specialist directory isn't part of the product right now (its
+// listings were placeholders). The page answers 404 and is linked from
+// nowhere (footer, sitemap, robots.txt). The UI stays in
+// ./EspecialistasClient.tsx in case it comes back; to restore, render it
+// here again and re-add the links.
 
 export default function EspecialistasPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-900 dark:via-indigo-800 dark:to-purple-900">
-      <SharedNavbar />
-      <main className="pt-24">
-        <EspecialistasClient />
-      </main>
-      <LandingFooter />
-    </div>
-  );
+  notFound();
 }

@@ -107,11 +107,11 @@ export default function PhonemeLibrary({
           <h2 className="font-display text-3xl font-bold max-w-md leading-tight">
             {totalActivities >= MIN_ACTIVITIES_TO_SHOW_COUNT
               ? `${totalActivities} atividades prontas, organizadas por fonema.`
-              : 'Organizada por fonema, com novas atividades toda semana.'}
+              : 'Organizada por fonema, com atividades novas todo mês.'}
           </h2>
           <p className="text-neutral-600 max-w-sm text-sm leading-relaxed">
-            Atividades para pré-escolares, crianças em idade escolar e
-            adolescentes, em três níveis de dificuldade.
+            Cada fonema com uma palavra de exemplo. Escolha, baixe e imprima
+            para usar na sessão.
           </p>
         </div>
 
@@ -180,7 +180,7 @@ export default function PhonemeLibrary({
           hasComingSoon && (
             <p className="mt-8 text-sm text-neutral-600">
               Os itens marcados como &ldquo;Em breve&rdquo; estão em produção e
-              entram na biblioteca nas próximas semanas, sem custo extra para
+              entram na biblioteca nos próximos meses, sem custo extra para
               assinantes.
             </p>
           )

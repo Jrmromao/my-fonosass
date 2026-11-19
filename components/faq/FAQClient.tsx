@@ -1,85 +1,16 @@
 'use client';
 
+import { FAQ_CATEGORIES, FAQ_DATA } from '@/lib/faq';
 import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-
-const CATEGORIES = ['Geral', 'Planos', 'Conteúdo'] as const;
-
-const FAQ_DATA: Record<string, { question: string; answer: string }[]> = {
-  Geral: [
-    {
-      question: 'O que é o Almanaque da Fala?',
-      answer:
-        'Uma plataforma de materiais terapêuticos para fonoaudiólogos. Atividades imprimíveis organizadas por fonema, criadas e revisadas por profissional.',
-    },
-    {
-      question: 'Para quem é a plataforma?',
-      answer:
-        'Para fonoaudiólogos que atendem crianças de 4 a 12 anos e precisam de materiais prontos para usar em sessões.',
-    },
-    {
-      question: 'Substitui a terapia presencial?',
-      answer:
-        'Não. O Almanaque da Fala é uma ferramenta complementar. Os materiais são usados pelo profissional durante as sessões.',
-    },
-  ],
-  Planos: [
-    {
-      question: 'Quanto custa?',
-      answer:
-        'O plano gratuito inclui 3 downloads por mês. O plano Profissional oferece downloads ilimitados por R$39,90/mês ou R$399/ano.',
-    },
-    {
-      question: 'Posso cancelar a qualquer momento?',
-      answer:
-        'Sim. Sem multas ou taxas. O acesso permanece ativo até o fim do período pago.',
-    },
-    {
-      question: 'Existe período de teste?',
-      answer:
-        'O plano gratuito permite explorar a biblioteca e fazer até 3 downloads por mês, sem limite de tempo.',
-    },
-    {
-      question: 'Como funciona o pagamento?',
-      answer:
-        'Aceitamos cartão de crédito via Stripe. A cobrança é recorrente (mensal ou anual) e pode ser cancelada a qualquer momento.',
-    },
-  ],
-  Conteúdo: [
-    {
-      question: 'Quem cria os materiais?',
-      answer:
-        'Todos os exercícios são desenvolvidos e revisados por fonoaudióloga com experiência clínica em atendimento infantil.',
-    },
-    {
-      question: 'Com que frequência novos materiais são adicionados?',
-      answer:
-        'Toda semana. A biblioteca cresce continuamente com novos exercícios para diferentes fonemas.',
-    },
-    {
-      question: 'Para qual faixa etária?',
-      answer:
-        'Atividades para crianças de 4 a 12 anos, organizadas por nível de dificuldade e faixa etária.',
-    },
-    {
-      question: 'Quantos fonemas estão disponíveis?',
-      answer:
-        'Atualmente 16 fonemas cobertos, cada um com 4 tipos de atividade (encontre e circule, caça-palavras, jogo de tabuleiro, colorir e falar).',
-    },
-    {
-      question: 'Posso imprimir os materiais?',
-      answer:
-        'Sim. Todos os materiais vêm em formato pronto para impressão com a marca Almanaque da Fala.',
-    },
-  ],
-};
 
 export default function FAQClient() {
   const [activeCategory, setActiveCategory] = useState<string>('Geral');
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const questions = FAQ_DATA[activeCategory] || [];
+  const questions =
+    FAQ_DATA[activeCategory as (typeof FAQ_CATEGORIES)[number]] ?? [];
 
   return (
     <div className="pt-24 pb-16">
@@ -96,7 +27,7 @@ export default function FAQClient() {
 
         {/* Category tabs */}
         <div className="flex gap-2 mb-8">
-          {CATEGORIES.map((cat) => (
+          {FAQ_CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => {

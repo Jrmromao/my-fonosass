@@ -114,14 +114,6 @@ export default function LandingFooter() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/especialistas"
-                  className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  Especialistas
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/recursos-gratuitos"
                   className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
                 >

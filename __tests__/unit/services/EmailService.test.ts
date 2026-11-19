@@ -21,89 +21,40 @@ describe('EmailService', () => {
     jest.clearAllMocks();
   });
 
-  describe('sendDownloadLimitWarning', () => {
-    it('should send download limit warning email successfully', async () => {
-      const mockResponse = { id: 'email_123', error: null };
-      mockSend.mockResolvedValue(mockResponse);
+  describe('sendWelcomeEmail', () => {
+    const sentHtml = async (name = 'Ana Souza') => {
+      mockSend.mockResolvedValue({ id: 'email_1', error: null });
+      await EmailService.sendWelcomeEmail('ana@example.com', name);
+      return mockSend.mock.calls[0][0] as {
+        to: string;
+        subject: string;
+        html: string;
+      };
+    };
 
-      await EmailService.sendDownloadLimitWarning(
-        'test@example.com',
-        'Test User',
-        2
-      );
-
-      expect(mockSend).toHaveBeenCalledWith({
-        attachments: expect.any(Array),
-        from: 'Almanaque da Fala <noreply@almanaquedafala.com.br>',
-        to: 'test@example.com',
-        subject: 'Resta 2 downloads este mes',
-        html: expect.stringContaining('Test User'),
-      });
+    it('greets by first name and sends the welcome subject', async () => {
+      const mail = await sentHtml();
+      expect(mail.to).toBe('ana@example.com');
+      expect(mail.subject).toBe('Boas-vindas ao Almanaque da Fala');
+      expect(mail.html).toContain('Olá, Ana!');
     });
 
-    it('should handle email sending errors gracefully', async () => {
-      const mockError = new Error('Email sending failed');
-      mockSend.mockRejectedValue(mockError);
-
-      // The method should not throw, it should catch and log the error
-      await expect(
-        EmailService.sendDownloadLimitWarning(
-          'test@example.com',
-          'Test User',
-          1
-        )
-      ).resolves.toBeUndefined();
+    it('promises monthly updates, not weekly', async () => {
+      const { html } = await sentHtml();
+      expect(html).toContain(
+        'todo mês entram atividades novas no plano, sem custo extra'
+      );
+      expect(html).not.toMatch(/semana/i);
     });
 
-    it('should include correct remaining count in subject', async () => {
-      const mockResponse = { id: 'email_123', error: null };
-      mockSend.mockResolvedValue(mockResponse);
-
-      await EmailService.sendDownloadLimitWarning(
-        'test@example.com',
-        'Test User',
-        5
-      );
-
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          subject: 'Resta 5 downloads este mes',
-        })
-      );
+    it('does not mention age range', async () => {
+      const { html } = await sentHtml();
+      expect(html).not.toMatch(/faixa et/i);
     });
 
-    it('should include user name in email content', async () => {
-      const mockResponse = { id: 'email_123', error: null };
-      mockSend.mockResolvedValue(mockResponse);
-
-      await EmailService.sendDownloadLimitWarning(
-        'test@example.com',
-        'John Doe',
-        3
-      );
-
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          html: expect.stringContaining('Ola John Doe,'),
-        })
-      );
-    });
-
-    it('should include upgrade link in email content', async () => {
-      const mockResponse = { id: 'email_123', error: null };
-      mockSend.mockResolvedValue(mockResponse);
-
-      await EmailService.sendDownloadLimitWarning(
-        'test@example.com',
-        'Test User',
-        1
-      );
-
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          html: expect.stringContaining('Ver plano Profissional'),
-        })
-      );
+    it('escapes the name', async () => {
+      const { html } = await sentHtml('<b>Ana</b>');
+      expect(html).not.toContain('<b>Ana</b>');
     });
   });
 });

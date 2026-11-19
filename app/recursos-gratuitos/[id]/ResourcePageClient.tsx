@@ -141,9 +141,6 @@ export default function ResourcePageClient({
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-pink-100 text-pink-600">
                   {resource.category}
                 </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
-                  {resource.ageGroup}
-                </span>
                 {resource.isFeatured && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">
                     <Star className="w-3 h-3 mr-1" />
@@ -316,10 +313,6 @@ export default function ResourcePageClient({
                 <div>
                   <dt className="font-medium text-gray-900">Categoria</dt>
                   <dd className="text-gray-600">{resource.category}</dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-gray-900">Faixa Etária</dt>
-                  <dd className="text-gray-600">{resource.ageGroup}</dd>
                 </div>
                 <div>
                   <dt className="font-medium text-gray-900">Tipo</dt>
