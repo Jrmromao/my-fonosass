@@ -50,7 +50,7 @@ const ANALYTICS: Row[] = [
 
 const STORAGE: Row[] = [
   {
-    name: 'almanaque:analytics-consent',
+    name: 'almanaque:analytics-consent:v2',
     who: 'Almanaque da Fala',
     purpose:
       'Lembrar se você aceitou ou recusou o Google Analytics e os relatórios de erros.',
@@ -155,8 +155,8 @@ export default function CookiePolicyPage() {
           Sentry não grava cookies nem dados no seu navegador, mas, como em
           qualquer conexão, pode receber o seu endereço IP. Os dados ficam
           armazenados na União Europeia (Alemanha). Nossos servidores também
-          enviam avisos de erro ao Sentry, sem dados pessoais, para mantermos o
-          site funcionando.
+          enviam avisos de erro ao Sentry, com emails, CPF e telefones
+          removidos, para mantermos o site funcionando.
         </p>
       </Section>
 

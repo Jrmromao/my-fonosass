@@ -1,4 +1,8 @@
-import type { Breadcrumb, ErrorEvent } from '@sentry/nextjs';
+import type { Breadcrumb, ErrorEvent, NodeOptions } from '@sentry/nextjs';
+
+type TransactionEvent = Parameters<
+  NonNullable<NodeOptions['beforeSendTransaction']>
+>[0];
 
 /**
  * LGPD: nothing that identifies a patient or therapist may leave the server.
@@ -69,10 +73,9 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent | null {
     };
   }
 
-  // Keep only the opaque Clerk user id, never email, username or IP.
-  if (event.user) {
-    event.user = event.user.id ? { id: String(event.user.id) } : undefined;
-  }
+  // No user data at all: not even the opaque id (the privacy policy says
+  // reports carry no account identification).
+  delete event.user;
 
   // Server-side extras/contexts are free-form: drop them rather than guess.
   delete event.extra;
@@ -89,5 +92,36 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent | null {
 
   // Only server_name leaks the host; remove it.
   delete event.server_name;
+  return event;
+}
+
+/**
+ * Performance transactions skip `beforeSend`. Span descriptions and data hold
+ * URLs (including patient routes), so they get the same treatment.
+ */
+export function scrubTransaction(
+  event: TransactionEvent
+): TransactionEvent | null {
+  if (event.transaction) event.transaction = scrubUrl(event.transaction);
+
+  if (event.request) {
+    const { method, url } = event.request;
+    event.request = { method, url: url ? scrubUrl(url) : undefined };
+  }
+  delete event.user;
+  delete event.extra;
+  delete event.server_name;
+  if (event.contexts) {
+    const { trace, runtime, os, browser } = event.contexts;
+    event.contexts = { trace, runtime, os, browser };
+  }
+
+  event.spans = (event.spans ?? []).map((span) => {
+    const scrubbed = { ...span, data: {} };
+    if (scrubbed.description)
+      scrubbed.description = scrubUrl(scrubbed.description);
+    // Span data is free-form (full URLs, queries, headers): drop it.
+    return scrubbed;
+  });
   return event;
 }
