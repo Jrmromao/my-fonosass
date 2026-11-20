@@ -63,12 +63,17 @@ When generating or modifying Portuguese text, always verify accents and grammar 
     uses the old column (for a rename: add the new one, write both, read the
     new one); (2) in a later deploy, the migration that drops the old one.
 - A failed migration fails the build; the current deployment stays live.
-- Known issue: `prisma migrate dev` cannot replay
-  `20241223175000_add_content_to_resources` on the shadow database (P1014).
-  Until the history is fixed, generate the SQL with
-  `npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script`
-  (read-only), save it as `prisma/migrations/<YYYYMMDD>_<name>/migration.sql`,
-  review it, then apply locally with `npx prisma migrate deploy`.
+- Baseline: `prisma/migrations` starts with `0_init`, the whole schema
+  squashed on 2026-11-19 (the old 29 migrations are in git history; they
+  could not run on an empty database). `prisma migrate dev`, the shadow
+  database and new environments all start from `0_init`. Databases created
+  before the squash (production) get `0_init` recorded as applied by
+  `scripts/vercel-migrate.mjs`, only if their schema matches
+  `schema.prisma` exactly; otherwise the build fails.
+- If `0_init` is ever recorded as failed (P3009), the database had a schema
+  that did not match: compare it with
+  `npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma`,
+  fix the cause, then `npx prisma migrate resolve --rolled-back 0_init`.
 - Use proper indexes for filtered/sorted columns
 - Singleton pattern for services (`getInstance()`)
 

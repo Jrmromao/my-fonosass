@@ -14,10 +14,17 @@
 // the current deployment stays live. Rule: .kiro/rules.md -> Database ->
 // "Production migrations".
 //
-// History: the production database was baselined once on 2026-11-18
-// (commit 98fde97). A P3005 now means something is wrong: investigate,
-// don't baseline again.
-import { execSync } from 'node:child_process';
+// Baseline: prisma/migrations starts with 0_init, the full schema squashed on
+// 2026-11-19. A database created before that (production) already has the
+// schema but no 0_init row, so running 0_init would fail ("already exists").
+// adoptBaseline() records 0_init as applied there, but only when the live
+// schema matches schema.prisma exactly. A new, empty database gets 0_init
+// applied normally. A database that matches neither fails the build.
+import { execSync, spawnSync } from 'node:child_process';
+/* global process, console */
+
+const BASELINE = '0_init';
+const SCHEMA = 'prisma/schema.prisma';
 
 const env = process.env.VERCEL_ENV;
 const previewOptIn = process.env.PREVIEW_RUN_MIGRATIONS === 'true';
@@ -34,5 +41,68 @@ if (env === 'production') {
   process.exit(0);
 }
 
-// Uses DIRECT_URL (schema directUrl), so it bypasses any connection pooler.
-execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+// Prisma CLI with DATABASE_URL set to the direct connection: introspection
+// and migrations bypass the pooler. The URL is passed through the
+// environment, never on the command line.
+function prisma(args) {
+  const result = spawnSync('npx', ['prisma', ...args], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      DATABASE_URL: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    },
+  });
+  return {
+    status: result.status,
+    output: `${result.stdout ?? ''}${result.stderr ?? ''}`,
+  };
+}
+
+function fail(message, output) {
+  console.error(`[migrate] ${message}`);
+  if (output) console.error(output);
+  process.exit(1);
+}
+
+function adoptBaseline() {
+  // Exit code 0: live schema == schema.prisma. 2: they differ. 1: error.
+  const diff = prisma([
+    'migrate',
+    'diff',
+    '--from-schema-datasource',
+    SCHEMA,
+    '--to-schema-datamodel',
+    SCHEMA,
+    '--exit-code',
+  ]);
+  if (diff.status === 2) {
+    // Empty database (0_init will run) or pending migrations (deploy applies
+    // them). Nothing to adopt.
+    console.log('[migrate] schema differs from the database: no adoption');
+    return;
+  }
+  if (diff.status !== 0) {
+    fail('could not compare the database with schema.prisma', diff.output);
+  }
+
+  const resolve = prisma(['migrate', 'resolve', '--applied', BASELINE]);
+  if (resolve.status === 0) {
+    console.log(
+      `[migrate] database already matches schema.prisma: recorded ${BASELINE} as applied`
+    );
+  } else if (resolve.output.includes('P3008')) {
+    // Already recorded: the usual case after the first adoption.
+    console.log(`[migrate] ${BASELINE} already recorded`);
+  } else {
+    fail(`could not record ${BASELINE} as applied`, resolve.output);
+  }
+}
+
+adoptBaseline();
+execSync('npx prisma migrate deploy', {
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    DATABASE_URL: process.env.DIRECT_URL || process.env.DATABASE_URL,
+  },
+});
