@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSignUp } from '@clerk/nextjs';
+import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -84,15 +85,26 @@ export default function CustomSignUpForm() {
         return;
       }
 
-      // Email needs verification. Use what the Clerk instance allows: both
-      // instances currently only allow the email link, not the code.
-      const strategies =
-        withUsername.verifications.emailAddress.supportedStrategies ?? [];
+      // Email needs verification. Prefer a 6-digit code: unlike the email
+      // link, it works whichever browser or device opens the email (links
+      // fail with client_mismatch otherwise). Don't rely on
+      // supportedStrategies here: Clerk can return it without email_code
+      // before a verification is prepared. Fall back to the link only when
+      // the instance refuses the code.
       setPendingEmail(data.email);
-      if (strategies.includes('email_code')) {
+      let codeSent = false;
+      try {
         await signUp.prepareEmailAddressVerification({
           strategy: 'email_code',
         });
+        codeSent = true;
+      } catch (err: unknown) {
+        const code = isClerkAPIResponseError(err)
+          ? err.errors[0]?.code
+          : 'unknown';
+        console.error('[sign-up] email code unavailable, using link:', code);
+      }
+      if (codeSent) {
         setMethod('code');
       } else {
         setMethod('link');
