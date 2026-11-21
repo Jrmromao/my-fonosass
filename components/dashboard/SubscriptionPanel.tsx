@@ -3,7 +3,7 @@
 import { UpgradeDialog } from '@/components/dashboard/UpgradeDialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PRO_PLAN, formatBRL } from '@/lib/pricing';
+import { PRO_PLAN, formatBRL, yearlyDiscountText } from '@/lib/pricing';
 import { useQuery } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -165,7 +165,8 @@ export function SubscriptionPanel() {
                 {PRO_PLAN.name}: {formatBRL(PRO_PLAN.monthlyPrice)}/mês
               </p>
               <p className="text-sm text-neutral-600">
-                Ou {formatBRL(PRO_PLAN.yearlyPrice)} por ano.
+                Ou {formatBRL(PRO_PLAN.yearlyPrice)} por ano:{' '}
+                {yearlyDiscountText()}.
               </p>
               <ul className="space-y-1.5 pt-1">
                 {PRO_PLAN.features.map((f) => (

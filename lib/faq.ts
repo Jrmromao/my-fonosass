@@ -1,5 +1,5 @@
 import { FREE_SAMPLE_COUNT } from '@/lib/access-constants';
-import { PRO_PLAN, formatBRL } from '@/lib/pricing';
+import { PRO_PLAN, YEARLY_DISCOUNT, formatBRL } from '@/lib/pricing';
 
 // FAQ content: shown on /faq (components/faq/FAQClient.tsx) and published as
 // FAQPage structured data for search engines (app/faq/page.tsx). One source,
@@ -33,7 +33,7 @@ export const FAQ_DATA: Record<(typeof FAQ_CATEGORIES)[number], FaqEntry[]> = {
   Planos: [
     {
       question: 'Quanto custa?',
-      answer: `Com a conta gratuita você baixa todo mês as ${FREE_SAMPLE_COUNT} atividades com o selo “Grátis”. O plano ${PRO_PLAN.name} libera a biblioteca inteira, com downloads ilimitados, por ${formatBRL(PRO_PLAN.monthlyPrice)}/mês ou ${formatBRL(PRO_PLAN.yearlyPrice)}/ano.`,
+      answer: `Com a conta gratuita você baixa todo mês as ${FREE_SAMPLE_COUNT} atividades com o selo “Grátis”. O plano ${PRO_PLAN.name} libera a biblioteca inteira, com downloads ilimitados, por ${formatBRL(PRO_PLAN.monthlyPrice)}/mês ou ${formatBRL(PRO_PLAN.yearlyPrice)}/ano (${YEARLY_DISCOUNT.percent}% de desconto no plano anual).`,
     },
     {
       question: 'Posso cancelar a qualquer momento?',

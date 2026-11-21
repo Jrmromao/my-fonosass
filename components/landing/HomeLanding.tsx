@@ -1,7 +1,7 @@
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
 import { freeOfferText } from '@/lib/freeOffer';
-import { PRO_PLAN, formatBRL } from '@/lib/pricing';
+import { PRO_PLAN, YEARLY_DISCOUNT, formatBRL } from '@/lib/pricing';
 import { ArrowRight, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -36,11 +36,7 @@ interface HomeLandingProps {
   totalActivities: number;
 }
 
-const yearlySavings = Math.round(
-  ((PRO_PLAN.monthlyPrice * 12 - PRO_PLAN.yearlyPrice) /
-    (PRO_PLAN.monthlyPrice * 12)) *
-    100
-);
+const yearlySavings = YEARLY_DISCOUNT.percent;
 
 // Headings inherit the logo's dark purple (violet-950).
 const INK_CLASS = 'text-violet-950';
@@ -94,10 +90,8 @@ export default function HomeLanding({
               </div>
               <p className="mt-5 text-sm text-neutral-600">
                 {freeAvailable && `${freeText} ao criar sua conta. `}
-                Assinatura a partir de {formatBRL(
-                  PRO_PLAN.yearlyPrice / 12
-                )}{' '}
-                por mês no plano anual.
+                Assinatura a partir de {formatBRL(YEARLY_DISCOUNT.perMonth)} por
+                mês no plano anual.
               </p>
             </div>
 
@@ -193,7 +187,7 @@ export default function HomeLanding({
                     label="Anual"
                     price={formatBRL(PRO_PLAN.yearlyPrice)}
                     period="/ano"
-                    note={`Equivale a ${formatBRL(PRO_PLAN.yearlyPrice / 12)} por mês, ${yearlySavings}% de desconto`}
+                    note={`Equivale a ${formatBRL(YEARLY_DISCOUNT.perMonth)} por mês: ${yearlySavings}% de desconto, economia de ${formatBRL(YEARLY_DISCOUNT.amount)} por ano`}
                   />
                   <AuthAwareLink
                     to="/dashboard/profile?tab=assinatura"

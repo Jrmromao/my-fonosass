@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { PRO_PLAN, formatBRL } from '@/lib/pricing';
+import { PRO_PLAN, YEARLY_DISCOUNT, formatBRL } from '@/lib/pricing';
 import { useState } from 'react';
 
 interface UpgradeDialogProps {
@@ -83,7 +83,7 @@ export function UpgradeDialog({ open, onOpenChange }: UpgradeDialogProps) {
             >
               {loading === 'yearly'
                 ? 'Abrindo pagamento...'
-                : `Anual: ${formatBRL(PRO_PLAN.yearlyPrice)}/ano`}
+                : `Anual: ${formatBRL(PRO_PLAN.yearlyPrice)}/ano (${YEARLY_DISCOUNT.percent}% de desconto)`}
             </Button>
           </div>
         </div>
