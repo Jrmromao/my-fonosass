@@ -61,8 +61,8 @@ mandate amount and schedule from the price.
 Product catalog.
 
 - [ ] Product "Almanaque da Fala Profissional"
-- [ ] Recurring price, **BRL**, R$ 39,90 monthly
-- [ ] Recurring price, **BRL**, R$ 299,00 yearly (37% off 12 × R$ 39,90;
+- [ ] Recurring price, **BRL**, R$ 29,00 monthly
+- [ ] Recurring price, **BRL**, R$ 299,00 yearly (14% off 12 × R$ 29,00;
       the site states this discount, computed in `lib/pricing.ts`)
 - [ ] Copy both `price_…` IDs (step 9)
 

@@ -6,7 +6,7 @@
 export const PRO_PLAN = {
   name: 'Profissional',
   description: 'Para fonoaudiólogos trabalhando com exercícios de fonemas',
-  monthlyPrice: 39.9,
+  monthlyPrice: 29,
   yearlyPrice: 299,
   features: [
     'Todas as atividades da biblioteca',
@@ -29,11 +29,11 @@ const monthlyYearCents = Math.round(PRO_PLAN.monthlyPrice * 100) * 12;
 const yearlyCents = Math.round(PRO_PLAN.yearlyPrice * 100);
 
 export const YEARLY_DISCOUNT = {
-  /** 12 × monthly price, e.g. R$ 478,80. */
+  /** 12 × monthly price, e.g. R$ 348,00. */
   monthlyForAYear: monthlyYearCents / 100,
-  /** How much the yearly plan saves, e.g. R$ 179,80. */
+  /** How much the yearly plan saves, e.g. R$ 49,00. */
   amount: (monthlyYearCents - yearlyCents) / 100,
-  /** Whole percent, rounded down, e.g. 37. */
+  /** Whole percent, rounded down, e.g. 14. */
   percent: Math.floor(
     ((monthlyYearCents - yearlyCents) / monthlyYearCents) * 100
   ),
@@ -41,7 +41,7 @@ export const YEARLY_DISCOUNT = {
   perMonth: Math.round(yearlyCents / 12) / 100,
 } as const;
 
-/** "37% de desconto (economia de R$ 179,80 por ano)". */
+/** "14% de desconto (economia de R$ 49,00 por ano)". */
 export function yearlyDiscountText(): string {
   return `${YEARLY_DISCOUNT.percent}% de desconto (economia de ${formatBRL(
     YEARLY_DISCOUNT.amount
