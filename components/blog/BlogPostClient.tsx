@@ -2,20 +2,35 @@
 
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
+import { splitMarkdownForMidCta } from '@/lib/blog/splitForMidCta';
 import { BlogPost } from '@/lib/blog';
 import { safeJsonLd } from '@/lib/security/jsonLd';
 import { sanitizeHtml } from '@/lib/security/sanitizeHtml';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ChevronLeft } from 'lucide-react';
 import { marked } from 'marked';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import BackToBlogButton from './BackToBlogButton';
 import ConversionCTA from './ConversionCTA';
-import ExitIntentPopup from './ExitIntentPopup';
 import LikeButton from './LikeButton';
 import PopularPosts from './PopularPosts';
 import ShareButton from './ShareButton';
+
+const PROSE_CLASS =
+  'prose prose-lg max-w-none ' +
+  'prose-headings:font-display prose-headings:font-bold prose-headings:text-violet-950 ' +
+  'prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-neutral-100 prose-h2:pb-2 prose-h2:text-2xl ' +
+  'prose-h3:mt-8 prose-h3:mb-3 prose-h3:text-xl ' +
+  'prose-p:text-base prose-p:leading-relaxed prose-p:text-neutral-700 ' +
+  'prose-a:font-medium prose-a:text-coral-800 prose-a:no-underline hover:prose-a:underline ' +
+  'prose-strong:font-semibold prose-strong:text-neutral-900 ' +
+  'prose-code:rounded-md prose-code:bg-violet-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:text-coral-800 prose-code:before:content-none prose-code:after:content-none ' +
+  'prose-pre:rounded-xl prose-pre:bg-neutral-900 prose-pre:text-neutral-100 ' +
+  'prose-blockquote:border-l-4 prose-blockquote:border-coral-500 prose-blockquote:bg-violet-50 prose-blockquote:py-1 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-neutral-600 ' +
+  'prose-li:text-neutral-700 ' +
+  'prose-img:rounded-xl prose-img:border prose-img:border-neutral-200 ' +
+  'prose-hr:border-neutral-100';
 
 interface BlogPostClientProps {
   post: BlogPost;
@@ -26,45 +41,40 @@ export default function BlogPostClient({
   post,
   relatedPosts,
 }: BlogPostClientProps) {
-  const [activeHeading, setActiveHeading] = useState<string>('');
   const [readingProgress, setReadingProgress] = useState(0);
   const [viewCount, setViewCount] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
 
   const wordCount = useMemo(
     () => post.content.split(/\s+/).length,
     [post.content]
   );
 
-  // Memoize the like change callback to prevent infinite loops
-  const handleLikeChange = useCallback((likes: number, isLiked: boolean) => {
+  const { beforeHtml, afterHtml } = useMemo(() => {
+    marked.setOptions({ breaks: true, gfm: true });
+    const { before, after } = splitMarkdownForMidCta(post.content);
+    return {
+      beforeHtml: sanitizeHtml(marked(before) as string),
+      afterHtml: after ? sanitizeHtml(marked(after) as string) : '',
+    };
+  }, [post.content]);
+
+  const handleLikeChange = useCallback((likes: number) => {
     setLikeCount(likes);
-    setIsLiked(isLiked);
   }, []);
 
-  // Configure marked options
-  marked.setOptions({
-    breaks: true,
-    gfm: true,
-  });
-
-  // Track view and load analytics
   useEffect(() => {
     const trackView = async () => {
       try {
         const response = await fetch(`/api/blog/${post.slug}/view`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ipAddress: null, // Will be detected server-side
+            ipAddress: null,
             userAgent: navigator.userAgent,
             referer: document.referrer,
           }),
         });
-
         if (response.ok) {
           const data = await response.json();
           setViewCount(data.viewCount);
@@ -81,79 +91,46 @@ export default function BlogPostClient({
           const data = await response.json();
           setViewCount(data.viewCount);
         }
-
         const likeResponse = await fetch(`/api/blog/${post.slug}/like`);
         if (likeResponse.ok) {
           const likeData = await likeResponse.json();
           setLikeCount(likeData.likeCount);
-          setIsLiked(likeData.isLiked);
         }
       } catch (error) {
         console.error('Error loading analytics:', error);
       }
     };
 
-    // Load existing analytics first, then track new view
     loadAnalytics().then(() => {
-      // Small delay to avoid race conditions
       setTimeout(trackView, 100);
     });
   }, [post.slug]);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Reading progress calculation
-      const article = document.querySelector('article');
-      if (article) {
-        const articleTop = article.offsetTop;
-        const articleHeight = article.offsetHeight;
-        const windowHeight = window.innerHeight;
-        const scrollTop = window.scrollY;
-
-        const progress = Math.min(
-          100,
-          Math.max(
-            0,
-            ((scrollTop - articleTop + windowHeight) / articleHeight) * 100
-          )
-        );
-        setReadingProgress(progress);
-      }
-
-      // Active heading detection
-      const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      let currentHeading = '';
-
-      headings.forEach((heading) => {
-        const rect = heading.getBoundingClientRect();
-        if (rect.top <= 100) {
-          currentHeading = heading.id;
-        }
-      });
-
-      setActiveHeading(currentHeading);
+      const article = document.querySelector('article[data-blog-article]');
+      if (!article) return;
+      const el = article as HTMLElement;
+      const articleTop = el.offsetTop;
+      const articleHeight = el.offsetHeight;
+      const windowHeight = window.innerHeight;
+      const scrollTop = window.scrollY;
+      const progress = Math.min(
+        100,
+        Math.max(
+          0,
+          ((scrollTop - articleTop + windowHeight) / articleHeight) * 100
+        )
+      );
+      setReadingProgress(progress);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (!post) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Artigo não encontrado
-          </h1>
-          <BackToBlogButton variant="minimal" size="lg" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
-      {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -162,15 +139,10 @@ export default function BlogPostClient({
             '@type': 'Article',
             headline: post.title,
             description: post.excerpt,
-            image: post.featured
-              ? `/api/og?title=${encodeURIComponent(post.title)}`
-              : undefined,
             author: {
               '@type': 'Person',
               name: post.author,
               jobTitle: 'Fonoaudióloga',
-              description:
-                'Especialista em fonoaudiologia com ampla experiência clínica',
             },
             publisher: {
               '@type': 'Organization',
@@ -179,7 +151,7 @@ export default function BlogPostClient({
             },
             datePublished: post.date,
             dateModified: post.date,
-            wordCount: wordCount,
+            wordCount,
             timeRequired: `PT${post.readingTime}M`,
             keywords: post.tags?.join(', '),
             articleSection: 'Fonoaudiologia',
@@ -191,162 +163,101 @@ export default function BlogPostClient({
         }}
       />
 
-      <div className="min-h-screen bg-white">
-        {/* Reading Progress Bar */}
-        <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
+      <div className="min-h-screen bg-violet-100 text-violet-950">
+        <div
+          className="fixed left-0 top-0 z-[60] h-1 w-full bg-violet-200"
+          aria-hidden
+        >
           <div
-            className="h-full bg-coral-500 transition-all duration-300"
+            className="h-full bg-coral-700 transition-[width] duration-300"
             style={{ width: `${readingProgress}%` }}
           />
         </div>
 
-        {/* Breadcrumb Structured Data */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: safeJsonLd({
-              '@context': 'https://schema.org',
-              '@type': 'BreadcrumbList',
-              itemListElement: [
-                {
-                  '@type': 'ListItem',
-                  position: 1,
-                  name: 'Home',
-                  item: 'https://almanaquedafala.com.br',
-                },
-                {
-                  '@type': 'ListItem',
-                  position: 2,
-                  name: 'Blog',
-                  item: 'https://almanaquedafala.com.br/blog',
-                },
-                {
-                  '@type': 'ListItem',
-                  position: 3,
-                  name: post.title,
-                  item: `https://almanaquedafala.com.br/blog/${post.slug}`,
-                },
-              ],
-            }),
-          }}
-        />
+        <SharedNavbar tone="lavender" />
 
-        {/* Shared Navbar */}
-        <SharedNavbar />
-
-        {/* Breadcrumbs */}
-        <div className="bg-white border-b border-gray-100 pt-20">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            {/* <Breadcrumbs
-              items={[
-                { name: 'Home', href: '/' },
-                { name: 'Blog', href: '/blog' },
-                { name: post.title, href: `/blog/${post.slug}` },
-              ]}
-            /> */}
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="grid lg:grid-cols-4 gap-6 sm:gap-8">
-            {/* Main Content */}
-            <article
-              className="lg:col-span-3"
-              itemScope
-              itemType="https://schema.org/Article"
+        <main id="main-content" className="pt-24 pb-16 md:pt-28 md:pb-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <Link
+              href="/blog"
+              className="mb-6 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-violet-950 shadow-sm hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
             >
-              {/* Enhanced Breadcrumb Navigation */}
-              <nav className="mb-6 sm:mb-8" aria-label="Breadcrumb">
-                <ol className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm overflow-x-auto">
-                  <li>
-                    <Link
-                      href="/"
-                      className="text-gray-500 hover:text-coral-600 transition-colors duration-200 flex items-center gap-1 whitespace-nowrap"
-                    >
-                      <svg
-                        className="w-3 h-3 sm:w-4 sm:h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                        />
-                      </svg>
-                      <span className="hidden sm:inline">Home</span>
-                    </Link>
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300 mx-1 sm:mx-2"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <Link
-                      href="/blog"
-                      className="text-gray-500 hover:text-coral-600 transition-colors duration-200 whitespace-nowrap"
-                    >
-                      Blog
-                    </Link>
-                  </li>
-                  <li className="flex items-center">
-                    <svg
-                      className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300 mx-1 sm:mx-2"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span
-                      className="text-gray-900 font-medium truncate max-w-32 sm:max-w-xs"
-                      aria-current="page"
-                    >
-                      {post.title}
-                    </span>
-                  </li>
-                </ol>
-              </nav>
+              <ChevronLeft className="h-4 w-4" aria-hidden />
+              Blog
+            </Link>
 
-              {/* Article Navigation Bar */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                <BackToBlogButton variant="auth" size="md" />
-                <div className="flex items-center gap-4">
-                  <Link
-                    href="/faq"
-                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+            <div className="grid gap-6 lg:grid-cols-4 lg:gap-8">
+              <article
+                data-blog-article
+                className="lg:col-span-3"
+                itemScope
+                itemType="https://schema.org/Article"
+              >
+                <header className="rounded-3xl bg-white p-6 sm:p-8">
+                  <h1
+                    className="font-display text-3xl font-bold leading-tight sm:text-4xl"
+                    itemProp="headline"
                   >
-                    FAQ
-                  </Link>
-                  <Link
-                    href="/blog"
-                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                    {post.title}
+                  </h1>
+                  <p
+                    className="mt-4 max-w-3xl text-base leading-relaxed text-neutral-600 sm:text-lg"
+                    itemProp="description"
                   >
-                    Mais Artigos
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
-                  >
-                    Dashboard
-                  </Link>
-                  <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
+                    {post.excerpt}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-neutral-600">
+                    <span
+                      className="font-medium text-neutral-900"
+                      itemProp="author"
+                      itemScope
+                      itemType="https://schema.org/Person"
+                    >
+                      <span itemProp="name">{post.author}</span>
+                    </span>
+                    <span aria-hidden>·</span>
+                    <time itemProp="datePublished" dateTime={post.date}>
+                      {format(new Date(post.date), "dd 'de' MMMM 'de' yyyy", {
+                        locale: ptBR,
+                      })}
+                    </time>
+                    <span aria-hidden>·</span>
+                    <span
+                      itemProp="timeRequired"
+                      content={`PT${post.readingTime}M`}
+                    >
+                      {post.readingTime} min
+                    </span>
+                    {viewCount > 0 && (
+                      <>
+                        <span aria-hidden>·</span>
+                        <span>
+                          {viewCount.toLocaleString('pt-BR')} leituras
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {post.tags.map((tag) => (
+                        <Link
+                          key={tag}
+                          href="/blog"
+                          className="rounded-md bg-violet-50 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-sun-100"
+                        >
+                          {tag}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-5">
                     <LikeButton
                       articleId={post.slug}
                       initialLikes={likeCount}
-                      onLikeChange={handleLikeChange}
+                      onLikeChange={(likes) => handleLikeChange(likes)}
                     />
                     <ShareButton
                       url={`/blog/${post.slug}`}
@@ -354,343 +265,100 @@ export default function BlogPostClient({
                       description={post.excerpt}
                     />
                   </div>
-                </div>
-              </div>
+                </header>
 
-              {/* Enhanced Article Header */}
-              <header className="mb-8 sm:mb-12">
-                <div className="bg-gray-50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-gray-200">
-                  <h1
-                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight tracking-tight"
-                    itemProp="headline"
-                  >
-                    {post.title}
-                  </h1>
+                <div className="mt-6 rounded-3xl bg-white p-6 sm:p-8">
+                  <div itemProp="articleBody">
+                    <div
+                      className={PROSE_CLASS}
+                      dangerouslySetInnerHTML={{ __html: beforeHtml }}
+                    />
 
-                  <p
-                    className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed max-w-4xl"
-                    itemProp="description"
-                  >
-                    {post.excerpt}
-                  </p>
+                    {afterHtml ? (
+                      <ConversionCTA variant="mid" className="my-10" />
+                    ) : null}
 
-                  {/* Enhanced Author Info */}
-                  <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-4 sm:gap-6 text-xs sm:text-sm mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-coral-500 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-5 h-5 sm:w-6 sm:h-6 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <div
-                          className="font-semibold text-gray-900 text-sm sm:text-base"
-                          itemProp="author"
-                          itemScope
-                          itemType="https://schema.org/Person"
-                        >
-                          <span itemProp="name">{post.author}</span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {(post as unknown as Record<string, string>)
-                            .authorRole || 'Fonoaudióloga'}
-                          {(post as unknown as Record<string, string>)
-                            .authorInstagram && (
-                            <>
-                              {' '}
-                              ·{' '}
-                              <a
-                                href={
-                                  (post as unknown as Record<string, string>)
-                                    .authorInstagram
-                                }
-                                target="_blank"
-                                rel="nofollow noopener noreferrer ugc"
-                                className="text-coral-600 hover:underline"
-                              >
-                                @fonoeliane
-                              </a>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <svg
-                        className="w-3 h-3 sm:w-4 sm:h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <time
-                        itemProp="datePublished"
-                        dateTime={post.date}
-                        className="text-xs sm:text-sm"
-                      >
-                        {format(new Date(post.date), "dd 'de' MMMM 'de' yyyy", {
-                          locale: ptBR,
-                        })}
-                      </time>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <svg
-                        className="w-3 h-3 sm:w-4 sm:h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span
-                        itemProp="timeRequired"
-                        content={`PT${post.readingTime}M`}
-                        className="text-xs sm:text-sm"
-                      >
-                        {post.readingTime} min de leitura
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <svg
-                        className="w-3 h-3 sm:w-4 sm:h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <span className="text-xs sm:text-sm">
-                        {wordCount.toLocaleString()} palavras
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Enhanced Tags */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-                    {post.tags &&
-                      post.tags.map((tag) => (
-                        <Link
-                          key={tag}
-                          href={`/blog?tag=${encodeURIComponent(tag)}`}
-                          className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 text-neutral-700 rounded-full text-xs sm:text-sm font-medium  transition-all duration-200 border border-gray-200"
-                          aria-label={`Filtrar artigos por tag: ${tag}`}
-                        >
-                          #{tag}
-                        </Link>
-                      ))}
-                  </div>
-
-                  {/* Enhanced Social Actions */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 p-4 sm:p-6 bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-sm">
-                    <div className="flex items-center gap-4 sm:gap-6">
-                      <LikeButton
-                        articleId={post.slug}
-                        initialLikes={likeCount}
-                        onLikeChange={(likes, isLiked) => {
-                          setLikeCount(likes);
-                          setIsLiked(isLiked);
-                        }}
+                    {afterHtml ? (
+                      <div
+                        className={PROSE_CLASS}
+                        dangerouslySetInnerHTML={{ __html: afterHtml }}
                       />
-                      <ShareButton
-                        url={`/blog/${post.slug}`}
-                        title={post.title}
-                        description={post.excerpt}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="font-medium">
-                        {viewCount.toLocaleString()} visualizações
-                      </span>
-                    </div>
+                    ) : null}
                   </div>
+
+                  <ConversionCTA variant="article" className="mt-10" />
                 </div>
-              </header>
+              </article>
 
-              {/* Enhanced Article Content */}
-              <div
-                className="prose prose-xl max-w-none 
-                prose-headings:text-gray-900 prose-headings:font-bold prose-headings:tracking-tight
-                prose-h1:text-4xl prose-h1:mb-8 prose-h1:mt-12 prose-h1:text-neutral-900
-                prose-h2:text-3xl prose-h2:mb-6 prose-h2:mt-10 prose-h2:border-b prose-h2:border-gray-200 prose-h2:pb-3 prose-h2:relative
-                prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8 prose-h3:text-gray-800
-                prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6 prose-h4:text-gray-800
-                prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-p:text-lg prose-p:font-normal
-                prose-a:text-coral-600 prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-all prose-a:duration-200
-                prose-strong:text-gray-900 prose-strong:font-semibold
-                prose-code:text-coral-600 prose-code:bg-gray-100 prose-code:px-3 prose-code:py-1 prose-code:rounded-md prose-code:text-sm prose-code:font-mono prose-code:border prose-code:border-gray-200
-                prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl prose-pre:p-6 prose-pre:overflow-x-auto prose-pre:shadow-lg prose-pre:border prose-pre:border-gray-700
-                prose-blockquote:border-l-4 prose-blockquote:border-coral-500 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-600 prose-blockquote:bg-gray-50 prose-blockquote:py-4 prose-blockquote:rounded-r-lg prose-blockquote:shadow-sm
-                prose-ul:list-disc prose-ul:pl-6 prose-ul:space-y-3 prose-ul:marker:text-coral-600
-                prose-ol:list-decimal prose-ol:pl-6 prose-ol:space-y-3 prose-ol:marker:text-coral-600 prose-ol:marker:font-bold
-                prose-li:text-gray-700 prose-li:leading-relaxed prose-li:mb-2
-                prose-img:rounded-xl prose-img:shadow-xl prose-img:mx-auto prose-img:border prose-img:border-gray-200
-                prose-hr:border-gray-200 prose-hr:my-12 prose-hr:border-t-2"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(marked(post.content) as string),
-                }}
-                itemProp="articleBody"
-              />
-
-              {/* Conversion CTA after article content */}
-              <ConversionCTA
-                variant="topic"
-                topic={post.tags?.[0] || 'fonoaudiologia'}
-                className="mt-8"
-              />
-            </article>
-
-            {/* Sidebar */}
-            <aside className="lg:col-span-1 order-first lg:order-last">
-              <div className="lg:sticky lg:top-24 space-y-4 sm:space-y-6">
-                {/* Simple Reading Stats */}
-                <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-gray-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                        />
-                      </svg>
-                    </div>
-                    Estatísticas
-                  </h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Tempo de leitura</span>
-                      <span className="font-medium text-gray-900">
+              <aside className="space-y-4 lg:col-span-1">
+                <div className="rounded-3xl bg-white p-5">
+                  <h2 className="text-sm font-semibold text-violet-950">
+                    Neste artigo
+                  </h2>
+                  <dl className="mt-4 space-y-3 text-sm">
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-neutral-600">Leitura</dt>
+                      <dd className="font-medium text-neutral-900">
                         {post.readingTime} min
-                      </span>
+                      </dd>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Palavras</span>
-                      <span className="font-medium text-gray-900">
-                        {wordCount.toLocaleString()}
-                      </span>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-neutral-600">Palavras</dt>
+                      <dd className="font-medium text-neutral-900">
+                        {wordCount.toLocaleString('pt-BR')}
+                      </dd>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Visualizações</span>
-                      <span className="font-medium text-gray-900">
-                        {viewCount.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="pt-3 border-t border-gray-200">
-                      <div className="flex justify-between text-xs mb-2">
-                        <span className="text-gray-600">Progresso</span>
-                        <span className="font-medium text-gray-900">
+                    <div className="border-t border-neutral-100 pt-3">
+                      <div className="mb-2 flex justify-between text-xs">
+                        <span className="text-neutral-600">Progresso</span>
+                        <span className="font-medium text-neutral-900">
                           {Math.round(readingProgress)}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="h-2 w-full rounded-full bg-violet-100">
                         <div
-                          className="bg-coral-500 h-2 rounded-full transition-all duration-300"
+                          className="h-2 rounded-full bg-coral-700 transition-[width] duration-300"
                           style={{ width: `${readingProgress}%` }}
                         />
                       </div>
                     </div>
-                  </div>
+                  </dl>
                 </div>
 
-                {/* Popular Posts - Hidden on mobile to save space */}
                 <div className="hidden lg:block">
                   <PopularPosts limit={5} sortBy="engagement" />
                 </div>
 
-                {/* Simple Related Posts */}
                 {relatedPosts.length > 0 && (
-                  <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
-                        <svg
-                          className="w-3 h-3 text-gray-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                          />
-                        </svg>
-                      </div>
-                      Artigos Relacionados
-                    </h3>
-                    <div className="space-y-3">
-                      {relatedPosts.slice(0, 3).map((relatedPost) => (
-                        <Link
-                          key={relatedPost.slug}
-                          href={`/blog/${relatedPost.slug}`}
-                          className="block group hover:bg-gray-50 p-2 rounded-md transition-colors duration-200"
-                        >
-                          <h4 className="text-sm font-medium text-gray-900 group-hover:text-coral-600 mb-1 line-clamp-2 leading-tight">
-                            {relatedPost.title}
-                          </h4>
-                          <p className="text-xs text-gray-500 line-clamp-2">
-                            {relatedPost.excerpt}
-                          </p>
-                        </Link>
+                  <div className="rounded-3xl bg-white p-5">
+                    <h2 className="text-sm font-semibold text-violet-950">
+                      Relacionados
+                    </h2>
+                    <ul className="mt-4 space-y-3">
+                      {relatedPosts.slice(0, 3).map((related) => (
+                        <li key={related.slug}>
+                          <Link
+                            href={`/blog/${related.slug}`}
+                            className="block rounded-xl p-2 transition-colors hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700"
+                          >
+                            <span className="text-sm font-medium leading-snug text-neutral-900">
+                              {related.title}
+                            </span>
+                            <span className="mt-1 line-clamp-2 block text-xs text-neutral-600">
+                              {related.excerpt}
+                            </span>
+                          </Link>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
                 )}
-              </div>
-            </aside>
+              </aside>
+            </div>
           </div>
+        </main>
 
-          {/* Enhanced Article Navigation */}
-          <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200"></div>
-        </div>
-
-        {/* Footer */}
         <LandingFooter />
-
-        {/* Exit Intent Popup */}
-        <ExitIntentPopup
-          currentArticle={{
-            title: post.title,
-            slug: post.slug,
-            tags: post.tags,
-          }}
-        />
       </div>
     </>
   );

@@ -70,24 +70,23 @@ export default function LikeButton({
 
   return (
     <button
+      type="button"
       onClick={handleLike}
       disabled={isLoading}
-      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm transition-all duration-200 ${
+      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2 ${
         isLiked
-          ? 'text-pink-600 bg-pink-50 hover:bg-pink-100'
-          : 'text-gray-500 hover:text-pink-500 hover:bg-pink-50'
-      } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          ? 'bg-coral-50 text-coral-800'
+          : 'text-neutral-600 hover:bg-violet-50 hover:text-coral-800'
+      } ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
       aria-label={isLiked ? 'Descurtir artigo' : 'Curtir artigo'}
+      aria-pressed={isLiked}
     >
       <Heart
-        className={`w-4 h-4 transition-all duration-200 ${
-          isLiked ? 'fill-current scale-110' : 'hover:scale-105'
-        }`}
+        className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`}
+        aria-hidden
       />
       {likes > 0 && (
-        <span className="text-xs font-medium min-w-[1rem] text-center">
-          {likes}
-        </span>
+        <span className="min-w-[1rem] text-center text-xs">{likes}</span>
       )}
     </button>
   );

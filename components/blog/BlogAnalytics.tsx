@@ -79,19 +79,19 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
   if (loading) {
     return (
       <div
-        className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}
+        className={`bg-white rounded-lg border border-neutral-200 p-6 ${className}`}
       >
         <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="w-5 h-5 text-pink-600" />
-          <h3 className="text-lg font-semibold text-gray-900">
+          <BarChart3 className="w-5 h-5 text-coral-800" />
+          <h3 className="text-lg font-semibold text-neutral-900">
             Analytics do Blog
           </h3>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-8 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-neutral-200 rounded mb-2"></div>
+              <div className="h-8 bg-neutral-200 rounded"></div>
             </div>
           ))}
         </div>
@@ -102,15 +102,15 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
   if (error) {
     return (
       <div
-        className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}
+        className={`bg-white rounded-lg border border-neutral-200 p-6 ${className}`}
       >
         <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="w-5 h-5 text-pink-600" />
-          <h3 className="text-lg font-semibold text-gray-900">
+          <BarChart3 className="w-5 h-5 text-coral-800" />
+          <h3 className="text-lg font-semibold text-neutral-900">
             Analytics do Blog
           </h3>
         </div>
-        <p className="text-gray-500">Erro ao carregar analytics</p>
+        <p className="text-neutral-600">Erro ao carregar analytics</p>
       </div>
     );
   }
@@ -121,11 +121,11 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
 
   return (
     <div
-      className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}
+      className={`bg-white rounded-lg border border-neutral-200 p-6 ${className}`}
     >
       <div className="flex items-center gap-2 mb-6">
-        <BarChart3 className="w-5 h-5 text-pink-600" />
-        <h3 className="text-lg font-semibold text-gray-900">
+        <BarChart3 className="w-5 h-5 text-coral-800" />
+        <h3 className="text-lg font-semibold text-neutral-900">
           Analytics do Blog
         </h3>
       </div>
@@ -133,11 +133,11 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="text-center">
-          <div className="flex items-center justify-center gap-1 text-2xl font-bold text-pink-600 mb-1">
+          <div className="flex items-center justify-center gap-1 text-2xl font-bold text-coral-800 mb-1">
             <Eye className="w-5 h-5" />
             {analytics.totalViews.toLocaleString()}
           </div>
-          <p className="text-sm text-gray-600">Visualizações</p>
+          <p className="text-sm text-neutral-600">Visualizações</p>
         </div>
 
         <div className="text-center">
@@ -145,7 +145,7 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
             <Heart className="w-5 h-5" />
             {analytics.totalLikes.toLocaleString()}
           </div>
-          <p className="text-sm text-gray-600">Curtidas</p>
+          <p className="text-sm text-neutral-600">Curtidas</p>
         </div>
 
         <div className="text-center">
@@ -153,7 +153,7 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
             <TrendingUp className="w-5 h-5" />
             {analytics.totalPosts}
           </div>
-          <p className="text-sm text-gray-600">Posts</p>
+          <p className="text-sm text-neutral-600">Posts</p>
         </div>
 
         <div className="text-center">
@@ -161,24 +161,26 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
             <BarChart3 className="w-5 h-5" />
             {analytics.averageEngagement.toLocaleString()}
           </div>
-          <p className="text-sm text-gray-600">Engajamento Médio</p>
+          <p className="text-sm text-neutral-600">Engajamento Médio</p>
         </div>
       </div>
 
       {/* Top Posts */}
       <div>
-        <h4 className="text-md font-semibold text-gray-900 mb-3">Top Posts</h4>
+        <h4 className="text-md font-semibold text-neutral-900 mb-3">
+          Top Posts
+        </h4>
         <div className="space-y-2">
           {analytics.topPosts.map((post, index) => (
             <div
               key={post.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              className="flex items-center justify-between p-3 bg-violet-50 rounded-lg"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-neutral-900 truncate">
                   {post.title}
                 </p>
-                <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                <div className="flex items-center gap-4 text-xs text-neutral-600 mt-1">
                   <span className="flex items-center gap-1">
                     <Eye className="w-3 h-3" />
                     {post.viewCount.toLocaleString()}
@@ -194,7 +196,7 @@ function BlogAnalytics({ className = '' }: BlogAnalyticsProps) {
                 </div>
               </div>
               <div className="ml-2 flex-shrink-0">
-                <span className="text-xs font-bold text-pink-600 bg-pink-100 px-2 py-1 rounded-full">
+                <span className="text-xs font-bold text-coral-800 bg-coral-50 px-2 py-1 rounded-full">
                   #{index + 1}
                 </span>
               </div>

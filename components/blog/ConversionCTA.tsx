@@ -1,127 +1,71 @@
 'use client';
 
-import { ArrowRight, BookOpen, Play } from 'lucide-react';
+import { formatBRL, PRO_PLAN } from '@/lib/pricing';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface ConversionCTAProps {
-  variant?: 'default' | 'article' | 'topic';
+  variant?: 'default' | 'article' | 'mid' | 'topic';
   topic?: string;
   className?: string;
 }
 
+const COPY: Record<
+  'default' | 'article' | 'mid' | 'topic',
+  { title: string; body: string; primary: string }
+> = {
+  mid: {
+    title: 'Quer aplicar isto na próxima sessão?',
+    body: 'Na biblioteca há atividades imprimíveis por fonema, prontas para usar. Criadas e revisadas por fonoaudióloga.',
+    primary: 'Ver atividades',
+  },
+  article: {
+    title: 'Leve estas ideias para a sessão',
+    body: 'Atividades imprimíveis, organizadas por fonema, criadas e revisadas por fonoaudióloga.',
+    primary: 'Ver a biblioteca',
+  },
+  default: {
+    title: 'Biblioteca de atividades por fonema',
+    body: 'Atividades imprimíveis, organizadas por fonema, criadas e revisadas por fonoaudióloga.',
+    primary: 'Ver a biblioteca',
+  },
+  topic: {
+    title: 'Biblioteca de atividades por fonema',
+    body: 'Atividades imprimíveis, organizadas por fonema, criadas e revisadas por fonoaudióloga.',
+    primary: 'Ver a biblioteca',
+  },
+};
+
 export default function ConversionCTA({
   variant = 'default',
-  topic,
   className = '',
 }: ConversionCTAProps) {
-  const topicExercises = {
-    exercícios: '/dashboard?filter=exercicios',
-    fonemas: '/dashboard?filter=fonemas',
-    lgpd: '/dashboard?filter=prontuarios',
-    terapia: '/dashboard?filter=terapia',
-    prontuários: '/dashboard?filter=prontuarios',
-  };
-
-  const getTopicLink = () => {
-    if (!topic) return '/dashboard';
-    const normalizedTopic = topic.toLowerCase();
-    return (
-      topicExercises[normalizedTopic as keyof typeof topicExercises] ||
-      '/dashboard'
-    );
-  };
-
-  if (variant === 'article') {
-    return (
-      <div
-        className={`mt-8 p-6 bg-gradient-to-r from-pink-50 to-yellow-50 rounded-xl border border-pink-200 ${className}`}
-      >
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
-            <BookOpen className="w-6 h-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-gray-900 mb-2">
-              Gostou deste artigo?
-            </h4>
-            <p className="text-sm text-gray-600 mb-4">
-              Acesse nossa plataforma e coloque em prática essas dicas com
-              exercícios interativos.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/sign-up"
-                className="px-4 py-2 bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Play className="w-4 h-4" />
-                Experimente Grátis
-              </Link>
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 border border-pink-300 text-pink-600 rounded-lg text-sm font-medium hover:bg-pink-50 transition-all flex items-center justify-center gap-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                Ver Exercícios
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (variant === 'topic') {
-    return (
-      <div
-        className={`mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 ${className}`}
-      >
-        <h4 className="font-semibold text-blue-900 mb-2">
-          Pronto para colocar em prática?
-        </h4>
-        <p className="text-sm text-blue-700 mb-4">
-          Acesse exercícios específicos sobre {topic} na nossa plataforma.
-        </p>
+  const copy = COPY[variant] ?? COPY.default;
+  return (
+    <aside
+      className={`rounded-2xl border-2 border-neutral-900 bg-violet-50 p-6 sm:p-7 ${className}`}
+    >
+      <h3 className="font-display text-lg font-bold text-violet-950">
+        {copy.title}
+      </h3>
+      <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+        {copy.body} A partir de {formatBRL(PRO_PLAN.monthlyPrice)}/mês.
+      </p>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Link
-          href={getTopicLink()}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all gap-2"
+          href="/#biblioteca"
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-coral-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-coral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
         >
-          <Play className="w-4 h-4" />
-          Ver Exercícios de {topic} <ArrowRight className="w-4 h-4" />
+          {copy.primary}
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Link>
+        <Link
+          href="/#planos"
+          className="inline-flex items-center justify-center rounded-md border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
+        >
+          Ver planos
         </Link>
       </div>
-    );
-  }
-
-  // Default variant
-  return (
-    <div
-      className={`mt-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 ${className}`}
-    >
-      <div className="text-center">
-        <h4 className="font-semibold text-gray-900 mb-2">
-          Transforme sua prática clínica
-        </h4>
-        <p className="text-sm text-gray-600 mb-4">
-          Acesse nossa biblioteca completa de exercícios fonoaudiológicos e
-          ferramentas profissionais.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/sign-up"
-            className="px-6 py-3 bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-lg font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2"
-          >
-            <Play className="w-4 h-4" />
-            Começar Teste Grátis
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-6 py-3 border border-indigo-300 text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
-          >
-            <BookOpen className="w-4 h-4" />
-            Explorar Plataforma
-          </Link>
-        </div>
-      </div>
-    </div>
+    </aside>
   );
 }

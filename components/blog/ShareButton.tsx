@@ -35,11 +35,10 @@ export default function ShareButton({
   const encodedUrl = encodeURIComponent(fullUrl);
 
   useEffect(() => {
-    // Check if native Web Share API is available
     setCanUseNativeShare(
       typeof navigator !== 'undefined' &&
         'share' in navigator &&
-        navigator.canShare?.({ title, text: description, url: fullUrl })
+        !!navigator.canShare?.({ title, text: description, url: fullUrl })
     );
   }, [title, description, fullUrl]);
 
@@ -48,31 +47,26 @@ export default function ShareButton({
       name: 'Facebook',
       icon: Facebook,
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-      color: 'hover:bg-blue-50 hover:text-blue-600',
     },
     {
       name: 'Twitter',
       icon: Twitter,
       url: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
-      color: 'hover:bg-sky-50 hover:text-sky-600',
     },
     {
       name: 'LinkedIn',
       icon: Linkedin,
       url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-      color: 'hover:bg-blue-50 hover:text-blue-700',
     },
     {
       name: 'Email',
       icon: Mail,
       url: `mailto:?subject=${encodedTitle}&body=${encodedDescription}%0A%0A${encodedUrl}`,
-      color: 'hover:bg-gray-50 hover:text-gray-700',
     },
     {
       name: 'WhatsApp',
       icon: MessageCircle,
       url: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
-      color: 'hover:bg-green-50 hover:text-green-600',
     },
   ];
 
@@ -88,11 +82,7 @@ export default function ShareButton({
 
   const handleNativeShare = async () => {
     try {
-      await navigator.share({
-        title,
-        text: description,
-        url: fullUrl,
-      });
+      await navigator.share({ title, text: description, url: fullUrl });
       setIsOpen(false);
     } catch (err) {
       console.error('Error sharing: ', err);
@@ -107,75 +97,76 @@ export default function ShareButton({
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={
           canUseNativeShare ? handleNativeShare : () => setIsOpen(!isOpen)
         }
-        className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200"
+        className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-violet-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
         aria-label="Compartilhar artigo"
+        aria-expanded={isOpen}
       >
-        <Share2 className="w-4 h-4" />
-        <span className="text-xs font-medium hidden sm:inline">
-          Compartilhar
-        </span>
+        <Share2 className="h-4 w-4" aria-hidden />
+        <span className="hidden text-xs sm:inline">Compartilhar</span>
       </button>
 
       {isOpen && (
         <>
-          {/* Backdrop */}
           <div
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
+            aria-hidden
           />
-
-          {/* Dropdown */}
-          <div className="absolute right-0 top-10 z-20 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
-            <div className="px-4 py-2 border-b border-gray-100">
-              <p className="text-sm font-semibold text-gray-900">
-                Compartilhar artigo
-              </p>
-            </div>
-
+          <div
+            role="menu"
+            className="absolute right-0 top-10 z-20 w-52 rounded-xl border border-neutral-200 bg-white py-2 shadow-sm"
+          >
+            <p className="border-b border-neutral-100 px-4 py-2 text-sm font-semibold text-violet-950">
+              Compartilhar
+            </p>
             <div className="py-1">
               {canUseNativeShare && (
                 <>
                   <button
+                    type="button"
+                    role="menuitem"
                     onClick={handleNativeShare}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-violet-50"
                   >
-                    <Smartphone className="w-4 h-4" />
-                    Compartilhar nativo
+                    <Smartphone className="h-4 w-4" aria-hidden />
+                    Compartilhar
                   </button>
-                  <div className="border-t border-gray-100 my-1"></div>
+                  <div className="my-1 border-t border-neutral-100" />
                 </>
               )}
-
               {shareOptions.map((option) => (
                 <button
                   key={option.name}
+                  type="button"
+                  role="menuitem"
                   onClick={() => handleShare(option.url)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 ${option.color} transition-colors`}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-violet-50"
                 >
-                  <option.icon className="w-4 h-4" />
+                  <option.icon className="h-4 w-4" aria-hidden />
                   {option.name}
                 </button>
               ))}
-
-              <div className="border-t border-gray-100 my-1"></div>
-
+              <div className="my-1 border-t border-neutral-100" />
               <button
+                type="button"
+                role="menuitem"
                 onClick={copyToClipboard}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-violet-50"
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-green-600 font-medium">
-                      Link copiado!
+                    <Check className="h-4 w-4 text-green-700" aria-hidden />
+                    <span className="font-medium text-green-800">
+                      Link copiado
                     </span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-4 h-4" />
+                    <Copy className="h-4 w-4" aria-hidden />
                     Copiar link
                   </>
                 )}

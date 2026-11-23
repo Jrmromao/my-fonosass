@@ -70,16 +70,17 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
   if (tocItems.length === 0) return null;
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+    <div className="rounded-3xl border border-neutral-200 bg-white p-4">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full text-left font-semibold text-gray-900 mb-2"
+        className="mb-2 flex w-full items-center justify-between text-left text-sm font-semibold text-violet-950"
       >
-        <span>Índice do Artigo</span>
+        <span>Índice do artigo</span>
         {isOpen ? (
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="h-4 w-4" aria-hidden />
         ) : (
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="h-4 w-4" aria-hidden />
         )}
       </button>
 
@@ -88,11 +89,12 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
           {tocItems.map((item, index) => (
             <button
               key={index}
+              type="button"
               onClick={() => scrollToHeading(item.id)}
-              className={`block w-full text-left text-sm py-1 px-2 rounded transition-colors ${
+              className={`block w-full rounded-md py-1 px-2 text-left text-sm transition-colors ${
                 activeId === item.id
-                  ? 'bg-pink-100 text-pink-700 font-medium'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'bg-sun-100 font-medium text-violet-950'
+                  : 'text-neutral-600 hover:bg-violet-50 hover:text-neutral-900'
               }`}
               style={{ paddingLeft: `${(item.level - 1) * 12 + 8}px` }}
             >
