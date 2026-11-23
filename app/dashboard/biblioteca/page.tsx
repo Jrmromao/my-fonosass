@@ -15,7 +15,7 @@ import {
   parseLibraryParams,
   phonemeSlug,
 } from '@/lib/libraryUrl';
-import { LANGUAGE_TOPICS } from '@/lib/phonemes';
+import { CATALOG_TOPICS } from '@/lib/phonemes';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
 import Link from 'next/link';
@@ -41,7 +41,7 @@ export default function LibraryIndexPage() {
   const redirectTo = legacyFilters.phoneme
     ? `${LIBRARY_PATH}/${phonemeSlug(legacyFilters.phoneme)}`
     : (() => {
-        const topic = LANGUAGE_TOPICS.find((t) =>
+        const topic = CATALOG_TOPICS.find((t) =>
           t.types.includes(legacyFilters.type as never)
         );
         return topic ? `${LIBRARY_PATH}/${topic.id}` : null;

@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { phonemeLabel, subjectLabel } from '@/lib/activityLabels';
 import type { LibraryResponse } from '@/lib/activityLibrary';
 import { LIBRARY_PATH, libraryHref, phonemeSlug } from '@/lib/libraryUrl';
-import { LANGUAGE_TOPICS } from '@/lib/phonemes';
+import { CATALOG_TOPICS } from '@/lib/phonemes';
 import { useUser } from '@clerk/nextjs';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -237,10 +237,10 @@ export default function Dashboard() {
   );
 }
 
-/** Topic page of an activity: its phoneme, or its language topic. */
+/** Topic page of an activity: its phoneme, or its catalog topic. */
 function topicHref(phoneme: string, type: string): string {
   if (phoneme) return `${LIBRARY_PATH}/${phonemeSlug(phoneme)}`;
-  const topic = LANGUAGE_TOPICS.find((t) =>
+  const topic = CATALOG_TOPICS.find((t) =>
     (t.types as string[]).includes(type)
   );
   return topic ? `${LIBRARY_PATH}/${topic.id}` : LIBRARY_PATH;

@@ -30,7 +30,8 @@ export interface SampleActivity {
 
 interface HomeLandingProps {
   phonemes: PhonemeCount[];
-  languageTopics: TopicCount[];
+  languageTopic: TopicCount;
+  otherTopics: TopicCount[];
   samples: SampleActivity[];
   freePreview: FreePreviewActivity[];
   totalActivities: number;
@@ -43,7 +44,8 @@ const INK_CLASS = 'text-violet-950';
 
 export default function HomeLanding({
   phonemes,
-  languageTopics,
+  languageTopic,
+  otherTopics,
   samples,
   freePreview,
   totalActivities,
@@ -108,7 +110,8 @@ export default function HomeLanding({
         {/* Library */}
         <PhonemeLibrary
           phonemes={phonemes}
-          languageTopics={languageTopics}
+          languageTopic={languageTopic}
+          otherTopics={otherTopics}
           freePreview={freePreview}
           totalActivities={totalActivities}
         />

@@ -830,7 +830,13 @@ const MOCK_PHONEMES: Record<string, number> = {
   ARQ_S: 2,
   ENC_R: 1,
 };
-const MOCK_TYPES: Record<string, number> = { COLOURS: 3, ANIMALS: 5 };
+const MOCK_TYPES: Record<string, number> = {
+  LANGUAGE: 4,
+  COLOURS: 3,
+  ANIMALS: 5,
+  NUMBERS_AND_LETTERS: 2,
+  ALPHABET: 1,
+};
 
 function Real() {
   return (
@@ -850,7 +856,14 @@ function Real() {
         Cabeçalho da página de um tema (cor do grupo)
       </p>
       {(
-        ['pares', 'outros', 'arquifonema', 'encontro', 'linguagem'] as const
+        [
+          'pares',
+          'outros',
+          'arquifonema',
+          'encontro',
+          'linguagem',
+          'temas',
+        ] as const
       ).map((g) => (
         <PageHeader
           key={g}
@@ -861,7 +874,8 @@ function Real() {
               outros: 'Fonema /lh/',
               arquifonema: 'Arquifonema /S/',
               encontro: 'Encontro com /r/',
-              linguagem: 'Cores',
+              linguagem: 'Linguagem',
+              temas: 'Cores',
             }[g]
           }
           description="Texto do tema editado pelo administrador."

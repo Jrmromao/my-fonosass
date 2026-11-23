@@ -7,7 +7,7 @@ import HomeLanding, {
 import { type FreePreviewActivity } from '@/components/landing/FreePhonemeTile';
 import { getFreeSamples } from '@/lib/access';
 import { TYPE_LABELS, label, phonemeLabel } from '@/lib/activityLabels';
-import { LANGUAGE_TOPICS, PHONEMES } from '@/lib/phonemes';
+import { LANGUAGE_TOPIC, OTHER_TOPICS, PHONEMES } from '@/lib/phonemes';
 import { ActivityStatus } from '@prisma/client';
 
 // Catalog numbers change at most a few times a week; refresh hourly.
@@ -19,9 +19,21 @@ function cleanTitle(name: string): string {
   return name.replace(/\s*\(Fonema\s*\/[^/]*\/\)\s*$/i, '').trim();
 }
 
+function topicCount(
+  topic: { id: string; label: string; types: string[] },
+  typeCounts: Map<string, number>
+): TopicCount {
+  return {
+    id: topic.id,
+    label: topic.label,
+    count: topic.types.reduce((sum, t) => sum + (typeCounts.get(t) ?? 0), 0),
+  };
+}
+
 async function getCatalog(): Promise<{
   phonemes: PhonemeCount[];
-  languageTopics: TopicCount[];
+  languageTopic: TopicCount;
+  otherTopics: TopicCount[];
   samples: SampleActivity[];
   freePreview: FreePreviewActivity[];
   totalActivities: number;
@@ -59,13 +71,10 @@ async function getCatalog(): Promise<{
       }),
     ]);
 
-    // "Linguagem" topics are counted by activity type, not by phoneme.
+    // Non-phoneme topics are counted by activity type, not by phoneme.
     const typeCounts = new Map(typeGroups.map((t) => [t.type, t._count._all]));
-    const languageTopics: TopicCount[] = LANGUAGE_TOPICS.map((topic) => ({
-      id: topic.id,
-      label: topic.label,
-      count: topic.types.reduce((sum, t) => sum + (typeCounts.get(t) ?? 0), 0),
-    }));
+    const languageTopic = topicCount(LANGUAGE_TOPIC, typeCounts);
+    const otherTopics = OTHER_TOPICS.map((t) => topicCount(t, typeCounts));
 
     // Modal preview: the free samples (downloadable after creating an account).
     const freePreview: FreePreviewActivity[] = freeRows.map((a) => ({
@@ -114,7 +123,8 @@ async function getCatalog(): Promise<{
 
     return {
       phonemes,
-      languageTopics,
+      languageTopic,
+      otherTopics,
       freePreview,
       totalActivities: phonemes.reduce((sum, p) => sum + p.count, 0),
       samples: picked.map((a) => ({
@@ -126,13 +136,11 @@ async function getCatalog(): Promise<{
   } catch (error) {
     // Landing must render even if the DB is unreachable (e.g. during build).
     console.error('[home] failed to load catalog', error);
+    const empty = new Map<string, number>();
     return {
       phonemes: PHONEMES.map((phoneme) => ({ phoneme, count: 0 })),
-      languageTopics: LANGUAGE_TOPICS.map((t) => ({
-        id: t.id,
-        label: t.label,
-        count: 0,
-      })),
+      languageTopic: topicCount(LANGUAGE_TOPIC, empty),
+      otherTopics: OTHER_TOPICS.map((t) => topicCount(t, empty)),
       samples: [],
       freePreview: [],
       totalActivities: 0,

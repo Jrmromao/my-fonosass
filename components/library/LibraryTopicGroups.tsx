@@ -3,15 +3,17 @@ import { phonemeTopic } from '@/lib/libraryTopics';
 import { toneFor } from '@/components/library/tones';
 import { LIBRARY_PATH } from '@/lib/libraryUrl';
 import {
-  LANGUAGE_TOPICS,
+  LANGUAGE_TOPIC,
   LEGACY_NOTES,
+  OTHER_TOPICS,
   PHONEME_GROUPS,
+  type LanguageTopic,
   type PhonemeEntry,
 } from '@/lib/phonemes';
 
 // The library index: one white card per group (pares, nasais, arquifonema,
-// encontro, linguagem), each with its own color. Pure presentation: counts
-// come from the page (/api/library/counts), so it can also be previewed.
+// encontro, linguagem, outros/temas), each with its own color. Pure
+// presentation: counts come from the page (/api/library/counts).
 
 export interface LibraryTopicGroupsProps {
   /** Published activities per Activity.phoneme code. */
@@ -51,10 +53,12 @@ export function LibraryTopicGroups({
     g.id === 'outros' ? { ...g, entries: [...g.entries, ...extras] } : g
   );
 
-  const language = LANGUAGE_TOPICS.map((t) => ({
+  const withCount = (t: LanguageTopic) => ({
     ...t,
     count: t.types.reduce((sum, type) => sum + (typeCounts[type] ?? 0), 0),
-  }));
+  });
+  const language = withCount(LANGUAGE_TOPIC);
+  const other = OTHER_TOPICS.map(withCount);
 
   return (
     <div className="space-y-4">
@@ -105,20 +109,40 @@ export function LibraryTopicGroups({
 
       <GroupCard
         title="Linguagem"
-        description="Vocabulário e categorias, independente do fonema."
-        ready={language.filter((t) => t.count > 0).length}
-        total={language.length}
+        description="Vocabulário, compreensão e expressão, independente do fonema."
+        ready={language.count > 0 ? 1 : 0}
+        total={1}
         chip={toneFor('linguagem').chip}
       >
-        <ul className={`grid gap-3 ${columnsFor(language.length)}`}>
-          {language.map((topic) => (
+        <ul className={`grid gap-3 ${columnsFor(1)}`}>
+          <li>
+            <TopicTile
+              href={`${LIBRARY_PATH}/${language.id}`}
+              label={language.label}
+              notation={false}
+              count={language.count}
+              tone={toneFor('linguagem')}
+            />
+          </li>
+        </ul>
+      </GroupCard>
+
+      <GroupCard
+        title="Outros"
+        description="Temas de vocabulário e categorias, independente do fonema."
+        ready={other.filter((t) => t.count > 0).length}
+        total={other.length}
+        chip={toneFor('temas').chip}
+      >
+        <ul className={`grid gap-3 ${columnsFor(other.length)}`}>
+          {other.map((topic) => (
             <li key={topic.id}>
               <TopicTile
                 href={`${LIBRARY_PATH}/${topic.id}`}
                 label={topic.label}
                 notation={false}
                 count={topic.count}
-                tone={toneFor('linguagem')}
+                tone={toneFor('temas')}
               />
             </li>
           ))}

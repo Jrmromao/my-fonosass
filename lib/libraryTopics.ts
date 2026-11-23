@@ -5,7 +5,8 @@
 
 import { phonemeSlug } from '@/lib/libraryUrl';
 import {
-  LANGUAGE_TOPICS,
+  CATALOG_TOPICS,
+  LANGUAGE_TOPIC,
   PHONEME_GROUPS,
   type LanguageTopic,
   type PhonemeEntry,
@@ -17,7 +18,10 @@ export interface LibraryTopic {
   title: string;
   /** Default paragraph shown above the activities (admins can override). */
   about: string;
-  /** Group in the index (lib/phonemes.ts id, or "linguagem"): sets the color. */
+  /**
+   * Group in the index (lib/phonemes.ts id, "linguagem", or "temas"):
+   * sets the color. "temas" is the Outros section (cores, animais…).
+   */
   groupId: string;
   /** Filter sent to /api/activities/search. */
   filter: { phoneme: string } | { type: string };
@@ -56,12 +60,16 @@ const TOPIC_ABOUT: Record<string, string> = {
     'Encontro consonantal com /r/, como em “prato” e “bruxa”. Atividades para a redução do encontro (“pato” por “prato”).',
   ENC_L:
     'Encontro consonantal com /l/, como em “planta” e “bloco”. Atividades para a redução e a troca do /l/ por /r/ no encontro.',
+  linguagem:
+    'Atividades de linguagem: vocabulário, compreensão e expressão, independente do fonema.',
   cores:
     'Vocabulário de cores: nomeação, compreensão e categorização. Independe do fonema.',
   animais:
     'Vocabulário de animais: nomeação, sons dos animais e categorização. Independe do fonema.',
   numeros:
     'Números e quantidades: nomeação, contagem e associação número–quantidade. Independe do fonema.',
+  alfabeto:
+    'Letras do alfabeto: nomeação, reconhecimento e associação letra–som. Independe do fonema.',
 };
 
 const unknownPhoneme = (code: string): PhonemeEntry => ({
@@ -95,18 +103,19 @@ export function phonemeTopic(
   };
 }
 
-function languageTopic(language: LanguageTopic): LibraryTopic | null {
+function catalogTopic(topic: LanguageTopic): LibraryTopic | null {
   // Topics not in the catalog yet (no activity type) have no page.
-  if (language.types.length === 0) return null;
+  if (topic.types.length === 0) return null;
+  const groupId = topic.id === LANGUAGE_TOPIC.id ? 'linguagem' : 'temas';
   return {
-    slug: language.id,
-    groupId: 'linguagem',
-    title: language.label,
+    slug: topic.id,
+    groupId,
+    title: topic.label,
     about:
-      TOPIC_ABOUT[language.id] !== undefined
-        ? `${TOPIC_ABOUT[language.id]} ${CLOSING}`
-        : `Atividades de ${language.label.toLowerCase()} para vocabulário e linguagem, independente do fonema. ${CLOSING}`,
-    filter: { type: language.types[0] },
+      TOPIC_ABOUT[topic.id] !== undefined
+        ? `${TOPIC_ABOUT[topic.id]} ${CLOSING}`
+        : `Atividades de ${topic.label.toLowerCase()} para vocabulário e linguagem, independente do fonema. ${CLOSING}`,
+    filter: { type: topic.types[0] },
   };
 }
 
@@ -120,7 +129,7 @@ export function listTopics(): LibraryTopic[] {
     ...PHONEME_GROUPS.flatMap((g) =>
       g.entries.map((e) => phonemeTopic(e, g.id))
     ),
-    ...LANGUAGE_TOPICS.map(languageTopic).filter(
+    ...CATALOG_TOPICS.map(catalogTopic).filter(
       (t): t is LibraryTopic => t !== null
     ),
   ];
@@ -135,7 +144,8 @@ export function isEditableTopic(slug: string): boolean {
 export function findTopic(slug: string): LibraryTopic | null {
   const known = listTopics().find((t) => t.slug === slug);
   if (known) return known;
-  if (LANGUAGE_TOPICS.some((t) => t.id === slug)) return null;
+  // Known catalog id without a type yet (e.g. alimentos) → no page.
+  if (CATALOG_TOPICS.some((t) => t.id === slug)) return null;
   // A phoneme code still in the DB that the taxonomy doesn't list (e.g. "R").
   if (/^[a-z0-9-]{1,12}$/.test(slug)) {
     return phonemeTopic(unknownPhoneme(slug.toUpperCase().replace(/-/g, '_')));

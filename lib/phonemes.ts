@@ -157,13 +157,32 @@ export interface LanguageTopic {
   types: ActivityType[];
 }
 
-// "Linguagem" is a separate topic from phonology (vocabulary and categories).
-export const LANGUAGE_TOPICS: LanguageTopic[] = [
+/**
+ * Single "Linguagem" tile (ActivityType LANGUAGE). No sub-themes here —
+ * thematic categories (cores, animais…) live under OTHER_TOPICS / "Outros".
+ */
+export const LANGUAGE_TOPIC: LanguageTopic = {
+  id: 'linguagem',
+  label: 'Linguagem',
+  types: ['LANGUAGE'],
+};
+
+/**
+ * Thematic topics shown in the "Outros" section of the library index.
+ * Independent of fonema; not nested under Linguagem.
+ */
+export const OTHER_TOPICS: LanguageTopic[] = [
   { id: 'cores', label: 'Cores', types: ['COLOURS'] },
   { id: 'animais', label: 'Animais', types: ['ANIMALS'] },
   { id: 'alimentos', label: 'Alimentos', types: [] },
   { id: 'numeros', label: 'Números', types: ['NUMBERS_AND_LETTERS'] },
   { id: 'alfabeto', label: 'Alfabeto', types: ['ALPHABET'] },
+];
+
+/** Every non-phoneme catalog topic (Linguagem + Outros), for redirects and hrefs. */
+export const CATALOG_TOPICS: LanguageTopic[] = [
+  LANGUAGE_TOPIC,
+  ...OTHER_TOPICS,
 ];
 
 // Below this many published activities the landing headline talks about the

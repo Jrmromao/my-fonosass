@@ -51,13 +51,17 @@ export const TONES: Record<LibraryTone, ToneClasses> = {
   },
 };
 
-/** Group id (lib/phonemes.ts) -> tone. "linguagem" is the language topics. */
+/**
+ * Group id (lib/phonemes.ts) -> tone.
+ * "linguagem" = single Linguagem tile; "temas" = Outros (cores, animais…).
+ */
 export const GROUP_TONE: Record<string, LibraryTone> = {
   pares: 'sky',
   outros: 'sun',
   arquifonema: 'coral',
   encontro: 'cream',
   linguagem: 'violet',
+  temas: 'cream',
 };
 
 export const toneFor = (groupId: string): ToneClasses =>

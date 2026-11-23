@@ -32,7 +32,10 @@ export interface TopicCount {
 
 interface PhonemeLibraryProps {
   phonemes: PhonemeCount[];
-  languageTopics: TopicCount[];
+  /** Single Linguagem tile (ActivityType LANGUAGE). */
+  languageTopic: TopicCount;
+  /** Thematic tiles under Outros (cores, animais…). */
+  otherTopics: TopicCount[];
   freePreview: FreePreviewActivity[];
   totalActivities: number;
 }
@@ -42,7 +45,8 @@ const countLabel = (n: number) =>
 
 export default function PhonemeLibrary({
   phonemes,
-  languageTopics,
+  languageTopic,
+  otherTopics,
   freePreview,
   totalActivities,
 }: PhonemeLibraryProps) {
@@ -69,7 +73,8 @@ export default function PhonemeLibrary({
   const freeAvailable = freePreview.length > 0;
   const hasComingSoon =
     groups.some((g) => g.entries.some((e) => !counts.get(e.code))) ||
-    languageTopics.some((t) => t.count === 0);
+    languageTopic.count === 0 ||
+    otherTopics.some((t) => t.count === 0);
   // Tiles of the phonemes in this month's free list are highlighted.
   const freePhonemes = new Set(
     freePreview.map((a) => a.phoneme).filter(Boolean)
@@ -148,10 +153,27 @@ export default function PhonemeLibrary({
           <div>
             <GroupHeading
               title="Linguagem"
-              description="Vocabulário e categorias, independente do fonema."
+              description="Vocabulário, compreensão e expressão, independente do fonema."
             />
-            <ul className={`grid gap-2 ${columnsFor(languageTopics.length)}`}>
-              {languageTopics.map((topic) => (
+            <ul className={`grid gap-2 ${columnsFor(1)}`}>
+              <li>
+                <Tile
+                  slug={languageTopic.id}
+                  label={languageTopic.label}
+                  notation={false}
+                  count={languageTopic.count}
+                />
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <GroupHeading
+              title="Outros"
+              description="Temas de vocabulário e categorias, independente do fonema."
+            />
+            <ul className={`grid gap-2 ${columnsFor(otherTopics.length)}`}>
+              {otherTopics.map((topic) => (
                 <li key={topic.id}>
                   <Tile
                     slug={topic.id}

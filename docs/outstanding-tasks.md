@@ -40,7 +40,7 @@ The landing page hides the free /s/ offer until /s/ has published activities. Th
   - Optional later: split /r/ into R forte and r fraco tiles; requires tagging each existing /r/ activity.
   - Source: `lib/phonemes.ts`.
 
-- [ ] **"Alimentos" in Linguagem has no activity type** (Dev, after Eliane confirms topics)
+- [ ] **"Alimentos" in Outros has no activity type** (Dev, after Eliane confirms topics)
   - `ActivityType` has no food value, so the tile stays "Em breve". Adding one needs a Prisma migration (`yarn prisma migrate dev --name add-food-activity-type`).
 
 - [ ] **Placeholder phone numbers on legal pages** (João: real contact data; Dev: replace)
@@ -99,7 +99,8 @@ The landing page hides the free /s/ offer until /s/ has published activities. Th
 - [x] Paid-only plan on the landing page (R$ 39,90/mês or R$ 399,90/ano)
 - [x] Free /s/ preview popup with 2 downloadable activities (shown only when /s/ has content)
 - [x] "Em breve" tiles for empty phonemes; headline adapts to catalog size
-- [x] Clinical taxonomy from Eliane: pairs, nasais/laterais/vibrantes, arquifonema/encontro, Linguagem
+- [x] Clinical taxonomy from Eliane: pairs, nasais/laterais/vibrantes, arquifonema/encontro, Linguagem (single tile), Outros (temas)
+
 - [x] Founder section with photo and CRFa 3-10032
 - [x] Metadata repositioned as an activity library (not "prontuários/agendamentos")
 - [x] Lavender theme, WCAG AA text contrast (0 failures in browser audit)
