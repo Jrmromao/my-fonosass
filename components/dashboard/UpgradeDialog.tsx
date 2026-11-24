@@ -13,12 +13,19 @@ import { useState } from 'react';
 interface UpgradeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Prefills which button to emphasise when opened from the landing. */
+  preferredInterval?: 'monthly' | 'yearly';
 }
 
 /** Monthly / annual Stripe checkout choice. */
-export function UpgradeDialog({ open, onOpenChange }: UpgradeDialogProps) {
+export function UpgradeDialog({
+  open,
+  onOpenChange,
+  preferredInterval = 'yearly',
+}: UpgradeDialogProps) {
   const [loading, setLoading] = useState<'monthly' | 'yearly' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const yearlyFirst = preferredInterval === 'yearly';
 
   const startCheckout = async (interval: 'monthly' | 'yearly') => {
     setLoading(interval);
@@ -66,25 +73,51 @@ export function UpgradeDialog({ open, onOpenChange }: UpgradeDialogProps) {
             </p>
           )}
           <div className="space-y-2">
-            <Button
-              className="w-full h-10 bg-coral-700 hover:bg-coral-800 text-white text-sm font-semibold"
-              disabled={loading !== null}
-              onClick={() => startCheckout('monthly')}
-            >
-              {loading === 'monthly'
-                ? 'Abrindo pagamento...'
-                : `Mensal: ${formatBRL(PRO_PLAN.monthlyPrice)}/mês`}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full h-10 border-neutral-300 text-sm font-semibold"
-              disabled={loading !== null}
-              onClick={() => startCheckout('yearly')}
-            >
-              {loading === 'yearly'
-                ? 'Abrindo pagamento...'
-                : `Anual: ${formatBRL(PRO_PLAN.yearlyPrice)}/ano (${YEARLY_DISCOUNT.percent}% de desconto)`}
-            </Button>
+            {yearlyFirst ? (
+              <>
+                <Button
+                  className="w-full h-10 bg-coral-700 hover:bg-coral-800 text-white text-sm font-semibold"
+                  disabled={loading !== null}
+                  onClick={() => startCheckout('yearly')}
+                >
+                  {loading === 'yearly'
+                    ? 'Abrindo pagamento...'
+                    : `Anual: ${formatBRL(PRO_PLAN.yearlyPrice)}/ano (${YEARLY_DISCOUNT.percent}% de desconto)`}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-10 border-neutral-300 text-sm font-semibold"
+                  disabled={loading !== null}
+                  onClick={() => startCheckout('monthly')}
+                >
+                  {loading === 'monthly'
+                    ? 'Abrindo pagamento...'
+                    : `Mensal: ${formatBRL(PRO_PLAN.monthlyPrice)}/mês`}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  className="w-full h-10 bg-coral-700 hover:bg-coral-800 text-white text-sm font-semibold"
+                  disabled={loading !== null}
+                  onClick={() => startCheckout('monthly')}
+                >
+                  {loading === 'monthly'
+                    ? 'Abrindo pagamento...'
+                    : `Mensal: ${formatBRL(PRO_PLAN.monthlyPrice)}/mês`}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-10 border-neutral-300 text-sm font-semibold"
+                  disabled={loading !== null}
+                  onClick={() => startCheckout('yearly')}
+                >
+                  {loading === 'yearly'
+                    ? 'Abrindo pagamento...'
+                    : `Anual: ${formatBRL(PRO_PLAN.yearlyPrice)}/ano (${YEARLY_DISCOUNT.percent}% de desconto)`}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </DialogContent>

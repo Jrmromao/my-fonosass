@@ -5,28 +5,70 @@ import SharedNavbar from '@/components/layout/SharedNavbar';
 import { BlogPost } from '@/lib/blog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
+
+const PAGE_SIZE = 5;
 
 interface BlogPageClientProps {
   articles: BlogPost[];
 }
 
+function blogHref({
+  tag,
+  page,
+}: {
+  tag?: string | null;
+  page?: number;
+}): string {
+  const params = new URLSearchParams();
+  if (tag) params.set('tag', tag);
+  if (page && page > 1) params.set('page', String(page));
+  const qs = params.toString();
+  return qs ? `/blog?${qs}` : '/blog';
+}
+
 export default function BlogPageClient({ articles }: BlogPageClientProps) {
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const selectedTag = searchParams.get('tag');
+  const pageParam = parseInt(searchParams.get('page') || '1', 10);
+  const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
 
   const allTags = useMemo(
-    () => Array.from(new Set(articles.flatMap((a) => a.tags || []))),
+    () => Array.from(new Set(articles.flatMap((a) => a.tags || []))).sort(),
     [articles]
   );
 
-  const filtered = selectedTag
-    ? articles.filter((a) => a.tags?.includes(selectedTag))
-    : articles;
+  const filtered = useMemo(
+    () =>
+      selectedTag
+        ? articles.filter((a) => a.tags?.includes(selectedTag))
+        : articles,
+    [articles, selectedTag]
+  );
 
-  const featured = filtered.find((a) => a.featured);
-  const rest = filtered.filter((a) => a.slug !== featured?.slug);
+  // Featured only on page 1 of the unfiltered (or matching) list.
+  const featured =
+    page === 1 ? (filtered.find((a) => a.featured) ?? null) : null;
+  const list = filtered.filter((a) => a.slug !== featured?.slug);
+
+  const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const pageItems = list.slice(start, start + PAGE_SIZE);
+
+  const goPage = (next: number) => {
+    router.push(blogHref({ tag: selectedTag, page: next }));
+    // Keep the list in view after pagination.
+    if (typeof window !== 'undefined') {
+      const el = document.getElementById('artigos');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-violet-100 text-violet-950">
@@ -46,24 +88,20 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
 
             {allTags.length > 0 && (
               <div className="mt-8 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedTag(null)}
+                <Link
+                  href={blogHref({ tag: null })}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2 ${
-                    selectedTag === null
+                    !selectedTag
                       ? 'bg-neutral-900 text-white'
                       : 'bg-white text-neutral-700 ring-1 ring-neutral-200 hover:bg-violet-50'
                   }`}
                 >
                   Todos
-                </button>
-                {allTags.slice(0, 8).map((tag) => (
-                  <button
+                </Link>
+                {allTags.map((tag) => (
+                  <Link
                     key={tag}
-                    type="button"
-                    onClick={() =>
-                      setSelectedTag(selectedTag === tag ? null : tag)
-                    }
+                    href={blogHref({ tag })}
                     className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2 ${
                       selectedTag === tag
                         ? 'bg-sun-300 text-violet-950'
@@ -71,7 +109,7 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                     }`}
                   >
                     {tag}
-                  </button>
+                  </Link>
                 ))}
               </div>
             )}
@@ -103,18 +141,19 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                     {featured.title}
                   </Link>
                 </h2>
-                <p className="mt-3 max-w-3xl text-neutral-600 leading-relaxed">
+                <p className="mt-3 max-w-3xl leading-relaxed text-neutral-600">
                   {featured.excerpt}
                 </p>
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap gap-2">
                     {featured.tags?.slice(0, 3).map((tag) => (
-                      <span
+                      <Link
                         key={tag}
-                        className="rounded-md bg-violet-50 px-2.5 py-1 text-xs font-medium text-neutral-700"
+                        href={blogHref({ tag })}
+                        className="rounded-md bg-violet-50 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-sun-100"
                       >
                         {tag}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                   <Link
@@ -128,33 +167,41 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
               </article>
             )}
 
-            <div className="rounded-3xl bg-white p-6 sm:p-8">
+            <div id="artigos" className="rounded-3xl bg-white p-6 sm:p-8">
               <div className="mb-6 flex items-center justify-between gap-3">
                 <h2 className="text-sm font-medium text-neutral-600">
                   {selectedTag
                     ? `Artigos sobre ${selectedTag}`
                     : 'Todos os artigos'}
+                  {list.length > 0 && (
+                    <span className="ml-2 text-neutral-500">
+                      ({list.length})
+                    </span>
+                  )}
                 </h2>
                 {selectedTag && (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedTag(null)}
+                  <Link
+                    href="/blog"
                     className="text-xs font-semibold text-neutral-700 underline underline-offset-2 hover:text-neutral-900"
                   >
                     Limpar filtro
-                  </button>
+                  </Link>
                 )}
               </div>
 
-              {rest.length === 0 && !featured ? (
+              {pageItems.length === 0 && !featured ? (
                 <p className="py-8 text-center text-sm text-neutral-600">
                   {selectedTag
                     ? `Não há artigos sobre “${selectedTag}” no momento.`
                     : 'Não há artigos publicados ainda.'}
                 </p>
+              ) : pageItems.length === 0 ? (
+                <p className="py-4 text-center text-sm text-neutral-600">
+                  Não há mais artigos nesta página.
+                </p>
               ) : (
                 <ul className="divide-y divide-neutral-100">
-                  {rest.map((article) => (
+                  {pageItems.map((article) => (
                     <li
                       key={article.slug}
                       className="py-6 first:pt-0 last:pb-0"
@@ -186,20 +233,52 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                       {article.tags && article.tags.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {article.tags.slice(0, 3).map((tag) => (
-                            <button
+                            <Link
                               key={tag}
-                              type="button"
-                              onClick={() => setSelectedTag(tag)}
+                              href={blogHref({ tag })}
                               className="rounded-md bg-violet-50 px-2 py-0.5 text-xs font-medium text-neutral-700 hover:bg-sun-100"
                             >
                               {tag}
-                            </button>
+                            </Link>
                           ))}
                         </div>
                       )}
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {totalPages > 1 && (
+                <nav
+                  className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-6"
+                  aria-label="Paginação do blog"
+                >
+                  <button
+                    type="button"
+                    onClick={() => goPage(safePage - 1)}
+                    disabled={safePage <= 1}
+                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden />
+                    Anterior
+                  </button>
+                  <p className="text-sm text-neutral-600">
+                    Página{' '}
+                    <span className="font-semibold text-neutral-900">
+                      {safePage}
+                    </span>{' '}
+                    de {totalPages}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => goPage(safePage + 1)}
+                    disabled={safePage >= totalPages}
+                    className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
+                  >
+                    Seguinte
+                    <ChevronRight className="h-4 w-4" aria-hidden />
+                  </button>
+                </nav>
               )}
             </div>
 
@@ -208,8 +287,8 @@ export default function BlogPageClient({ articles }: BlogPageClientProps) {
                 Atividades prontas para imprimir
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-neutral-600">
-                A biblioteca do Almanaque da Fala organiza exercícios por
-                fonema, criados e revisados por fonoaudióloga.
+                Materiais de apoio à terapia, organizados por fonema, criados e
+                revisados por fonoaudióloga.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link

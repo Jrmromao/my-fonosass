@@ -17,7 +17,7 @@ export const FAQ_DATA: Record<(typeof FAQ_CATEGORIES)[number], FaqEntry[]> = {
     {
       question: 'O que é o Almanaque da Fala?',
       answer:
-        'Uma plataforma de materiais terapêuticos para fonoaudiólogos. Atividades imprimíveis organizadas por fonema, criadas e revisadas por profissional.',
+        'Uma plataforma de materiais de apoio à terapia para fonoaudiólogos. Atividades imprimíveis organizadas por fonema, criadas e revisadas por profissional.',
     },
     {
       question: 'Para quem é a plataforma?',

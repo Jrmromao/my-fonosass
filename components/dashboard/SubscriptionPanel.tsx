@@ -29,7 +29,14 @@ const POLL_MAX_MS = 30000;
 export function SubscriptionPanel() {
   const searchParams = useSearchParams();
   const checkout = searchParams.get('checkout');
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const intervalParam = searchParams.get('interval');
+  const preferredInterval =
+    intervalParam === 'monthly' || intervalParam === 'yearly'
+      ? intervalParam
+      : 'yearly';
+  const [upgradeOpen, setUpgradeOpen] = useState(
+    () => intervalParam === 'monthly' || intervalParam === 'yearly'
+  );
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
   const [startedAt] = useState(() => Date.now());
@@ -193,7 +200,11 @@ export function SubscriptionPanel() {
         )}
       </div>
 
-      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+      <UpgradeDialog
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        preferredInterval={preferredInterval}
+      />
     </div>
   );
 }

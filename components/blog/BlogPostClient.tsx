@@ -244,7 +244,7 @@ export default function BlogPostClient({
                       {post.tags.map((tag) => (
                         <Link
                           key={tag}
-                          href="/blog"
+                          href={`/blog?tag=${encodeURIComponent(tag)}`}
                           className="rounded-md bg-violet-50 px-2.5 py-1 text-xs font-medium text-neutral-700 hover:bg-sun-100"
                         >
                           {tag}
@@ -287,6 +287,10 @@ export default function BlogPostClient({
                   </div>
 
                   <ConversionCTA variant="article" className="mt-10" />
+                </div>
+
+                <div className="mt-6 lg:hidden">
+                  <PopularPosts limit={5} sortBy="engagement" />
                 </div>
               </article>
 

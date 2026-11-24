@@ -16,22 +16,22 @@ const COPY: Record<
 > = {
   mid: {
     title: 'Quer aplicar isto na próxima sessão?',
-    body: 'Na biblioteca há atividades imprimíveis por fonema, prontas para usar. Criadas e revisadas por fonoaudióloga.',
+    body: 'Na biblioteca há materiais de apoio à terapia, imprimíveis e organizados por fonema. Criados e revisados por fonoaudióloga.',
     primary: 'Ver atividades',
   },
   article: {
     title: 'Leve estas ideias para a sessão',
-    body: 'Atividades imprimíveis, organizadas por fonema, criadas e revisadas por fonoaudióloga.',
+    body: 'Materiais de apoio à terapia, imprimíveis e organizados por fonema. Criados e revisados por fonoaudióloga.',
     primary: 'Ver a biblioteca',
   },
   default: {
     title: 'Biblioteca de atividades por fonema',
-    body: 'Atividades imprimíveis, organizadas por fonema, criadas e revisadas por fonoaudióloga.',
+    body: 'Materiais de apoio à terapia, imprimíveis e organizados por fonema. Criados e revisados por fonoaudióloga.',
     primary: 'Ver a biblioteca',
   },
   topic: {
     title: 'Biblioteca de atividades por fonema',
-    body: 'Atividades imprimíveis, organizadas por fonema, criadas e revisadas por fonoaudióloga.',
+    body: 'Materiais de apoio à terapia, imprimíveis e organizados por fonema. Criados e revisados por fonoaudióloga.',
     primary: 'Ver a biblioteca',
   },
 };

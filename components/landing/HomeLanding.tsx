@@ -1,8 +1,9 @@
 import LandingFooter from '@/components/layout/LandingFooter';
 import SharedNavbar from '@/components/layout/SharedNavbar';
 import { freeOfferText } from '@/lib/freeOffer';
-import { PRO_PLAN, YEARLY_DISCOUNT, formatBRL } from '@/lib/pricing';
-import { ArrowRight, Check } from 'lucide-react';
+import { LIBRARY_PATH } from '@/lib/libraryUrl';
+import { YEARLY_DISCOUNT, formatBRL } from '@/lib/pricing';
+import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import AuthAwareLink from './AuthAwareLink';
@@ -11,6 +12,7 @@ import PhonemeLibrary, {
   type PhonemeCount,
   type TopicCount,
 } from './PhonemeLibrary';
+import PricingSection from './PricingSection';
 
 export type { PhonemeCount, TopicCount };
 
@@ -36,8 +38,6 @@ interface HomeLandingProps {
   freePreview: FreePreviewActivity[];
   totalActivities: number;
 }
-
-const yearlySavings = YEARLY_DISCOUNT.percent;
 
 // Headings inherit the logo's dark purple (violet-950).
 const INK_CLASS = 'text-violet-950';
@@ -75,23 +75,24 @@ export default function HomeLanding({
                 fonoaudióloga.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
-                <Link
-                  href="#planos"
+                <AuthAwareLink
+                  to={freeAvailable ? LIBRARY_PATH : '/dashboard'}
                   className="inline-flex items-center gap-2 rounded-md bg-coral-700 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-coral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral-700 focus-visible:ring-offset-2"
                 >
-                  Ver planos <ArrowRight size={16} aria-hidden />
-                </Link>
+                  {freeAvailable ? 'Começar grátis' : 'Criar conta'}
+                  <ArrowRight size={16} aria-hidden />
+                </AuthAwareLink>
                 <Link
-                  href="#biblioteca"
+                  href="#planos"
                   className="text-sm font-medium text-neutral-700 underline decoration-neutral-300 underline-offset-4 hover:decoration-neutral-700"
                 >
-                  {freeAvailable
-                    ? 'Ver as atividades grátis'
-                    : 'Ver a biblioteca'}
+                  Ver planos
                 </Link>
               </div>
               <p className="mt-5 text-sm text-neutral-600">
-                {freeAvailable && `${freeText} ao criar sua conta. `}
+                {freeAvailable
+                  ? `${freeText} ao criar sua conta. `
+                  : 'Crie a conta e explore a biblioteca. '}
                 Assinatura a partir de {formatBRL(YEARLY_DISCOUNT.perMonth)} por
                 mês no plano anual.
               </p>
@@ -158,54 +159,7 @@ export default function HomeLanding({
           </figure>
         </section>
 
-        {/* Pricing */}
-        <section
-          id="planos"
-          className="border-t border-violet-200 bg-violet-50 py-20"
-        >
-          <div className="max-w-4xl mx-auto px-6">
-            <h2 className="font-display text-3xl font-bold">
-              Um plano. Sem créditos, sem adicionais.
-            </h2>
-            <p className="mt-3 text-neutral-600">
-              Acesso completo à biblioteca, com atividades novas todo mês.
-            </p>
-
-            <div className="mt-10 rounded-lg border-2 border-neutral-900 bg-white p-7 md:p-9">
-              <div className="grid md:grid-cols-2 gap-10">
-                <div>
-                  <p className="text-sm font-medium text-neutral-600">
-                    {PRO_PLAN.name}
-                  </p>
-                  <PlanFeatures features={PRO_PLAN.features} />
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <PriceOption
-                    label="Mensal"
-                    price={formatBRL(PRO_PLAN.monthlyPrice)}
-                    period="/mês"
-                  />
-                  <PriceOption
-                    label="Anual"
-                    price={formatBRL(PRO_PLAN.yearlyPrice)}
-                    period="/ano"
-                    note={`Equivale a ${formatBRL(YEARLY_DISCOUNT.perMonth)} por mês: ${yearlySavings}% de desconto, economia de ${formatBRL(YEARLY_DISCOUNT.amount)} por ano`}
-                  />
-                  <AuthAwareLink
-                    to="/dashboard/profile?tab=assinatura"
-                    className="mt-3 block rounded-md bg-neutral-900 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
-                  >
-                    Assinar
-                  </AuthAwareLink>
-                  <p className="text-center text-xs text-neutral-600">
-                    Cancele quando quiser, sem multa.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PricingSection />
 
         {/* FAQ */}
         <section id="faq" className="py-20">
@@ -237,50 +191,6 @@ export default function HomeLanding({
 
       <LandingFooter />
     </div>
-  );
-}
-
-function PriceOption({
-  label,
-  price,
-  period,
-  note,
-}: {
-  label: string;
-  price: string;
-  period: string;
-  note?: string;
-}) {
-  return (
-    <div className="rounded-md border border-neutral-200 px-5 py-4">
-      <div className="flex items-baseline justify-between gap-4">
-        <span className="text-sm font-medium text-neutral-600">{label}</span>
-        <span className="font-display text-2xl font-bold text-neutral-900">
-          {price}
-          <span className="ml-1 font-sans text-sm font-normal text-neutral-600">
-            {period}
-          </span>
-        </span>
-      </div>
-      {note && <p className="mt-1 text-xs text-neutral-600">{note}</p>}
-    </div>
-  );
-}
-
-function PlanFeatures({ features }: { features: readonly string[] }) {
-  return (
-    <ul className="mt-6 space-y-3">
-      {features.map((feature) => (
-        <li key={feature} className="flex items-start gap-3 text-sm">
-          <Check
-            size={16}
-            className="mt-0.5 shrink-0 text-neutral-900"
-            aria-hidden
-          />
-          <span className="text-neutral-700">{feature}</span>
-        </li>
-      ))}
-    </ul>
   );
 }
 
